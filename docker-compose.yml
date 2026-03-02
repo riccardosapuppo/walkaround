@@ -1,0 +1,46 @@
+﻿version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tourism-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: turismo_db_dev
+      POSTGRES_USER: tourism
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '25432:5432'
+    volumes:
+      - tourism_pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: tourism-backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: turismo_db_dev
+      DB_USER: walkaround
+      DB_PASSWORD: 
+    ports:
+      - '3000:3000'
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: tourism-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '8080:80'
+
+volumes:
+  tourism_pgdata:

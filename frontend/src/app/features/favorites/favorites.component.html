@@ -1,0 +1,28 @@
+﻿<section class="page-shell favorites">
+  <header>
+    <h1 class="page-title">Preferiti</h1>
+    <p class="page-subtitle">Accesso rapido ai tuoi punti di interesse salvati</p>
+  </header>
+
+  <section class="loading-shell" *ngIf="loading">
+    <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
+    <p>Caricamento preferiti...</p>
+  </section>
+
+  <mat-card class="card poi-card" *ngFor="let poi of favorites" [class.hidden]="loading">
+    <img [src]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
+
+    <div class="meta" (click)="openPoi(poi.id)">
+      <h3>{{ poi.name }}</h3>
+      <p>{{ poi.descriptionShort }}</p>
+    </div>
+
+    <button mat-icon-button color="primary" (click)="playPreview(poi.id)" aria-label="Preview">
+      <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
+    </button>
+  </mat-card>
+
+  <mat-card class="card empty" *ngIf="!loading && !favorites.length">
+    <p>Non hai ancora preferiti.</p>
+  </mat-card>
+</section>

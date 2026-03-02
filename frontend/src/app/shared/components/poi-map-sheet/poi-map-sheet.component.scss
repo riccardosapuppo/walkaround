@@ -1,0 +1,30 @@
+﻿.sheet-wrap {
+  padding: 8px 8px 20px;
+}
+
+.sheet-image {
+  width: 100%;
+  border-radius: 16px;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+.sheet-header {
+  margin-top: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #66748f;
+  }
+}
+
+.sheet-actions {
+  margin: 16px 0 8px;
+  display: grid;
+  gap: 10px;
+}

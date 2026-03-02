@@ -1,0 +1,51 @@
+﻿<section class="page-shell profile">
+  <header>
+    <h1 class="page-title">Profilo e impostazioni</h1>
+    <p class="page-subtitle">Gestione città, lingua e supporto</p>
+  </header>
+
+  <section class="loading-shell" *ngIf="loading">
+    <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
+    <p>Caricamento profilo...</p>
+  </section>
+
+  <ng-container *ngIf="!loading">
+    <mat-card class="card section">
+      <h3>Città attiva</h3>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Città</mat-label>
+        <mat-select [value]="activeCityId" (selectionChange)="setCity($event.value)">
+          <mat-option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <p>Codice hotel: {{ hotelCode }}</p>
+    </mat-card>
+
+    <mat-card class="card section">
+      <h3>Città sbloccate</h3>
+      <div class="chips">
+        <span class="status-chip unlocked" *ngFor="let cityId of unlockedCityIds">{{ cityId | titlecase }}</span>
+        <span class="status-chip locked" *ngIf="!unlockedCityIds.length">Nessuna città sbloccata</span>
+      </div>
+
+      <button mat-stroked-button color="primary" (click)="restorePurchases()">Ripristina acquisti</button>
+    </mat-card>
+
+    <mat-card class="card section">
+      <h3>Lingua</h3>
+      <div class="language-row">
+        <button mat-stroked-button [color]="language === 'it' ? 'primary' : undefined" (click)="setLanguage('it')">
+          IT
+        </button>
+        <button mat-stroked-button [color]="language === 'en' ? 'primary' : undefined" (click)="setLanguage('en')">
+          EN
+        </button>
+      </div>
+    </mat-card>
+
+    <mat-card class="card section links">
+      <a href="mailto:support@tourism-guide-demo.app">Supporto</a>
+      <a href="https://example.com/privacy" target="_blank" rel="noopener">Privacy</a>
+    </mat-card>
+  </ng-container>
+</section>

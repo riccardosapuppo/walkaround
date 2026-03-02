@@ -1,0 +1,61 @@
+﻿<section class="player-page page-shell" *ngIf="poi as currentPoi">
+  <button mat-icon-button class="back" (click)="goBack()">
+    <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
+  </button>
+
+  <img class="hero-image" [src]="currentPoi.imageUrl" [alt]="currentPoi.name" />
+
+  <h1 class="page-title">{{ currentPoi.name }}</h1>
+  <p class="page-subtitle">
+    {{ previewMode ? 'Modalità preview 30s' : 'Audio completo' }} · {{ currentPoi.durationSec | durationLabel }}
+  </p>
+
+  <section class="player card" *ngIf="playerState$ | async as state">
+    <input
+      type="range"
+      class="progress"
+      [max]="state.duration || currentPoi.durationSec"
+      [value]="state.currentTime"
+      (input)="seek($event)"
+    />
+
+    <div class="time-row">
+      <span>{{ formatClock(state.currentTime) }}</span>
+      <span>{{ formatClock(state.duration || currentPoi.durationSec) }}</span>
+    </div>
+
+    <div class="controls">
+      <button mat-mini-fab color="primary" (click)="skip(-15)">
+        <mat-icon fontSet="material-icons-round">replay_10</mat-icon>
+      </button>
+
+      <button mat-fab color="primary" (click)="togglePlay()">
+        <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+      </button>
+
+      <button mat-mini-fab color="primary" (click)="skip(15)">
+        <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
+      </button>
+    </div>
+
+    <mat-slide-toggle [ngModel]="offlineEnabled" (ngModelChange)="toggleOffline($event)">
+      Scarica offline
+    </mat-slide-toggle>
+
+    <p class="preview-note" *ngIf="state.previewEnded">Preview terminata. Sblocca la città per ascolto completo.</p>
+  </section>
+
+  <p class="description">{{ currentPoi.descriptionLong }}</p>
+</section>
+
+<section class="page-shell loading-shell" *ngIf="loading">
+  <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+  <p>Caricamento audio guida...</p>
+</section>
+
+<section class="page-shell player-page" *ngIf="!loading && !poi">
+  <mat-card class="card warning">
+    <p>{{ loadError ? 'Audio guida non disponibile o backend non raggiungibile.' : 'Contenuto non trovato.' }}</p>
+    <button mat-stroked-button color="primary" (click)="goBack()">Torna indietro</button>
+  </mat-card>
+</section>

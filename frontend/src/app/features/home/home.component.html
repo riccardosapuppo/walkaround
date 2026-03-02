@@ -1,0 +1,73 @@
+﻿<section class="page-shell home" *ngIf="vm$ | async as vm">
+  <header>
+    <h1 class="page-title">Home</h1>
+    <p class="page-subtitle">Punti di interesse vicini e riproduzione in 1-2 tap</p>
+  </header>
+
+  <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
+    <p>{{ apiErrorMessage }}</p>
+    <p class="hint">Controlla che backend e proxy siano attivi.</p>
+  </mat-card>
+
+  <mat-card class="card nearest-card" *ngIf="vm.nearestPoi as nearest">
+    <p class="overline">Sei vicino a:</p>
+    <h2>{{ nearest.name }} - {{ nearest.distanceLabel }}</h2>
+
+    <button mat-flat-button color="primary" class="big-cta" (click)="onMainCta(nearest)">
+      {{
+        nearest.unlocked
+          ? 'Riproduci audio guida'
+          : ('Sblocca ' + cityName(nearest.cityId) + ' €' + cityUnlockPriceLabel)
+      }}
+    </button>
+
+    <button mat-button color="primary" (click)="playPoi(nearest, true)">Ascolta preview</button>
+  </mat-card>
+
+  <mat-card class="card warning" *ngIf="vm.permission === 'denied'">
+    <p>Geolocalizzazione negata. Sto usando il centro città come fallback.</p>
+    <button mat-stroked-button color="primary" (click)="askLocationAgain()">Riprova permesso</button>
+  </mat-card>
+
+  <mat-card class="card continue" *ngIf="continuePoi">
+    <p class="section-label">Continua ascolto</p>
+    <h3>{{ continuePoi.name }}</h3>
+    <p>Riprendi da {{ continueTime | durationLabel }}</p>
+    <button mat-stroked-button color="primary" (click)="resumePlayback()">Riprendi</button>
+  </mat-card>
+
+  <section class="nearby-section">
+    <h3>Vicino a te</h3>
+
+    <mat-card class="card poi-card" *ngFor="let poi of vm.pois">
+      <img [src]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
+
+      <div class="poi-meta" (click)="openPoi(poi.id)">
+        <h4>{{ poi.name }}</h4>
+        <p>{{ poi.distanceLabel }} · {{ poi.durationSec | durationLabel }}</p>
+        <span class="status-chip" [ngClass]="poi.unlocked ? 'unlocked' : (poi.near ? 'near' : 'locked')">
+          {{ poi.unlocked ? 'Sbloccato' : (poi.near ? 'Vicino' : 'Bloccato') }}
+        </span>
+      </div>
+
+      <div class="poi-actions">
+        <button mat-icon-button color="primary" (click)="playPoi(poi, true)">
+          <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
+        </button>
+
+        <button mat-icon-button color="primary" *ngIf="poi.unlocked" (click)="playPoi(poi, false)">
+          <mat-icon fontSet="material-icons-round">headphones</mat-icon>
+        </button>
+
+        <button mat-stroked-button color="primary" class="unlock-city-btn" *ngIf="!poi.unlocked" (click)="purchaseCity(poi.cityId)">
+          Sblocca {{ cityName(poi.cityId) }}
+        </button>
+      </div>
+    </mat-card>
+  </section>
+</section>
+
+<section class="page-shell home loading-state" *ngIf="loading">
+  <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+  <p>Caricamento punti di interesse...</p>
+</section>

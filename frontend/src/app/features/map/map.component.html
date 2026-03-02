@@ -1,0 +1,35 @@
+<section class="map-page">
+  <header class="map-header">
+    <h1 class="page-title">Mappa</h1>
+    <p class="page-subtitle">{{ poiCount }} punti di interesse disponibili intorno a te</p>
+  </header>
+
+  <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
+    <p>{{ apiErrorMessage }}</p>
+  </mat-card>
+
+  <section class="loading-shell" *ngIf="isLoading">
+    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+    <p>Caricamento mappa...</p>
+  </section>
+
+  <div
+    class="map-frame"
+    *ngIf="!isLoading"
+    leaflet
+    [leafletOptions]="mapOptions"
+    [leafletLayers]="markerLayers"
+    (leafletMapReady)="onMapReady($event)"
+  ></div>
+
+  <button
+    mat-fab
+    color="primary"
+    class="center-btn"
+    *ngIf="!isLoading"
+    (click)="centerOnMe()"
+    aria-label="Centra su di me"
+  >
+    <mat-icon fontSet="material-icons-round">my_location</mat-icon>
+  </button>
+</section>

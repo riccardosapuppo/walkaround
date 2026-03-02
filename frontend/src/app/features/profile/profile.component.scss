@@ -1,0 +1,42 @@
+﻿.profile {
+  display: grid;
+  gap: 12px;
+}
+
+.section {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  p {
+    margin: 0;
+    color: #677790;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.language-row {
+  display: flex;
+  gap: 8px;
+}
+
+.links {
+  a {
+    color: #1769aa;
+    font-weight: 600;
+  }
+}

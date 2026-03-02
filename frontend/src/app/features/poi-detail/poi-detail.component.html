@@ -1,0 +1,53 @@
+﻿<section class="page-shell poi-detail" *ngIf="poi as currentPoi">
+  <button mat-icon-button class="back-btn" (click)="goBack()" aria-label="Torna indietro">
+    <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
+  </button>
+
+  <img class="hero-image" [src]="currentPoi.imageUrl" [alt]="currentPoi.name" />
+
+  <div class="title-row">
+    <div>
+      <h1 class="page-title">{{ currentPoi.name }}</h1>
+      <p class="page-subtitle">{{ distanceLabel }} · {{ currentPoi.durationSec | durationLabel }}</p>
+    </div>
+
+    <button mat-icon-button color="primary" (click)="toggleFavorite()">
+      <mat-icon fontSet="material-icons-round">{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+    </button>
+  </div>
+
+  <p class="short">{{ currentPoi.descriptionShort }}</p>
+  <p class="long">{{ currentPoi.descriptionLong }}</p>
+
+  <section class="actions">
+    <button mat-stroked-button color="primary" class="big-cta" (click)="openPlayer(true)">Ascolta preview</button>
+
+    <button
+      mat-flat-button
+      color="primary"
+      class="big-cta"
+      *ngIf="unlocked; else lockCta"
+      (click)="openPlayer(false)"
+    >
+      Riproduci audio
+    </button>
+
+    <ng-template #lockCta>
+      <button mat-flat-button color="primary" class="big-cta" (click)="purchase()">
+        Sblocca {{ cityName(currentPoi.cityId) }} €{{ cityUnlockPriceLabel }}
+      </button>
+    </ng-template>
+  </section>
+</section>
+
+<section class="page-shell loading-shell" *ngIf="loading">
+  <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+  <p>Caricamento dettaglio...</p>
+</section>
+
+<section class="page-shell poi-detail" *ngIf="!loading && !poi">
+  <mat-card class="card warning">
+    <p>{{ loadError ? 'Punto di interesse non disponibile o backend non raggiungibile.' : 'Contenuto non trovato.' }}</p>
+    <button mat-stroked-button color="primary" (click)="goBack()">Torna alla home</button>
+  </mat-card>
+</section>

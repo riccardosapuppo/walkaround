@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#e9f7ff"/>
+  <rect y="280" width="960" height="260" fill="#8ed0f5"/>
+  <ellipse cx="500" cy="280" rx="180" ry="90" fill="#8ec39b"/>
+  <text x="130" y="90" fill="#1d426e" font-size="52" font-family="Arial" font-weight="700">Isola Bella</text>
+</svg>

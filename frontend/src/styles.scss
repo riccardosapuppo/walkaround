@@ -1,0 +1,162 @@
+﻿@use '@angular/material' as mat;
+
+@include mat.core();
+
+$tourism-primary: mat.m2-define-palette(mat.$m2-blue-palette, 700, 500, 900);
+$tourism-accent: mat.m2-define-palette(mat.$m2-light-green-palette, 600, 500, 700);
+$tourism-warn: mat.m2-define-palette(mat.$m2-amber-palette, 700);
+
+$tourism-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $tourism-primary,
+    accent: $tourism-accent,
+    warn: $tourism-warn
+  ),
+  typography: mat.m2-define-typography-config(
+    $font-family: 'Outfit, "Segoe UI", sans-serif',
+    $headline-5: mat.m2-define-typography-level(1.6rem, 2rem, 700),
+    $headline-6: mat.m2-define-typography-level(1.3rem, 1.8rem, 600),
+    $body-1: mat.m2-define-typography-level(1rem, 1.45rem, 400)
+  )
+));
+
+@include mat.all-component-themes($tourism-theme);
+
+:root {
+  --bg-main: #f4f7fc;
+  --bg-card: #ffffff;
+  --text-main: #17233a;
+  --text-muted: #6a768f;
+  --brand-primary: #1769aa;
+  --brand-accent: #3faa57;
+  --brand-warning: #d8a829;
+  --radius-main: 18px;
+  --spacing-base: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at top, #fafdff 10%, #edf2fb 72%, #e8eff9 100%);
+  color: var(--text-main);
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+}
+
+body {
+  font-size: 16px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 20px 16px 96px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #0f2238;
+}
+
+.page-subtitle {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-main);
+  box-shadow: 0 8px 20px rgba(21, 44, 79, 0.08);
+}
+
+.hero-image {
+  width: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.big-cta {
+  width: 100%;
+  height: 52px;
+  border-radius: 14px !important;
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.status-chip.locked {
+  color: #915b00;
+  background: #fef6dd;
+}
+
+.status-chip.unlocked {
+  color: #17653d;
+  background: #e7f7ee;
+}
+
+.status-chip.near {
+  color: #155b91;
+  background: #e5f2ff;
+}
+
+.loading-shell,
+.loading-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.leaflet-container {
+  border-radius: 20px;
+}
+
+.poi-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 10px rgba(10, 25, 47, 0.32);
+}
+
+.poi-marker.poi-locked {
+  background: #f4b400;
+}
+
+.poi-marker.poi-unlocked {
+  background: #1b74d1;
+}
+
+.poi-marker.poi-near {
+  background: #2da85c;
+}
+
+@media (min-width: 900px) {
+  .page-shell {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+}
+

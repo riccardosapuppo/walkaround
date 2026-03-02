@@ -1,0 +1,26 @@
+﻿.welcome {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+
+.hero {
+  width: 100%;
+  border-radius: 22px;
+  box-shadow: 0 10px 28px rgba(17, 42, 73, 0.12);
+}
+
+.welcome-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.code-box {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.full-width {
+  width: 100%;
+}

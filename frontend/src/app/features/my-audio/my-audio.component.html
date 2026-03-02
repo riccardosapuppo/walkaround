@@ -1,0 +1,36 @@
+﻿<section class="page-shell my-audio">
+  <header>
+    <h1 class="page-title">I miei audio</h1>
+    <p class="page-subtitle">Guide acquistate o sbloccate da codice hotel</p>
+  </header>
+
+  <mat-card class="card download-box" *ngIf="audioItems.length">
+    <p>Audio disponibili offline: {{ offlineMinutes }} min</p>
+    <button mat-stroked-button color="primary" (click)="downloadAll()">Scarica tutti</button>
+  </mat-card>
+
+  <section class="loading-shell" *ngIf="loading">
+    <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
+    <p>Caricamento audio sbloccati...</p>
+  </section>
+
+  <mat-card class="card audio-card" *ngFor="let item of audioItems">
+    <img [src]="item.imageUrl" [alt]="item.name" />
+
+    <div class="meta">
+      <h3>{{ item.name }}</h3>
+      <p>{{ item.durationSec | durationLabel }}</p>
+      <span class="status-chip" [ngClass]="item.offline ? 'unlocked' : 'near'">
+        {{ item.offline ? 'Offline' : 'Online' }}
+      </span>
+    </div>
+
+    <button mat-icon-button color="primary" (click)="play(item.id)" aria-label="Riproduci">
+      <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
+    </button>
+  </mat-card>
+
+  <mat-card class="card empty" *ngIf="!loading && !audioItems.length">
+    <p>Non hai ancora audio sbloccati.</p>
+  </mat-card>
+</section>

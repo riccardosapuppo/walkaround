@@ -1,0 +1,51 @@
+﻿.player-page {
+  display: grid;
+  gap: 14px;
+}
+
+.back {
+  width: fit-content;
+}
+
+.player {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.progress {
+  width: 100%;
+}
+
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  color: #6c7a93;
+  font-size: 0.86rem;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin: 8px 0;
+}
+
+.preview-note,
+.description {
+  margin: 0;
+  color: #5e6f88;
+  line-height: 1.5;
+}
+
+.warning {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+
+  p {
+    margin: 0;
+    color: #5d6d86;
+  }
+}

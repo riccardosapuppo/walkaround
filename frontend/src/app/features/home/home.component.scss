@@ -1,0 +1,112 @@
+﻿.home {
+  display: grid;
+  gap: 16px;
+}
+
+.nearest-card {
+  padding: 16px;
+
+  .overline {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #70809a;
+  }
+
+  h2 {
+    margin: 6px 0 14px;
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+}
+
+.warning,
+.continue {
+  padding: 14px;
+
+  p {
+    margin: 0;
+    color: #5d6d86;
+  }
+
+  .section-label {
+    margin-bottom: 6px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  h3 {
+    margin: 0;
+  }
+
+  button {
+    margin-top: 10px;
+  }
+}
+
+.api-warning {
+  border: 1px solid #f0cf8e;
+  background: #fff7e8;
+
+  .hint {
+    margin-top: 6px;
+    color: #89652a;
+    font-size: 0.9rem;
+  }
+}
+
+.nearby-section {
+  display: grid;
+  gap: 12px;
+
+  h3 {
+    margin: 4px 0;
+  }
+}
+
+.poi-card {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 10px;
+  align-items: center;
+
+  img {
+    width: 92px;
+    height: 74px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+}
+
+.poi-meta {
+  min-width: 0;
+  cursor: pointer;
+
+  h4 {
+    margin: 0 0 4px;
+    font-size: 1.03rem;
+  }
+
+  p {
+    margin: 0 0 8px;
+    color: #6f7d95;
+    font-size: 0.9rem;
+  }
+}
+
+.poi-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .unlock-city-btn {
+    min-width: 122px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    line-height: 1;
+  }
+}

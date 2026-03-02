@@ -1,0 +1,45 @@
+﻿{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: Dev",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run dev",
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "name": "Frontend: Dev",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run start",
+      "cwd": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "Frontend: Apri Browser",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack: Frontend + Backend",
+      "configurations": [
+        "Backend: Dev",
+        "Frontend: Dev"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Full Stack + Browser",
+      "configurations": [
+        "Backend: Dev",
+        "Frontend: Dev",
+        "Frontend: Apri Browser"
+      ],
+      "stopAll": true
+    }
+  ]
+}

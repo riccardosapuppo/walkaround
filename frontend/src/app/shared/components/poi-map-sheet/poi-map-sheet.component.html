@@ -1,0 +1,24 @@
+﻿<div class="sheet-wrap">
+  <img class="sheet-image" [src]="data.poi.imageUrl" [alt]="data.poi.name" />
+
+  <div class="sheet-header">
+    <h3>{{ data.poi.name }}</h3>
+    <p>{{ data.distanceLabel }}</p>
+  </div>
+
+  <div class="sheet-actions">
+    <button mat-stroked-button color="primary" (click)="play(true)">Ascolta preview</button>
+
+    <button *ngIf="data.unlocked; else lockedAction" mat-flat-button color="primary" (click)="play(false)">
+      Riproduci
+    </button>
+
+    <ng-template #lockedAction>
+      <button mat-flat-button color="primary" (click)="purchase()">
+        Sblocca {{ cityName(data.poi.cityId) }} €{{ cityUnlockPriceLabel }}
+      </button>
+    </ng-template>
+  </div>
+
+  <button mat-button (click)="openDetail()">Vai al dettaglio</button>
+</div>

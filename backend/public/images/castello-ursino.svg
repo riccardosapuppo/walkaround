@@ -1,0 +1,8 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f2f6fb"/>
+  <rect y="400" width="960" height="140" fill="#d9e2ef"/>
+  <rect x="200" y="190" width="560" height="220" fill="#a7b2c2"/>
+  <rect x="180" y="150" width="120" height="260" fill="#8d9bb0"/>
+  <rect x="660" y="150" width="120" height="260" fill="#8d9bb0"/>
+  <text x="55" y="90" fill="#1d3f6a" font-size="52" font-family="Arial" font-weight="700">Castello Ursino</text>
+</svg>

@@ -1,0 +1,48 @@
+﻿.favorites {
+  display: grid;
+  gap: 12px;
+}
+
+.hidden {
+  display: none;
+}
+
+.poi-card {
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  align-items: center;
+  gap: 10px;
+
+  img {
+    width: 92px;
+    height: 74px;
+    border-radius: 12px;
+    object-fit: cover;
+    cursor: pointer;
+  }
+}
+
+.meta {
+  cursor: pointer;
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+  }
+
+  p {
+    margin: 0;
+    color: #61728b;
+    line-height: 1.35;
+  }
+}
+
+.empty {
+  padding: 14px;
+
+  p {
+    margin: 0;
+    color: #65758e;
+  }
+}

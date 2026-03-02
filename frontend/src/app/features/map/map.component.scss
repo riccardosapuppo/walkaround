@@ -1,0 +1,39 @@
+﻿.map-page {
+  min-height: 100vh;
+  padding: 16px 12px 92px;
+  display: grid;
+  gap: 12px;
+}
+
+.map-header {
+  padding: 0 4px;
+}
+
+.map-frame {
+  height: calc(100vh - 190px);
+  min-height: 460px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(20, 38, 62, 0.12);
+}
+
+.loading-shell {
+  min-height: 300px;
+}
+
+.api-warning {
+  border: 1px solid #f0cf8e;
+  background: #fff7e8;
+  padding: 14px;
+
+  p {
+    margin: 0;
+    color: #89652a;
+  }
+}
+
+.center-btn {
+  position: fixed;
+  right: 22px;
+  bottom: 96px;
+}

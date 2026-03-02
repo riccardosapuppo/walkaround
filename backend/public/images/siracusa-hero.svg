@@ -1,0 +1,9 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#f6fbff"/>
+  <rect y="430" width="1200" height="270" fill="#bde4ff"/>
+  <circle cx="920" cy="120" r="70" fill="#f4dc73"/>
+  <path d="M170 520 L300 320 L430 520 Z" fill="#8bc1ea"/>
+  <path d="M460 520 L560 370 L660 520 Z" fill="#9fd4a2"/>
+  <text x="90" y="130" fill="#173861" font-size="72" font-family="Arial, sans-serif" font-weight="700">Siracusa</text>
+  <text x="92" y="188" fill="#2b5a8e" font-size="30" font-family="Arial, sans-serif">Ortigia e archeologia</text>
+</svg>

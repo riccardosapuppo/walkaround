@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#eef4ff"/>
+  <path d="M180 390 Q480 170 780 390" fill="none" stroke="#8c6f52" stroke-width="36"/>
+  <path d="M250 390 Q480 225 710 390" fill="none" stroke="#b79573" stroke-width="28"/>
+  <text x="84" y="92" fill="#1b406a" font-size="50" font-family="Arial" font-weight="700">Parco Neapolis</text>
+</svg>

@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#edf4fb"/>
+  <rect x="190" y="180" width="580" height="240" fill="#f7f9fd" stroke="#476e9b" stroke-width="6"/>
+  <rect x="285" y="240" width="390" height="140" fill="#d9e6f5"/>
+  <rect x="440" y="230" width="80" height="190" fill="#c1d4ec"/>
+  <text x="42" y="90" fill="#1d3f6a" font-size="52" font-family="Arial" font-weight="700">Monastero Benedettini</text>
+</svg>
