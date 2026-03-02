@@ -73,7 +73,7 @@ npm.cmd run start
 
 App disponibile su:
 - frontend: `http://localhost:4200`
-- backend: `http://localhost:3000`
+- backend: `http://localhost:3001`
 
 ## Avvio in produzione con Docker
 
@@ -83,7 +83,7 @@ docker compose up --build
 
 Servizi:
 - frontend (nginx): `http://localhost:8080`
-- backend API: `http://localhost:3000`
+- backend API: `http://localhost:3001`
 - postgres: `localhost:25432`
 
 Se usi Docker backend + tunnel SSH invece del postgres locale in compose, imposta nel servizio backend:
