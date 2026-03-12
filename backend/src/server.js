@@ -7,7 +7,9 @@ import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { initDatabase } from './db/init.js';
 import { pool } from './db/pool.js';
+import { adminRouter } from './routes/admin.js';
 import { apiRouter } from './routes/api.js';
+import { authRouter } from './routes/auth.js';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -27,6 +29,8 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/public', express.static(publicPath));
+app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api', apiRouter);
 
 app.get('/health', async (_req, res) => {

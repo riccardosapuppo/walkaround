@@ -17,7 +17,8 @@ export interface PoiMapSheetData {
 export type PoiMapSheetAction =
   | { action: 'open-detail'; poiId: string }
   | { action: 'play'; poiId: string; preview: boolean }
-  | { action: 'purchase'; cityId: string };
+  | { action: 'purchase-poi'; poiId: string }
+  | { action: 'purchase-city'; cityId: string };
 
 @Component({
   standalone: false,
@@ -41,11 +42,22 @@ export class PoiMapSheetComponent {
     this.bottomSheetRef.dismiss({ action: 'play', poiId: this.data.poi.id, preview } satisfies PoiMapSheetAction);
   }
 
-  purchase(): void {
+  purchasePoi(): void {
     this.bottomSheetRef.dismiss({
-      action: 'purchase',
+      action: 'purchase-poi',
+      poiId: this.data.poi.id
+    } satisfies PoiMapSheetAction);
+  }
+
+  purchaseCity(): void {
+    this.bottomSheetRef.dismiss({
+      action: 'purchase-city',
       cityId: this.data.poi.cityId
     } satisfies PoiMapSheetAction);
+  }
+
+  formatPrice(amount: number): string {
+    return amount.toFixed(2).replace('.', ',');
   }
 
   cityName(cityId: string): string {

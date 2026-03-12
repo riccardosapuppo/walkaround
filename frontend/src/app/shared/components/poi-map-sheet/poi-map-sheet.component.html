@@ -14,7 +14,11 @@
     </button>
 
     <ng-template #lockedAction>
-      <button mat-flat-button color="primary" (click)="purchase()">
+      <button mat-flat-button color="primary" (click)="purchasePoi()">
+        Sblocca questo luogo €{{ formatPrice(data.poi.priceSingle) }}
+      </button>
+
+      <button mat-stroked-button color="primary" (click)="purchaseCity()">
         Sblocca {{ cityName(data.poi.cityId) }} €{{ cityUnlockPriceLabel }}
       </button>
     </ng-template>

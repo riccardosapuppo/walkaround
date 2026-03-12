@@ -83,7 +83,9 @@ export class PlayerService {
       return;
     }
 
-    this.audio.currentTime = Math.min(Math.max(0, seconds), duration);
+    const state = this.stateSubject.value;
+    const maxSeek = state.previewMode ? Math.min(duration, environment.previewSeconds) : duration;
+    this.audio.currentTime = Math.min(Math.max(0, seconds), maxSeek);
   }
 
   skipBy(deltaSeconds: number): void {
@@ -108,17 +110,20 @@ export class PlayerService {
     this.audio.addEventListener('timeupdate', () => {
       const state = this.stateSubject.value;
       const duration = Number.isFinite(this.audio.duration) ? this.audio.duration : 0;
+      let currentTime = this.audio.currentTime;
       let previewEnded = false;
 
-      if (state.previewMode && this.audio.currentTime >= environment.previewSeconds) {
+      if (state.previewMode && currentTime >= environment.previewSeconds) {
         this.audio.pause();
+        currentTime = environment.previewSeconds;
+        this.audio.currentTime = currentTime;
         previewEnded = true;
       }
 
       const nextState: PlayerState = {
         ...state,
         isPlaying: !this.audio.paused,
-        currentTime: this.audio.currentTime,
+        currentTime,
         duration,
         previewEnded
       };
@@ -128,7 +133,7 @@ export class PlayerService {
       if (state.poiId && !state.previewMode) {
         this.saveProgress({
           poiId: state.poiId,
-          currentTime: this.audio.currentTime,
+          currentTime,
           duration,
           updatedAt: Date.now()
         });

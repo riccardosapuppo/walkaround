@@ -7,21 +7,21 @@
 
   <h1 class="page-title">{{ currentPoi.name }}</h1>
   <p class="page-subtitle">
-    {{ previewMode ? 'Modalità preview 30s' : 'Audio completo' }} · {{ currentPoi.durationSec | durationLabel }}
+    {{ previewMode ? ('Modalità preview ' + previewSeconds + 's') : 'Audio completo' }} · {{ currentPoi.durationSec | durationLabel }}
   </p>
 
   <section class="player card" *ngIf="playerState$ | async as state">
     <input
       type="range"
       class="progress"
-      [max]="state.duration || currentPoi.durationSec"
+      [max]="previewMode ? previewSeconds : (state.duration || currentPoi.durationSec)"
       [value]="state.currentTime"
       (input)="seek($event)"
     />
 
     <div class="time-row">
       <span>{{ formatClock(state.currentTime) }}</span>
-      <span>{{ formatClock(state.duration || currentPoi.durationSec) }}</span>
+      <span>{{ formatClock(previewMode ? previewSeconds : (state.duration || currentPoi.durationSec)) }}</span>
     </div>
 
     <div class="controls">
@@ -38,11 +38,11 @@
       </button>
     </div>
 
-    <mat-slide-toggle [ngModel]="offlineEnabled" (ngModelChange)="toggleOffline($event)">
+    <mat-slide-toggle *ngIf="canToggleOffline" [ngModel]="offlineEnabled" (ngModelChange)="toggleOffline($event)">
       Scarica offline
     </mat-slide-toggle>
 
-    <p class="preview-note" *ngIf="state.previewEnded">Preview terminata. Sblocca la città per ascolto completo.</p>
+    <p class="preview-note" *ngIf="state.previewEnded">Preview terminata. Sblocca questo luogo o l'intera città per ascolto completo.</p>
   </section>
 
   <p class="description">{{ currentPoi.descriptionLong }}</p>

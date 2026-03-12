@@ -1,0 +1,96 @@
+.admin-shell {
+  padding-bottom: 28px;
+  display: grid;
+  gap: 16px;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  padding: 22px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.manager-card,
+.invite-card,
+.users-card {
+  padding: 18px;
+}
+
+.manager-card h2,
+.invite-card h2,
+.users-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.manager-card p,
+.invite-card p {
+  margin-top: 8px;
+  color: var(--text-muted);
+}
+
+.manager-box {
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+  color: #20324f;
+}
+
+.invite-form {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.invite-result {
+  margin-top: 16px;
+  display: grid;
+  gap: 4px;
+  color: #20324f;
+}
+
+.users-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.user-row {
+  border-top: 1px solid #e5ecf8;
+  padding: 14px 0;
+  display: grid;
+  gap: 10px;
+}
+
+.user-meta {
+  display: grid;
+  gap: 4px;
+  color: #223150;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.role-field {
+  min-width: 220px;
+}

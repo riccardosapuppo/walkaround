@@ -1,7 +1,9 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, map, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Poi } from '../../core/models/poi.model';
 import { OfflineService } from '../../core/services/offline.service';
 import { PlayerService } from '../../core/services/player.service';
@@ -21,6 +23,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   offlineEnabled = false;
   loading = true;
   loadError = false;
+  readonly previewSeconds = environment.previewSeconds;
 
   readonly playerState$ = this.playerService.state$;
 
@@ -33,6 +36,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private readonly purchaseService: PurchaseService,
     private readonly playerService: PlayerService,
     private readonly offlineService: OfflineService,
+    private readonly location: Location,
     private readonly snackBar: MatSnackBar
   ) {}
 
@@ -95,6 +99,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
     if (this.poi) {
       void this.router.navigate(['/poi', this.poi.id]);
       return;
@@ -117,7 +126,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   async toggleOffline(value: boolean): Promise<void> {
-    if (!this.poi || !value) {
+    if (!this.poi) {
+      this.offlineEnabled = false;
+      return;
+    }
+
+    if (!this.canToggleOffline) {
+      this.offlineEnabled = false;
+      this.snackBar.open('Download offline disponibile solo dopo sblocco completo.', 'OK', { duration: 2400 });
+      return;
+    }
+
+    if (!value) {
       this.offlineEnabled = value;
       return;
     }
@@ -125,6 +145,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     await this.offlineService.cachePoiAssets(this.poi.id, [this.poi.audioUrl, this.poi.imageUrl]);
     this.offlineEnabled = true;
     this.snackBar.open('Disponibile offline', 'OK', { duration: 2200 });
+  }
+
+  get canToggleOffline(): boolean {
+    return this.unlocked && !this.previewMode;
   }
 
   formatClock(value: number): string {
@@ -140,4 +164,5 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return `${minutes}:${seconds}`;
   }
 }
+
 

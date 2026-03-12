@@ -1,0 +1,22 @@
+<section class="page-shell login-shell">
+  <mat-card class="card login-card">
+    <h1 class="page-title">Dashboard Admin</h1>
+    <p class="page-subtitle">Accedi per gestire gli inviti utenti.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="username" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" autocomplete="current-password" />
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" class="big-cta" type="submit" [disabled]="loading">
+        {{ loading ? 'Accesso...' : 'Accedi' }}
+      </button>
+    </form>
+  </mat-card>
+</section>

@@ -36,6 +36,8 @@ const cityNameMap: Record<string, string> = {
   taormina: 'Taormina'
 };
 
+const homeScrollStorageKey = 'tourismapp.home.scrollY';
+
 @Component({
   standalone: false,
   selector: 'app-home',
@@ -102,6 +104,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private readonly geofenceShown = new Set<string>();
   private readonly destroy$ = new Subject<void>();
+  private readonly shouldRestoreScroll: boolean;
+  private restoredScroll = false;
 
   constructor(
     private readonly appState: AppStateService,
@@ -111,7 +115,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly playerService: PlayerService,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router
-  ) {}
+  ) {
+    this.shouldRestoreScroll = this.router.getCurrentNavigation()?.trigger === 'popstate';
+  }
 
   ngOnInit(): void {
     this.purchaseService.refresh();
@@ -119,6 +125,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.vm$.pipe(takeUntil(this.destroy$)).subscribe((vm) => {
       this.loading = false;
+      this.restoreScrollPosition();
 
       if (vm.nearestPoi && vm.nearestPoi.near && !this.geofenceShown.has(vm.nearestPoi.id)) {
         const nearestPoi = vm.nearestPoi;
@@ -128,6 +135,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         });
 
         ref.onAction().subscribe(() => {
+          this.saveScrollPosition();
           void this.router.navigate(['/player', nearestPoi.id], { queryParams: { preview: false } });
         });
       }
@@ -162,16 +170,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.purchaseCity(poi.cityId);
+    this.purchasePoi(poi);
   }
 
   playPoi(poi: Poi, preview: boolean): void {
+    this.saveScrollPosition();
     void this.router.navigate(['/player', poi.id], {
       queryParams: { preview }
     });
   }
 
   openPoi(poiId: string): void {
+    this.saveScrollPosition();
     void this.router.navigate(['/poi', poiId]);
   }
 
@@ -186,8 +196,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  purchasePoi(poi: Poi): void {
+    this.purchaseService.purchasePoiSingle(poi.id).subscribe({
+      next: () => {
+        this.snackBar.open(`Luogo sbloccato: ${poi.name}`, 'OK', { duration: 2200 });
+      },
+      error: () => {
+        this.snackBar.open('Acquisto simulato non riuscito', 'Chiudi', { duration: 2600 });
+      }
+    });
+  }
+
   cityName(cityId: string): string {
     return cityNameMap[cityId] || cityId;
+  }
+
+  formatPrice(amount: number): string {
+    return amount.toFixed(2).replace('.', ',');
   }
 
   resumePlayback(): void {
@@ -195,8 +220,41 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.saveScrollPosition();
     void this.router.navigate(['/player', this.continuePoi.id], {
       queryParams: { preview: false }
+    });
+  }
+
+  private saveScrollPosition(): void {
+    const y = window.scrollY || window.pageYOffset || 0;
+    sessionStorage.setItem(homeScrollStorageKey, String(Math.max(0, Math.round(y))));
+  }
+
+  private restoreScrollPosition(): void {
+    if (this.restoredScroll) {
+      return;
+    }
+
+    this.restoredScroll = true;
+    if (!this.shouldRestoreScroll) {
+      sessionStorage.removeItem(homeScrollStorageKey);
+      return;
+    }
+
+    const raw = sessionStorage.getItem(homeScrollStorageKey);
+    if (raw === null) {
+      return;
+    }
+
+    sessionStorage.removeItem(homeScrollStorageKey);
+    const y = Number(raw);
+    if (!Number.isFinite(y) || y < 0) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: y, left: 0, behavior: 'auto' });
     });
   }
 

@@ -18,6 +18,27 @@ const routes: Routes = [
     loadChildren: () => import('./features/welcome/welcome.module').then((m) => m.WelcomeModule)
   },
   {
+    path: 'dashboard',
+    data: { hideBottomNav: true },
+    loadChildren: () => import('./features/admin-dashboard/admin-dashboard.module').then((m) => m.AdminDashboardModule)
+  },
+  {
+    path: 'auth/complete-registration',
+    data: { hideBottomNav: true },
+    loadChildren: () =>
+      import('./features/complete-registration/complete-registration.module').then((m) => m.CompleteRegistrationModule)
+  },
+  {
+    path: 'auth/login',
+    redirectTo: 'dashboard',
+    pathMatch: 'full'
+  },
+  {
+    path: 'admin/dashboard',
+    redirectTo: 'dashboard',
+    pathMatch: 'full'
+  },
+  {
     path: 'home',
     loadChildren: () => import('./features/home/home.module').then((m) => m.HomeModule)
   },

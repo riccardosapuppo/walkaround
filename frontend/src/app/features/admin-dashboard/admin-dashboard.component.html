@@ -1,0 +1,133 @@
+<section class="page-shell admin-shell">
+  <mat-card class="card login-card" *ngIf="!authChecked">
+    <div class="loading-state">
+      <mat-spinner diameter="34"></mat-spinner>
+      <p>Controllo sessione dashboard...</p>
+    </div>
+  </mat-card>
+
+  <mat-card class="card login-card" *ngIf="authChecked && !isAuthenticated">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Accedi per entrare nella dashboard.</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="invite-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="username" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" autocomplete="current-password" />
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" class="big-cta" [disabled]="loggingIn" type="submit">
+        {{ loggingIn ? 'Accesso...' : 'Accedi' }}
+      </button>
+    </form>
+  </mat-card>
+
+  <ng-container *ngIf="authChecked && isAuthenticated">
+    <header class="admin-header card">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">
+          Connesso come <strong>{{ currentEmail }}</strong> - {{ roleLabel(currentRole) }}
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <button mat-flat-button color="primary" *ngIf="isImpersonating" (click)="exitImpersonation()">
+          Torna ad admin
+        </button>
+        <button mat-stroked-button color="primary" (click)="logout()">Logout</button>
+      </div>
+    </header>
+
+    <mat-card class="card manager-card">
+      <h2>Gestore struttura</h2>
+      <p>Area visibile a tutti i ruoli dashboard.</p>
+      <div class="manager-box">
+        <span>Utente corrente: {{ currentEmail }}</span>
+        <span *ngIf="isImpersonating">Modalita impersonazione attiva (origine: {{ impersonatedByEmail }})</span>
+        <span>Qui puoi aggiungere in seguito funzionalita dedicate alla struttura.</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="card invite-card" *ngIf="canManageUsers">
+      <h2>Invita utente</h2>
+      <p>Invia link registrazione (24 ore) scegliendo il permesso iniziale.</p>
+
+      <form [formGroup]="inviteForm" (ngSubmit)="invite()" class="invite-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Email utente</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Permesso</mat-label>
+          <mat-select formControlName="role">
+            <mat-option value="facility_manager">Gestore struttura</mat-option>
+            <mat-option value="admin">Admin</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" class="big-cta" [disabled]="inviting" type="submit">
+          {{ inviting ? 'Invio...' : 'Invia invito' }}
+        </button>
+      </form>
+
+      <div class="invite-result" *ngIf="lastInvite as invite">
+        <strong>Ultimo invito:</strong>
+        <span>{{ invite.email }} - {{ roleLabel(invite.role) }}</span>
+        <span>Scadenza: {{ invite.expiresAt | date: 'medium' }}</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="card users-card" *ngIf="canManageUsers">
+      <div class="users-title">
+        <h2>Lista utenti</h2>
+        <button mat-stroked-button color="primary" (click)="loadUsers()" [disabled]="loadingUsers">
+          {{ loadingUsers ? 'Aggiornamento...' : 'Aggiorna' }}
+        </button>
+      </div>
+
+      <div class="user-row" *ngFor="let user of users">
+        <div class="user-meta">
+          <strong>{{ user.email }}</strong>
+          <span>Ruolo attuale: {{ roleLabel(user.role) }}</span>
+          <span>Registrato: {{ user.isRegistered ? 'Si' : 'No' }}</span>
+        </div>
+
+        <div class="user-actions">
+          <mat-form-field appearance="outline" class="role-field">
+            <mat-label>Ruolo</mat-label>
+            <mat-select [(ngModel)]="roleDraftByUserId[user.id]" [ngModelOptions]="{ standalone: true }">
+              <mat-option value="facility_manager">Gestore struttura</mat-option>
+              <mat-option value="admin">Admin</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="saveRole(user)"
+            [disabled]="updatingRoleUserId === user.id || roleDraftByUserId[user.id] === user.role"
+          >
+            Salva ruolo
+          </button>
+
+          <button
+            mat-flat-button
+            color="accent"
+            *ngIf="user.id !== currentUserId"
+            (click)="impersonate(user)"
+            [disabled]="impersonatingUserId === user.id || !user.isRegistered"
+          >
+            Entra come utente
+          </button>
+        </div>
+      </div>
+    </mat-card>
+  </ng-container>
+</section>

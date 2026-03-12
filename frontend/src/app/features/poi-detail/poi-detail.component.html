@@ -33,7 +33,11 @@
     </button>
 
     <ng-template #lockCta>
-      <button mat-flat-button color="primary" class="big-cta" (click)="purchase()">
+      <button mat-flat-button color="primary" class="big-cta" (click)="purchasePoi()">
+        Sblocca questo luogo €{{ formatPrice(currentPoi.priceSingle) }}
+      </button>
+
+      <button mat-stroked-button color="primary" class="big-cta" (click)="purchaseCity()">
         Sblocca {{ cityName(currentPoi.cityId) }} €{{ cityUnlockPriceLabel }}
       </button>
     </ng-template>

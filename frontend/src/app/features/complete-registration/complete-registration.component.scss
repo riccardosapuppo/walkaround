@@ -1,0 +1,23 @@
+.registration-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.registration-card {
+  width: min(520px, 100%);
+  padding: 24px;
+}
+
+.registration-form {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.state-message {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+  color: #23314c;
+}

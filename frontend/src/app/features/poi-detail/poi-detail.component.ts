@@ -1,4 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, switchMap, takeUntil, tap } from 'rxjs';
@@ -38,6 +39,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
     private readonly purchaseService: PurchaseService,
     private readonly appState: AppStateService,
     private readonly geoService: GeoService,
+    private readonly location: Location,
     private readonly snackBar: MatSnackBar
   ) {}
 
@@ -90,7 +92,23 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/player', this.poi.id], { queryParams: { preview } });
   }
 
-  purchase(): void {
+  purchasePoi(): void {
+    if (!this.poi) {
+      return;
+    }
+
+    this.purchaseService.purchasePoiSingle(this.poi.id).subscribe({
+      next: () => {
+        this.unlocked = true;
+        this.snackBar.open(`Luogo sbloccato: ${this.poi?.name || ''}`, 'OK', { duration: 2200 });
+      },
+      error: () => {
+        this.snackBar.open('Acquisto non riuscito', 'Chiudi', { duration: 2400 });
+      }
+    });
+  }
+
+  purchaseCity(): void {
     if (!this.poi) {
       return;
     }
@@ -104,6 +122,10 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
         this.snackBar.open('Acquisto non riuscito', 'Chiudi', { duration: 2400 });
       }
     });
+  }
+
+  formatPrice(amount: number): string {
+    return amount.toFixed(2).replace('.', ',');
   }
 
   cityName(cityId: string): string {
@@ -120,6 +142,11 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
     void this.router.navigate(['/home']);
   }
 

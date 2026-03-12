@@ -3,6 +3,6 @@
   apiBaseUrl: '/api',
   publicBaseUrl: '/public',
   geofenceRadiusMeters: 120,
-  previewSeconds: 30,
+  previewSeconds: 10,
   defaultCityId: 'catania'
 };

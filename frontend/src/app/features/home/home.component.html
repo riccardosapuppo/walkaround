@@ -1,7 +1,12 @@
 ﻿<section class="page-shell home" *ngIf="vm$ | async as vm">
-  <header>
-    <h1 class="page-title">Home</h1>
-    <p class="page-subtitle">Punti di interesse vicini e riproduzione in 1-2 tap</p>
+  <header class="home-brand">
+    <div class="home-logo" aria-hidden="true">
+      <img src="/assets/images/logo-tour-citta.svg" alt="" />
+    </div>
+    <div class="home-brand-copy">
+      <h1 class="page-title">Tour Città</h1>
+      <p class="page-subtitle">Punti di interesse vicini</p>
+    </div>
   </header>
 
   <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
@@ -10,22 +15,39 @@
   </mat-card>
 
   <mat-card class="card nearest-card" *ngIf="vm.nearestPoi as nearest">
-    <p class="overline">Sei vicino a:</p>
-    <h2>{{ nearest.name }} - {{ nearest.distanceLabel }}</h2>
+    <div class="nearest-head">
+      <p class="overline">
+        <mat-icon fontSet="material-icons-round">near_me</mat-icon>
+        Sei vicino a
+      </p>
+      <span class="distance-pill">{{ nearest.distanceLabel }}</span>
+    </div>
+    <h2>{{ nearest.name }}</h2>
+    <p class="nearest-hint">Perfetto per iniziare ora il tour nelle vicinanze.</p>
 
     <button mat-flat-button color="primary" class="big-cta" (click)="onMainCta(nearest)">
       {{
         nearest.unlocked
           ? 'Riproduci audio guida'
-          : ('Sblocca ' + cityName(nearest.cityId) + ' €' + cityUnlockPriceLabel)
+          : ('Sblocca questo luogo €' + formatPrice(nearest.priceSingle))
       }}
     </button>
 
-    <button mat-button color="primary" (click)="playPoi(nearest, true)">Ascolta preview</button>
+    <button
+      mat-stroked-button
+      color="primary"
+      class="nearest-secondary-cta"
+      *ngIf="!nearest.unlocked"
+      (click)="purchaseCity(nearest.cityId)"
+    >
+      Oppure sblocca {{ cityName(nearest.cityId) }} €{{ cityUnlockPriceLabel }}
+    </button>
+
+    <button mat-button color="primary" class="nearest-preview-btn" (click)="playPoi(nearest, true)">Ascolta preview</button>
   </mat-card>
 
-  <mat-card class="card warning" *ngIf="vm.permission === 'denied'">
-    <p>Geolocalizzazione negata. Sto usando il centro città come fallback.</p>
+  <mat-card class="card warning geo-warning" *ngIf="vm.permission === 'denied'">
+    <p>Geolocalizzazione negata. Sto usando il centro città.</p>
     <button mat-stroked-button color="primary" (click)="askLocationAgain()">Riprova permesso</button>
   </mat-card>
 
@@ -40,27 +62,35 @@
     <h3>Vicino a te</h3>
 
     <mat-card class="card poi-card" *ngFor="let poi of vm.pois">
-      <img [src]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
+      <div class="poi-card-main">
+        <img [src]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
 
-      <div class="poi-meta" (click)="openPoi(poi.id)">
-        <h4>{{ poi.name }}</h4>
-        <p>{{ poi.distanceLabel }} · {{ poi.durationSec | durationLabel }}</p>
-        <span class="status-chip" [ngClass]="poi.unlocked ? 'unlocked' : (poi.near ? 'near' : 'locked')">
-          {{ poi.unlocked ? 'Sbloccato' : (poi.near ? 'Vicino' : 'Bloccato') }}
-        </span>
+        <div class="poi-meta" (click)="openPoi(poi.id)">
+          <h4>{{ poi.name }}</h4>
+          <p>{{ poi.distanceLabel }} · {{ poi.durationSec | durationLabel }}</p>
+          <span class="status-chip" [ngClass]="poi.unlocked ? 'unlocked' : (poi.near ? 'near' : 'locked')">
+            {{ poi.unlocked ? 'Sbloccato' : (poi.near ? 'Vicino' : 'Bloccato') }}
+          </span>
+        </div>
+
+        <div class="poi-quick-actions">
+          <button mat-icon-button color="primary" (click)="playPoi(poi, true)">
+            <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
+          </button>
+
+          <button mat-icon-button color="primary" *ngIf="poi.unlocked" (click)="playPoi(poi, false)">
+            <mat-icon fontSet="material-icons-round">headphones</mat-icon>
+          </button>
+        </div>
       </div>
 
-      <div class="poi-actions">
-        <button mat-icon-button color="primary" (click)="playPoi(poi, true)">
-          <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
+      <div class="poi-unlock-actions" *ngIf="!poi.unlocked">
+        <button mat-flat-button color="primary" class="unlock-poi-btn" (click)="purchasePoi(poi)">
+          Sblocca luogo €{{ formatPrice(poi.priceSingle) }}
         </button>
 
-        <button mat-icon-button color="primary" *ngIf="poi.unlocked" (click)="playPoi(poi, false)">
-          <mat-icon fontSet="material-icons-round">headphones</mat-icon>
-        </button>
-
-        <button mat-stroked-button color="primary" class="unlock-city-btn" *ngIf="!poi.unlocked" (click)="purchaseCity(poi.cityId)">
-          Sblocca {{ cityName(poi.cityId) }}
+        <button mat-stroked-button color="primary" class="unlock-city-btn" (click)="purchaseCity(poi.cityId)">
+          Sblocca {{ cityName(poi.cityId) }} €{{ cityUnlockPriceLabel }}
         </button>
       </div>
     </mat-card>

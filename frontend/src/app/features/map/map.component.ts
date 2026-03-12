@@ -191,6 +191,18 @@ export class MapComponent implements OnInit, OnDestroy {
           return;
         }
 
+        if (result.action === 'purchase-poi') {
+          this.purchaseService.purchasePoiSingle(result.poiId).subscribe({
+            next: () => {
+              this.snackBar.open('Luogo sbloccato', 'OK', { duration: 2200 });
+            },
+            error: () => {
+              this.snackBar.open('Acquisto non riuscito', 'Chiudi', { duration: 2400 });
+            }
+          });
+          return;
+        }
+
         this.purchaseService.purchaseCityBundle(result.cityId).subscribe({
           next: () => {
             this.snackBar.open(`Città sbloccata: ${this.cityName(result.cityId)}`, 'OK', { duration: 2200 });
