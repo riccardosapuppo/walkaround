@@ -1,4 +1,4 @@
-﻿# Tourism Audio Guide App (PWA)
+# Tourism Audio Guide App (PWA)
 
 Webapp PWA completa per audio guide turistiche in stile Material Android:
 - Frontend Angular + Angular Material + Leaflet + Service Worker

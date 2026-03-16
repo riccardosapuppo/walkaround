@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
     activeCityId: 'tourism.activeCityId',
     hotelCode: 'tourism.hotelCode',
     hotelAssociation: 'tourism.hotelAssociation',
+    onboardingSeen: 'tourism.onboardingSeen',
     favorites: 'tourism.favorites',
     language: 'tourism.language'
 };
@@ -39,6 +40,26 @@ export class AppStateService {
     }
     get favoriteIds() {
         return this.favoritesSubject.value;
+    }
+    get hasSeenOnboarding() {
+        return localStorage.getItem(STORAGE_KEYS.onboardingSeen) === '1';
+    }
+    get hasActiveDiscountCode() {
+        const code = this.hotelCodeSubject.value.trim();
+        if (!code) {
+            return false;
+        }
+        const association = this.hotelAssociationSubject.value;
+        if (!association || !association.codeStatus) {
+            return true;
+        }
+        return association.codeStatus === 'valid';
+    }
+    shouldShowWelcomeOnLaunch() {
+        return !this.hasSeenOnboarding && !this.hasActiveDiscountCode;
+    }
+    markOnboardingSeen() {
+        localStorage.setItem(STORAGE_KEYS.onboardingSeen, '1');
     }
     setActiveCity(cityId) {
         localStorage.setItem(STORAGE_KEYS.activeCityId, cityId);
@@ -83,6 +104,7 @@ export class AppStateService {
         localStorage.setItem(STORAGE_KEYS.activeCityId, defaultCityId);
         localStorage.removeItem(STORAGE_KEYS.hotelCode);
         localStorage.removeItem(STORAGE_KEYS.hotelAssociation);
+        localStorage.removeItem(STORAGE_KEYS.onboardingSeen);
         localStorage.removeItem(STORAGE_KEYS.favorites);
         this.userIdSubject.next(nextUserId);
         this.activeCityIdSubject.next(defaultCityId);

@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin, Subject, switchMap, takeUntil } from 'rxjs';
 import { Poi } from '../../core/models/poi.model';

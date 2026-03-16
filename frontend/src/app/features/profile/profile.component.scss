@@ -1,4 +1,4 @@
-﻿.profile {
+.profile {
   display: grid;
   gap: 12px;
 }
@@ -32,6 +32,11 @@
 .language-row {
   display: flex;
   gap: 8px;
+}
+
+.structure-actions {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .code-history {

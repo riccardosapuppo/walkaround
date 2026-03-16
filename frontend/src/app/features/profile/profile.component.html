@@ -1,4 +1,4 @@
-﻿<section class="page-shell profile">
+<section class="page-shell profile">
   <header>
     <h1 class="page-title">Profilo e impostazioni</h1>
     <p class="page-subtitle">Gestione città, lingua e supporto</p>
@@ -30,6 +30,11 @@
         Struttura associata: <strong>{{ hotelAssociation.structureName }}</strong>
         ({{ hotelAssociation.structureAddress }})
       </p>
+      <div class="structure-actions" *ngIf="hotelAssociation">
+        <button mat-stroked-button color="primary" type="button" (click)="navigateToAssociatedStructure()">
+          Naviga verso struttura
+        </button>
+      </div>
       <ng-template #noAssociation>
         <p>Nessuna struttura associata al codice attivo.</p>
       </ng-template>

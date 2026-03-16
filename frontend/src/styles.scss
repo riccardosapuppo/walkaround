@@ -1,4 +1,4 @@
-﻿@use '@angular/material' as mat;
+@use '@angular/material' as mat;
 
 @include mat.core();
 
@@ -157,6 +157,13 @@ a {
   background: #1769aa;
   box-shadow:
     0 0 0 4px rgba(23, 105, 170, 0.2),
+    0 4px 10px rgba(10, 25, 47, 0.32);
+}
+
+.poi-marker.structure-marker {
+  background: #e24c3b;
+  box-shadow:
+    0 0 0 4px rgba(226, 76, 59, 0.2),
     0 4px 10px rgba(10, 25, 47, 0.32);
 }
 

@@ -11,6 +11,21 @@
     <p>{{ apiErrorMessage }}</p>
   </mat-card>
 
+  <mat-card class="card structure-card" *ngIf="visibleAssociatedStructure as structure">
+    <div class="structure-card-head">
+      <p class="structure-kicker">Struttura associata</p>
+      <span class="structure-status" *ngIf="resolvingAssociatedStructure">Posizione...</span>
+    </div>
+    <h3>{{ structure.structureName }}</h3>
+    <p class="structure-address">{{ structure.structureAddress }}</p>
+    <div class="structure-actions">
+      <button mat-flat-button color="primary" (click)="navigateToAssociatedStructure()">Naviga</button>
+      <button mat-stroked-button color="primary" *ngIf="associatedStructureCoords" (click)="focusAssociatedStructure()">
+        Mostra punto
+      </button>
+    </div>
+  </mat-card>
+
   <section class="loading-shell" *ngIf="isLoading">
     <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
     <p>Caricamento mappa...</p>

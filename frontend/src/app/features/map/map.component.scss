@@ -32,6 +32,52 @@
   }
 }
 
+.structure-card {
+  padding: 14px;
+  border: 1px solid #d9e5f5;
+  display: grid;
+  gap: 6px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.25;
+    color: #142d4b;
+  }
+}
+
+.structure-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.structure-kicker {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5f7391;
+}
+
+.structure-status {
+  font-size: 0.76rem;
+  color: #476a95;
+}
+
+.structure-address {
+  margin: 0;
+  color: #5d7390;
+  font-size: 0.88rem;
+}
+
+.structure-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .center-btn {
   position: fixed;
   right: 22px;

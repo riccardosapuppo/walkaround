@@ -6180,4 +6180,4 @@ export class AdminDashboardComponent {
             type: ViewChild,
             args: ['poiMapCanvas']
         }] }); })();
-(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(AdminDashboardComponent, { className: "AdminDashboardComponent", filePath: "frontend/src/app/features/admin-dashboard/admin-dashboard.component.ts", lineNumber: 48 }); })();
+(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(AdminDashboardComponent, { className: "AdminDashboardComponent", filePath: "src/app/features/admin-dashboard/admin-dashboard.component.ts", lineNumber: 48 }); })();

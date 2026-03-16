@@ -1,15 +1,16 @@
-﻿import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { catchError, combineLatest, map, of, shareReplay, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Poi } from '../../core/models/poi.model';
-import { AppStateService } from '../../core/services/app-state.service';
+import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { Coordinates, GeoPermissionState, GeoService } from '../../core/services/geo.service';
 import { PlayerService } from '../../core/services/player.service';
 import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
+import { StructureLocationService } from '../../core/services/structure-location.service';
 
 interface PoiHomeView extends Poi {
   distanceMeters: number;
@@ -27,13 +28,15 @@ interface HomeViewModel {
 const cityFallbackMap: Record<string, Coordinates> = {
   catania: { lat: 37.5079, lng: 15.083 },
   siracusa: { lat: 37.067, lng: 15.2866 },
-  taormina: { lat: 37.8531, lng: 15.2899 }
+  taormina: { lat: 37.8531, lng: 15.2899 },
+  ragusa: { lat: 36.9269, lng: 14.7305 }
 };
 
 const cityNameMap: Record<string, string> = {
   catania: 'Catania',
   siracusa: 'Siracusa',
-  taormina: 'Taormina'
+  taormina: 'Taormina',
+  ragusa: 'Ragusa'
 };
 
 const homeScrollStorageKey = 'tourismapp.home.scrollY';
@@ -49,6 +52,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   loading = true;
   readonly cityUnlockPrice = 14.99;
   readonly cityUnlockPriceLabel = '14,99';
+  activeCityId = 'catania';
+  associatedStructure: HotelAssociation | null = null;
 
   readonly vm$ = combineLatest([
     this.appState.activeCityId$.pipe(
@@ -114,15 +119,35 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly poiService: PoiService,
     private readonly purchaseService: PurchaseService,
     private readonly playerService: PlayerService,
+    private readonly structureLocationService: StructureLocationService,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router
   ) {
     this.shouldRestoreScroll = this.router.getCurrentNavigation()?.trigger === 'popstate';
   }
 
+  get visibleAssociatedStructure(): HotelAssociation | null {
+    if (!this.associatedStructure?.structureId) {
+      return null;
+    }
+
+    const cityIds = this.associationCityIds(this.associatedStructure);
+    if (cityIds.length && !cityIds.includes(this.activeCityId)) {
+      return null;
+    }
+
+    return this.associatedStructure;
+  }
+
   ngOnInit(): void {
     this.purchaseService.refresh();
     void this.geoService.requestPermissionAndTrack();
+    combineLatest([this.appState.activeCityId$, this.appState.hotelAssociation$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([cityId, association]) => {
+        this.activeCityId = cityId;
+        this.associatedStructure = association;
+      });
 
     this.vm$.pipe(takeUntil(this.destroy$)).subscribe((vm) => {
       this.loading = false;
@@ -212,6 +237,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  navigateToAssociatedStructure(): void {
+    const association = this.visibleAssociatedStructure;
+    if (!association?.structureId) {
+      return;
+    }
+
+    const url = this.structureLocationService.buildExternalDirectionsUrl(association, null);
+    if (!url) {
+      this.snackBar.open('Dati struttura non disponibili per la navigazione', 'Chiudi', { duration: 2400 });
+      return;
+    }
+
+    window.open(url, '_blank', 'noopener');
+  }
+
   cityName(cityId: string): string {
     return cityNameMap[cityId] || cityId;
   }
@@ -285,5 +325,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     return 'Errore caricamento dati Home.';
+  }
+
+  private associationCityIds(association: HotelAssociation): string[] {
+    if (Array.isArray(association.cityIds) && association.cityIds.length) {
+      return association.cityIds.map((cityId) => String(cityId || '').trim()).filter(Boolean);
+    }
+
+    const singleCityId = String(association.cityId || '').trim();
+    return singleCityId ? [singleCityId] : [];
   }
 }

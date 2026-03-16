@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export type GeoPermissionState = 'prompt' | 'granted' | 'denied' | 'unsupported';

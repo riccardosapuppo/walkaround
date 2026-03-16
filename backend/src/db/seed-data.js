@@ -1,3 +1,5 @@
+import { ragusaPoisSeed } from './ragusa-seed.js';
+
 export const citiesSeed = [
   {
     id: 'catania',
@@ -21,6 +23,14 @@ export const citiesSeed = [
     region: 'Sicilia',
     bundlePrice: 14.99,
     heroImage: '/public/images/taormina-hero.svg',
+    isDefault: false
+  },
+  {
+    id: 'ragusa',
+    name: 'Ragusa',
+    region: 'Sicilia',
+    bundlePrice: 14.99,
+    heroImage: '/public/images/ragusa/ragusa.jpg',
     isDefault: false
   }
 ];
@@ -381,7 +391,7 @@ export const poisSeed = [
     descriptionShort: 'Teatro greco, latomie e Orecchio di Dionisio.',
     descriptionLong:
       'Neapolis raccoglie alcuni tra i più importanti monumenti della Siracusa antica. Le cave, il teatro e gli scenari naturali rendono il sito uno snodo centrale per comprendere la Magna Grecia.',
-    imageUrl: '/public/images/neapolis.svg',
+    imageUrl: '/public/images/siracusa/Zona_archeologica_di_Siracusa.jpg',
     audioUrl: '/public/audio/siracusa-guide.mp3',
     priceSingle: 2.49,
     durationSec: 420
@@ -430,7 +440,8 @@ export const poisSeed = [
     audioUrl: '/public/audio/taormina-guide.mp3',
     priceSingle: 2.49,
     durationSec: 298
-  }
+  },
+  ...ragusaPoisSeed
 ];
 
 export const hotelCodesSeed = [

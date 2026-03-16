@@ -1,4 +1,4 @@
-﻿<section class="page-shell home" *ngIf="vm$ | async as vm">
+<section class="page-shell home" *ngIf="vm$ | async as vm">
   <header class="home-brand">
     <div class="home-logo" aria-hidden="true">
       <img src="/assets/images/logo-tour-citta.svg" alt="" />
@@ -12,6 +12,16 @@
   <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
     <p>{{ apiErrorMessage }}</p>
     <p class="hint">Controlla che backend e proxy siano attivi.</p>
+  </mat-card>
+
+  <mat-card class="card structure-card" *ngIf="visibleAssociatedStructure as structure">
+    <div class="structure-head">
+      <p class="structure-kicker">Struttura associata</p>
+      <span class="status-chip unlocked">Attiva</span>
+    </div>
+    <h3>{{ structure.structureName }}</h3>
+    <p class="structure-address">{{ structure.structureAddress }}</p>
+    <button mat-stroked-button color="primary" (click)="navigateToAssociatedStructure()">Naviga verso struttura</button>
   </mat-card>
 
   <mat-card class="card nearest-card" *ngIf="vm.nearestPoi as nearest">

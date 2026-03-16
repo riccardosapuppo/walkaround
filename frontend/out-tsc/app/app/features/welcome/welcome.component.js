@@ -42,6 +42,7 @@ export class WelcomeComponent {
         this.hotelCode = this.appState.hotelCode;
     }
     start() {
+        this.appState.markOnboardingSeen();
         this.appState.setActiveCity('catania');
         this.purchaseService.refresh();
         void this.router.navigate(['/home']);
@@ -70,6 +71,7 @@ export class WelcomeComponent {
                     return;
                 }
                 const normalizedCode = (response.association.inviteCode || trimmed).toUpperCase();
+                this.appState.markOnboardingSeen();
                 this.appState.setHotelCode(normalizedCode);
                 this.appState.setHotelAssociation(response.association);
                 this.appState.setActiveCity('catania');
@@ -112,4 +114,4 @@ export class WelcomeComponent {
         type: Component,
         args: [{ standalone: false, selector: 'app-welcome', template: "<section class=\"welcome page-shell\">\n  <img class=\"hero\" src=\"/public/images/catania/piazza-duomo-ct.jpg\" alt=\"Catania e Etna\" />\n\n  <h1 class=\"page-title\">Scopri la citt\u00E0 intorno a te</h1>\n  <p class=\"page-subtitle\">Audio guide automatiche nei luoghi che visiti</p>\n\n  <div class=\"welcome-actions\">\n    <button mat-flat-button color=\"primary\" class=\"big-cta\" (click)=\"start()\">Inizia</button>\n\n    <button mat-button color=\"primary\" (click)=\"showCodeInput = !showCodeInput\">\n      Inserisci codice invito/sconto\n    </button>\n  </div>\n\n  <section class=\"code-box card\" *ngIf=\"showCodeInput\">\n    <mat-form-field appearance=\"outline\" class=\"full-width\">\n      <mat-label>Codice invito/sconto</mat-label>\n      <input matInput [(ngModel)]=\"hotelCode\" autocomplete=\"off\" />\n    </mat-form-field>\n\n    <button mat-stroked-button color=\"primary\" [disabled]=\"isCheckingCode\" (click)=\"validateCode()\">\n      {{ isCheckingCode ? 'Controllo in corso...' : 'Applica e continua' }}\n    </button>\n  </section>\n</section>\n", styles: [".welcome {\n  display: grid;\n  align-content: start;\n  gap: 20px;\n}\n\n.hero {\n  width: 100%;\n  border-radius: 22px;\n  box-shadow: 0 10px 28px rgba(17, 42, 73, 0.12);\n}\n\n.welcome-actions {\n  display: grid;\n  gap: 8px;\n}\n\n.code-box {\n  padding: 16px;\n  display: grid;\n  gap: 12px;\n}\n\n.full-width {\n  width: 100%;\n}\r\n"] }]
     }], () => [{ type: i1.Router }, { type: i2.MatSnackBar }, { type: i3.AppStateService }, { type: i4.PurchaseService }], null); })();
-(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(WelcomeComponent, { className: "WelcomeComponent", filePath: "frontend/src/app/features/welcome/welcome.component.ts", lineNumber: 13 }); })();
+(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(WelcomeComponent, { className: "WelcomeComponent", filePath: "src/app/features/welcome/welcome.component.ts", lineNumber: 13 }); })();

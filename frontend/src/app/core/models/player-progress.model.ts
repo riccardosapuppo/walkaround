@@ -1,4 +1,4 @@
-﻿export interface PlayerProgress {
+export interface PlayerProgress {
   poiId: string;
   currentTime: number;
   duration: number;

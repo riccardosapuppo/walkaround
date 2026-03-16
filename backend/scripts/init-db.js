@@ -1,4 +1,4 @@
-﻿import { initDatabase } from '../src/db/init.js';
+import { initDatabase } from '../src/db/init.js';
 import { pool } from '../src/db/pool.js';
 
 async function run() {

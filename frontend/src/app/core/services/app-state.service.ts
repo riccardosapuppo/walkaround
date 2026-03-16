@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,6 +16,8 @@ export interface HotelAssociation {
   structureId: string;
   structureName: string;
   structureAddress: string;
+  lat?: number | null;
+  lng?: number | null;
   inviteCode: string;
   appliesTo?: 'single' | 'bundle' | null;
   cityId?: string | null;

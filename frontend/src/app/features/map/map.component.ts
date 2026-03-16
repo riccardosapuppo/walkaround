@@ -18,11 +18,12 @@ import {
 } from 'leaflet';
 import { environment } from '../../../environments/environment';
 import { Poi } from '../../core/models/poi.model';
-import { AppStateService } from '../../core/services/app-state.service';
+import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { Coordinates, GeoService } from '../../core/services/geo.service';
 import { NavigationRoute, NavigationService, NavigationStep } from '../../core/services/navigation.service';
 import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
+import { StructureLocationService } from '../../core/services/structure-location.service';
 import {
   PoiMapSheetAction,
   PoiMapSheetComponent
@@ -43,13 +44,15 @@ interface NavigationStepView {
 const cityFallbackMap: Record<string, Coordinates> = {
   catania: { lat: 37.5079, lng: 15.083 },
   siracusa: { lat: 37.067, lng: 15.2866 },
-  taormina: { lat: 37.8531, lng: 15.2899 }
+  taormina: { lat: 37.8531, lng: 15.2899 },
+  ragusa: { lat: 36.9269, lng: 14.7305 }
 };
 
 const cityNameMap: Record<string, string> = {
   catania: 'Catania',
   siracusa: 'Siracusa',
-  taormina: 'Taormina'
+  taormina: 'Taormina',
+  ragusa: 'Ragusa'
 };
 
 const ARRIVAL_THRESHOLD_METERS = 35;
@@ -92,6 +95,10 @@ export class MapComponent implements OnInit, OnDestroy {
   navigationProviderLabel = 'Ricerca percorso pedonale...';
   navigationProvider: 'osrm' | 'fallback' | null = null;
   isRouting = false;
+  activeCityId = 'catania';
+  associatedStructure: HotelAssociation | null = null;
+  associatedStructureCoords: Coordinates | null = null;
+  resolvingAssociatedStructure = false;
 
   private mapRef?: Map;
   private currentCoordinates?: Coordinates;
@@ -113,6 +120,7 @@ export class MapComponent implements OnInit, OnDestroy {
     private readonly navigationService: NavigationService,
     private readonly poiService: PoiService,
     private readonly purchaseService: PurchaseService,
+    private readonly structureLocationService: StructureLocationService,
     private readonly bottomSheet: MatBottomSheet,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
@@ -135,9 +143,44 @@ export class MapComponent implements OnInit, OnDestroy {
     return this.navigationUpcomingSteps.length > 3;
   }
 
+  get visibleAssociatedStructure(): HotelAssociation | null {
+    const association = this.associatedStructure;
+    if (!association?.structureId) {
+      return null;
+    }
+
+    const cityIds = this.associationCityIds(association);
+    if (cityIds.length && !cityIds.includes(this.activeCityId)) {
+      return null;
+    }
+
+    return association;
+  }
+
   ngOnInit(): void {
     this.purchaseService.refresh();
     void this.geoService.requestPermissionAndTrack();
+
+    this.appState.hotelAssociation$
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((association) => {
+          this.associatedStructure = association;
+          this.associatedStructureCoords = null;
+          this.resolvingAssociatedStructure = Boolean(association?.structureId);
+
+          if (!association?.structureId) {
+            return of(null);
+          }
+
+          return this.structureLocationService.resolveAssociationCoordinates(association);
+        })
+      )
+      .subscribe((coordinates) => {
+        this.associatedStructureCoords = coordinates;
+        this.resolvingAssociatedStructure = false;
+        this.markerLayers = this.composeMapLayers(this.latestPreparedPois);
+      });
 
     this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe((queryParams) => {
       const shouldNavigate = queryParams.get('nav') === '1';
@@ -172,6 +215,7 @@ export class MapComponent implements OnInit, OnDestroy {
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([cityData, coordinates]) => {
+        this.activeCityId = cityData.cityId;
         const fallback = cityFallbackMap[cityData.cityId] || cityFallbackMap['catania'];
         this.currentCoordinates = coordinates || fallback;
 
@@ -242,6 +286,31 @@ export class MapComponent implements OnInit, OnDestroy {
 
     const bounds = latLngBounds(routePoints.map((point) => [point.lat, point.lng] as [number, number])).pad(0.18);
     this.mapRef.fitBounds(bounds, { animate: true, duration: 0.8 });
+  }
+
+  focusAssociatedStructure(): void {
+    if (!this.mapRef || !this.associatedStructureCoords) {
+      return;
+    }
+
+    this.mapRef.flyTo([this.associatedStructureCoords.lat, this.associatedStructureCoords.lng], 16, {
+      duration: 0.8
+    });
+  }
+
+  navigateToAssociatedStructure(): void {
+    const association = this.visibleAssociatedStructure;
+    if (!association) {
+      return;
+    }
+
+    const url = this.structureLocationService.buildExternalDirectionsUrl(association, this.associatedStructureCoords);
+    if (!url) {
+      this.snackBar.open('Dati struttura non sufficienti per la navigazione', 'Chiudi', { duration: 2400 });
+      return;
+    }
+
+    window.open(url, '_blank', 'noopener');
   }
 
   stopNavigation(): void {
@@ -367,8 +436,35 @@ export class MapComponent implements OnInit, OnDestroy {
       );
     }
 
+    const structureMarker = this.createStructureMarker();
+    if (structureMarker) {
+      navigationLayers.push(structureMarker);
+    }
+
     const poiLayers = pois.map((poi) => this.createPoiMarker(poi));
     return [...navigationLayers, ...poiLayers];
+  }
+
+  private createStructureMarker(): Marker | null {
+    const association = this.visibleAssociatedStructure;
+    if (!association || !this.associatedStructureCoords) {
+      return null;
+    }
+
+    const structureMarker = marker([this.associatedStructureCoords.lat, this.associatedStructureCoords.lng], {
+      icon: divIcon({
+        className: '',
+        html: '<div class="poi-marker structure-marker"></div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      })
+    });
+
+    structureMarker.on('click', () => {
+      this.navigateToAssociatedStructure();
+    });
+
+    return structureMarker;
   }
 
   private startNavigation(poi: PoiMapView): void {
@@ -676,5 +772,13 @@ export class MapComponent implements OnInit, OnDestroy {
 
   private cityName(cityId: string): string {
     return cityNameMap[cityId] || cityId;
+  }
+
+  private associationCityIds(association: HotelAssociation): string[] {
+    if (Array.isArray(association.cityIds) && association.cityIds.length) {
+      return association.cityIds.map((cityId) => String(cityId || '').trim()).filter(Boolean);
+    }
+    const singleCityId = String(association.cityId || '').trim();
+    return singleCityId ? [singleCityId] : [];
   }
 }

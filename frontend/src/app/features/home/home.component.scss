@@ -37,6 +37,42 @@
   }
 }
 
+.structure-card {
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(23, 105, 170, 0.16);
+  background:
+    linear-gradient(140deg, rgba(23, 105, 170, 0.05) 0%, rgba(63, 170, 87, 0.04) 55%, rgba(255, 255, 255, 0.96) 100%),
+    #fff;
+
+  h3 {
+    margin: 0;
+    color: #12304f;
+  }
+}
+
+.structure-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.structure-kicker {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #617591;
+}
+
+.structure-address {
+  margin: 0;
+  color: #5d7390;
+  font-size: 0.9rem;
+}
+
 
 .nearest-card {
   position: relative;

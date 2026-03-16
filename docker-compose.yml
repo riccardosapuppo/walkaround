@@ -1,5 +1,4 @@
-﻿version: '3.9'
-
+version: '3.9'
 services:
   postgres:
     image: postgres:16-alpine
@@ -13,7 +12,8 @@ services:
       - '5433:5432'
     volumes:
       - tourism_pgdata:/var/lib/postgresql/data
-
+    networks:
+      - tourism-net
   backend:
     build:
       context: ./backend
@@ -25,13 +25,14 @@ services:
       PORT: 3000
       CORS_ORIGIN: http://localhost:8080
       DB_HOST: postgres
-      DB_PORT: 5433
+      DB_PORT: 5432
       DB_NAME: turismo_db_dev
       DB_USER: walkaround
       DB_PASSWORD: 
     ports:
       - '3001:3000'
-
+    networks:
+      - tourism-net
   frontend:
     build:
       context: ./frontend
@@ -41,6 +42,10 @@ services:
       - backend
     ports:
       - '8080:80'
-
+    networks:
+      - tourism-net
+networks:
+  tourism-net:
+    driver: bridge
 volumes:
   tourism_pgdata:

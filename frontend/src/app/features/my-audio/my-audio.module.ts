@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
 import { MyAudioRoutingModule } from './my-audio-routing.module';
 import { MyAudioComponent } from './my-audio.component';

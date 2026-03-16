@@ -1,4 +1,4 @@
-﻿import crypto from 'crypto';
+import crypto from 'crypto';
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
@@ -442,8 +442,8 @@ async function maybeMigratePoiMedia(row, client = pool) {
 function mapCatalogCityRow(row) {
   return {
     id: row.id,
-    name: row.name,
-    region: row.region,
+    name: sanitizeCatalogText(row.name),
+    region: sanitizeCatalogText(row.region),
     bundlePrice: Number(row.bundle_price),
     heroImage: row.hero_image,
     isDefault: row.is_default,
@@ -457,18 +457,74 @@ function mapCatalogPoiRow(row) {
   return {
     id: row.id,
     cityId: row.city_id,
-    cityName: row.city_name || null,
-    name: row.name,
+    cityName: row.city_name ? sanitizeCatalogText(row.city_name) : null,
+    name: sanitizeCatalogText(row.name),
     lat: Number(row.lat),
     lng: Number(row.lng),
-    category: row.category,
-    descriptionShort: row.description_short,
-    descriptionLong: row.description_long,
+    category: sanitizeCatalogText(row.category),
+    descriptionShort: sanitizeCatalogText(row.description_short),
+    descriptionLong: sanitizeCatalogText(row.description_long),
     imageUrl: row.image_url,
     audioUrl: row.audio_url,
     priceSingle: Number(row.price_single),
     durationSec: Number(row.duration_sec)
   };
+}
+
+function sanitizeCatalogText(value) {
+  if (typeof value !== 'string' || value.length === 0) {
+    return value;
+  }
+
+  let text = value
+    .replace(/ÃƒÂ /g, '\u00E0')
+    .replace(/ÃƒÂ¨/g, '\u00E8')
+    .replace(/ÃƒÂ©/g, '\u00E9')
+    .replace(/ÃƒÂ¬/g, '\u00EC')
+    .replace(/ÃƒÂ²/g, '\u00F2')
+    .replace(/ÃƒÂ¹/g, '\u00F9')
+    .replace(/Ã¢â‚¬â„¢/g, "'")
+    .replace(/Ã¢â‚¬Ëœ/g, "'")
+    .replace(/Ã¢â‚¬Å“/g, '"')
+    .replace(/Ã¢â‚¬\u009D/g, '"')
+    .replace(/Ã¢â‚¬â€/g, '-')
+    .replace(/Ã¢â‚¬â€œ/g, '-');
+
+  text = text
+    .replace(/Ã /g, '\u00E0')
+    .replace(/Ã¨/g, '\u00E8')
+    .replace(/Ã©/g, '\u00E9')
+    .replace(/Ã¬/g, '\u00EC')
+    .replace(/Ã²/g, '\u00F2')
+    .replace(/Ã¹/g, '\u00F9')
+    .replace(/Ã€/g, '\u00C0')
+    .replace(/Ãˆ/g, '\u00C8')
+    .replace(/Ã‰/g, '\u00C9')
+    .replace(/ÃŒ/g, '\u00CC')
+    .replace(/Ã’/g, '\u00D2')
+    .replace(/Ã™/g, '\u00D9')
+    .replace(/â€™/g, "'")
+    .replace(/â€˜/g, "'")
+    .replace(/â€œ/g, '"')
+    .replace(/â€/g, '"')
+    .replace(/â€“/g, '-')
+    .replace(/â€”/g, '-')
+    .replace(/â€¦/g, '...');
+
+  if (!text.includes('\uFFFD')) {
+    return text;
+  }
+
+  text = text
+    .replace(/([\p{L}])\uFFFD(?=[\p{L}])/gu, "$1'")
+    .replace(/\b\uFFFD(?=[\p{L}])/gu, "'");
+
+  return text
+    .replace(/([\p{L}]+)it\uFFFD(?=[^\p{L}]|$)/gu, '$1it\u00E0')
+    .replace(/([\p{L}]+)et\uFFFD(?=[^\p{L}]|$)/gu, '$1et\u00E0')
+    .replace(/([\p{L}]+)t\uFFFD(?=[^\p{L}]|$)/gu, '$1t\u00E0')
+    .replace(/\s\uFFFD\s/g, ' \u00E8 ')
+    .replace(/\uFFFD/g, "'");
 }
 
 function normalizeTextArray(value) {

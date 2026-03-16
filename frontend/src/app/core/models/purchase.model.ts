@@ -1,4 +1,4 @@
-﻿export interface PurchaseItem {
+export interface PurchaseItem {
   id: number;
   userId: string;
   type: 'single' | 'bundle';

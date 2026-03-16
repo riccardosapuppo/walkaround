@@ -1,10 +1,11 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { City } from '../../core/models/city.model';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { PoiService } from '../../core/services/poi.service';
 import { HotelCodeStatusEntry, PurchaseService } from '../../core/services/purchase.service';
+import { StructureLocationService } from '../../core/services/structure-location.service';
 
 @Component({
   standalone: false,
@@ -30,6 +31,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private readonly poiService: PoiService,
     private readonly appState: AppStateService,
     private readonly purchaseService: PurchaseService,
+    private readonly structureLocationService: StructureLocationService,
     private readonly snackBar: MatSnackBar
   ) {}
 
@@ -252,6 +254,22 @@ export class ProfileComponent implements OnInit, OnDestroy {
     finalizeReset();
   }
 
+  navigateToAssociatedStructure(): void {
+    const association = this.hotelAssociation;
+    if (!association?.structureId) {
+      return;
+    }
+
+    const coordinates = this.coerceCoordinates(association.lat, association.lng);
+    const url = this.structureLocationService.buildExternalDirectionsUrl(association, coordinates);
+    if (!url) {
+      this.snackBar.open('Dati struttura non disponibili per la navigazione', 'Chiudi', { duration: 2400 });
+      return;
+    }
+
+    window.open(url, '_blank', 'noopener');
+  }
+
   private syncHotelAssociationDetails(): void {
     this.purchaseService
       .getHotelAssociationDetails()
@@ -270,6 +288,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
           // Keep locally cached association when backend sync is unavailable.
         }
       });
+  }
+
+  private coerceCoordinates(latRaw: unknown, lngRaw: unknown): { lat: number; lng: number } | null {
+    const lat = Number(latRaw);
+    const lng = Number(lngRaw);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null;
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return null;
+    }
+    return { lat, lng };
   }
 }
 

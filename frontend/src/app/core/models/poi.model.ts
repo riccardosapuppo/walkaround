@@ -1,4 +1,4 @@
-﻿export interface Poi {
+export interface Poi {
   id: string;
   cityId: string;
   name: string;
