@@ -1012,6 +1012,24 @@
   align-items: center;
 }
 
+.user-row-actions {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.user-row-actions-top {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.user-row-actions-top button,
+.user-row-impersonate-btn {
+  width: 100%;
+}
+
 .row-save-btn {
   border: 0;
   border-radius: 10px;

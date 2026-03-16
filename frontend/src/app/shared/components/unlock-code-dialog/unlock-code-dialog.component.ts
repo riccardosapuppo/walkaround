@@ -558,12 +558,12 @@ export class UnlockCodeDialogComponent {
     }
     if (status === 'used') {
       return fromStoredCode
-        ? 'Il codice salvato e gia stato utilizzato. Inserisci un nuovo codice.'
-        : 'Il codice inserito e gia stato utilizzato per questo utente';
+        ? 'Il codice salvato è già stato utilizzato. Inserisci un nuovo codice.'
+        : 'Il codice inserito è già stato utilizzato per questo utente';
     }
     return fromStoredCode
-      ? 'Il codice salvato non e piu valido. Inserisci un nuovo codice.'
-      : 'Il codice inserito non e piu valido';
+      ? 'Il codice salvato non è più valido. Inserisci un nuovo codice.'
+      : 'Il codice inserito non è più valido';
   }
 }
 

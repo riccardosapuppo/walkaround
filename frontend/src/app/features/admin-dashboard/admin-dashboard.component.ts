@@ -2502,6 +2502,22 @@ export class AdminDashboardComponent implements OnInit {
     return 'association-status association-status-invalid';
   }
 
+  userAssociationStatusTooltip(status: DashboardUserAssociation['status']): string {
+    if (status === 'assigned') {
+      return 'Assegnata: il codice è collegato all\'utente ma non è ancora stato riscattato.';
+    }
+    if (status === 'used') {
+      return 'Usato: il codice è già stato riscattato e ha già generato lo sblocco.';
+    }
+    if (status === 'active') {
+      return 'Attivo: codice valido e disponibile.';
+    }
+    if (status === 'expired') {
+      return 'Scaduto: codice non più utilizzabile.';
+    }
+    return 'Non valido: codice non riconosciuto o non associabile.';
+  }
+
   openUsersForStructure(structure: DashboardStructure): void {
     if (!this.canManageUsers) {
       return;

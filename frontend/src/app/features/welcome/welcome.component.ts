@@ -50,10 +50,10 @@ export class WelcomeComponent {
         if (response.association.codeStatus !== 'valid') {
           const invalidMessage =
             response.association.codeStatus === 'expired'
-              ? 'Il codice inserito e scaduto'
+              ? 'Il codice inserito è scaduto'
               : response.association.codeStatus === 'used'
-                ? 'Il codice inserito e gia stato utilizzato'
-              : 'Il codice inserito non e piu valido';
+                ? 'Il codice inserito è già stato utilizzato'
+              : 'Il codice inserito non è più valido';
           this.snackBar.open(invalidMessage, 'OK', { duration: 2800 });
           return;
         }

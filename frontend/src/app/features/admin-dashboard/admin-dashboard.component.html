@@ -1,4 +1,4 @@
-<section class="page-shell admin-shell">
+﻿<section class="page-shell admin-shell">
   <mat-card class="card login-card" *ngIf="!authChecked">
     <div class="loading-state">
       <mat-spinner diameter="34"></mat-spinner>
@@ -422,19 +422,18 @@
                   <th>Ruolo</th>
                   <th>Strutture associate</th>
                   <th>Sbloccati</th>
-                  <th>Registrato</th>
                   <th>Data registrazione</th>
                   <th>Azioni</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngIf="loadingUsers">
-                  <td colspan="7" class="empty-cell spinner-cell">
+                  <td colspan="6" class="empty-cell spinner-cell">
                     <mat-spinner diameter="28"></mat-spinner>
                   </td>
                 </tr>
                 <tr *ngIf="!loadingUsers && !usersForDisplay.length">
-                  <td colspan="7" class="empty-cell">Nessun utente disponibile.</td>
+                  <td colspan="6" class="empty-cell">Nessun utente disponibile.</td>
                 </tr>
                 <ng-container *ngIf="!loadingUsers">
                   <tr *ngFor="let user of usersForDisplay">
@@ -452,7 +451,7 @@
                           <div class="association-item" *ngFor="let association of userAssociations(user)">
                             <div class="association-head">
                               <small class="structure-name">{{ association.structureName || association.structureId }}</small>
-                              <span [class]="userAssociationStatusClass(association.status)">
+                              <span [class]="userAssociationStatusClass(association.status)" [matTooltip]="userAssociationStatusTooltip(association.status)">
                                 {{ userAssociationStatusLabel(association.status) }}
                               </span>
                             </div>
@@ -467,7 +466,7 @@
                       </div>
                     </td>
                     <td>
-                      <div class="unlocked-cell">
+                      <div class="unlocked-cell" *ngIf="user.role !== 'admin'; else adminUnlockedAll">
                         <div class="unlocked-counts" *ngIf="user.unlockedCitiesCount || user.unlockedPoisCount; else noUnlockedItems">
                           <small><strong>Citta:</strong> {{ user.unlockedCitiesCount }}</small>
                           <small><strong>Luoghi:</strong> {{ user.unlockedPoisCount }}</small>
@@ -490,47 +489,50 @@
                           <small class="structure-name muted">Nessun contenuto sbloccato</small>
                         </ng-template>
                       </div>
-                    </td>
-                    <td>
-                      <span class="status-pill" [class.ok]="user.isRegistered" [class.warn]="!user.isRegistered">
-                        {{ user.isRegistered ? 'Si' : 'No' }}
-                      </span>
+                      <ng-template #adminUnlockedAll>
+                        <div class="unlocked-cell">
+                          <span class="status-pill ok">Tutti</span>
+                          <small class="structure-name muted">Accesso completo (profilo admin)</small>
+                        </div>
+                      </ng-template>
                     </td>
                     <td>{{ formatDateTime(user.createdAt) }}</td>
                     <td>
-                      <div class="action-buttons">
-                        <button
-                          mat-stroked-button
-                          color="primary"
-                          *ngIf="user.id !== currentUserId && !isReadOnlyAppUser(user)"
-                          (click)="sendPasswordReset(user)"
-                          [disabled]="resettingPasswordUserId === user.id || !user.isRegistered"
-                        >
-                          {{ resettingPasswordUserId === user.id ? 'Invio reset...' : 'Reset password' }}
-                        </button>
+                      <div class="action-buttons user-row-actions" *ngIf="user.id !== currentUserId && !isReadOnlyAppUser(user)">
+                        <div class="user-row-actions-top">
+                          <button
+                            mat-stroked-button
+                            color="primary"
+                            (click)="sendPasswordReset(user)"
+                            [disabled]="resettingPasswordUserId === user.id || !user.isRegistered"
+                          >
+                            {{ resettingPasswordUserId === user.id ? 'Invio reset...' : 'Reset password' }}
+                          </button>
+
+                          <button
+                            mat-stroked-button
+                            color="warn"
+                            (click)="deleteUser(user)"
+                            [disabled]="deletingUserId === user.id || savingUserId === user.id"
+                          >
+                            {{ deletingUserId === user.id ? 'Elimino...' : 'Elimina' }}
+                          </button>
+                        </div>
 
                         <button
                           mat-flat-button
                           color="accent"
-                          *ngIf="user.id !== currentUserId && !isReadOnlyAppUser(user)"
+                          class="user-row-impersonate-btn"
                           (click)="impersonate(user)"
                           [disabled]="impersonatingUserId === user.id || !user.isRegistered"
+                          [matTooltip]="'Entra come questo utente per verificare esattamente cosa puo vedere nella dashboard.'"
+                          matTooltipPosition="above"
                         >
                           {{
                             impersonatingUserId === user.id
                               ? 'Accesso...'
-                              : 'Entra come ' + displayName(user.firstName, user.lastName, user.email)
+                              : 'Entra come questo utente'
                           }}
-                        </button>
-
-                        <button
-                          mat-stroked-button
-                          color="warn"
-                          *ngIf="user.id !== currentUserId && !isReadOnlyAppUser(user)"
-                          (click)="deleteUser(user)"
-                          [disabled]="deletingUserId === user.id || savingUserId === user.id"
-                        >
-                          {{ deletingUserId === user.id ? 'Elimino...' : 'Elimina' }}
                         </button>
                       </div>
                     </td>
@@ -1897,6 +1899,7 @@
     </main>
   </div>
 </section>
+
 
 
 

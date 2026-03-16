@@ -978,7 +978,7 @@ router.post('/hotel/validate', async (req, res, next) => {
       return res.status(409).json({
         valid: false,
         codeStatus: 'used',
-        message: 'Questo codice e gia stato utilizzato per questo utente'
+        message: 'Questo codice e già stato utilizzato per questo utente'
       });
     }
 
@@ -1323,7 +1323,7 @@ router.delete('/hotel/association', async (req, res, next) => {
         return res.status(409).json({
           removed: false,
           hadAssociation: true,
-          message: 'Il codice e gia stato usato e non puo essere rimosso'
+          message: 'Il codice è già stato usato e non può essere rimosso'
         });
       }
     }
