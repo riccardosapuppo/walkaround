@@ -1,5 +1,6 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { AppStateService } from '../../core/services/app-state.service';
 
 @Component({
   standalone: false,
@@ -10,11 +11,20 @@ import { Router } from '@angular/router';
 export class SplashComponent implements OnInit, OnDestroy {
   private timeoutId?: number;
 
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly appState: AppStateService
+  ) {}
 
   ngOnInit(): void {
     this.timeoutId = window.setTimeout(() => {
-      void this.router.navigate(['/welcome']);
+      if (this.appState.shouldShowWelcomeOnLaunch()) {
+        this.appState.markOnboardingSeen();
+        void this.router.navigate(['/welcome']);
+        return;
+      }
+
+      void this.router.navigate(['/home']);
     }, 1400);
   }
 
@@ -24,4 +34,3 @@ export class SplashComponent implements OnInit, OnDestroy {
     }
   }
 }
-

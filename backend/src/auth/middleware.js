@@ -26,14 +26,24 @@ export async function resolveSessionUser(req) {
     `
       SELECT
         u.id,
+        u.first_name,
+        u.last_name,
+        u.structure_id,
+        us.name AS structure_name,
         u.email,
         u.role,
         s.token_hash,
         s.impersonated_by_user_id,
+        ib.first_name AS impersonated_by_first_name,
+        ib.last_name AS impersonated_by_last_name,
+        ib.structure_id AS impersonated_by_structure_id,
+        ibs.name AS impersonated_by_structure_name,
         ib.email AS impersonated_by_email
       FROM dashboard_sessions s
       JOIN dashboard_users u ON u.id = s.user_id
+      LEFT JOIN dashboard_structures us ON us.id = u.structure_id
       LEFT JOIN dashboard_users ib ON ib.id = s.impersonated_by_user_id
+      LEFT JOIN dashboard_structures ibs ON ibs.id = ib.structure_id
       WHERE s.token_hash = $1
         AND s.expires_at > NOW()
       LIMIT 1
@@ -50,12 +60,20 @@ export async function resolveSessionUser(req) {
     tokenHash,
     user: {
       id: row.id,
+      firstName: row.first_name || '',
+      lastName: row.last_name || '',
+      structureId: row.structure_id || null,
+      structureName: row.structure_name || null,
       email: row.email,
       role: row.role
     },
     impersonatedBy: row.impersonated_by_user_id
       ? {
           id: row.impersonated_by_user_id,
+          firstName: row.impersonated_by_first_name || '',
+          lastName: row.impersonated_by_last_name || '',
+          structureId: row.impersonated_by_structure_id || null,
+          structureName: row.impersonated_by_structure_name || null,
           email: row.impersonated_by_email || ''
         }
       : null

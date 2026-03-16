@@ -1,4 +1,4 @@
-<section class="page-shell admin-shell">
+﻿<section class="page-shell admin-shell">
   <mat-card class="card login-card" *ngIf="!authChecked">
     <div class="loading-state">
       <mat-spinner diameter="34"></mat-spinner>
@@ -10,7 +10,7 @@
     <h1 class="page-title">Dashboard</h1>
     <p class="page-subtitle">Accedi per entrare nella dashboard.</p>
 
-    <form [formGroup]="loginForm" (ngSubmit)="login()" class="invite-form">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="form-grid">
       <mat-form-field appearance="outline">
         <mat-label>Email</mat-label>
         <input matInput type="email" formControlName="email" autocomplete="username" />
@@ -27,107 +27,1876 @@
     </form>
   </mat-card>
 
-  <ng-container *ngIf="authChecked && isAuthenticated">
-    <header class="admin-header card">
-      <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">
-          Connesso come <strong>{{ currentEmail }}</strong> - {{ roleLabel(currentRole) }}
-        </p>
+  <div class="dashboard-layout" *ngIf="authChecked && isAuthenticated">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <div>
+          <strong>TourApp</strong>
+          <p>Dashboard</p>
+        </div>
       </div>
 
-      <div class="header-actions">
-        <button mat-flat-button color="primary" *ngIf="isImpersonating" (click)="exitImpersonation()">
+      <nav class="sidebar-nav" *ngIf="canAccessDashboard && visibleSections.length">
+        <button
+          type="button"
+          class="nav-item"
+          *ngFor="let section of visibleSections"
+          [class.active]="activeSection === section.id"
+          (click)="selectSection(section.id)"
+        >
+          <span>{{ section.label }}</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span>{{ currentEmail }}</span>
+        <button mat-stroked-button color="primary" class="sidebar-action" *ngIf="isImpersonating" (click)="exitImpersonation()">
           Torna ad admin
         </button>
-        <button mat-stroked-button color="primary" (click)="logout()">Logout</button>
+        <button mat-stroked-button color="primary" class="sidebar-action" (click)="logout()">Logout</button>
       </div>
-    </header>
+    </aside>
 
-    <mat-card class="card manager-card">
-      <h2>Gestore struttura</h2>
-      <p>Area visibile a tutti i ruoli dashboard.</p>
-      <div class="manager-box">
-        <span>Utente corrente: {{ currentEmail }}</span>
-        <span *ngIf="isImpersonating">Modalita impersonazione attiva (origine: {{ impersonatedByEmail }})</span>
-        <span>Qui puoi aggiungere in seguito funzionalita dedicate alla struttura.</span>
-      </div>
-    </mat-card>
+    <main class="dashboard-main">
+      <header class="dashboard-topbar card" *ngIf="activeSection === 'users'">
+        <div>
+          <h1 class="page-title">Utenti</h1>
+          <p class="page-subtitle">
+            Connesso come <strong>{{ currentName || currentEmail }}</strong> - {{ roleLabel(currentRole) }}
+          </p>
+          <p class="page-subtitle" *ngIf="isImpersonating">
+            Modalita impersonazione attiva (origine: {{ impersonatedByEmail }})
+          </p>
+        </div>
+      </header>
 
-    <mat-card class="card invite-card" *ngIf="canManageUsers">
-      <h2>Invita utente</h2>
-      <p>Invia link registrazione (24 ore) scegliendo il permesso iniziale.</p>
+      <mat-card class="card" *ngIf="!canAccessDashboard">
+        <h2>Accesso dashboard non consentito</h2>
+        <p>Solo admin e gestori struttura possono accedere alla dashboard.</p>
+      </mat-card>
 
-      <form [formGroup]="inviteForm" (ngSubmit)="invite()" class="invite-form">
-        <mat-form-field appearance="outline">
-          <mat-label>Email utente</mat-label>
-          <input matInput type="email" formControlName="email" autocomplete="email" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Permesso</mat-label>
-          <mat-select formControlName="role">
-            <mat-option value="facility_manager">Gestore struttura</mat-option>
-            <mat-option value="admin">Admin</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <button mat-flat-button color="primary" class="big-cta" [disabled]="inviting" type="submit">
-          {{ inviting ? 'Invio...' : 'Invia invito' }}
-        </button>
-      </form>
-
-      <div class="invite-result" *ngIf="lastInvite as invite">
-        <strong>Ultimo invito:</strong>
-        <span>{{ invite.email }} - {{ roleLabel(invite.role) }}</span>
-        <span>Scadenza: {{ invite.expiresAt | date: 'medium' }}</span>
-      </div>
-    </mat-card>
-
-    <mat-card class="card users-card" *ngIf="canManageUsers">
-      <div class="users-title">
-        <h2>Lista utenti</h2>
-        <button mat-stroked-button color="primary" (click)="loadUsers()" [disabled]="loadingUsers">
-          {{ loadingUsers ? 'Aggiornamento...' : 'Aggiorna' }}
-        </button>
-      </div>
-
-      <div class="user-row" *ngFor="let user of users">
-        <div class="user-meta">
-          <strong>{{ user.email }}</strong>
-          <span>Ruolo attuale: {{ roleLabel(user.role) }}</span>
-          <span>Registrato: {{ user.isRegistered ? 'Si' : 'No' }}</span>
+      <ng-container *ngIf="isFacilityManager && activeSection === 'users'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Utenti associati</span>
+            <strong *ngIf="!loadingAssociatedUsers; else associatedUsersLoadingStat">{{ totalAssociatedUsers }}</strong>
+            <ng-template #associatedUsersLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Struttura</span>
+            <strong>{{ managerStructureName }}</strong>
+          </mat-card>
         </div>
 
-        <div class="user-actions">
-          <mat-form-field appearance="outline" class="role-field">
-            <mat-label>Ruolo</mat-label>
-            <mat-select [(ngModel)]="roleDraftByUserId[user.id]" [ngModelOptions]="{ standalone: true }">
-              <mat-option value="facility_manager">Gestore struttura</mat-option>
-              <mat-option value="admin">Admin</mat-option>
-            </mat-select>
-          </mat-form-field>
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Utenti associati alla struttura</h2>
+              <p class="table-subtitle">Vista sola lettura: non puoi modificare ruoli o permessi.</p>
+            </div>
+          </div>
 
-          <button
-            mat-stroked-button
-            color="primary"
-            (click)="saveRole(user)"
-            [disabled]="updatingRoleUserId === user.id || roleDraftByUserId[user.id] === user.role"
-          >
-            Salva ruolo
+          <p class="inline-note" *ngIf="!managedStructureId">
+            Il tuo account gestore non ha una struttura assegnata.
+          </p>
+
+          <div class="table-wrap" *ngIf="managedStructureId">
+            <table class="modern-table users-table payments-table compact-table">
+              <thead>
+                <tr>
+                  <th>ID Utente App</th>
+                  <th>Registrato il</th>
+                  <th>Codice associato</th>
+                  <th>Stato codice</th>
+                  <th>Acquisti</th>
+                  <th>Spesa totale</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingAssociatedUsers">
+                  <td colspan="6" class="empty-cell spinner-cell">
+                    <mat-spinner diameter="28"></mat-spinner>
+                  </td>
+                </tr>
+                <tr *ngIf="!loadingAssociatedUsers && !associatedUsers.length">
+                  <td colspan="6" class="empty-cell">Nessun utente associato alla tua struttura.</td>
+                </tr>
+                <ng-container *ngIf="!loadingAssociatedUsers">
+                  <tr *ngFor="let associatedUser of associatedUsers">
+                    <td><code>{{ associatedUser.userId }}</code></td>
+                    <td>{{ formatDateTime(associatedUser.associatedAt) }}</td>
+                    <td><code>{{ associatedUser.inviteCode || '-' }}</code></td>
+                    <td class="associated-code-status-cell">
+                      <span
+                        class="association-status"
+                        [class.association-status-used]="associatedUser.inviteCodeUsed"
+                        [class.association-status-active]="!associatedUser.inviteCodeUsed"
+                      >
+                        {{ associatedUser.inviteCodeUsed ? 'Usato' : 'Non usato' }}
+                      </span>
+                      <small *ngIf="associatedUser.inviteCodeUsedAt">{{ formatDateTime(associatedUser.inviteCodeUsedAt) }}</small>
+                    </td>
+                    <td>{{ associatedUser.purchasesCount }}</td>
+                    <td>{{ formatCurrency(associatedUser.totalSpent) }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+
+      <ng-container *ngIf="isFacilityManager && activeSection === 'payments'">
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Pagamenti struttura</h2>
+              <p class="table-subtitle">Visualizzi solo i pagamenti collegati alla tua struttura.</p>
+            </div>
+          </div>
+
+          <div class="stats-grid manager-payments-stats">
+            <mat-card class="stat-card">
+              <span>Pagamenti registrati</span>
+              <strong *ngIf="!loadingPayments; else managerPaymentsLoadingStat">{{ totalPayments }}</strong>
+              <ng-template #managerPaymentsLoadingStat>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Guadagno struttura</span>
+              <strong *ngIf="!loadingPayments; else managerEarningsLoadingStat">{{ formatCurrency(totalStructureEarnings) }}</strong>
+              <ng-template #managerEarningsLoadingStat>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+          </div>
+
+          <div class="table-wrap">
+            <table class="modern-table users-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Utente</th>
+                  <th>Data nascita</th>
+                  <th>Metodo pagamento</th>
+                  <th>Contenuto</th>
+                  <th>Prezzo base</th>
+                  <th>Sconto</th>
+                  <th>Pagato</th>
+                  <th>Stato pagamento</th>
+                  <th>Codice</th>
+                  <th>Quota struttura</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingPayments">
+                  <td colspan="11" class="empty-cell spinner-cell">
+                    <mat-spinner diameter="28"></mat-spinner>
+                  </td>
+                </tr>
+                <tr *ngIf="!loadingPayments && !payments.length">
+                  <td colspan="11" class="empty-cell">Nessun pagamento registrato per la tua struttura.</td>
+                </tr>
+                <ng-container *ngIf="!loadingPayments">
+                  <tr *ngFor="let payment of payments; trackBy: trackByPaymentId">
+                    <td>{{ formatDateTime(payment.purchasedAt) }}</td>
+                    <td class="payment-user-cell">
+                      <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>
+                      <small>{{ payment.customerEmail }}</small>
+                      <small>{{ payment.customerPhone }}</small>
+                      <small>{{ payment.customerAddress }}</small>
+                      <small>ID app: <code>{{ payment.customerId }}</code></small>
+                    </td>
+                    <td>{{ payment.customerBirthDate | date: 'dd/MM/yyyy':'':'it-IT' }}</td>
+                    <td class="payment-method-cell">
+                      <strong>{{ payment.paymentMethod }}</strong>
+                      <small>{{ payment.paymentProvider }}</small>
+                    </td>
+                    <td class="payment-content-cell">
+                      <small>{{ paymentTargetLabel(payment) }}</small>
+                      <span class="payment-type-badge" [class.bundle]="payment.type === 'bundle'" [class.single]="payment.type === 'single'">
+                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}
+                      </span>
+                    </td>
+                    <td>{{ formatCurrency(payment.baseAmount) }}</td>
+                    <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>
+                    <td>{{ formatCurrency(payment.paidAmount) }}</td>
+                    <td>{{ payment.paymentStatus }}</td>
+                    <td><code>{{ payment.inviteCode || '-' }}</code></td>
+                    <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+
+      <ng-container *ngIf="canManageUsers && activeSection === 'users'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Utenti</span>
+            <strong *ngIf="!loadingUsers; else usersLoadingStat">{{ totalUsers }}</strong>
+            <ng-template #usersLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Strutture</span>
+            <strong *ngIf="!loadingStructures; else structuresLoadingStat">{{ totalStructures }}</strong>
+            <ng-template #structuresLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+        </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Lista utenti</h2>
+              <p class="table-subtitle">Gestisci struttura utente e operazioni rapide.</p>
+            </div>
+            <div class="table-actions">
+              <button type="button" class="toggle-panel-btn" [class.active]="showCreateUserSection" (click)="toggleCreateUserSection()">
+                <span class="toggle-panel-icon">{{ showCreateUserSection ? '-' : '+' }}</span>
+                <span>{{ showCreateUserSection ? 'Chiudi aggiunta utente' : 'Aggiungi utente' }}</span>
+              </button>
+              <button type="button" class="toggle-panel-btn" [class.active]="showInviteSection" (click)="toggleInviteSection()">
+                <span class="toggle-panel-icon">{{ showInviteSection ? '-' : '+' }}</span>
+                <span>{{ showInviteSection ? 'Chiudi invito' : 'Invita utente' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <section class="inline-panel" *ngIf="showInviteSection">
+            <h3>Nuovo invito utente</h3>
+            <p>Compila i dati, scegli ruolo e struttura se il ruolo e gestore.</p>
+
+            <form [formGroup]="inviteForm" (ngSubmit)="invite()" class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome</mat-label>
+                <input matInput type="text" formControlName="firstName" autocomplete="given-name" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Cognome</mat-label>
+                <input matInput type="text" formControlName="lastName" autocomplete="family-name" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Email utente</mat-label>
+                <input matInput type="email" formControlName="email" autocomplete="email" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Permesso</mat-label>
+                <mat-select formControlName="role">
+                  <mat-option value="facility_manager">Gestore struttura</mat-option>
+                  <mat-option value="admin">Admin</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" *ngIf="isInviteStructureRequired">
+                <mat-label>Struttura</mat-label>
+                <mat-select formControlName="structureId" [disabled]="!structures.length">
+                  <mat-option [value]="noStructureValue" [disabled]="true">Seleziona struttura</mat-option>
+                  <mat-option *ngFor="let structure of structures" [value]="structure.id">
+                    {{ structure.name }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="isInviteStructureMissing && inviteForm.controls.structureId.touched">
+                  La struttura e obbligatoria per il gestore
+                </mat-error>
+              </mat-form-field>
+
+              <p class="inline-note" *ngIf="isInviteStructureRequired && !structures.length && !loadingStructures">
+                Nessuna struttura registrata: crea prima una struttura nella sezione dedicata.
+              </p>
+              <div class="inline-loader" *ngIf="isInviteStructureRequired && loadingStructures">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+
+              <button mat-flat-button color="primary" class="big-cta" [disabled]="!canSubmitInvite" type="submit">
+                {{ inviting ? 'Invio...' : 'Invia invito' }}
+              </button>
+            </form>
+
+            <div class="invite-result" *ngIf="lastInvite as invite">
+              <strong>Ultimo invito:</strong>
+              <span>{{ displayName(invite.firstName, invite.lastName, invite.email) }} ({{ invite.email }})</span>
+              <span *ngIf="invite.structureName">Struttura: {{ invite.structureName }}</span>
+              <span>Scadenza: {{ formatDateTime(invite.expiresAt) }}</span>
+            </div>
+          </section>
+
+          <section class="inline-panel" *ngIf="showCreateUserSection">
+            <h3>Aggiungi utente dashboard</h3>
+            <p>Crea direttamente un utente con password. Ruolo non modificabile dopo la creazione.</p>
+
+            <form [formGroup]="createUserForm" (ngSubmit)="createUser()" class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome</mat-label>
+                <input matInput type="text" formControlName="firstName" autocomplete="given-name" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Cognome</mat-label>
+                <input matInput type="text" formControlName="lastName" autocomplete="family-name" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Email utente</mat-label>
+                <input matInput type="email" formControlName="email" autocomplete="email" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Password iniziale</mat-label>
+                <input matInput type="password" formControlName="password" autocomplete="new-password" />
+                <mat-hint>Minimo 8 caratteri</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Ruolo</mat-label>
+                <mat-select formControlName="role">
+                  <mat-option value="user">Utente normale</mat-option>
+                  <mat-option value="facility_manager">Gestore struttura</mat-option>
+                  <mat-option value="admin">Admin</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" *ngIf="isCreateUserStructureVisible">
+                <mat-label>{{ isCreateUserStructureRequired ? 'Struttura (obbligatoria)' : 'Struttura (opzionale)' }}</mat-label>
+                <mat-select formControlName="structureId" [disabled]="!structures.length">
+                  <mat-option [value]="noStructureValue" [disabled]="isCreateUserStructureRequired">
+                    {{ isCreateUserStructureRequired ? 'Seleziona struttura' : 'Nessuna struttura' }}
+                  </mat-option>
+                  <mat-option *ngFor="let structure of structures" [value]="structure.id">
+                    {{ structure.name }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="isCreateUserStructureMissing && createUserForm.controls.structureId.touched">
+                  La struttura e obbligatoria per il gestore
+                </mat-error>
+              </mat-form-field>
+
+              <p class="inline-note" *ngIf="isCreateUserStructureVisible && !structures.length && !loadingStructures">
+                Nessuna struttura registrata: crea prima una struttura nella sezione dedicata.
+              </p>
+              <div class="inline-loader" *ngIf="isCreateUserStructureVisible && loadingStructures">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+
+              <button mat-flat-button color="primary" class="big-cta" [disabled]="!canSubmitCreateUser" type="submit">
+                {{ creatingUser ? 'Creazione...' : 'Crea utente' }}
+              </button>
+            </form>
+          </section>
+
+          <div class="users-structure-filter" *ngIf="isUsersStructureFilterActive">
+            <span>
+              Filtro struttura attivo:
+              <strong>{{ usersStructureFilterName }}</strong>
+            </span>
+            <button type="button" class="ghost-btn" (click)="clearUsersStructureFilter()">Rimuovi filtro</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="modern-table users-table">
+              <thead>
+                <tr>
+                  <th>Utente</th>
+                  <th>Ruolo</th>
+                  <th>Strutture associate</th>
+                  <th>Sbloccati</th>
+                  <th>Registrato</th>
+                  <th>Data registrazione</th>
+                  <th>Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingUsers">
+                  <td colspan="7" class="empty-cell spinner-cell">
+                    <mat-spinner diameter="28"></mat-spinner>
+                  </td>
+                </tr>
+                <tr *ngIf="!loadingUsers && !usersForDisplay.length">
+                  <td colspan="7" class="empty-cell">Nessun utente disponibile.</td>
+                </tr>
+                <ng-container *ngIf="!loadingUsers">
+                  <tr *ngFor="let user of usersForDisplay">
+                    <td>
+                      <strong>{{ displayName(user.firstName, user.lastName, user.email) }}</strong>
+                      <small>{{ user.email }}</small>
+                      <small class="structure-name muted" *ngIf="isReadOnlyAppUser(user)">
+                        Utente app associato da codice invito/sconto
+                      </small>
+                    </td>
+                    <td>{{ roleLabel(user.role) }}</td>
+                    <td>
+                      <div class="structure-cell">
+                        <div class="association-list" *ngIf="userAssociations(user).length; else noUserAssociations">
+                          <div class="association-item" *ngFor="let association of userAssociations(user)">
+                            <div class="association-head">
+                              <small class="structure-name">{{ association.structureName || association.structureId }}</small>
+                              <span [class]="userAssociationStatusClass(association.status)">
+                                {{ userAssociationStatusLabel(association.status) }}
+                              </span>
+                            </div>
+                            <small class="structure-code" *ngIf="association.inviteCode">
+                              Codice: <code>{{ association.inviteCode }}</code>
+                            </small>
+                          </div>
+                        </div>
+                        <ng-template #noUserAssociations>
+                          <small class="structure-name muted">Nessuna struttura associata</small>
+                        </ng-template>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="unlocked-cell">
+                        <div class="unlocked-counts" *ngIf="user.unlockedCitiesCount || user.unlockedPoisCount; else noUnlockedItems">
+                          <small><strong>Citta:</strong> {{ user.unlockedCitiesCount }}</small>
+                          <small><strong>Luoghi:</strong> {{ user.unlockedPoisCount }}</small>
+                        </div>
+                        <div class="unlocked-tags" *ngIf="userUnlockedCities(user).length">
+                          <span class="status-pill ok" *ngFor="let city of userUnlockedCities(user) | slice: 0 : 3">
+                            {{ city.cityName || city.cityId }}
+                          </span>
+                        </div>
+                        <div class="unlocked-pois" *ngIf="userUnlockedPois(user).length">
+                          <small class="unlocked-poi-item" *ngFor="let poi of userUnlockedPois(user) | slice: 0 : 3">
+                            {{ poi.poiName || poi.poiId }}
+                            <span *ngIf="poi.cityName">({{ poi.cityName }})</span>
+                          </small>
+                        </div>
+                        <small class="structure-name muted" *ngIf="user.unlockedCitiesCount > 3 || user.unlockedPoisCount > 3">
+                          + altri contenuti sbloccati
+                        </small>
+                        <ng-template #noUnlockedItems>
+                          <small class="structure-name muted">Nessun contenuto sbloccato</small>
+                        </ng-template>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-pill" [class.ok]="user.isRegistered" [class.warn]="!user.isRegistered">
+                        {{ user.isRegistered ? 'Si' : 'No' }}
+                      </span>
+                    </td>
+                    <td>{{ formatDateTime(user.createdAt) }}</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button
+                          mat-stroked-button
+                          color="primary"
+                          *ngIf="user.id !== currentUserId && !isReadOnlyAppUser(user)"
+                          (click)="sendPasswordReset(user)"
+                          [disabled]="resettingPasswordUserId === user.id || !user.isRegistered"
+                        >
+                          {{ resettingPasswordUserId === user.id ? 'Invio reset...' : 'Reset password' }}
+                        </button>
+
+                        <button
+                          mat-flat-button
+                          color="accent"
+                          *ngIf="user.id !== currentUserId && !isReadOnlyAppUser(user)"
+                          (click)="impersonate(user)"
+                          [disabled]="impersonatingUserId === user.id || !user.isRegistered"
+                        >
+                          {{
+                            impersonatingUserId === user.id
+                              ? 'Accesso...'
+                              : 'Entra come ' + displayName(user.firstName, user.lastName, user.email)
+                          }}
+                        </button>
+
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          *ngIf="user.id !== currentUserId && !isReadOnlyAppUser(user)"
+                          (click)="deleteUser(user)"
+                          [disabled]="deletingUserId === user.id || savingUserId === user.id"
+                        >
+                          {{ deletingUserId === user.id ? 'Elimino...' : 'Elimina' }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+
+      <ng-container *ngIf="canViewDiscountCodes && activeSection === 'discounts'">
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Codici invito e sconto</h2>
+              <p class="table-subtitle" *ngIf="canManageUsers">
+                Ogni struttura puo avere piu codici con regole diverse e scadenza dedicata.
+              </p>
+              <p class="table-subtitle" *ngIf="!canManageUsers">
+                Vista sola lettura dei codici sconto della tua struttura.
+              </p>
+            </div>
+            <div class="table-actions" *ngIf="canManageUsers">
+              <button type="button" class="toggle-panel-btn" (click)="toggleDiscountCodeCreateSection()">
+                <span class="toggle-panel-icon">+</span>
+                <span>Aggiungi codice sconto/struttura</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="modern-table structures-table payments-table compact-table">
+              <thead>
+                <tr>
+                  <th>Struttura</th>
+                  <th>Codici sconto associati</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingDiscountCodes || loadingStructures">
+                  <td colspan="2" class="empty-cell spinner-cell">
+                    <mat-spinner diameter="28"></mat-spinner>
+                  </td>
+                </tr>
+                <tr *ngIf="!loadingDiscountCodes && !loadingStructures && !discountCodeGroups.length">
+                  <td colspan="2" class="empty-cell">Nessun codice sconto registrato.</td>
+                </tr>
+                <ng-container *ngIf="!loadingDiscountCodes && !loadingStructures">
+                  <tr *ngFor="let group of discountCodeGroups">
+                    <td>
+                      <strong>{{ group.structureName || '-' }}</strong>
+                      <small *ngIf="group.structureAddress">{{ group.structureAddress }}</small>
+                      <small>{{ group.codes.length }} {{ group.codes.length === 1 ? 'codice' : 'codici' }}</small>
+                    </td>
+                    <td>
+                      <div class="discount-group-list">
+                        <div class="discount-group-item" *ngFor="let discountCode of group.codes">
+                          <div class="discount-group-main">
+                            <code>{{ discountCode.code }}</code>
+                            <span class="discount-group-meta">
+                              Applicabile a:
+                              <strong>{{ discountCodeApplyToLabel(discountCode.applyTo) }}</strong>
+                            </span>
+                            <span class="discount-group-meta">
+                              Citta:
+                              <strong>{{ discountCodeCitiesLabel(discountCode) }}</strong>
+                            </span>
+                            <span class="discount-group-meta">
+                              Sconto/Incasso:
+                              <strong>{{ discountCode.userDiscountPercentApplied }}%</strong>
+                              / {{ formatCurrency(discountCode.structureFixedAmountApplied) }}
+                            </span>
+                            <span class="discount-group-meta">
+                              Scadenza: <strong>{{ formatDateTime(discountCode.expiresAt) }}</strong>
+                              <span
+                                class="expiry-badge"
+                                [ngClass]="{
+                                  'expiry-badge-active': discountCodeExpiryStatus(discountCode.expiresAt) === 'active',
+                                  'expiry-badge-expired': discountCodeExpiryStatus(discountCode.expiresAt) === 'expired',
+                                  'expiry-badge-unknown': discountCodeExpiryStatus(discountCode.expiresAt) === 'unknown'
+                                }"
+                              >
+                                {{
+                                  discountCodeExpiryStatus(discountCode.expiresAt) === 'active'
+                                    ? 'Attivo'
+                                    : discountCodeExpiryStatus(discountCode.expiresAt) === 'expired'
+                                      ? 'Scaduto'
+                                      : 'Da verificare'
+                                }}
+                              </span>
+                            </span>
+                          </div>
+                          <div class="action-buttons" *ngIf="canManageUsers; else discountReadOnlyActions">
+                            <button
+                              mat-stroked-button
+                              color="primary"
+                              type="button"
+                              (click)="editDiscountCode(discountCode)"
+                              [disabled]="savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id"
+                            >
+                              Modifica
+                            </button>
+                            <button
+                              mat-stroked-button
+                              color="warn"
+                              type="button"
+                              (click)="deleteDiscountCode(discountCode)"
+                              [disabled]="savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id"
+                            >
+                              {{ deletingDiscountCodeId === discountCode.id ? 'Elimino...' : 'Elimina' }}
+                            </button>
+                          </div>
+                          <ng-template #discountReadOnlyActions></ng-template>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+
+      <ng-container *ngIf="canManageUsers && activeSection === 'payments'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Pagamenti totali</span>
+            <strong *ngIf="!loadingPayments; else adminPaymentsLoadingStat">{{ paymentsSummary.totalPayments }}</strong>
+            <ng-template #adminPaymentsLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Incasso totale</span>
+            <strong *ngIf="!loadingPayments; else adminCollectedLoadingStat">{{ formatCurrency(paymentsSummary.totalCollected) }}</strong>
+            <ng-template #adminCollectedLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Sconti applicati</span>
+            <strong *ngIf="!loadingPayments; else adminDiscountLoadingStat">{{ formatCurrency(paymentsSummary.totalDiscountAmount) }}</strong>
+            <ng-template #adminDiscountLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Totale quota strutture</span>
+            <strong *ngIf="!loadingPayments; else adminEarningsLoadingStat">{{ formatCurrency(paymentsSummary.totalStructureEarnings) }}</strong>
+            <ng-template #adminEarningsLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+        </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Pagamenti</h2>
+              <p class="table-subtitle">Storico acquisti con eventuale codice sconto e quota struttura.</p>
+            </div>
+            <div class="table-actions">
+              <mat-form-field appearance="outline" class="compact-filter">
+                <mat-label>Filtra per struttura</mat-label>
+                <mat-select
+                  [value]="selectedPaymentsStructureId"
+                  (selectionChange)="onPaymentsStructureFilterChange($event.value)"
+                >
+                  <mat-option value="">Tutte le strutture</mat-option>
+                  <mat-option *ngFor="let structure of structures" [value]="structure.id">
+                    {{ structure.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="modern-table structures-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Utente</th>
+                  <th>Data nascita</th>
+                  <th>Metodo pagamento</th>
+                  <th>Contenuto</th>
+                  <th>Prezzo base</th>
+                  <th>Sconto</th>
+                  <th>Pagato</th>
+                  <th>Stato pagamento</th>
+                  <th>Struttura</th>
+                  <th>Codice</th>
+                  <th>Quota struttura</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingPayments">
+                  <td colspan="12" class="empty-cell spinner-cell">
+                    <mat-spinner diameter="28"></mat-spinner>
+                  </td>
+                </tr>
+                <tr *ngIf="!loadingPayments && !payments.length">
+                  <td colspan="12" class="empty-cell">Nessun pagamento registrato.</td>
+                </tr>
+                <ng-container *ngIf="!loadingPayments">
+                  <tr *ngFor="let payment of payments; trackBy: trackByPaymentId">
+                    <td>{{ formatDateTime(payment.purchasedAt) }}</td>
+                    <td class="payment-user-cell">
+                      <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>
+                      <small>{{ payment.customerEmail }}</small>
+                      <small>{{ payment.customerPhone }}</small>
+                      <small>{{ payment.customerAddress }}</small>
+                      <small>ID app: <code>{{ payment.customerId }}</code></small>
+                    </td>
+                    <td>{{ payment.customerBirthDate | date: 'dd/MM/yyyy':'':'it-IT' }}</td>
+                    <td class="payment-method-cell">
+                      <strong>{{ payment.paymentMethod }}</strong>
+                      <small>{{ payment.paymentProvider }}</small>
+                    </td>
+                    <td class="payment-content-cell">
+                      <small>{{ paymentTargetLabel(payment) }}</small>
+                      <span class="payment-type-badge" [class.bundle]="payment.type === 'bundle'" [class.single]="payment.type === 'single'">
+                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}
+                      </span>
+                    </td>
+                    <td>{{ formatCurrency(payment.baseAmount) }}</td>
+                    <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>
+                    <td>{{ formatCurrency(payment.paidAmount) }}</td>
+                    <td>{{ payment.paymentStatus }}</td>
+                    <td>{{ payment.structureName || '-' }}</td>
+                    <td><code>{{ payment.inviteCode || '-' }}</code></td>
+                    <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+
+      <ng-container *ngIf="canManageCatalog && activeSection === 'catalog'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Citta totali</span>
+            <strong *ngIf="!loadingCatalogCities; else catalogCitiesLoadingStat">{{ catalogCities.length }}</strong>
+            <ng-template #catalogCitiesLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Luoghi nella citta selezionata</span>
+            <strong *ngIf="!loadingCatalogPois; else catalogPoisLoadingStat">{{ catalogPois.length }}</strong>
+            <ng-template #catalogPoisLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+        </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Gestione Citta e Luoghi di interesse</h2>
+              <p class="table-subtitle">Catalogo admin con tab dedicati e modifica tramite modali.</p>
+            </div>
+          </div>
+
+          <div class="catalog-tabs" role="tablist" aria-label="Gestione catalogo">
+            <button
+              type="button"
+              class="catalog-tab"
+              [class.active]="catalogTab === 'cities'"
+              (click)="selectCatalogTab('cities')"
+            >
+              Citta
+            </button>
+            <button
+              type="button"
+              class="catalog-tab"
+              [class.active]="catalogTab === 'pois'"
+              (click)="selectCatalogTab('pois')"
+            >
+              Luoghi interesse
+            </button>
+          </div>
+
+          <div class="catalog-stack" *ngIf="catalogTab === 'cities'">
+            <section class="inline-panel">
+              <div class="catalog-panel-head">
+                <h3>Nuova citta</h3>
+                <button type="button" class="toggle-panel-btn" (click)="toggleCatalogCityCreateSection()">
+                  <span class="toggle-panel-icon">+</span>
+                  <span>Nuova citta</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="inline-panel">
+              <div class="catalog-list-head">
+                <div>
+                  <h3>Lista citta</h3>
+                  <p class="table-subtitle">Modifica da modale e gestisci i luoghi dalla tab dedicata.</p>
+                </div>
+              </div>
+
+              <div class="table-wrap compact-wrap">
+                <table class="modern-table compact-table">
+                  <thead>
+                    <tr>
+                      <th>Citta</th>
+                      <th>Regione</th>
+                      <th>Luoghi</th>
+                      <th>Azioni</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngIf="loadingCatalogCities">
+                      <td colspan="4" class="empty-cell spinner-cell">
+                        <mat-spinner diameter="28"></mat-spinner>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!loadingCatalogCities && !catalogCities.length">
+                      <td colspan="4" class="empty-cell">Nessuna citta disponibile.</td>
+                    </tr>
+                    <ng-container *ngIf="!loadingCatalogCities">
+                      <tr *ngFor="let city of catalogCities">
+                        <td>
+                          <strong>{{ city.name }}</strong>
+                          <small *ngIf="city.isDefault">Predefinita</small>
+                        </td>
+                        <td>{{ city.region }}</td>
+                        <td>{{ city.poiCount }}</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button mat-stroked-button color="primary" type="button" (click)="editCatalogCity(city)">Modifica</button>
+                            <button
+                              mat-stroked-button
+                              color="warn"
+                              type="button"
+                              (click)="deleteCatalogCity(city)"
+                              [disabled]="deletingCatalogCityId === city.id"
+                            >
+                              {{ deletingCatalogCityId === city.id ? 'Elimino...' : 'Elimina' }}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <div class="catalog-stack" *ngIf="catalogTab === 'pois'">
+            <section class="inline-panel">
+              <div class="catalog-panel-head">
+                <h3>Nuovo luogo di interesse</h3>
+                <button type="button" class="toggle-panel-btn" (click)="toggleCatalogPoiCreateSection()">
+                  <span class="toggle-panel-icon">+</span>
+                  <span>Nuovo luogo interesse</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="inline-panel">
+              <div class="catalog-list-head">
+                <div>
+                  <h3>Lista luoghi di interesse</h3>
+                  <p class="table-subtitle">Sezione in colonna unica per mantenere la lettura pulita.</p>
+                </div>
+                <mat-form-field appearance="outline" class="catalog-city-filter compact-filter">
+                  <mat-label>Filtro citta</mat-label>
+                  <mat-select [value]="selectedCatalogCityId" (selectionChange)="onCatalogCityFilterChange($event.value)">
+                    <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <p class="inline-note" *ngIf="!loadingCatalogCities && !catalogCities.length">Crea una citta per iniziare a gestire i POI.</p>
+              <div class="inline-loader" *ngIf="loadingCatalogCities">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+              <p class="inline-note" *ngIf="!loadingCatalogCities && catalogCities.length && !selectedCatalogCityId">
+                Seleziona una citta per vedere la lista dei punti di interesse.
+              </p>
+
+              <div class="table-wrap" *ngIf="selectedCatalogCityId">
+                <table class="modern-table">
+                  <thead>
+                    <tr>
+                      <th>Luogo</th>
+                      <th>Categoria</th>
+                      <th>Prezzo</th>
+                      <th>Durata</th>
+                      <th>Audio</th>
+                      <th>Azioni</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngIf="loadingCatalogPois">
+                      <td colspan="6" class="empty-cell spinner-cell">
+                        <mat-spinner diameter="28"></mat-spinner>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!loadingCatalogPois && !catalogPois.length">
+                      <td colspan="6" class="empty-cell">Nessun luogo nella citta selezionata.</td>
+                    </tr>
+                    <ng-container *ngIf="!loadingCatalogPois">
+                      <tr *ngFor="let poi of catalogPois; trackBy: trackByCatalogPoiId">
+                        <td><strong>{{ poi.name }}</strong></td>
+                        <td>{{ poi.category }}</td>
+                        <td>{{ formatCurrency(poi.priceSingle) }}</td>
+                        <td>{{ formatCatalogPoiDuration(poi) }}</td>
+                        <td>
+                          <button
+                            type="button"
+                            class="audio-link-btn"
+                            [disabled]="!poi.audioUrl"
+                            (click)="openCatalogPoiAudioPlayer(poi)"
+                          >
+                            {{ poi.audioUrl ? audioFileNameFromUrl(poi.audioUrl) : 'Nessun audio' }}
+                          </button>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button mat-stroked-button color="primary" type="button" (click)="editCatalogPoi(poi)">Modifica</button>
+                            <button
+                              mat-stroked-button
+                              color="warn"
+                              type="button"
+                              (click)="deleteCatalogPoi(poi)"
+                              [disabled]="deletingCatalogPoiId === poi.id"
+                            >
+                              {{ deletingCatalogPoiId === poi.id ? 'Elimino...' : 'Elimina' }}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </mat-card>
+      </ng-container>
+
+      <ng-template #createCatalogCityDialog>
+        <h2 mat-dialog-title>Nuova citta</h2>
+        <form [formGroup]="catalogCityForm" (ngSubmit)="saveCatalogCity()" class="form-grid dialog-form">
+          <div mat-dialog-content class="dialog-body">
+            <mat-form-field appearance="outline">
+              <mat-label>Nome citta</mat-label>
+              <input matInput type="text" formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Regione (fissa)</mat-label>
+              <input matInput type="text" formControlName="region" readonly />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Prezzo bundle (EUR)</mat-label>
+              <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
+            </mat-form-field>
+
+            <input type="hidden" formControlName="heroImage" />
+            <div class="media-block">
+              <div class="media-block-head">
+                <strong>Immagine citta</strong>
+                <span>{{ catalogCityForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>
+              </div>
+
+              <div class="media-preview" *ngIf="catalogCityForm.controls.heroImage.value; else createCityImageEmpty">
+                <img [src]="catalogCityForm.controls.heroImage.value" alt="Anteprima immagine citta" />
+              </div>
+              <ng-template #createCityImageEmpty>
+                <div class="media-preview placeholder">Carica un'immagine per la citta.</div>
+              </ng-template>
+
+              <div class="media-upload-actions">
+                <input
+                  #createCatalogCityImageInput
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/*"
+                  hidden
+                  (change)="onCatalogCityImageFileSelected($event)"
+                />
+                <button
+                  type="button"
+                  class="generate-code-btn"
+                  (click)="createCatalogCityImageInput.click()"
+                  [disabled]="uploadingCatalogCityImage || savingCatalogCity"
+                >
+                  {{
+                    uploadingCatalogCityImage
+                      ? 'Upload...'
+                      : catalogCityForm.controls.heroImage.value
+                        ? 'Sostituisci immagine'
+                        : 'Carica immagine'
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="ghost-btn"
+                  *ngIf="catalogCityForm.controls.heroImage.value"
+                  (click)="clearCatalogCityImage()"
+                  [disabled]="uploadingCatalogCityImage || savingCatalogCity"
+                >
+                  Rimuovi immagine
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div mat-dialog-actions align="end" class="dialog-actions">
+            <button type="button" class="row-save-btn secondary" (click)="closeCreateCatalogCityDialog()" [disabled]="savingCatalogCity">
+              Annulla
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveCatalogCity">
+              {{ savingCatalogCity ? 'Salvataggio...' : 'Crea citta' }}
+            </button>
+          </div>
+        </form>
+      </ng-template>
+
+      <ng-template #createCatalogPoiDialog>
+        <h2 mat-dialog-title>Nuovo luogo di interesse</h2>
+        <form [formGroup]="catalogPoiForm" (ngSubmit)="saveCatalogPoi()" class="form-grid dialog-form">
+          <div mat-dialog-content class="dialog-body">
+            <mat-form-field appearance="outline">
+              <mat-label>Citta</mat-label>
+              <mat-select [value]="selectedCatalogCityId" (selectionChange)="onCatalogCityFilterChange($event.value)">
+                <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <p class="inline-note" *ngIf="!loadingCatalogCities && !catalogCities.length">Crea prima almeno una citta.</p>
+            <div class="inline-loader" *ngIf="loadingCatalogCities">
+              <mat-spinner diameter="24"></mat-spinner>
+            </div>
+
+            <ng-container *ngIf="!loadingCatalogCities && catalogCities.length">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome luogo</mat-label>
+                <input matInput type="text" formControlName="name" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Categoria</mat-label>
+                <mat-select formControlName="category">
+                  <mat-option *ngFor="let category of poiCategoryOptionsFor(catalogPoiForm.controls.category.value)" [value]="category">
+                    {{ category }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div class="coords-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Latitudine</mat-label>
+                  <input matInput type="number" step="0.000001" formControlName="lat" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Longitudine</mat-label>
+                  <input matInput type="number" step="0.000001" formControlName="lng" />
+                </mat-form-field>
+              </div>
+
+              <div class="map-picker-row">
+                <button type="button" class="toggle-panel-btn subtle" (click)="openPoiMapPicker('create')">
+                  <span class="toggle-panel-icon">+</span>
+                  <span>Apri mappa e cerca coordinate</span>
+                </button>
+              </div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Descrizione breve</mat-label>
+                <textarea matInput rows="2" formControlName="descriptionShort"></textarea>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Descrizione lunga</mat-label>
+                <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
+              </mat-form-field>
+
+              <input type="hidden" formControlName="imageUrl" />
+              <div class="media-block">
+                <div class="media-block-head">
+                  <strong>Immagine luogo</strong>
+                  <span>{{ catalogPoiForm.controls.imageUrl.value ? 'Pronta' : 'Nessuna immagine' }}</span>
+                </div>
+
+                <div class="media-preview" *ngIf="catalogPoiForm.controls.imageUrl.value; else createPoiImageEmpty">
+                  <img [src]="catalogPoiForm.controls.imageUrl.value" alt="Anteprima immagine luogo" />
+                </div>
+                <ng-template #createPoiImageEmpty>
+                  <div class="media-preview placeholder">Carica un'immagine per il luogo.</div>
+                </ng-template>
+
+                <div class="media-upload-actions">
+                  <input
+                    #createCatalogPoiImageInput
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/*"
+                    hidden
+                    (change)="onCatalogImageFileSelected($event)"
+                  />
+                  <button
+                    type="button"
+                    class="generate-code-btn"
+                    (click)="createCatalogPoiImageInput.click()"
+                    [disabled]="uploadingCatalogImage || savingCatalogPoi"
+                  >
+                    {{ uploadingCatalogImage ? 'Upload...' : catalogPoiForm.controls.imageUrl.value ? 'Sostituisci immagine' : 'Carica immagine' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost-btn"
+                    *ngIf="catalogPoiForm.controls.imageUrl.value"
+                    (click)="clearCatalogPoiImage()"
+                    [disabled]="uploadingCatalogImage || savingCatalogPoi"
+                  >
+                    Rimuovi immagine
+                  </button>
+                </div>
+              </div>
+
+              <input type="hidden" formControlName="audioUrl" />
+              <div class="media-block">
+                <div class="media-block-head">
+                  <strong>Audioguida</strong>
+                  <span>{{ catalogPoiForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>
+                </div>
+
+                <div class="audio-file-pill" *ngIf="catalogPoiForm.controls.audioUrl.value; else createPoiAudioEmpty">
+                  <span class="audio-file-label">File:</span>
+                  <strong>{{ audioFileNameFromUrl(catalogPoiForm.controls.audioUrl.value) }}</strong>
+                </div>
+                <ng-template #createPoiAudioEmpty>
+                  <div class="media-preview placeholder">Carica un file audio per il luogo.</div>
+                </ng-template>
+
+                <div class="media-upload-actions">
+                  <input
+                    #createCatalogPoiAudioInput
+                    type="file"
+                    accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
+                    hidden
+                    (change)="onCatalogAudioFileSelected($event)"
+                  />
+                  <button
+                    type="button"
+                    class="generate-code-btn"
+                    (click)="createCatalogPoiAudioInput.click()"
+                    [disabled]="uploadingCatalogAudio || savingCatalogPoi"
+                  >
+                    {{ uploadingCatalogAudio ? 'Upload...' : catalogPoiForm.controls.audioUrl.value ? 'Sostituisci audio' : 'Carica audio' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost-btn"
+                    *ngIf="catalogPoiForm.controls.audioUrl.value"
+                    (click)="clearCatalogPoiAudio()"
+                    [disabled]="uploadingCatalogAudio || savingCatalogPoi"
+                  >
+                    Rimuovi audio
+                  </button>
+                </div>
+
+                <audio
+                  class="media-player"
+                  controls
+                  preload="none"
+                  *ngIf="catalogPoiForm.controls.audioUrl.value"
+                  [src]="catalogPoiForm.controls.audioUrl.value"
+                ></audio>
+              </div>
+
+              <div class="coords-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Prezzo singolo (EUR)</mat-label>
+                  <input matInput type="number" step="0.01" min="0" formControlName="priceSingle" />
+                </mat-form-field>
+              </div>
+            </ng-container>
+          </div>
+
+          <div mat-dialog-actions align="end" class="dialog-actions">
+            <button type="button" class="row-save-btn secondary" (click)="closeCreateCatalogPoiDialog()" [disabled]="savingCatalogPoi">
+              Annulla
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveCatalogPoi">
+              {{ savingCatalogPoi ? 'Salvataggio...' : 'Crea luogo di interesse' }}
+            </button>
+          </div>
+        </form>
+      </ng-template>
+
+      <ng-template #editCatalogCityDialog>
+        <h2 mat-dialog-title>Modifica citta</h2>
+        <form [formGroup]="catalogCityEditForm" (ngSubmit)="saveCatalogCityEdit()" class="form-grid dialog-form">
+          <div mat-dialog-content class="dialog-body">
+            <mat-form-field appearance="outline">
+              <mat-label>Nome citta</mat-label>
+              <input matInput type="text" formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Regione</mat-label>
+              <input matInput type="text" formControlName="region" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Prezzo bundle (EUR)</mat-label>
+              <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
+            </mat-form-field>
+
+            <input type="hidden" formControlName="heroImage" />
+            <div class="media-block">
+              <div class="media-block-head">
+                <strong>Immagine citta</strong>
+                <span>{{ catalogCityEditForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>
+              </div>
+
+              <div class="media-preview" *ngIf="catalogCityEditForm.controls.heroImage.value; else cityEditImageEmpty">
+                <img [src]="catalogCityEditForm.controls.heroImage.value" alt="Anteprima immagine citta" />
+              </div>
+              <ng-template #cityEditImageEmpty>
+                <div class="media-preview placeholder">Carica un'immagine per la citta.</div>
+              </ng-template>
+
+              <div class="media-upload-actions">
+                <input
+                  #catalogCityEditImageInput
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/*"
+                  hidden
+                  (change)="onCatalogCityEditImageFileSelected($event)"
+                />
+                <button
+                  type="button"
+                  class="generate-code-btn"
+                  (click)="catalogCityEditImageInput.click()"
+                  [disabled]="uploadingCatalogCityEditImage || savingCatalogCity"
+                >
+                  {{
+                    uploadingCatalogCityEditImage
+                      ? 'Upload...'
+                      : catalogCityEditForm.controls.heroImage.value
+                        ? 'Sostituisci immagine'
+                        : 'Carica immagine'
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="ghost-btn"
+                  *ngIf="catalogCityEditForm.controls.heroImage.value"
+                  (click)="clearCatalogCityEditImage()"
+                  [disabled]="uploadingCatalogCityEditImage || savingCatalogCity"
+                >
+                  Rimuovi immagine
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div mat-dialog-actions align="end" class="dialog-actions">
+            <button type="button" class="row-save-btn secondary" (click)="closeCatalogCityEditDialog()" [disabled]="savingCatalogCity">
+              Annulla
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveCatalogCityEdit">
+              {{ savingCatalogCity ? 'Salvataggio...' : 'Salva citta' }}
+            </button>
+          </div>
+        </form>
+      </ng-template>
+
+      <ng-template #editCatalogPoiDialog>
+        <h2 mat-dialog-title>Modifica luogo di interesse</h2>
+        <form [formGroup]="catalogPoiEditForm" (ngSubmit)="saveCatalogPoiEdit()" class="form-grid dialog-form">
+          <div mat-dialog-content class="dialog-body">
+            <mat-form-field appearance="outline">
+              <mat-label>Citta</mat-label>
+              <mat-select formControlName="cityId">
+                <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Nome luogo</mat-label>
+              <input matInput type="text" formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Categoria</mat-label>
+              <mat-select formControlName="category">
+                <mat-option *ngFor="let category of poiCategoryOptionsFor(catalogPoiEditForm.controls.category.value)" [value]="category">
+                  {{ category }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="coords-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Latitudine</mat-label>
+                <input matInput type="number" step="0.000001" formControlName="lat" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Longitudine</mat-label>
+                <input matInput type="number" step="0.000001" formControlName="lng" />
+              </mat-form-field>
+            </div>
+
+            <div class="map-picker-row">
+              <button type="button" class="toggle-panel-btn subtle" (click)="openPoiMapPicker('edit')">
+                <span class="toggle-panel-icon">+</span>
+                <span>Apri mappa e cerca coordinate</span>
+              </button>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Descrizione breve</mat-label>
+              <textarea matInput rows="2" formControlName="descriptionShort"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Descrizione lunga</mat-label>
+              <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
+            </mat-form-field>
+
+            <input type="hidden" formControlName="imageUrl" />
+            <div class="media-block">
+              <div class="media-block-head">
+                <strong>Immagine luogo</strong>
+                <span>{{ catalogPoiEditForm.controls.imageUrl.value ? 'Pronta' : 'Nessuna immagine' }}</span>
+              </div>
+
+              <div class="media-preview" *ngIf="catalogPoiEditForm.controls.imageUrl.value; else poiEditImageEmpty">
+                <img [src]="catalogPoiEditForm.controls.imageUrl.value" alt="Anteprima immagine luogo" />
+              </div>
+              <ng-template #poiEditImageEmpty>
+                <div class="media-preview placeholder">Carica un'immagine per il luogo.</div>
+              </ng-template>
+
+              <div class="media-upload-actions">
+                <input
+                  #catalogPoiEditImageInput
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/*"
+                  hidden
+                  (change)="onCatalogPoiEditImageFileSelected($event)"
+                />
+                <button
+                  type="button"
+                  class="generate-code-btn"
+                  (click)="catalogPoiEditImageInput.click()"
+                  [disabled]="uploadingCatalogPoiEditImage || savingCatalogPoi"
+                >
+                  {{
+                    uploadingCatalogPoiEditImage
+                      ? 'Upload...'
+                      : catalogPoiEditForm.controls.imageUrl.value
+                        ? 'Sostituisci immagine'
+                        : 'Carica immagine'
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="ghost-btn"
+                  *ngIf="catalogPoiEditForm.controls.imageUrl.value"
+                  (click)="clearCatalogPoiEditImage()"
+                  [disabled]="uploadingCatalogPoiEditImage || savingCatalogPoi"
+                >
+                  Rimuovi immagine
+                </button>
+              </div>
+            </div>
+
+            <input type="hidden" formControlName="audioUrl" />
+            <div class="media-block">
+              <div class="media-block-head">
+                <strong>Audioguida</strong>
+                <span>{{ catalogPoiEditForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>
+              </div>
+
+              <div class="audio-file-pill" *ngIf="catalogPoiEditForm.controls.audioUrl.value; else poiEditAudioEmpty">
+                <span class="audio-file-label">File:</span>
+                <strong>{{ audioFileNameFromUrl(catalogPoiEditForm.controls.audioUrl.value) }}</strong>
+              </div>
+              <ng-template #poiEditAudioEmpty>
+                <div class="media-preview placeholder">Carica un file audio per il luogo.</div>
+              </ng-template>
+
+              <div class="media-upload-actions">
+                <input
+                  #catalogPoiEditAudioInput
+                  type="file"
+                  accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
+                  hidden
+                  (change)="onCatalogPoiEditAudioFileSelected($event)"
+                />
+                <button
+                  type="button"
+                  class="generate-code-btn"
+                  (click)="catalogPoiEditAudioInput.click()"
+                  [disabled]="uploadingCatalogPoiEditAudio || savingCatalogPoi"
+                >
+                  {{
+                    uploadingCatalogPoiEditAudio
+                      ? 'Upload...'
+                      : catalogPoiEditForm.controls.audioUrl.value
+                        ? 'Sostituisci audio'
+                        : 'Carica audio'
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="ghost-btn"
+                  *ngIf="catalogPoiEditForm.controls.audioUrl.value"
+                  (click)="clearCatalogPoiEditAudio()"
+                  [disabled]="uploadingCatalogPoiEditAudio || savingCatalogPoi"
+                >
+                  Rimuovi audio
+                </button>
+              </div>
+
+              <audio
+                class="media-player"
+                controls
+                preload="none"
+                *ngIf="catalogPoiEditForm.controls.audioUrl.value"
+                [src]="catalogPoiEditForm.controls.audioUrl.value"
+              ></audio>
+            </div>
+
+            <div class="coords-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Prezzo singolo (EUR)</mat-label>
+                <input matInput type="number" step="0.01" min="0" formControlName="priceSingle" />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div mat-dialog-actions align="end" class="dialog-actions">
+            <button type="button" class="row-save-btn secondary" (click)="closeCatalogPoiEditDialog()" [disabled]="savingCatalogPoi">
+              Annulla
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveCatalogPoiEdit">
+              {{ savingCatalogPoi ? 'Salvataggio...' : 'Salva luogo' }}
+            </button>
+          </div>
+        </form>
+      </ng-template>
+
+      <ng-template #catalogPoiAudioPlayerDialog>
+        <h2 mat-dialog-title>{{ audioPlayerPoiName || 'Anteprima audioguida' }}</h2>
+        <div mat-dialog-content class="dialog-body map-dialog-body">
+          <p class="table-subtitle">
+            File audio: <strong>{{ audioPlayerFileName || '-' }}</strong>
+          </p>
+          <audio class="media-player" controls autoplay preload="metadata" [src]="audioPlayerUrl"></audio>
+        </div>
+        <div mat-dialog-actions align="end" class="dialog-actions">
+          <button type="button" class="row-save-btn secondary" (click)="closeCatalogPoiAudioPlayer()">Chiudi</button>
+        </div>
+      </ng-template>
+
+      <ng-template #poiMapPickerDialog>
+        <h2 mat-dialog-title>Cerca luogo e seleziona coordinate</h2>
+        <div mat-dialog-content class="dialog-body map-dialog-body">
+          <form [formGroup]="poiMapSearchForm" (ngSubmit)="searchPoiMap()" class="map-search-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Cerca luogo o indirizzo</mat-label>
+              <input matInput type="text" formControlName="query" autocomplete="off" />
+              <mat-hint>Ricerca gratuita tramite OpenStreetMap</mat-hint>
+            </mat-form-field>
+            <button type="submit" class="generate-code-btn" [disabled]="mapPickerLoading">
+              {{ mapPickerLoading ? 'Ricerca...' : 'Cerca' }}
+            </button>
+          </form>
+
+          <p class="inline-note" *ngIf="!mapPickerLoading && !mapPickerResults.length">
+            Cerca un luogo: le coordinate trovate vengono selezionate subito. Poi rifinisci trascinando il marker rosso sulla mappa.
+          </p>
+
+          <p class="map-selected-coords" *ngIf="hasPoiMapSelection">
+            Lat: <strong>{{ mapPickerSelectedLat | number: '1.4-6' }}</strong> |
+            Lng: <strong>{{ mapPickerSelectedLng | number: '1.4-6' }}</strong>
+          </p>
+
+          <div class="map-results" *ngIf="mapPickerResults.length">
+            <article class="map-result-card" *ngFor="let result of mapPickerResults">
+              <strong>{{ result.displayName }}</strong>
+              <small>Lat: {{ result.lat | number: '1.4-6' }} | Lng: {{ result.lng | number: '1.4-6' }}</small>
+              <div class="action-buttons">
+                <button type="button" class="row-save-btn" (click)="selectPoiMapResult(result)">Evidenzia su mappa</button>
+                <button mat-stroked-button type="button" (click)="usePoiMapResult(result)">Usa subito</button>
+              </div>
+            </article>
+          </div>
+
+          <section class="map-preview-panel">
+            <div class="map-preview-head">
+              <strong>Anteprima mappa</strong>
+              <small *ngIf="mapPickerTargetLabel">{{ mapPickerTargetLabel }}</small>
+              <small *ngIf="!mapPickerTargetLabel">Clicca o trascina il marker rosso per precisione.</small>
+            </div>
+            <div #poiMapCanvas class="poi-map-canvas" [class.ready]="mapPickerMapReady"></div>
+          </section>
+        </div>
+
+        <div mat-dialog-actions align="end" class="dialog-actions">
+          <button type="button" class="row-save-btn secondary" (click)="closePoiMapPicker()" [disabled]="mapPickerLoading">
+            Chiudi
           </button>
-
-          <button
-            mat-flat-button
-            color="accent"
-            *ngIf="user.id !== currentUserId"
-            (click)="impersonate(user)"
-            [disabled]="impersonatingUserId === user.id || !user.isRegistered"
-          >
-            Entra come utente
+          <button type="button" class="row-save-btn" (click)="confirmPoiMapSelection()" [disabled]="!hasPoiMapSelection || mapPickerLoading">
+            Usa coordinate selezionate
           </button>
         </div>
-      </div>
-    </mat-card>
-  </ng-container>
+      </ng-template>
+
+      <ng-template #createDiscountCodeDialog>
+        <h2 mat-dialog-title>Aggiungi codice sconto/struttura</h2>
+        <form [formGroup]="discountCodeCreateForm" (ngSubmit)="createDiscountCode()" class="form-grid dialog-form">
+          <div mat-dialog-content class="dialog-body">
+            <mat-form-field appearance="outline">
+              <mat-label>Struttura</mat-label>
+              <mat-select formControlName="structureId">
+                <mat-option *ngFor="let structure of structures" [value]="structure.id">{{ structure.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="invite-code-row">
+              <mat-form-field appearance="outline" class="invite-code-field">
+                <mat-label>Codice</mat-label>
+                <input matInput type="text" formControlName="code" maxlength="6" autocomplete="off" />
+              </mat-form-field>
+
+              <button type="button" class="generate-code-btn" (click)="generateDiscountCodeForCreate()" [disabled]="creatingDiscountCode">
+                Genera codice
+              </button>
+            </div>
+
+            <div class="discount-scope-group">
+              <label>Applicabile a</label>
+              <mat-radio-group formControlName="applyTo" class="discount-scope-radio">
+                <mat-radio-button value="single">Luogo singolo</mat-radio-button>
+                <mat-radio-button value="bundle">Pacchetto citta</mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Citta applicabili</mat-label>
+              <mat-select formControlName="cityIds" multiple>
+                <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+              </mat-select>
+              <mat-hint>Seleziona una o piu citta</mat-hint>
+            </mat-form-field>
+            <p class="inline-note" *ngIf="!catalogCities.length && !loadingCatalogCities">
+              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.
+            </p>
+            <div class="inline-loader" *ngIf="loadingCatalogCities">
+              <mat-spinner diameter="22"></mat-spinner>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Sconto utente {{ discountCodeCreateScopeLabel }} (%)</mat-label>
+              <input matInput type="number" min="0" max="100" step="0.01" formControlName="userDiscountPercent" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Incasso struttura {{ discountCodeCreateScopeLabel }} (EUR)</mat-label>
+              <input matInput type="number" min="0" max="10000" step="0.01" formControlName="structureFixedAmount" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Scadenza</mat-label>
+              <input #createDiscountExpiresInput matInput type="datetime-local" step="60" formControlName="expiresAt" />
+              <button
+                class="date-picker-suffix-btn"
+                matSuffix
+                type="button"
+                aria-label="Apri calendario e ora"
+                (click)="openNativeDateTimePicker(createDiscountExpiresInput)"
+              >
+                <span class="calendar-icon-glyph" aria-hidden="true"></span>
+              </button>
+              <mat-hint>Seleziona data e ora</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div mat-dialog-actions align="end" class="dialog-actions">
+            <button type="button" class="row-save-btn secondary" (click)="closeCreateDiscountCodeDialog()" [disabled]="creatingDiscountCode">
+              Annulla
+            </button>
+            <button type="submit" class="row-save-btn" [disabled]="creatingDiscountCode || discountCodeCreateForm.invalid">
+              {{ creatingDiscountCode ? 'Salvataggio...' : 'Crea codice' }}
+            </button>
+          </div>
+        </form>
+      </ng-template>
+
+      <ng-template #editDiscountCodeDialog>
+        <h2 mat-dialog-title>Modifica codice sconto</h2>
+        <form [formGroup]="discountCodeEditForm" (ngSubmit)="saveDiscountCodeEdit()" class="form-grid dialog-form">
+          <div mat-dialog-content class="dialog-body">
+            <p class="inline-note" *ngIf="editingDiscountCode">
+              Codice: <code>{{ editingDiscountCode.code }}</code> - Struttura: <strong>{{ editingDiscountCode.structureName }}</strong>
+            </p>
+
+            <div class="discount-scope-group">
+              <label>Applicabile a</label>
+              <mat-radio-group formControlName="applyTo" class="discount-scope-radio">
+                <mat-radio-button value="single">Luogo singolo</mat-radio-button>
+                <mat-radio-button value="bundle">Pacchetto citta</mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Citta applicabili</mat-label>
+              <mat-select formControlName="cityIds" multiple>
+                <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+              </mat-select>
+              <mat-hint>Seleziona una o piu citta</mat-hint>
+            </mat-form-field>
+            <p class="inline-note" *ngIf="!catalogCities.length && !loadingCatalogCities">
+              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.
+            </p>
+            <div class="inline-loader" *ngIf="loadingCatalogCities">
+              <mat-spinner diameter="22"></mat-spinner>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Sconto utente {{ discountCodeEditScopeLabel }} (%)</mat-label>
+              <input matInput type="number" min="0" max="100" step="0.01" formControlName="userDiscountPercent" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Incasso struttura {{ discountCodeEditScopeLabel }} (EUR)</mat-label>
+              <input matInput type="number" min="0" max="10000" step="0.01" formControlName="structureFixedAmount" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Scadenza</mat-label>
+              <input #editDiscountExpiresInput matInput type="datetime-local" step="60" formControlName="expiresAt" />
+              <button
+                class="date-picker-suffix-btn"
+                matSuffix
+                type="button"
+                aria-label="Apri calendario e ora"
+                (click)="openNativeDateTimePicker(editDiscountExpiresInput)"
+              >
+                <span class="calendar-icon-glyph" aria-hidden="true"></span>
+              </button>
+              <mat-hint>Seleziona data e ora</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div mat-dialog-actions align="end" class="dialog-actions">
+            <button type="button" class="row-save-btn secondary" (click)="closeEditDiscountCodeDialog()" [disabled]="updatingDiscountCode">
+              Annulla
+            </button>
+            <button type="submit" class="row-save-btn" [disabled]="updatingDiscountCode || discountCodeEditForm.invalid">
+              {{ updatingDiscountCode ? 'Salvataggio...' : 'Salva modifiche' }}
+            </button>
+          </div>
+        </form>
+      </ng-template>
+      <ng-container *ngIf="canManageUsers && activeSection === 'structures'">
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Lista strutture</h2>
+              <p class="table-subtitle">Gestisci dati struttura. I codici invito/sconto sono gestiti nella sezione dedicata.</p>
+            </div>
+            <div class="table-actions">
+              <button type="button" class="toggle-panel-btn" [class.active]="showStructureSection" (click)="toggleStructureSection()">
+                <span class="toggle-panel-icon">{{ showStructureSection ? '-' : '+' }}</span>
+                <span>{{ showStructureSection ? 'Chiudi aggiunta struttura' : 'Aggiungi struttura' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <section class="inline-panel" *ngIf="showStructureSection">
+            <h3>Nuova struttura</h3>
+            <p>Inserisci nome struttura, via, civico, citta e CAP. I codici sconto si gestiscono nella sezione dedicata.</p>
+
+            <form [formGroup]="structureForm" (ngSubmit)="registerStructure()" class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome struttura</mat-label>
+                <input matInput type="text" formControlName="name" autocomplete="organization" />
+              </mat-form-field>
+
+              <div class="address-grid">
+                <mat-form-field appearance="outline" class="address-span-2">
+                  <mat-label>Via/Piazza</mat-label>
+                  <input matInput type="text" formControlName="street" autocomplete="street-address" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Civico</mat-label>
+                  <input matInput type="text" formControlName="streetNumber" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>CAP</mat-label>
+                  <input matInput type="text" formControlName="postalCode" maxlength="5" inputmode="numeric" />
+                  <mat-error *ngIf="structureForm.controls.postalCode.hasError('pattern')">Inserisci un CAP valido a 5 cifre</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Citta</mat-label>
+                  <input matInput type="text" formControlName="city" autocomplete="address-level2" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Provincia (opzionale)</mat-label>
+                  <input matInput type="text" formControlName="province" autocomplete="address-level1" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Nazione (opzionale)</mat-label>
+                  <input matInput type="text" formControlName="country" autocomplete="country-name" />
+                </mat-form-field>
+              </div>
+
+              <button mat-flat-button color="primary" class="big-cta" [disabled]="creatingStructure" type="submit">
+                {{ creatingStructure ? 'Salvataggio...' : 'Registra struttura' }}
+              </button>
+            </form>
+          </section>
+
+          <section class="inline-panel" *ngIf="editingStructureId">
+            <h3>Modifica struttura</h3>
+            <p>Aggiorna nome e indirizzo. Il codice invito resta invariato.</p>
+
+            <form [formGroup]="structureEditForm" (ngSubmit)="updateStructure()" class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome struttura</mat-label>
+                <input matInput type="text" formControlName="name" autocomplete="organization" />
+              </mat-form-field>
+
+              <div class="address-grid">
+                <mat-form-field appearance="outline" class="address-span-2">
+                  <mat-label>Via/Piazza</mat-label>
+                  <input matInput type="text" formControlName="street" autocomplete="street-address" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Civico</mat-label>
+                  <input matInput type="text" formControlName="streetNumber" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>CAP</mat-label>
+                  <input matInput type="text" formControlName="postalCode" maxlength="5" inputmode="numeric" />
+                  <mat-error *ngIf="structureEditForm.controls.postalCode.hasError('pattern')">
+                    Inserisci un CAP valido a 5 cifre
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Citta</mat-label>
+                  <input matInput type="text" formControlName="city" autocomplete="address-level2" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Provincia (opzionale)</mat-label>
+                  <input matInput type="text" formControlName="province" autocomplete="address-level1" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Nazione (opzionale)</mat-label>
+                  <input matInput type="text" formControlName="country" autocomplete="country-name" />
+                </mat-form-field>
+              </div>
+
+              <div class="action-buttons">
+                <button mat-flat-button color="primary" class="big-cta" [disabled]="!canSaveStructureEdit" type="submit">
+                  {{ updatingStructure ? 'Salvataggio...' : 'Salva modifiche struttura' }}
+                </button>
+                <button type="button" class="row-save-btn" (click)="cancelStructureEdit()" [disabled]="updatingStructure">
+                  Annulla
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <div class="table-wrap">
+            <table class="modern-table structures-table">
+              <thead>
+                <tr>
+                  <th>Struttura</th>
+                  <th>Indirizzo</th>
+                  <th>Codici sconto</th>
+                  <th>Utenti associati</th>
+                  <th>Guadagno maturato</th>
+                  <th>Creata il</th>
+                  <th>Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingStructures">
+                  <td colspan="7" class="empty-cell spinner-cell">
+                    <mat-spinner diameter="28"></mat-spinner>
+                  </td>
+                </tr>
+                <tr *ngIf="!structures.length && !loadingStructures">
+                  <td colspan="7" class="empty-cell">Nessuna struttura registrata.</td>
+                </tr>
+                <ng-container *ngIf="!loadingStructures">
+                  <tr *ngFor="let structure of structures">
+                    <td><strong>{{ structure.name }}</strong></td>
+                    <td>{{ formatStructureAddress(structure) }}</td>
+                    <td>
+                      <div class="structure-codes-list" *ngIf="structureCodes(structure.id).length; else noStructureCodes">
+                        <div class="structure-code-item" *ngFor="let discountCode of structureCodes(structure.id)">
+                          <code>{{ discountCode.code }}</code>
+                          <small>Scade: {{ formatDateTime(discountCode.expiresAt) }}</small>
+                        </div>
+                      </div>
+                      <ng-template #noStructureCodes>-</ng-template>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="table-link-btn"
+                        (click)="openUsersForStructure(structure)"
+                        [disabled]="structure.usersCount <= 0"
+                      >
+                        {{ structure.usersCount }}
+                      </button>
+                    </td>
+                    <td>{{ formatCurrency(structure.totalStructureEarnings) }}</td>
+                    <td>{{ formatDateTime(structure.createdAt) }}</td>
+                    <td>
+                      <button mat-stroked-button color="primary" type="button" (click)="editStructure(structure)">
+                        Modifica
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+    </main>
+  </div>
 </section>
+
+
+

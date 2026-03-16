@@ -4,7 +4,7 @@
   min-width: 0;
   box-sizing: border-box;
   overflow-x: hidden;
-  padding: 12px 12px 6px;
+  padding: 12px 12px 8px;
 }
 
 .dialog-top {
@@ -46,9 +46,134 @@ h2[mat-dialog-title] {
   font-size: 0.9rem;
 }
 
+.choice-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.choice-btn {
+  justify-content: flex-start;
+  min-height: 44px;
+}
+
+.step-block {
+  display: grid;
+  gap: 8px;
+}
+
 .full-width {
   width: 100%;
   margin-top: 4px;
+}
+
+.summary-card {
+  border-radius: 12px;
+  border: 1px solid #d6e2f2;
+  background: #f7fbff;
+  padding: 12px;
+}
+
+.stored-code-card {
+  background: #f4f9ff;
+}
+
+.processing-card {
+  border-radius: 12px;
+  border: 1px solid #d6e2f2;
+  background: #f7fbff;
+  padding: 16px 12px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.processing-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #16365a;
+}
+
+.processing-subtitle {
+  margin: 0;
+  color: #5a6f8b;
+  font-size: 0.88rem;
+}
+
+.success-card {
+  border-color: #c6e7cf;
+  background: #f5fcf6;
+}
+
+.summary-title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #16365a;
+}
+
+.summary-line {
+  margin: 0;
+  color: #2a3b55;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.status-chip-valid {
+  color: #0f6b3f;
+  background: #e8f7ef;
+  border-color: #b8e4cb;
+}
+
+.status-chip-expired {
+  color: #b42318;
+  background: #fff1f1;
+  border-color: #f5c2c2;
+}
+
+.status-chip-used {
+  color: #9a3412;
+  background: #fff4e5;
+  border-color: #fbd19a;
+}
+
+.status-chip-invalid {
+  color: #4b5565;
+  background: #edf1f6;
+  border-color: #d3dce8;
+}
+
+.summary-total {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #b8cbdf;
+  font-size: 0.95rem;
+}
+
+.error-text {
+  margin: 0;
+  color: #c62828;
+  font-size: 0.88rem;
 }
 
 mat-dialog-content {
@@ -60,5 +185,12 @@ mat-dialog-content {
 mat-dialog-actions {
   margin: 0 !important;
   padding: 10px 0 0 !important;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-progress {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
 }

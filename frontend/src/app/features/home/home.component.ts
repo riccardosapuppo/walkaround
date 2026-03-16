@@ -47,6 +47,7 @@ const homeScrollStorageKey = 'tourismapp.home.scrollY';
 export class HomeComponent implements OnInit, OnDestroy {
   apiErrorMessage: string | null = null;
   loading = true;
+  readonly cityUnlockPrice = 14.99;
   readonly cityUnlockPriceLabel = '14,99';
 
   readonly vm$ = combineLatest([
@@ -186,23 +187,27 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   purchaseCity(cityId: string): void {
-    this.purchaseService.purchaseCityBundle(cityId).subscribe({
-      next: () => {
-        this.snackBar.open(`Città sbloccata: ${this.cityName(cityId)}`, 'OK', { duration: 2200 });
+    this.purchaseService.purchaseCityBundle(cityId, this.cityName(cityId), this.cityUnlockPrice).subscribe({
+      next: (result) => {
+        if (result?.action === 'paid') {
+          this.snackBar.open(`Citta sbloccata: ${this.cityName(cityId)}`, 'OK', { duration: 2400 });
+        }
       },
       error: () => {
-        this.snackBar.open('Acquisto simulato non riuscito', 'Chiudi', { duration: 2600 });
+        this.snackBar.open('Operazione non riuscita', 'Chiudi', { duration: 2600 });
       }
     });
   }
 
   purchasePoi(poi: Poi): void {
-    this.purchaseService.purchasePoiSingle(poi.id).subscribe({
-      next: () => {
-        this.snackBar.open(`Luogo sbloccato: ${poi.name}`, 'OK', { duration: 2200 });
+    this.purchaseService.purchasePoiSingle(poi.id, poi.cityId, poi.name, poi.priceSingle).subscribe({
+      next: (result) => {
+        if (result?.action === 'paid') {
+          this.snackBar.open(`Luogo sbloccato: ${poi.name}`, 'OK', { duration: 2400 });
+        }
       },
       error: () => {
-        this.snackBar.open('Acquisto simulato non riuscito', 'Chiudi', { duration: 2600 });
+        this.snackBar.open('Operazione non riuscita', 'Chiudi', { duration: 2600 });
       }
     });
   }

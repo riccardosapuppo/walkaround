@@ -1,5 +1,5 @@
-﻿.sheet-wrap {
-  padding: 8px 8px 20px;
+.sheet-wrap {
+  padding: 8px 8px calc(124px + env(safe-area-inset-bottom));
 }
 
 .sheet-image {
@@ -27,4 +27,11 @@
   margin: 16px 0 8px;
   display: grid;
   gap: 10px;
+}
+
+.navigate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }

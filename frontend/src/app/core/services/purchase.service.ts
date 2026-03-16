@@ -1,62 +1,70 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { BehaviorSubject, EMPTY, Observable, map, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PurchaseItem, PurchasesResponse } from '../models/purchase.model';
-import { UnlockCodeDialogComponent } from '../../shared/components/unlock-code-dialog/unlock-code-dialog.component';
-import { AppStateService } from './app-state.service';
-
-interface PurchaseResponse {
-  purchased: boolean;
-  alreadyPurchased?: boolean;
-  type: 'bundle' | 'single';
-  cityId?: string;
-  poiId?: string;
-  amount?: number;
-}
-
-interface BundleUnlockPayload {
-  code: string;
-  userId: string;
-  type: 'bundle';
-  cityId: string;
-}
-
-interface SingleUnlockPayload {
-  code: string;
-  userId: string;
-  type: 'single';
-  poiId: string;
-}
-
-interface BundleUnlockResult {
-  type: 'bundle';
-  cityId: string;
-  cityName?: string;
-  amount: number;
-}
-
-interface SingleUnlockResult {
-  type: 'single';
-  cityId: string;
-  poiId: string;
-  poiName?: string;
-  amount: number;
-}
-
-type UnlockResult = BundleUnlockResult | SingleUnlockResult;
-
-interface UnlockValidationResponse {
-  valid: boolean;
-  unlocked?: UnlockResult;
-  message?: string;
-}
+import {
+  UnlockCodeDialogComponent,
+  UnlockCodeDialogData,
+  UnlockCodeDialogResult
+} from '../../shared/components/unlock-code-dialog/unlock-code-dialog.component';
+import { AppStateService, HotelAssociation } from './app-state.service';
 
 interface HotelValidationResponse {
   valid: boolean;
-  unlocked?: BundleUnlockResult;
+  applied?: boolean;
+  association?: HotelAssociation;
   message?: string;
+}
+
+export interface HotelCodeStatusEntry {
+  inviteCode: string;
+  structureId: string | null;
+  structureName: string | null;
+  structureAddress: string | null;
+  appliesTo?: 'single' | 'bundle' | null;
+  cityId?: string | null;
+  cityName?: string | null;
+  cityIds?: string[];
+  cityNames?: string[];
+  status: 'activated' | 'used' | 'expired' | 'invalid';
+  expiresAt?: string | null;
+  activatedAt?: string | null;
+  usedAt?: string | null;
+}
+
+interface HotelAssociationResponse {
+  associated: boolean;
+  association?: HotelAssociation;
+  codes?: HotelCodeStatusEntry[];
+}
+
+interface RemoveHotelAssociationResponse {
+  removed: boolean;
+  hadAssociation: boolean;
+}
+
+interface ClearPurchasesResponse {
+  cleared: boolean;
+  deletedCount: number;
+}
+
+interface CheckoutPurchaseResponse {
+  purchased: boolean;
+  alreadyPurchased?: boolean;
+  type: 'single' | 'bundle';
+  cityId?: string;
+  poiId?: string;
+  amount?: number;
+  baseAmount?: number;
+  discountPercent?: number;
+  discountAmount?: number;
+  finalAmount?: number;
+  structureId?: string | null;
+  inviteCode?: string | null;
+  structureFixedAmount?: number;
+  structureEarningAmount?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -80,92 +88,82 @@ export class PurchaseService {
     return of(this.purchasesSubject.value);
   }
 
-  purchaseCityBundle(cityId: string): Observable<PurchaseResponse> {
-    return this.requestUnlockCode().pipe(
-      switchMap((code) => {
-        if (!code) {
-          return EMPTY;
-        }
+  purchaseCityBundle(cityId: string, cityName: string, amount: number): Observable<UnlockCodeDialogResult | null> {
+    const dialogData: UnlockCodeDialogData = {
+      userId: this.appState.userId,
+      existingCode: this.appState.hotelCode,
+      existingAssociation: this.appState.hotelAssociation,
+      target: {
+        type: 'bundle',
+        cityId,
+        label: cityName,
+        baseAmount: Number(amount)
+      }
+    };
 
-        const payload: BundleUnlockPayload = {
-          code,
-          userId: this.appState.userId,
-          type: 'bundle',
-          cityId
-        };
-
-        return this.http.post<UnlockValidationResponse>(`${environment.apiBaseUrl}/unlock/validate`, payload);
-      }),
-      tap((response) => {
-        const unlocked = response.unlocked;
-        if (!response.valid || !unlocked || unlocked.type !== 'bundle') {
-          throw new Error(response.message || 'Risposta unlock non valida');
-        }
-
-        this.applyBundleUnlock(unlocked.cityId, unlocked.amount);
-      }),
-      map((response) => {
-        const unlocked = response.unlocked as BundleUnlockResult;
-        return {
-          purchased: true,
-          type: 'bundle',
-          cityId: unlocked.cityId,
-          amount: unlocked.amount
-        } satisfies PurchaseResponse;
-      })
-    );
+    return this.openUnlockDialog(dialogData);
   }
 
-  purchasePoiSingle(poiId: string): Observable<PurchaseResponse> {
-    return this.requestUnlockCode().pipe(
-      switchMap((code) => {
-        if (!code) {
-          return EMPTY;
-        }
+  purchasePoiSingle(poiId: string, cityId: string, poiName: string, amount: number): Observable<UnlockCodeDialogResult | null> {
+    const dialogData: UnlockCodeDialogData = {
+      userId: this.appState.userId,
+      existingCode: this.appState.hotelCode,
+      existingAssociation: this.appState.hotelAssociation,
+      target: {
+        type: 'single',
+        poiId,
+        cityId,
+        label: poiName,
+        baseAmount: Number(amount)
+      }
+    };
 
-        const payload: SingleUnlockPayload = {
-          code,
-          userId: this.appState.userId,
-          type: 'single',
-          poiId
-        };
-
-        return this.http.post<UnlockValidationResponse>(`${environment.apiBaseUrl}/unlock/validate`, payload);
-      }),
-      tap((response) => {
-        const unlocked = response.unlocked;
-        if (!response.valid || !unlocked || unlocked.type !== 'single') {
-          throw new Error(response.message || 'Risposta unlock non valida');
-        }
-
-        this.applySingleUnlock(unlocked.poiId, unlocked.cityId, unlocked.amount);
-      }),
-      map((response) => {
-        const unlocked = response.unlocked as SingleUnlockResult;
-        return {
-          purchased: true,
-          type: 'single',
-          cityId: unlocked.cityId,
-          poiId: unlocked.poiId,
-          amount: unlocked.amount
-        } satisfies PurchaseResponse;
-      })
-    );
+    return this.openUnlockDialog(dialogData);
   }
 
   validateHotelCode(code: string): Observable<HotelValidationResponse> {
+    return this.http.post<HotelValidationResponse>(`${environment.apiBaseUrl}/hotel/validate`, {
+      code,
+      userId: this.appState.userId
+    });
+  }
+
+  getHotelAssociation(): Observable<HotelAssociation | null> {
+    return this.getHotelAssociationDetails().pipe(map((response) => response.association));
+  }
+
+  getHotelAssociationDetails(): Observable<{ association: HotelAssociation | null; codes: HotelCodeStatusEntry[] }> {
     return this.http
-      .post<HotelValidationResponse>(`${environment.apiBaseUrl}/hotel/validate`, {
-        code,
-        userId: this.appState.userId
+      .get<HotelAssociationResponse>(`${environment.apiBaseUrl}/me/hotel-association`, {
+        params: { userId: this.appState.userId }
       })
       .pipe(
-        tap((response) => {
-          if (!response.valid || !response.unlocked) {
-            return;
-          }
+        map((response) => ({
+          association: response.associated ? response.association || null : null,
+          codes: Array.isArray(response.codes) ? response.codes : []
+        }))
+      );
+  }
 
-          this.applyBundleUnlock(response.unlocked.cityId, response.unlocked.amount);
+  removeHotelAssociation(): Observable<RemoveHotelAssociationResponse> {
+    return this.http.delete<RemoveHotelAssociationResponse>(`${environment.apiBaseUrl}/hotel/association`, {
+      params: { userId: this.appState.userId }
+    });
+  }
+
+  clearPurchasesForDebug(): Observable<ClearPurchasesResponse> {
+    return this.http
+      .delete<ClearPurchasesResponse>(`${environment.apiBaseUrl}/me/purchases`, {
+        params: { userId: this.appState.userId }
+      })
+      .pipe(
+        map((response) => {
+          this.purchasesSubject.next({
+            items: [],
+            unlockedPoiIds: [],
+            unlockedCityIds: []
+          });
+          return response;
         })
       );
   }
@@ -180,22 +178,58 @@ export class PurchaseService {
   }
 
   refresh(): void {
-    // Session unlocks are kept only in memory and reset on full page refresh.
+    this.http
+      .get<PurchasesResponse>(`${environment.apiBaseUrl}/me/purchases`, {
+        params: { userId: this.appState.userId }
+      })
+      .subscribe({
+        next: (response) => {
+          this.purchasesSubject.next(this.normalizePurchases(response));
+        },
+        error: () => {
+          // Keep local state if backend is temporarily unavailable.
+        }
+      });
   }
 
-  private requestUnlockCode(): Observable<string | null> {
+  resetLocalState(): void {
+    this.sessionPurchaseId = 1;
+    this.purchasesSubject.next({
+      items: [],
+      unlockedPoiIds: [],
+      unlockedCityIds: []
+    });
+  }
+
+  private openUnlockDialog(dialogData: UnlockCodeDialogData): Observable<UnlockCodeDialogResult | null> {
     return this.dialog
       .open(UnlockCodeDialogComponent, {
         autoFocus: true,
         restoreFocus: true,
+        data: dialogData,
         width: '92vw',
-        maxWidth: '420px'
+        maxWidth: '560px'
       })
       .afterClosed()
       .pipe(
-        map((value) => {
-          const normalized = String(value || '').trim();
-          return normalized || null;
+        map((value) => value || null),
+        map((result) => {
+          if (!result?.association) {
+            if (result?.action === 'paid') {
+              this.applyPurchaseResult(result.purchase || null);
+            }
+            return result;
+          }
+
+          const association = result.association;
+          this.appState.setHotelAssociation(association);
+          if (association.inviteCode) {
+            this.appState.setHotelCode(association.inviteCode);
+          }
+          if (result.action === 'paid') {
+            this.applyPurchaseResult(result.purchase || null);
+          }
+          return result;
         })
       );
   }
@@ -235,6 +269,57 @@ export class PurchaseService {
       poiId,
       amount,
       purchasedAt: new Date().toISOString()
+    };
+  }
+
+  private applyPurchaseResult(purchase: CheckoutPurchaseResponse | null): void {
+    if (!purchase || !purchase.purchased) {
+      return;
+    }
+
+    const amount = this.resolvePurchaseAmount(purchase);
+    if (purchase.type === 'bundle' && purchase.cityId) {
+      this.applyBundleUnlock(purchase.cityId, amount);
+      this.refresh();
+      return;
+    }
+
+    if (purchase.type === 'single' && purchase.cityId && purchase.poiId) {
+      this.applySingleUnlock(purchase.poiId, purchase.cityId, amount);
+      this.refresh();
+      return;
+    }
+
+    this.refresh();
+  }
+
+  private resolvePurchaseAmount(purchase: CheckoutPurchaseResponse): number {
+    const finalAmount = Number(purchase.finalAmount);
+    if (Number.isFinite(finalAmount) && finalAmount >= 0) {
+      return finalAmount;
+    }
+
+    const amount = Number(purchase.amount);
+    if (Number.isFinite(amount) && amount >= 0) {
+      return amount;
+    }
+
+    return 0;
+  }
+
+  private normalizePurchases(response: PurchasesResponse | null | undefined): PurchasesResponse {
+    if (!response) {
+      return {
+        items: [],
+        unlockedPoiIds: [],
+        unlockedCityIds: []
+      };
+    }
+
+    return {
+      items: Array.isArray(response.items) ? response.items : [],
+      unlockedPoiIds: Array.isArray(response.unlockedPoiIds) ? response.unlockedPoiIds : [],
+      unlockedCityIds: Array.isArray(response.unlockedCityIds) ? response.unlockedCityIds : []
     };
   }
 }

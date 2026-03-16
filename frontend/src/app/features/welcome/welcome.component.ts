@@ -25,6 +25,7 @@ export class WelcomeComponent {
   }
 
   start(): void {
+    this.appState.markOnboardingSeen();
     this.appState.setActiveCity('catania');
     this.purchaseService.refresh();
     void this.router.navigate(['/home']);
@@ -33,7 +34,7 @@ export class WelcomeComponent {
   validateCode(): void {
     const trimmed = this.hotelCode.trim();
     if (!trimmed) {
-      this.snackBar.open('Inserisci un codice hotel', 'Chiudi', { duration: 2200 });
+      this.snackBar.open('Inserisci un codice invito/sconto', 'Chiudi', { duration: 2200 });
       return;
     }
 
@@ -41,18 +42,34 @@ export class WelcomeComponent {
     this.purchaseService.validateHotelCode(trimmed).subscribe({
       next: (response) => {
         this.isCheckingCode = false;
-        if (!response.valid || !response.unlocked) {
-          this.snackBar.open('Codice non valido', 'OK', { duration: 2500 });
+        if (!response.valid || !response.association) {
+          this.snackBar.open(response.message || 'Il codice inserito non esiste', 'OK', { duration: 2800 });
           return;
         }
 
-        this.appState.setHotelCode(trimmed.toUpperCase());
-        this.appState.setActiveCity(response.unlocked.cityId);
-        this.snackBar.open(`Bundle ${response.unlocked.cityName} sbloccato`, 'Perfetto', { duration: 2600 });
+        if (response.association.codeStatus !== 'valid') {
+          const invalidMessage =
+            response.association.codeStatus === 'expired'
+              ? 'Il codice inserito e scaduto'
+              : response.association.codeStatus === 'used'
+                ? 'Il codice inserito e gia stato utilizzato'
+              : 'Il codice inserito non e piu valido';
+          this.snackBar.open(invalidMessage, 'OK', { duration: 2800 });
+          return;
+        }
+
+        const normalizedCode = (response.association.inviteCode || trimmed).toUpperCase();
+        this.appState.markOnboardingSeen();
+        this.appState.setHotelCode(normalizedCode);
+        this.appState.setHotelAssociation(response.association);
+        this.appState.setActiveCity('catania');
+        this.purchaseService.refresh();
+        void this.router.navigate(['/home']);
       },
-      error: () => {
+      error: (error: { error?: { message?: string } }) => {
         this.isCheckingCode = false;
-        this.snackBar.open('Errore validazione codice', 'Chiudi', { duration: 2800 });
+        const message = error?.error?.message || 'Errore validazione codice';
+        this.snackBar.open(message, 'Chiudi', { duration: 2800 });
       }
     });
   }

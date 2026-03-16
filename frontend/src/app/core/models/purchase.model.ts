@@ -5,6 +5,14 @@
   cityId: string | null;
   poiId: string | null;
   amount: number;
+  baseAmount?: number;
+  discountPercent?: number;
+  discountAmount?: number;
+  finalAmount?: number;
+  structureId?: string | null;
+  inviteCode?: string | null;
+  structureFixedAmount?: number;
+  structureEarningAmount?: number;
   purchasedAt: string;
 }
 
@@ -13,4 +21,3 @@ export interface PurchasesResponse {
   unlockedPoiIds: string[];
   unlockedCityIds: string[];
 }
-

@@ -1,14 +1,15 @@
-﻿.bottom-nav {
+.bottom-nav {
   position: fixed;
   left: 12px;
   right: 12px;
-  bottom: 10px;
-  z-index: 40;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 1200;
   min-height: 68px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   border-radius: 24px;
   padding: 8px 4px;
+  isolation: isolate;
 }
 
 .bottom-nav-item {
@@ -37,6 +38,8 @@
 @media (min-width: 900px) {
   .bottom-nav {
     max-width: 760px;
-    margin: 0 auto;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 }

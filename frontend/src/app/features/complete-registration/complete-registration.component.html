@@ -1,6 +1,6 @@
 <section class="page-shell registration-shell">
   <mat-card class="card registration-card">
-    <h1 class="page-title">Completa registrazione</h1>
+    <h1 class="page-title">{{ pageTitle }}</h1>
 
     <div class="loading-state" *ngIf="state === 'loading'">
       <mat-spinner diameter="34"></mat-spinner>
@@ -22,21 +22,21 @@
         </mat-form-field>
 
         <button mat-flat-button color="primary" class="big-cta" [disabled]="submitting" type="submit">
-          {{ submitting ? 'Salvataggio...' : 'Completa registrazione' }}
+          {{ submitting ? 'Salvataggio...' : submitLabel }}
         </button>
       </form>
     </ng-container>
 
     <div class="state-message" *ngIf="state === 'completed'">
-      Registrazione completata. Reindirizzamento al login...
+      {{ completedMessage }}
     </div>
 
     <div class="state-message" *ngIf="state === 'already_registered'">
-      Utente già registrato. Reindirizzamento al login...
+      Utente gia registrato. Reindirizzamento al login...
     </div>
 
     <div class="state-message" *ngIf="state === 'expired'">
-      Link scaduto. Richiedi un nuovo invito dalla dashboard admin.
+      {{ expiredMessage }}
       <button mat-stroked-button color="primary" (click)="goToLogin()">Vai al login</button>
     </div>
 

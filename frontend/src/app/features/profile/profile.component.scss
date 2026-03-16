@@ -34,6 +34,54 @@
   gap: 8px;
 }
 
+.code-history {
+  display: grid;
+  gap: 8px;
+}
+
+.code-history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.code-history-item {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d9e3f2;
+  background: #f8fbff;
+}
+
+.code-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.code-history-item code {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.code-entry-actions {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.code-entry-locked {
+  color: #7a879c;
+  font-size: 0.8rem;
+}
+
+.status-chip.pending {
+  color: #9a3412;
+  background: #fff4e5;
+  border: 1px solid #f6cf9b;
+}
+
 .links {
   a {
     color: #1769aa;

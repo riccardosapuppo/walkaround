@@ -48,6 +48,10 @@ function authPayload(user, impersonatedBy = null) {
   return {
     user: {
       id: user.id,
+      firstName: user.first_name || user.firstName || '',
+      lastName: user.last_name || user.lastName || '',
+      structureId: user.structure_id || user.structureId || null,
+      structureName: user.structure_name || user.structureName || user.facility_name || user.facilityName || null,
       email: user.email,
       role: user.role
     },
@@ -56,6 +60,11 @@ function authPayload(user, impersonatedBy = null) {
       impersonatedBy: impersonatedBy
         ? {
             id: impersonatedBy.id,
+            firstName: impersonatedBy.first_name || impersonatedBy.firstName || '',
+            lastName: impersonatedBy.last_name || impersonatedBy.lastName || '',
+            structureId: impersonatedBy.structure_id || impersonatedBy.structureId || null,
+            structureName:
+              impersonatedBy.structure_name || impersonatedBy.structureName || impersonatedBy.facility_name || null,
             email: impersonatedBy.email
           }
         : null
@@ -116,6 +125,55 @@ function mapInviteStatus(inviteRow) {
   };
 }
 
+async function fetchPasswordResetByToken(token, client = pool) {
+  const tokenHash = hashToken(token);
+  const result = await client.query(
+    `
+      SELECT
+        r.id,
+        r.user_id,
+        r.expires_at,
+        r.used_at,
+        u.email
+      FROM dashboard_password_resets r
+      JOIN dashboard_users u ON u.id = r.user_id
+      WHERE r.token_hash = $1
+      LIMIT 1
+    `,
+    [tokenHash]
+  );
+
+  if (!result.rowCount) {
+    return null;
+  }
+
+  return result.rows[0];
+}
+
+function mapPasswordResetStatus(resetRow) {
+  if (!resetRow) {
+    return { status: 'invalid' };
+  }
+
+  if (resetRow.used_at || new Date(resetRow.expires_at).getTime() <= Date.now()) {
+    return {
+      status: 'expired',
+      email: resetRow.email,
+      expiresAt: resetRow.expires_at
+    };
+  }
+
+  return {
+    status: 'valid',
+    email: resetRow.email,
+    expiresAt: resetRow.expires_at
+  };
+}
+
+function canAccessDashboard(role) {
+  return role === 'admin' || role === 'facility_manager';
+}
+
 router.post('/login', async (req, res, next) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -128,9 +186,19 @@ router.post('/login', async (req, res, next) => {
   try {
     const result = await pool.query(
       `
-        SELECT id, email, role, password_hash, is_registered
-        FROM dashboard_users
-        WHERE email = $1
+        SELECT
+          u.id,
+          u.first_name,
+          u.last_name,
+          u.structure_id,
+          s.name AS structure_name,
+          u.email,
+          u.role,
+          u.password_hash,
+          u.is_registered
+        FROM dashboard_users u
+        LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+        WHERE u.email = $1
         LIMIT 1
       `,
       [email]
@@ -149,6 +217,9 @@ router.post('/login', async (req, res, next) => {
     if (!isValid) {
       return res.status(401).json({ message: 'Credenziali non valide' });
     }
+    if (!canAccessDashboard(user.role)) {
+      return res.status(403).json({ message: 'Questo account non puo accedere alla dashboard' });
+    }
 
     await pool.query('DELETE FROM dashboard_sessions WHERE expires_at <= NOW()');
     const session = await createSession(user.id);
@@ -164,6 +235,9 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.get('/me', requireAuth, async (req, res) => {
+  if (!canAccessDashboard(req.authSession.user.role)) {
+    return res.status(403).json({ message: 'Questo account non puo accedere alla dashboard' });
+  }
   return res.json(authPayload(req.authSession.user, req.authSession.impersonatedBy));
 });
 
@@ -185,9 +259,18 @@ router.post('/impersonation/exit', requireAuth, async (req, res, next) => {
   try {
     const userResult = await pool.query(
       `
-        SELECT id, email, role, is_registered
-        FROM dashboard_users
-        WHERE id = $1
+        SELECT
+          u.id,
+          u.first_name,
+          u.last_name,
+          u.structure_id,
+          s.name AS structure_name,
+          u.email,
+          u.role,
+          u.is_registered
+        FROM dashboard_users u
+        LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+        WHERE u.id = $1
         LIMIT 1
       `,
       [impersonatedBy.id]
@@ -200,6 +283,9 @@ router.post('/impersonation/exit', requireAuth, async (req, res, next) => {
     await pool.query('DELETE FROM dashboard_sessions WHERE token_hash = $1', [req.authSession.tokenHash]);
     const session = await createSession(impersonatedBy.id);
     const user = userResult.rows[0];
+    if (!canAccessDashboard(user.role)) {
+      return res.status(403).json({ message: 'Questo account non puo accedere alla dashboard' });
+    }
 
     return res.json({
       token: session.token,
@@ -299,6 +385,99 @@ router.post('/invitations/:token/complete', async (req, res, next) => {
       completed: true,
       token: session.token,
       expiresAt: session.expiresAt
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    return next(error);
+  } finally {
+    client.release();
+  }
+});
+
+router.get('/password-resets/:token', async (req, res, next) => {
+  const token = String(req.params.token || '').trim();
+  if (!token) {
+    return res.status(400).json({ status: 'invalid' });
+  }
+
+  try {
+    const reset = await fetchPasswordResetByToken(token);
+    const status = mapPasswordResetStatus(reset);
+    return res.json(status);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/password-resets/:token/complete', async (req, res, next) => {
+  const token = String(req.params.token || '').trim();
+  if (!token) {
+    return res.status(400).json({ message: 'Token mancante' });
+  }
+
+  const parsed = completeRegistrationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const tokenHash = hashToken(token);
+    const resetResult = await client.query(
+      `
+        SELECT
+          r.id,
+          r.user_id,
+          r.expires_at,
+          r.used_at,
+          u.email
+        FROM dashboard_password_resets r
+        JOIN dashboard_users u ON u.id = r.user_id
+        WHERE r.token_hash = $1
+        FOR UPDATE
+      `,
+      [tokenHash]
+    );
+
+    if (!resetResult.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ status: 'invalid', message: 'Link reset non valido' });
+    }
+
+    const reset = resetResult.rows[0];
+    const resetStatus = mapPasswordResetStatus(reset);
+    if (resetStatus.status !== 'valid') {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ ...resetStatus, message: 'Link reset non utilizzabile' });
+    }
+
+    const passwordHash = await hashPassword(parsed.data.password);
+    await client.query(
+      `
+        UPDATE dashboard_users
+        SET password_hash = $1,
+            is_registered = TRUE,
+            updated_at = NOW()
+        WHERE id = $2
+      `,
+      [passwordHash, reset.user_id]
+    );
+
+    await client.query(
+      `
+        UPDATE dashboard_password_resets
+        SET used_at = NOW()
+        WHERE id = $1
+      `,
+      [reset.id]
+    );
+
+    await client.query('COMMIT');
+
+    return res.json({
+      completed: true
     });
   } catch (error) {
     await client.query('ROLLBACK');

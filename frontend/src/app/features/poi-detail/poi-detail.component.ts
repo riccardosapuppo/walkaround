@@ -28,6 +28,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   isFavorite = false;
   loading = true;
   loadError = false;
+  readonly cityUnlockPrice = 14.99;
   readonly cityUnlockPriceLabel = '14,99';
 
   private readonly destroy$ = new Subject<void>();
@@ -92,18 +93,34 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/player', this.poi.id], { queryParams: { preview } });
   }
 
+  startNavigation(): void {
+    if (!this.poi) {
+      return;
+    }
+
+    this.appState.setActiveCity(this.poi.cityId);
+    void this.router.navigate(['/map'], {
+      queryParams: {
+        poiId: this.poi.id,
+        nav: 1
+      }
+    });
+  }
+
   purchasePoi(): void {
     if (!this.poi) {
       return;
     }
 
-    this.purchaseService.purchasePoiSingle(this.poi.id).subscribe({
-      next: () => {
-        this.unlocked = true;
-        this.snackBar.open(`Luogo sbloccato: ${this.poi?.name || ''}`, 'OK', { duration: 2200 });
+    this.purchaseService.purchasePoiSingle(this.poi.id, this.poi.cityId, this.poi.name, this.poi.priceSingle).subscribe({
+      next: (result) => {
+        if (result?.action === 'paid') {
+          this.unlocked = true;
+          this.snackBar.open(`Luogo sbloccato: ${this.poi?.name || ''}`, 'OK', { duration: 2400 });
+        }
       },
       error: () => {
-        this.snackBar.open('Acquisto non riuscito', 'Chiudi', { duration: 2400 });
+        this.snackBar.open('Operazione non riuscita', 'Chiudi', { duration: 2400 });
       }
     });
   }
@@ -113,13 +130,15 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.purchaseService.purchaseCityBundle(this.poi.cityId).subscribe({
-      next: () => {
-        this.unlocked = true;
-        this.snackBar.open(`Città sbloccata: ${this.cityName(this.poi?.cityId || '')}`, 'OK', { duration: 2200 });
+    this.purchaseService.purchaseCityBundle(this.poi.cityId, this.cityName(this.poi.cityId), this.cityUnlockPrice).subscribe({
+      next: (result) => {
+        if (result?.action === 'paid') {
+          this.unlocked = true;
+          this.snackBar.open(`Citta sbloccata: ${this.cityName(this.poi?.cityId || '')}`, 'OK', { duration: 2400 });
+        }
       },
       error: () => {
-        this.snackBar.open('Acquisto non riuscito', 'Chiudi', { duration: 2400 });
+        this.snackBar.open('Operazione non riuscita', 'Chiudi', { duration: 2400 });
       }
     });
   }

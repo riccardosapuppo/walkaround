@@ -6,19 +6,47 @@ const STORAGE_KEYS = {
   userId: 'tourism.userId',
   activeCityId: 'tourism.activeCityId',
   hotelCode: 'tourism.hotelCode',
+  hotelAssociation: 'tourism.hotelAssociation',
+  onboardingSeen: 'tourism.onboardingSeen',
   favorites: 'tourism.favorites',
   language: 'tourism.language'
 } as const;
 
+export interface HotelAssociation {
+  structureId: string;
+  structureName: string;
+  structureAddress: string;
+  inviteCode: string;
+  appliesTo?: 'single' | 'bundle' | null;
+  cityId?: string | null;
+  cityName?: string | null;
+  cityIds?: string[];
+  cityNames?: string[];
+  userDiscountPercent?: number;
+  userDiscountPercentSingle?: number;
+  userDiscountPercentBundle?: number;
+  structureFixedAmount?: number;
+  structureFixedAmountSingle?: number;
+  structureFixedAmountBundle?: number;
+  codeStatus?: 'valid' | 'expired' | 'invalid' | 'used';
+  expiresAt?: string | null;
+  associatedAt?: string;
+  updatedAt?: string;
+  codeUsedAt?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AppStateService {
-  private readonly userIdValue = this.ensureUserId();
+  private readonly userIdSubject = new BehaviorSubject<string>(this.ensureUserId());
 
   private readonly activeCityIdSubject = new BehaviorSubject<string>(
     localStorage.getItem(STORAGE_KEYS.activeCityId) || 'catania'
   );
 
   private readonly hotelCodeSubject = new BehaviorSubject<string>(localStorage.getItem(STORAGE_KEYS.hotelCode) || '');
+  private readonly hotelAssociationSubject = new BehaviorSubject<HotelAssociation | null>(
+    this.readObject<HotelAssociation>(STORAGE_KEYS.hotelAssociation)
+  );
 
   private readonly favoritesSubject = new BehaviorSubject<string[]>(this.readArray(STORAGE_KEYS.favorites));
 
@@ -26,11 +54,16 @@ export class AppStateService {
     (localStorage.getItem(STORAGE_KEYS.language) as 'it' | 'en') || 'it'
   );
 
-  readonly userId = this.userIdValue;
+  readonly userId$ = this.userIdSubject.asObservable();
   readonly activeCityId$ = this.activeCityIdSubject.asObservable();
   readonly hotelCode$ = this.hotelCodeSubject.asObservable();
+  readonly hotelAssociation$ = this.hotelAssociationSubject.asObservable();
   readonly favorites$ = this.favoritesSubject.asObservable();
   readonly language$ = this.languageSubject.asObservable();
+
+  get userId(): string {
+    return this.userIdSubject.value;
+  }
 
   get activeCityId(): string {
     return this.activeCityIdSubject.value;
@@ -40,8 +73,38 @@ export class AppStateService {
     return this.hotelCodeSubject.value;
   }
 
+  get hotelAssociation(): HotelAssociation | null {
+    return this.hotelAssociationSubject.value;
+  }
+
   get favoriteIds(): string[] {
     return this.favoritesSubject.value;
+  }
+
+  get hasSeenOnboarding(): boolean {
+    return localStorage.getItem(STORAGE_KEYS.onboardingSeen) === '1';
+  }
+
+  get hasActiveDiscountCode(): boolean {
+    const code = this.hotelCodeSubject.value.trim();
+    if (!code) {
+      return false;
+    }
+
+    const association = this.hotelAssociationSubject.value;
+    if (!association || !association.codeStatus) {
+      return true;
+    }
+
+    return association.codeStatus === 'valid';
+  }
+
+  shouldShowWelcomeOnLaunch(): boolean {
+    return !this.hasSeenOnboarding && !this.hasActiveDiscountCode;
+  }
+
+  markOnboardingSeen(): void {
+    localStorage.setItem(STORAGE_KEYS.onboardingSeen, '1');
   }
 
   setActiveCity(cityId: string): void {
@@ -52,6 +115,17 @@ export class AppStateService {
   setHotelCode(code: string): void {
     localStorage.setItem(STORAGE_KEYS.hotelCode, code);
     this.hotelCodeSubject.next(code);
+  }
+
+  setHotelAssociation(association: HotelAssociation | null): void {
+    if (!association) {
+      localStorage.removeItem(STORAGE_KEYS.hotelAssociation);
+      this.hotelAssociationSubject.next(null);
+      return;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.hotelAssociation, JSON.stringify(association));
+    this.hotelAssociationSubject.next(association);
   }
 
   setLanguage(language: 'it' | 'en'): void {
@@ -74,6 +148,26 @@ export class AppStateService {
 
   isFavorite(poiId: string): boolean {
     return this.favoritesSubject.value.includes(poiId);
+  }
+
+  resetUserSession(): string {
+    const nextUserId = uuidv4();
+    const defaultCityId = 'catania';
+
+    localStorage.setItem(STORAGE_KEYS.userId, nextUserId);
+    localStorage.setItem(STORAGE_KEYS.activeCityId, defaultCityId);
+    localStorage.removeItem(STORAGE_KEYS.hotelCode);
+    localStorage.removeItem(STORAGE_KEYS.hotelAssociation);
+    localStorage.removeItem(STORAGE_KEYS.onboardingSeen);
+    localStorage.removeItem(STORAGE_KEYS.favorites);
+
+    this.userIdSubject.next(nextUserId);
+    this.activeCityIdSubject.next(defaultCityId);
+    this.hotelCodeSubject.next('');
+    this.hotelAssociationSubject.next(null);
+    this.favoritesSubject.next([]);
+
+    return nextUserId;
   }
 
   private ensureUserId(): string {
@@ -100,5 +194,20 @@ export class AppStateService {
       return [];
     }
   }
+
+  private readObject<T>(key: string): T | null {
+    const value = localStorage.getItem(key);
+    if (!value) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return null;
+    }
+  }
 }
+
+
 

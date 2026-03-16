@@ -1,7 +1,10 @@
 <section class="map-page">
   <header class="map-header">
     <h1 class="page-title">Mappa</h1>
-    <p class="page-subtitle">{{ poiCount }} punti di interesse disponibili intorno a te</p>
+    <p class="page-subtitle" *ngIf="!hasActiveNavigation">{{ poiCount }} punti di interesse disponibili intorno a te</p>
+    <p class="page-subtitle" *ngIf="hasActiveNavigation && navigationTarget">
+      Navigazione attiva verso {{ navigationTarget.name }}
+    </p>
   </header>
 
   <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
@@ -22,10 +25,62 @@
     (leafletMapReady)="onMapReady($event)"
   ></div>
 
+  <section class="nav-hud card" *ngIf="navigationTarget as target">
+    <div class="nav-hud-head">
+      <div>
+        <p class="nav-kicker">Navigatore in app</p>
+        <h3>{{ target.name }}</h3>
+        <p class="nav-provider" [class.fallback]="navigationProvider === 'fallback'">{{ navigationProviderLabel }}</p>
+      </div>
+
+      <button mat-icon-button (click)="stopNavigation()" aria-label="Chiudi navigazione">
+        <mat-icon fontSet="material-icons-round">close</mat-icon>
+      </button>
+    </div>
+
+    <div class="nav-metrics">
+      <article>
+        <span>Distanza</span>
+        <strong>{{ navigationDistanceLabel }}</strong>
+      </article>
+      <article>
+        <span>Tempo</span>
+        <strong>{{ navigationEtaLabel }}</strong>
+      </article>
+      <article>
+        <span>Arrivo</span>
+        <strong>{{ navigationArrivalLabel }}</strong>
+      </article>
+    </div>
+
+    <mat-progress-bar mode="determinate" [value]="navigationProgress"></mat-progress-bar>
+
+    <p class="nav-direction">Prossima manovra: <strong>{{ navigationNextInstruction }}</strong></p>
+
+    <div class="nav-steps" *ngIf="navigationUpcomingSteps.length">
+      <article *ngFor="let step of visibleNavigationSteps; let index = index">
+        <span>{{ index + 1 }}. {{ step.instruction }}</span>
+        <strong>{{ step.distanceLabel }}</strong>
+      </article>
+
+      <button mat-button class="nav-steps-toggle" *ngIf="canExpandNavigationSteps" (click)="toggleNavigationSteps()">
+        {{ showAllNavigationSteps ? 'Mostra meno' : 'Mostra tutti gli step' }}
+      </button>
+    </div>
+
+    <div class="nav-refresh" *ngIf="isRouting">
+      <mat-progress-spinner mode="indeterminate" diameter="16"></mat-progress-spinner>
+      <span>Aggiornamento percorso in corso...</span>
+    </div>
+
+    <button mat-stroked-button color="primary" (click)="focusNavigationRoute()">Inquadra percorso</button>
+  </section>
+
   <button
     mat-fab
     color="primary"
     class="center-btn"
+    [class.with-navigation]="hasActiveNavigation"
     *ngIf="!isLoading"
     (click)="centerOnMe()"
     aria-label="Centra su di me"

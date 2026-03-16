@@ -41,6 +41,11 @@
         Sblocca {{ cityName(currentPoi.cityId) }} €{{ cityUnlockPriceLabel }}
       </button>
     </ng-template>
+
+    <button mat-flat-button color="accent" class="big-cta nav-cta" (click)="startNavigation()">
+      <mat-icon fontSet="material-icons-round">near_me</mat-icon>
+      Avvia navigazione in app
+    </button>
   </section>
 </section>
 

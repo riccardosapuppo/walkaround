@@ -12,10 +12,12 @@ export interface PoiMapSheetData {
   poi: Poi;
   distanceLabel: string;
   unlocked: boolean;
+  isNavigating: boolean;
 }
 
 export type PoiMapSheetAction =
   | { action: 'open-detail'; poiId: string }
+  | { action: 'navigate'; poiId: string }
   | { action: 'play'; poiId: string; preview: boolean }
   | { action: 'purchase-poi'; poiId: string }
   | { action: 'purchase-city'; cityId: string };
@@ -36,6 +38,10 @@ export class PoiMapSheetComponent {
 
   openDetail(): void {
     this.bottomSheetRef.dismiss({ action: 'open-detail', poiId: this.data.poi.id } satisfies PoiMapSheetAction);
+  }
+
+  navigate(): void {
+    this.bottomSheetRef.dismiss({ action: 'navigate', poiId: this.data.poi.id } satisfies PoiMapSheetAction);
   }
 
   play(preview: boolean): void {

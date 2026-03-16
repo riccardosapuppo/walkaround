@@ -58,7 +58,7 @@ a {
 
 .page-shell {
   min-height: 100vh;
-  padding: 20px 16px 96px;
+  padding: 20px 16px calc(104px + env(safe-area-inset-bottom));
 }
 
 .page-title {
@@ -151,6 +151,13 @@ a {
 
 .poi-marker.poi-near {
   background: #2da85c;
+}
+
+.poi-marker.poi-nav-target {
+  background: #1769aa;
+  box-shadow:
+    0 0 0 4px rgba(23, 105, 170, 0.2),
+    0 4px 10px rgba(10, 25, 47, 0.32);
 }
 
 @media (min-width: 900px) {

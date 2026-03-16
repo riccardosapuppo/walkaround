@@ -8,18 +8,18 @@
     <button mat-flat-button color="primary" class="big-cta" (click)="start()">Inizia</button>
 
     <button mat-button color="primary" (click)="showCodeInput = !showCodeInput">
-      Inserisci codice hotel
+      Inserisci codice invito/sconto
     </button>
   </div>
 
   <section class="code-box card" *ngIf="showCodeInput">
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Codice hotel</mat-label>
+      <mat-label>Codice invito/sconto</mat-label>
       <input matInput [(ngModel)]="hotelCode" autocomplete="off" />
     </mat-form-field>
 
     <button mat-stroked-button color="primary" [disabled]="isCheckingCode" (click)="validateCode()">
-      {{ isCheckingCode ? 'Controllo in corso...' : 'Salva e sblocca' }}
+      {{ isCheckingCode ? 'Controllo in corso...' : 'Applica e continua' }}
     </button>
   </section>
 </section>

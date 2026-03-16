@@ -22,6 +22,11 @@
         Sblocca {{ cityName(data.poi.cityId) }} €{{ cityUnlockPriceLabel }}
       </button>
     </ng-template>
+
+    <button mat-flat-button color="accent" class="navigate-btn" (click)="navigate()">
+      <mat-icon fontSet="material-icons-round">near_me</mat-icon>
+      {{ data.isNavigating ? 'Aggiorna navigazione' : 'Avvia navigazione' }}
+    </button>
   </div>
 
   <button mat-button (click)="openDetail()">Vai al dettaglio</button>

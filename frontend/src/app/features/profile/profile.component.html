@@ -18,7 +18,55 @@
           <mat-option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</mat-option>
         </mat-select>
       </mat-form-field>
-      <p>Codice hotel: {{ hotelCode }}</p>
+    </mat-card>
+
+    <mat-card class="card section">
+      <h3>Codici invito/sconto</h3>
+      <p>Gestisci i codici associati al tuo profilo.</p>
+      <p>Codice attivo: <strong>{{ hotelCode }}</strong></p>
+      <p>Stato codice attivo: <strong>{{ inviteCodeStatusText }}</strong></p>
+      <p *ngIf="hotelAssociation">Scadenza codice attivo: <strong>{{ inviteCodeExpiresAt }}</strong></p>
+      <p *ngIf="hotelAssociation; else noAssociation">
+        Struttura associata: <strong>{{ hotelAssociation.structureName }}</strong>
+        ({{ hotelAssociation.structureAddress }})
+      </p>
+      <ng-template #noAssociation>
+        <p>Nessuna struttura associata al codice attivo.</p>
+      </ng-template>
+
+      <div class="code-history" *ngIf="hotelCodeEntries.length; else noCodeHistory">
+        <p><strong>Lista codici:</strong></p>
+        <div class="code-history-list">
+          <div class="code-history-item" *ngFor="let entry of hotelCodeEntries">
+            <div class="code-history-row">
+              <code>{{ entry.inviteCode }}</code>
+              <span [class]="codeEntryStatusClass(entry)">{{ codeEntryStatusLabel(entry) }}</span>
+            </div>
+            <small>Struttura: {{ entry.structureName || 'Struttura non disponibile' }}</small>
+            <small>Ambito: {{ codeEntryScopeLabel(entry) }}</small>
+            <small>Città: {{ codeEntryCitiesLabel(entry) }}</small>
+            <small *ngIf="entry.expiresAt">Scadenza: {{ entry.expiresAt | date: 'dd/MM/yyyy HH:mm':'':'it-IT' }}</small>
+            <small *ngIf="entry.usedAt">Usato il: {{ entry.usedAt | date: 'dd/MM/yyyy HH:mm':'':'it-IT' }}</small>
+            <div class="code-entry-actions">
+              <button
+                mat-stroked-button
+                color="warn"
+                type="button"
+                *ngIf="canRemoveCodeEntry(entry); else codeNotRemovable"
+                (click)="removeInviteCodeAssociation(entry)"
+              >
+                {{ removingInviteCode ? 'Rimozione...' : 'Rimuovi codice' }}
+              </button>
+              <ng-template #codeNotRemovable>
+                <small class="code-entry-locked">Codice usato o non attivo: non rimovibile</small>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noCodeHistory>
+        <p>Nessun codice attivato o usato.</p>
+      </ng-template>
     </mat-card>
 
     <mat-card class="card section">
@@ -28,7 +76,18 @@
         <span class="status-chip locked" *ngIf="!unlockedCityIds.length">Nessuna città sbloccata</span>
       </div>
 
-      <button mat-stroked-button color="primary" (click)="restorePurchases()">Ripristina acquisti</button>
+      <div class="language-row">
+        <button mat-stroked-button color="primary" (click)="restorePurchases()">Ripristina acquisti</button>
+        <button
+          mat-stroked-button
+          color="warn"
+          type="button"
+          [disabled]="resettingUserSession"
+          (click)="resetUserSession()"
+        >
+          {{ resettingUserSession ? 'Reset in corso...' : 'Reset utente' }}
+        </button>
+      </div>
     </mat-card>
 
     <mat-card class="card section">

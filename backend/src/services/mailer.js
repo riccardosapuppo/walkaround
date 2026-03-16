@@ -53,3 +53,35 @@ export async function sendInvitationEmail({ to, invitationLink, invitedByEmail, 
     ].join('')
   });
 }
+
+export async function sendPasswordResetEmail({ to, resetLink, requestedByEmail, expiresAt }) {
+  const transporter = await getTransporter();
+  const expiresLabel = new Date(expiresAt).toLocaleString('it-IT', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  });
+
+  await transporter.sendMail({
+    from: env.smtp.from,
+    to,
+    subject: 'TourApp - Reset password',
+    text: [
+      `Ciao,`,
+      ``,
+      `${requestedByEmail} ha richiesto il reset della tua password su TourApp.`,
+      `Apri questo link per impostarne una nuova:`,
+      resetLink,
+      ``,
+      `Il link scade il ${expiresLabel}.`,
+      `Se non hai richiesto il reset, ignora questa email.`
+    ].join('\n'),
+    html: [
+      `<p>Ciao,</p>`,
+      `<p><strong>${requestedByEmail}</strong> ha richiesto il reset della tua password su TourApp.</p>`,
+      `<p>Apri questo link per impostarne una nuova:</p>`,
+      `<p><a href="${resetLink}">${resetLink}</a></p>`,
+      `<p>Il link scade il <strong>${expiresLabel}</strong>.</p>`,
+      `<p>Se non hai richiesto il reset, ignora questa email.</p>`
+    ].join('')
+  });
+}
