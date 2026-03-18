@@ -7,10 +7,12 @@
 
   <h1 class="page-title">{{ currentPoi.name }}</h1>
   <p class="page-subtitle">
-    {{ previewMode ? ('Modalità preview ' + previewSeconds + 's') : 'Audio completo' }} · {{ currentPoi.durationSec | durationLabel }}
+    {{ audioUnavailable ? 'Audio non disponibile' : (previewMode ? ('Modalita preview ' + previewSeconds + 's') : 'Audio completo') }}
+    - {{ currentPoi.durationSec | durationLabel }}
   </p>
 
-  <section class="player card" *ngIf="playerState$ | async as state">
+  <section class="player card" *ngIf="!audioUnavailable">
+    <ng-container *ngIf="playerState$ | async as state">
     <input
       type="range"
       class="progress"
@@ -42,8 +44,13 @@
       Scarica offline
     </mat-slide-toggle>
 
-    <p class="preview-note" *ngIf="state.previewEnded">Preview terminata. Sblocca questo luogo o l'intera città per ascolto completo.</p>
+    <p class="preview-note" *ngIf="state.previewEnded">Preview terminata. Sblocca questo luogo o l'intera citta per ascolto completo.</p>
+    </ng-container>
   </section>
+
+  <mat-card class="card warning" *ngIf="audioUnavailable">
+    <p>Questo luogo non ha ancora una traccia audio disponibile.</p>
+  </mat-card>
 
   <p class="description">{{ currentPoi.descriptionLong }}</p>
 </section>

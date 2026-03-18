@@ -55,12 +55,20 @@ export class FavoritesComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/poi', poiId]);
   }
 
-  playPreview(poiId: string): void {
-    void this.router.navigate(['/player', poiId], {
+  playPreview(poi: Poi): void {
+    if (!this.hasPlayableAudio(poi)) {
+      return;
+    }
+
+    void this.router.navigate(['/player', poi.id], {
       queryParams: {
         preview: true
       }
     });
+  }
+
+  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
+    return Boolean(String(poi?.audioUrl || '').trim());
   }
 
   private refreshFavorites(): void {

@@ -35,10 +35,10 @@
     <h2>{{ nearest.name }}</h2>
     <p class="nearest-hint">Perfetto per iniziare ora il tour nelle vicinanze.</p>
 
-    <button mat-flat-button color="primary" class="big-cta" (click)="onMainCta(nearest)">
+    <button mat-flat-button color="primary" class="big-cta" (click)="onMainCta(nearest)" [disabled]="nearest.unlocked && !hasPlayableAudio(nearest)">
       {{
         nearest.unlocked
-          ? 'Riproduci audio guida'
+          ? (hasPlayableAudio(nearest) ? 'Riproduci audio guida' : 'Audio non disponibile')
           : ('Sblocca questo luogo €' + formatPrice(nearest.priceSingle))
       }}
     </button>
@@ -53,7 +53,15 @@
       Oppure sblocca {{ cityName(nearest.cityId) }} €{{ cityUnlockPriceLabel }}
     </button>
 
-    <button mat-button color="primary" class="nearest-preview-btn" (click)="playPoi(nearest, true)">Ascolta preview</button>
+    <button
+      mat-button
+      color="primary"
+      class="nearest-preview-btn"
+      (click)="playPoi(nearest, true)"
+      [disabled]="!hasPlayableAudio(nearest)"
+    >
+      Ascolta preview
+    </button>
   </mat-card>
 
   <mat-card class="card warning geo-warning" *ngIf="vm.permission === 'denied'">
@@ -84,11 +92,11 @@
         </div>
 
         <div class="poi-quick-actions">
-          <button mat-icon-button color="primary" (click)="playPoi(poi, true)">
+          <button mat-icon-button color="primary" (click)="playPoi(poi, true)" [disabled]="!hasPlayableAudio(poi)">
             <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
           </button>
 
-          <button mat-icon-button color="primary" *ngIf="poi.unlocked" (click)="playPoi(poi, false)">
+          <button mat-icon-button color="primary" *ngIf="poi.unlocked && hasPlayableAudio(poi)" (click)="playPoi(poi, false)">
             <mat-icon fontSet="material-icons-round">headphones</mat-icon>
           </button>
         </div>
@@ -111,3 +119,4 @@
   <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
   <p>Caricamento punti di interesse...</p>
 </section>
+

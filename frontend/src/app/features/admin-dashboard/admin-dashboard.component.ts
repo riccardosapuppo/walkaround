@@ -272,7 +272,7 @@ export class AdminDashboardComponent implements OnInit {
     descriptionShort: ['', [Validators.required, Validators.maxLength(1000)]],
     descriptionLong: ['', [Validators.required, Validators.maxLength(10000)]],
     imageUrl: ['', [Validators.required, Validators.maxLength(500)]],
-    audioUrl: ['', [Validators.required, Validators.maxLength(500)]],
+    audioUrl: ['', [Validators.maxLength(500)]],
     priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]]
   });
@@ -293,7 +293,7 @@ export class AdminDashboardComponent implements OnInit {
     descriptionShort: ['', [Validators.required, Validators.maxLength(1000)]],
     descriptionLong: ['', [Validators.required, Validators.maxLength(10000)]],
     imageUrl: ['', [Validators.required, Validators.maxLength(500)]],
-    audioUrl: ['', [Validators.required, Validators.maxLength(500)]],
+    audioUrl: ['', [Validators.maxLength(500)]],
     priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]]
   });
@@ -1739,7 +1739,7 @@ export class AdminDashboardComponent implements OnInit {
       descriptionShort: poi.descriptionShort,
       descriptionLong: poi.descriptionLong,
       imageUrl: poi.imageUrl,
-      audioUrl: poi.audioUrl,
+      audioUrl: poi.audioUrl || '',
       priceSingle: poi.priceSingle,
       durationSec: poi.durationSec
     });
@@ -3302,5 +3302,4 @@ export class AdminDashboardComponent implements OnInit {
     return Math.round(clamped * 100) / 100;
   }
 }
-
 

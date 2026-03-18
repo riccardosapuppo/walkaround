@@ -153,7 +153,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.loading = false;
       this.restoreScrollPosition();
 
-      if (vm.nearestPoi && vm.nearestPoi.near && !this.geofenceShown.has(vm.nearestPoi.id)) {
+      if (vm.nearestPoi && vm.nearestPoi.near && !this.geofenceShown.has(vm.nearestPoi.id) && this.hasPlayableAudio(vm.nearestPoi)) {
         const nearestPoi = vm.nearestPoi;
         this.geofenceShown.add(nearestPoi.id);
         const ref = this.snackBar.open(`Sei davanti a ${nearestPoi.name}. Avvia audio?`, 'Avvia', {
@@ -175,7 +175,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (poi) => {
-            this.continuePoi = poi;
+            this.continuePoi = this.hasPlayableAudio(poi) ? poi : undefined;
           }
         });
     }
@@ -192,6 +192,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onMainCta(poi: PoiHomeView): void {
     if (poi.unlocked) {
+      if (!this.hasPlayableAudio(poi)) {
+        this.snackBar.open('Audio non disponibile per questo luogo.', 'OK', { duration: 2400 });
+        return;
+      }
       this.playPoi(poi, false);
       return;
     }
@@ -200,6 +204,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   playPoi(poi: Poi, preview: boolean): void {
+    if (!this.hasPlayableAudio(poi)) {
+      this.snackBar.open('Audio non disponibile per questo luogo.', 'OK', { duration: 2400 });
+      return;
+    }
+
     this.saveScrollPosition();
     void this.router.navigate(['/player', poi.id], {
       queryParams: { preview }
@@ -261,14 +270,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   resumePlayback(): void {
-    if (!this.continuePoi) {
+    if (!this.continuePoi || !this.hasPlayableAudio(this.continuePoi)) {
       return;
     }
 
-    this.saveScrollPosition();
-    void this.router.navigate(['/player', this.continuePoi.id], {
-      queryParams: { preview: false }
-    });
+    this.playPoi(this.continuePoi, false);
+  }
+
+  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
+    return Boolean(String(poi?.audioUrl || '').trim());
   }
 
   private saveScrollPosition(): void {

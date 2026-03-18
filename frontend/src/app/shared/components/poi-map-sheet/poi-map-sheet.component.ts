@@ -45,6 +45,10 @@ export class PoiMapSheetComponent {
   }
 
   play(preview: boolean): void {
+    if (!this.hasPlayableAudio(this.data.poi)) {
+      return;
+    }
+
     this.bottomSheetRef.dismiss({ action: 'play', poiId: this.data.poi.id, preview } satisfies PoiMapSheetAction);
   }
 
@@ -68,6 +72,10 @@ export class PoiMapSheetComponent {
 
   cityName(cityId: string): string {
     return cityNameMap[cityId] || cityId;
+  }
+
+  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
+    return Boolean(String(poi?.audioUrl || '').trim());
   }
 }
 

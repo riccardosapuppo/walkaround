@@ -7,11 +7,17 @@
   </div>
 
   <div class="sheet-actions">
-    <button mat-stroked-button color="primary" (click)="play(true)">Ascolta preview</button>
+    <button mat-stroked-button color="primary" (click)="play(true)" [disabled]="!hasPlayableAudio(data.poi)">Ascolta preview</button>
 
-    <button *ngIf="data.unlocked; else lockedAction" mat-flat-button color="primary" (click)="play(false)">
-      Riproduci
-    </button>
+    <ng-container *ngIf="data.unlocked; else lockedAction">
+      <button *ngIf="hasPlayableAudio(data.poi); else unlockedNoAudio" mat-flat-button color="primary" (click)="play(false)">
+        Riproduci
+      </button>
+    </ng-container>
+
+    <ng-template #unlockedNoAudio>
+      <button mat-flat-button color="primary" disabled>Audio non disponibile</button>
+    </ng-template>
 
     <ng-template #lockedAction>
       <button mat-flat-button color="primary" (click)="purchasePoi()">

@@ -21,6 +21,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   previewMode = false;
   unlocked = false;
   offlineEnabled = false;
+  audioUnavailable = false;
   loading = true;
   loadError = false;
   readonly previewSeconds = environment.previewSeconds;
@@ -51,6 +52,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         tap(() => {
           this.loading = true;
           this.loadError = false;
+          this.audioUnavailable = false;
           this.poi = undefined;
         }),
         switchMap(([poiId, preview]) =>
@@ -68,6 +70,14 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.poi = poi;
           this.previewMode = preview;
           this.unlocked = this.purchaseService.isPoiUnlocked(poi.id, poi.cityId);
+
+          if (!this.hasPlayableAudio(poi)) {
+            this.audioUnavailable = true;
+            this.offlineEnabled = false;
+            this.playerService.pause();
+            this.loading = false;
+            return;
+          }
 
           if (!this.unlocked && !preview) {
             this.snackBar.open('Contenuto bloccato. Avvio preview.', 'OK', { duration: 2400 });
@@ -113,20 +123,32 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   togglePlay(): void {
+    if (this.audioUnavailable) {
+      return;
+    }
+
     this.playerService.togglePlayPause();
   }
 
   seek(event: Event): void {
+    if (this.audioUnavailable) {
+      return;
+    }
+
     const value = Number((event.target as HTMLInputElement).value);
     this.playerService.seek(value);
   }
 
   skip(deltaSeconds: number): void {
+    if (this.audioUnavailable) {
+      return;
+    }
+
     this.playerService.skipBy(deltaSeconds);
   }
 
   async toggleOffline(value: boolean): Promise<void> {
-    if (!this.poi) {
+    if (!this.poi || this.audioUnavailable) {
       this.offlineEnabled = false;
       return;
     }
@@ -162,6 +184,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
       .padStart(2, '0');
 
     return `${minutes}:${seconds}`;
+  }
+
+  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
+    return Boolean(String(poi?.audioUrl || '').trim());
   }
 }
 

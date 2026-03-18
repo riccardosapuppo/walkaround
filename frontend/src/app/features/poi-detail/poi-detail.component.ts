@@ -90,6 +90,11 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.hasPlayableAudio(this.poi)) {
+      this.snackBar.open('Audio non disponibile per questo luogo.', 'OK', { duration: 2400 });
+      return;
+    }
+
     void this.router.navigate(['/player', this.poi.id], { queryParams: { preview } });
   }
 
@@ -149,6 +154,10 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
 
   cityName(cityId: string): string {
     return cityNameMap[cityId] || cityId;
+  }
+
+  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
+    return Boolean(String(poi?.audioUrl || '').trim());
   }
 
   toggleFavorite(): void {

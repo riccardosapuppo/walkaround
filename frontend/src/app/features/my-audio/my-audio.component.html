@@ -25,7 +25,7 @@
       </span>
     </div>
 
-    <button mat-icon-button color="primary" (click)="play(item.id)" aria-label="Riproduci">
+    <button mat-icon-button color="primary" (click)="play(item)" [disabled]="!hasPlayableAudio(item)" aria-label="Riproduci">
       <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
     </button>
   </mat-card>

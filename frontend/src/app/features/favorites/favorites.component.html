@@ -17,7 +17,7 @@
       <p>{{ poi.descriptionShort }}</p>
     </div>
 
-    <button mat-icon-button color="primary" (click)="playPreview(poi.id)" aria-label="Preview">
+    <button mat-icon-button color="primary" (click)="playPreview(poi)" [disabled]="!hasPlayableAudio(poi)" aria-label="Preview">
       <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
     </button>
   </mat-card>

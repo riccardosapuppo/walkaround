@@ -10,7 +10,9 @@ export const pool = new Pool({
   user: env.db.user,
   password: env.db.password,
   max: 10,
-  idleTimeoutMillis: 15000
+  idleTimeoutMillis: 15000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000
 });
 
 pool.on('error', (error) => {

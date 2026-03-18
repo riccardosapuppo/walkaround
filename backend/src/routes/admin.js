@@ -134,7 +134,7 @@ const catalogPoiSchema = z.object({
   descriptionShort: z.string().trim().min(1, 'Descrizione breve obbligatoria').max(1000, 'Descrizione breve troppo lunga'),
   descriptionLong: z.string().trim().min(1, 'Descrizione lunga obbligatoria').max(10000, 'Descrizione lunga troppo lunga'),
   imageUrl: z.string().trim().min(1, 'Immagine obbligatoria').max(500, 'URL immagine troppo lunga'),
-  audioUrl: z.string().trim().min(1, 'Audio guida obbligatoria').max(500, 'URL audio troppo lungo'),
+  audioUrl: z.string().trim().max(500, 'URL audio troppo lungo').default(''),
   priceSingle: z.coerce.number().min(0, 'Prezzo singolo non valido').max(10000, 'Prezzo singolo troppo alto'),
   durationSec: z.coerce.number().int().min(1, 'Durata non valida').max(7200, 'Durata troppo lunga')
 });

@@ -20,17 +20,33 @@
   <p class="long">{{ currentPoi.descriptionLong }}</p>
 
   <section class="actions">
-    <button mat-stroked-button color="primary" class="big-cta" (click)="openPlayer(true)">Ascolta preview</button>
-
     <button
-      mat-flat-button
+      mat-stroked-button
       color="primary"
       class="big-cta"
-      *ngIf="unlocked; else lockCta"
-      (click)="openPlayer(false)"
+      (click)="openPlayer(true)"
+      [disabled]="!hasPlayableAudio(currentPoi)"
     >
-      Riproduci audio
+      Ascolta preview
     </button>
+
+    <ng-container *ngIf="unlocked; else lockCta">
+      <button
+        mat-flat-button
+        color="primary"
+        class="big-cta"
+        *ngIf="hasPlayableAudio(currentPoi); else unlockedNoAudio"
+        (click)="openPlayer(false)"
+      >
+        Riproduci audio
+      </button>
+    </ng-container>
+
+    <ng-template #unlockedNoAudio>
+      <button mat-flat-button color="primary" class="big-cta" disabled>
+        Audio non disponibile
+      </button>
+    </ng-template>
 
     <ng-template #lockCta>
       <button mat-flat-button color="primary" class="big-cta" (click)="purchasePoi()">

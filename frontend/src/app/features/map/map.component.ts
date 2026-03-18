@@ -363,6 +363,11 @@ export class MapComponent implements OnInit, OnDestroy {
         }
 
         if (result.action === 'play') {
+          if (!this.hasPlayableAudio(poi)) {
+            this.snackBar.open('Audio non disponibile per questo luogo.', 'OK', { duration: 2400 });
+            return;
+          }
+
           void this.router.navigate(['/player', result.poiId], {
             queryParams: { preview: result.preview }
           });
@@ -768,6 +773,10 @@ export class MapComponent implements OnInit, OnDestroy {
     }
 
     return `${(distanceMeters / 1000).toFixed(1)} km`;
+  }
+
+  private hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
+    return Boolean(String(poi?.audioUrl || '').trim());
   }
 
   private cityName(cityId: string): string {

@@ -65,20 +65,31 @@ export class MyAudioComponent implements OnInit, OnDestroy {
   }
 
   async downloadAll(): Promise<void> {
-    const toCache = this.audioItems.map((item) => ({
-      poiId: item.id,
-      urls: [item.audioUrl, item.imageUrl]
-    }));
+    const toCache = this.audioItems
+      .filter((item) => this.hasPlayableAudio(item))
+      .map((item) => ({
+        poiId: item.id,
+        urls: [item.audioUrl, item.imageUrl]
+      }));
 
     await this.offlineService.cacheBatch(toCache);
     await this.rebuildList();
     this.snackBar.open('Download offline completato', 'OK', { duration: 2400 });
   }
 
-  play(poiId: string): void {
-    void this.router.navigate(['/player', poiId], {
+  play(item: AudioItem): void {
+    if (!this.hasPlayableAudio(item)) {
+      this.snackBar.open('Audio non disponibile per questo luogo.', 'OK', { duration: 2400 });
+      return;
+    }
+
+    void this.router.navigate(['/player', item.id], {
       queryParams: { preview: false }
     });
+  }
+
+  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
+    return Boolean(String(poi?.audioUrl || '').trim());
   }
 
   private async rebuildList(): Promise<void> {
