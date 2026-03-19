@@ -93,5 +93,6 @@ Se usi Docker backend + tunnel SSH invece del postgres locale in compose, impost
 ## Note tecniche
 
 - Il backend crea schema e seed automaticamente al bootstrap (`initDatabase`).
+- `DB_SEED_MODE` controlla il seed catalogo (`always`, `if-empty`, `never`). Default: `if-empty`.
 - Le immagini sono placeholder SVG locali.
 - Gli audio demo sono file MP3 brevi nella cartella `backend/public/audio`.

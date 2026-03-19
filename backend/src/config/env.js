@@ -7,6 +7,14 @@ function parsePositiveNumber(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function parseSeedMode(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'always' || normalized === 'if-empty' || normalized === 'never') {
+    return normalized;
+  }
+  return 'if-empty';
+}
+
 export const env = {
   port: Number(process.env.PORT || 3000),
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:4200',
@@ -16,7 +24,8 @@ export const env = {
     port: Number(process.env.DB_PORT || 25432),
     database: process.env.DB_NAME || 'turismo_db_dev',
     user: process.env.DB_USER || 'tourism',
-    password: process.env.DB_PASSWORD || ''
+    password: process.env.DB_PASSWORD || '',
+    seedMode: parseSeedMode(process.env.DB_SEED_MODE)
   },
   auth: {
     adminEmail: process.env.ADMIN_EMAIL || 'riccardo.sapuppo.9@gmail.com',

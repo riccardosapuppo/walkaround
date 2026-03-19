@@ -881,15 +881,41 @@ async function seedAdminUser(client) {
   );
 }
 
+async function shouldSeedCatalogData(client) {
+  if (env.db.seedMode === 'always') {
+    return true;
+  }
+  if (env.db.seedMode === 'never') {
+    return false;
+  }
+
+  const countsResult = await client.query(
+    `
+      SELECT
+        (SELECT COUNT(*)::INT FROM cities) AS cities_count,
+        (SELECT COUNT(*)::INT FROM pois) AS pois_count,
+        (SELECT COUNT(*)::INT FROM hotel_codes) AS hotel_codes_count
+    `
+  );
+
+  const row = countsResult.rows[0] || {};
+  const citiesCount = Number(row.cities_count || 0);
+  const poisCount = Number(row.pois_count || 0);
+  const hotelCodesCount = Number(row.hotel_codes_count || 0);
+  return citiesCount === 0 && poisCount === 0 && hotelCodesCount === 0;
+}
+
 export async function initDatabase() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     await createSchema(client);
     await seedAdminUser(client);
-    await seedCities(client);
-    await seedPois(client);
-    await seedHotelCodes(client);
+    if (await shouldSeedCatalogData(client)) {
+      await seedCities(client);
+      await seedPois(client);
+      await seedHotelCodes(client);
+    }
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
