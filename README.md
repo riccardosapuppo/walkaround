@@ -94,5 +94,9 @@ Se usi Docker backend + tunnel SSH invece del postgres locale in compose, impost
 
 - Il backend crea schema e seed automaticamente al bootstrap (`initDatabase`).
 - `DB_SEED_MODE` controlla il seed catalogo (`always`, `if-empty`, `never`). Default: `if-empty`.
+- Nel `docker-compose.yml` di questo progetto il backend usa `DB_SEED_MODE=never` per non riscrivere mai catalogo esistente al riavvio.
+- I file caricati da dashboard (`/app/public/images` e `/app/public/audio`) sono persistiti nel volume `tourism_public`.
+- Il database Postgres e persistito nel volume `tourism_pgdata`.
+- Evita `docker compose down -v` in produzione: rimuove i volumi e quindi i dati.
 - Le immagini sono placeholder SVG locali.
 - Gli audio demo sono file MP3 brevi nella cartella `backend/public/audio`.

@@ -29,9 +29,11 @@ services:
       DB_NAME: turismo_db_dev
       DB_USER: walkaround
       DB_PASSWORD: 
-      DB_SEED_MODE: if-empty
+      DB_SEED_MODE: never
     ports:
       - '3001:3000'
+    volumes:
+      - tourism_public:/app/public
     networks:
       - tourism-net
   frontend:
@@ -50,3 +52,4 @@ networks:
     driver: bridge
 volumes:
   tourism_pgdata:
+  tourism_public:

@@ -1,0 +1,8 @@
+{
+  "name": "tourismapp-tools",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "git": "node scripts/git-quick.js"
+  }
+}
