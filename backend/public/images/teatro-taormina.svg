@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#eef5ff"/>
+  <path d="M120 420 Q480 150 840 420" fill="none" stroke="#8e6b4c" stroke-width="40"/>
+  <path d="M170 420 Q480 200 790 420" fill="none" stroke="#b38d66" stroke-width="28"/>
+  <text x="70" y="92" fill="#1d426e" font-size="48" font-family="Arial" font-weight="700">Teatro Antico</text>
+</svg>

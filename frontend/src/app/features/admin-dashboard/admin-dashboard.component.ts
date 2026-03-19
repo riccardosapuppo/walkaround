@@ -166,6 +166,8 @@ export class AdminDashboardComponent implements OnInit {
   private readonly audioDurationByUrl: Record<string, number> = {};
   private readonly pendingAudioDurationUrls = new Set<string>();
   private readonly invalidAudioDurationUrls = new Set<string>();
+  private readonly maxCatalogAudioUploadBytes = 15 * 1024 * 1024;
+  private readonly maxCatalogImageUploadBytes = 10 * 1024 * 1024;
   audioPlayerPoiName = '';
   audioPlayerFileName = '';
   audioPlayerUrl = '';
@@ -1860,6 +1862,10 @@ export class AdminDashboardComponent implements OnInit {
     if (!file) {
       return;
     }
+    if (this.isFileLargerThan(file, this.maxCatalogAudioUploadBytes, 'audio')) {
+      target.value = '';
+      return;
+    }
 
     const fileDurationPromise = this.readAudioDurationFromFile(file);
     const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiForm.controls.cityId.value);
@@ -1891,6 +1897,10 @@ export class AdminDashboardComponent implements OnInit {
     if (!file) {
       return;
     }
+    if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+      target.value = '';
+      return;
+    }
 
     const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiForm.controls.cityId.value);
     if (!mediaTarget) {
@@ -1916,6 +1926,10 @@ export class AdminDashboardComponent implements OnInit {
     if (!file) {
       return;
     }
+    if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+      target.value = '';
+      return;
+    }
 
     const cityName = this.catalogCityForm.controls.name.value.trim();
     if (!cityName) {
@@ -1939,6 +1953,10 @@ export class AdminDashboardComponent implements OnInit {
     const target = event.target as HTMLInputElement;
     const file = target?.files?.[0];
     if (!file) {
+      return;
+    }
+    if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+      target.value = '';
       return;
     }
 
@@ -1969,6 +1987,10 @@ export class AdminDashboardComponent implements OnInit {
     if (!file) {
       return;
     }
+    if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+      target.value = '';
+      return;
+    }
 
     const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiEditForm.controls.cityId.value);
     if (!mediaTarget) {
@@ -1992,6 +2014,10 @@ export class AdminDashboardComponent implements OnInit {
     const target = event.target as HTMLInputElement;
     const file = target?.files?.[0];
     if (!file) {
+      return;
+    }
+    if (this.isFileLargerThan(file, this.maxCatalogAudioUploadBytes, 'audio')) {
+      target.value = '';
       return;
     }
 
@@ -2987,6 +3013,16 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  private isFileLargerThan(file: File, maxBytes: number, mediaLabel: 'audio' | 'immagine'): boolean {
+    if (file.size <= maxBytes) {
+      return false;
+    }
+
+    const maxMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
+    this.snackBar.open(`File ${mediaLabel} troppo grande (max ${maxMb}MB)`, 'Chiudi', { duration: 3500 });
+    return true;
+  }
+
   private normalizeAudioUrl(audioUrl: string | null | undefined): string {
     return String(audioUrl || '').trim();
   }
@@ -3302,4 +3338,3 @@ export class AdminDashboardComponent implements OnInit {
     return Math.round(clamped * 100) / 100;
   }
 }
-

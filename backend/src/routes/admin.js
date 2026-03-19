@@ -237,6 +237,28 @@ function absolutePathFromPublicUrl(publicUrl) {
   return absolutePath;
 }
 
+async function resolveExistingPublicSourcePath(publicUrl) {
+  const primaryAbsolutePath = absolutePathFromPublicUrl(publicUrl);
+  if (!primaryAbsolutePath) {
+    return null;
+  }
+
+  if (await pathExists(primaryAbsolutePath)) {
+    return primaryAbsolutePath;
+  }
+
+  const normalizedUrl = String(publicUrl || '').trim();
+  if (normalizedUrl.startsWith('/public/images/')) {
+    const fileName = path.basename(primaryAbsolutePath);
+    const legacyImageAbsolutePath = path.join(publicImagesRootDir, 'old', fileName);
+    if (await pathExists(legacyImageAbsolutePath)) {
+      return legacyImageAbsolutePath;
+    }
+  }
+
+  return primaryAbsolutePath;
+}
+
 function requiresMediaMigration(publicUrl, basePublicPrefix, targetFolderSlug) {
   const normalizedUrl = String(publicUrl || '').trim();
   if (!normalizedUrl.startsWith(basePublicPrefix)) {
@@ -277,7 +299,7 @@ function requiresAudioMigration(audioUrl, targetFolderSlug) {
 }
 
 async function movePublicFileToCityFolder(currentPublicUrl, targetFolderAbsolutePath, targetBasePublicUrl) {
-  const sourceAbsolutePath = absolutePathFromPublicUrl(currentPublicUrl);
+  const sourceAbsolutePath = await resolveExistingPublicSourcePath(currentPublicUrl);
   if (!sourceAbsolutePath) {
     return currentPublicUrl;
   }
@@ -288,9 +310,12 @@ async function movePublicFileToCityFolder(currentPublicUrl, targetFolderAbsolute
   }
 
   await fs.mkdir(targetFolderAbsolutePath, { recursive: true });
-  let targetFileName = originalFileName;
-  let targetAbsolutePath = path.join(targetFolderAbsolutePath, targetFileName);
-  let targetPublicUrl = `${targetBasePublicUrl}/${targetFileName}`;
+  const defaultTargetFileName = originalFileName;
+  const defaultTargetAbsolutePath = path.join(targetFolderAbsolutePath, defaultTargetFileName);
+  const defaultTargetPublicUrl = `${targetBasePublicUrl}/${defaultTargetFileName}`;
+  let targetFileName = defaultTargetFileName;
+  let targetAbsolutePath = defaultTargetAbsolutePath;
+  let targetPublicUrl = defaultTargetPublicUrl;
 
   if (sourceAbsolutePath === targetAbsolutePath) {
     return targetPublicUrl;
@@ -327,6 +352,16 @@ async function movePublicFileToCityFolder(currentPublicUrl, targetFolderAbsolute
       if (error && typeof error === 'object' && 'code' in error && error.code === 'EXDEV') {
         await fs.copyFile(sourceAbsolutePath, targetAbsolutePath);
         await fs.unlink(sourceAbsolutePath);
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+        const defaultTargetExists = await pathExists(defaultTargetAbsolutePath);
+        if (defaultTargetExists) {
+          return defaultTargetPublicUrl;
+        }
+        const chosenTargetExists = await pathExists(targetAbsolutePath);
+        if (chosenTargetExists) {
+          return targetPublicUrl;
+        }
+        return currentPublicUrl;
       } else {
         throw error;
       }
@@ -2498,12 +2533,13 @@ router.get('/catalog/cities', requireAuth, requireAdmin, async (_req, res, next)
       `
     );
 
-    const migratedRows = await Promise.all(
-      result.rows.map(async (row) => ({
+    const migratedRows = [];
+    for (const row of result.rows) {
+      migratedRows.push({
         ...row,
         hero_image: await maybeMigrateCityHeroImage(row)
-      }))
-    );
+      });
+    }
 
     return res.json(migratedRows.map(mapCatalogCityRow));
   } catch (error) {
@@ -2683,7 +2719,10 @@ router.get('/catalog/cities/:cityId/pois', requireAuth, requireAdmin, async (req
       [cityId]
     );
 
-    const migratedRows = await Promise.all(result.rows.map((row) => maybeMigratePoiMedia(row)));
+    const migratedRows = [];
+    for (const row of result.rows) {
+      migratedRows.push(await maybeMigratePoiMedia(row));
+    }
     return res.json(migratedRows.map(mapCatalogPoiRow));
   } catch (error) {
     return next(error);
