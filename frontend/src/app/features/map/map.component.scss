@@ -9,6 +9,16 @@
   padding: 0 4px;
 }
 
+.map-header-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.map-back-btn {
+  margin-top: -2px;
+}
+
 .map-frame {
   height: calc(100vh - 190px);
   min-height: 460px;
@@ -81,12 +91,13 @@
 .center-btn {
   position: fixed;
   right: 22px;
-  bottom: calc(96px + env(safe-area-inset-bottom));
+  bottom: calc(112px + env(safe-area-inset-bottom));
+  z-index: 1250;
   transition: bottom 0.22s ease;
 }
 
 .center-btn.with-navigation {
-  bottom: calc(360px + env(safe-area-inset-bottom));
+  bottom: calc(372px + env(safe-area-inset-bottom));
 }
 
 .nav-hud {
@@ -213,7 +224,7 @@
 
 @media (min-width: 900px) {
   .center-btn.with-navigation {
-    bottom: calc(340px + env(safe-area-inset-bottom));
+    bottom: calc(352px + env(safe-area-inset-bottom));
   }
 
   .nav-hud {

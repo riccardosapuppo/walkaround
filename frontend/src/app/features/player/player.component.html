@@ -3,7 +3,7 @@
     <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
   </button>
 
-  <img class="hero-image" [src]="currentPoi.imageUrl" [alt]="currentPoi.name" />
+  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="currentPoi.name" />
 
   <h1 class="page-title">{{ currentPoi.name }}</h1>
   <p class="page-subtitle">
@@ -66,3 +66,4 @@
     <button mat-stroked-button color="primary" (click)="goBack()">Torna indietro</button>
   </mat-card>
 </section>
+

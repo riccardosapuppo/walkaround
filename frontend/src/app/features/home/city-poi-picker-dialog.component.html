@@ -1,0 +1,60 @@
+<h2 mat-dialog-title>Luoghi di {{ data.cityName }}</h2>
+
+<mat-dialog-content class="picker-content">
+  <p class="picker-subtitle">
+    Seleziona i luoghi da acquistare. Con piu luoghi selezionati useremo il pacchetto citta per un checkout unico.
+  </p>
+
+  <div class="picker-toolbar">
+    <button mat-button type="button" (click)="selectAllLocked()">Seleziona tutti i bloccati</button>
+    <button mat-button type="button" (click)="clearSelection()">Azzera</button>
+  </div>
+
+  <div class="picker-list">
+    <button
+      type="button"
+      class="picker-row"
+      *ngFor="let poi of data.pois"
+      [class.unlocked]="poi.unlocked"
+      [class.selected]="isSelected(poi.id)"
+      (click)="togglePoi(poi)"
+    >
+      <div class="picker-row-main">
+        <strong>{{ poi.name }}</strong>
+        <small>{{ poi.distanceLabel }} &middot; {{ poi.durationSec | durationLabel }}</small>
+        <p>{{ poi.descriptionShort }}</p>
+      </div>
+
+      <div class="picker-row-meta">
+        <span *ngIf="poi.unlocked" class="status-pill unlocked">Sbloccato</span>
+        <span *ngIf="!poi.unlocked" class="status-pill locked">
+          {{ isSelected(poi.id) ? 'Selezionato' : 'Seleziona' }}
+        </span>
+        <strong *ngIf="!poi.unlocked">&euro;{{ formatPrice(poi.priceSingle) }}</strong>
+      </div>
+    </button>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="picker-actions">
+  <div class="picker-summary" [class.has-selection]="selectedCount > 0">
+    <span class="picker-summary-count">{{ selectedCount }} selezionati</span>
+    <p class="picker-summary-total">
+      Totale singoli
+      <strong>&euro;{{ formatPrice(selectedTotal) }}</strong>
+    </p>
+  </div>
+
+  <div class="picker-action-buttons">
+    <button mat-button mat-dialog-close>Annulla</button>
+    <button mat-stroked-button color="primary" type="button" (click)="purchaseCityBundle()">
+      Sblocca citta &euro;{{ data.cityUnlockPriceLabel }}
+    </button>
+  </div>
+
+  <div class="picker-primary-cta">
+    <button mat-flat-button color="primary" type="button" [disabled]="selectedCount === 0" (click)="confirmSelection()">
+      {{ selectionCtaLabel }}
+    </button>
+  </div>
+</mat-dialog-actions>

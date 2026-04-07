@@ -1,10 +1,25 @@
 <section class="map-page">
   <header class="map-header">
-    <h1 class="page-title">Mappa</h1>
-    <p class="page-subtitle" *ngIf="!hasActiveNavigation">{{ poiCount }} punti di interesse disponibili intorno a te</p>
-    <p class="page-subtitle" *ngIf="hasActiveNavigation && navigationTarget">
-      Navigazione attiva verso {{ navigationTarget.name }}
-    </p>
+    <div class="map-header-top">
+      <button
+        mat-icon-button
+        class="map-back-btn"
+        type="button"
+        *ngIf="hasActiveNavigation"
+        (click)="goBack()"
+        aria-label="Torna indietro"
+      >
+        <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
+      </button>
+
+      <div>
+        <h1 class="page-title">Mappa</h1>
+        <p class="page-subtitle" *ngIf="!hasActiveNavigation">{{ poiCount }} punti di interesse disponibili intorno a te</p>
+        <p class="page-subtitle" *ngIf="hasActiveNavigation && navigationTarget">
+          Navigazione attiva verso {{ navigationTarget.name }}
+        </p>
+      </div>
+    </div>
   </header>
 
   <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">

@@ -8,12 +8,7 @@ import { AppStateService } from '../../core/services/app-state.service';
 import { GeoService } from '../../core/services/geo.service';
 import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
-
-const cityNameMap: Record<string, string> = {
-  catania: 'Catania',
-  siracusa: 'Siracusa',
-  taormina: 'Taormina'
-};
+import { formatCityLabel } from '../../core/utils/city-label.util';
 
 @Component({
   standalone: false,
@@ -153,7 +148,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   }
 
   cityName(cityId: string): string {
-    return cityNameMap[cityId] || cityId;
+    return formatCityLabel(cityId);
   }
 
   hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {

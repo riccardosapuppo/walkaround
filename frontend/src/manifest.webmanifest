@@ -1,6 +1,6 @@
 {
-  "name": "Tourism Audio Guide",
-  "short_name": "TourismGuide",
+  "name": "Walk Around",
+  "short_name": "WalkAround",
   "theme_color": "#1769aa",
   "background_color": "#f4f7fc",
   "display": "standalone",

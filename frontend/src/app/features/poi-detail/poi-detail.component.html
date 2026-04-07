@@ -3,12 +3,17 @@
     <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
   </button>
 
-  <img class="hero-image" [src]="currentPoi.imageUrl" [alt]="currentPoi.name" />
+  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="currentPoi.name" />
+
+  <button mat-flat-button color="accent" class="big-cta nav-cta nav-top-cta" (click)="startNavigation()">
+    <mat-icon fontSet="material-icons-round">near_me</mat-icon>
+    Avvia navigazione in app
+  </button>
 
   <div class="title-row">
     <div>
       <h1 class="page-title">{{ currentPoi.name }}</h1>
-      <p class="page-subtitle">{{ distanceLabel }} · {{ currentPoi.durationSec | durationLabel }}</p>
+      <p class="page-subtitle">{{ distanceLabel }} - {{ currentPoi.durationSec | durationLabel }}</p>
     </div>
 
     <button mat-icon-button color="primary" (click)="toggleFavorite()">
@@ -16,8 +21,8 @@
     </button>
   </div>
 
-  <p class="short">{{ currentPoi.descriptionShort }}</p>
-  <p class="long">{{ currentPoi.descriptionLong }}</p>
+  <p class="short teaser-only" *ngIf="!unlocked">{{ currentPoi.descriptionShort }}</p>
+  <p class="long" *ngIf="unlocked">{{ currentPoi.descriptionLong }}</p>
 
   <section class="actions">
     <button
@@ -57,11 +62,6 @@
         Sblocca {{ cityName(currentPoi.cityId) }} €{{ cityUnlockPriceLabel }}
       </button>
     </ng-template>
-
-    <button mat-flat-button color="accent" class="big-cta nav-cta" (click)="startNavigation()">
-      <mat-icon fontSet="material-icons-round">near_me</mat-icon>
-      Avvia navigazione in app
-    </button>
   </section>
 </section>
 
@@ -76,3 +76,4 @@
     <button mat-stroked-button color="primary" (click)="goBack()">Torna alla home</button>
   </mat-card>
 </section>
+

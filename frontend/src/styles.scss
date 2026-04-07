@@ -2,15 +2,15 @@
 
 @include mat.core();
 
-$tourism-primary: mat.m2-define-palette(mat.$m2-blue-palette, 700, 500, 900);
-$tourism-accent: mat.m2-define-palette(mat.$m2-light-green-palette, 600, 500, 700);
-$tourism-warn: mat.m2-define-palette(mat.$m2-amber-palette, 700);
+$walkaround-primary: mat.m2-define-palette(mat.$m2-blue-palette, 700, 500, 900);
+$walkaround-accent: mat.m2-define-palette(mat.$m2-light-green-palette, 600, 500, 700);
+$walkaround-warn: mat.m2-define-palette(mat.$m2-amber-palette, 700);
 
-$tourism-theme: mat.m2-define-light-theme((
+$walkaround-theme: mat.m2-define-light-theme((
   color: (
-    primary: $tourism-primary,
-    accent: $tourism-accent,
-    warn: $tourism-warn
+    primary: $walkaround-primary,
+    accent: $walkaround-accent,
+    warn: $walkaround-warn
   ),
   typography: mat.m2-define-typography-config(
     $font-family: 'Outfit, "Segoe UI", sans-serif',
@@ -20,7 +20,7 @@ $tourism-theme: mat.m2-define-light-theme((
   )
 ));
 
-@include mat.all-component-themes($tourism-theme);
+@include mat.all-component-themes($walkaround-theme);
 
 :root {
   --bg-main: #f4f7fc;

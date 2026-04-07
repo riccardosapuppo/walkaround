@@ -1,12 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Poi } from '../../../core/models/poi.model';
-
-const cityNameMap: Record<string, string> = {
-  catania: 'Catania',
-  siracusa: 'Siracusa',
-  taormina: 'Taormina'
-};
+import { formatCityLabel } from '../../../core/utils/city-label.util';
 
 export interface PoiMapSheetData {
   poi: Poi;
@@ -71,7 +66,7 @@ export class PoiMapSheetComponent {
   }
 
   cityName(cityId: string): string {
-    return cityNameMap[cityId] || cityId;
+    return formatCityLabel(cityId);
   }
 
   hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {

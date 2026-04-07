@@ -10,7 +10,7 @@
   </section>
 
   <mat-card class="card poi-card" *ngFor="let poi of favorites" [class.hidden]="loading">
-    <img [src]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
+    <img [appImgFallback]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
 
     <div class="meta" (click)="openPoi(poi.id)">
       <h3>{{ poi.name }}</h3>
@@ -26,3 +26,4 @@
     <p>Non hai ancora preferiti.</p>
   </mat-card>
 </section>
+

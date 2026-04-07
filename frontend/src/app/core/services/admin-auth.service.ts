@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-const ADMIN_SESSION_KEY = 'tourism.dashboard.session';
+const ADMIN_SESSION_KEY = 'walkaround.dashboard.session';
 
 export type UserRole = 'admin' | 'facility_manager' | 'user';
 export type DiscountCodeApplyTo = 'single' | 'bundle';

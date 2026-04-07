@@ -6,10 +6,10 @@ interface OfflineRecord {
   updatedAt: number;
 }
 
-const DB_NAME = 'tourism-offline-db';
+const DB_NAME = 'walkaround-offline-db';
 const STORE_NAME = 'offline_pois';
 const DB_VERSION = 1;
-const CACHE_NAME = 'tourism-audio-cache-v1';
+const CACHE_NAME = 'walkaround-audio-cache-v1';
 
 @Injectable({ providedIn: 'root' })
 export class OfflineService {

@@ -3,13 +3,13 @@ import { BehaviorSubject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEYS = {
-  userId: 'tourism.userId',
-  activeCityId: 'tourism.activeCityId',
-  hotelCode: 'tourism.hotelCode',
-  hotelAssociation: 'tourism.hotelAssociation',
-  onboardingSeen: 'tourism.onboardingSeen',
-  favorites: 'tourism.favorites',
-  language: 'tourism.language'
+  userId: 'walkaround.userId',
+  activeCityId: 'walkaround.activeCityId',
+  hotelCode: 'walkaround.hotelCode',
+  hotelAssociation: 'walkaround.hotelAssociation',
+  onboardingSeen: 'walkaround.onboardingSeen',
+  favorites: 'walkaround.favorites',
+  language: 'walkaround.language'
 } as const;
 
 export interface HotelAssociation {

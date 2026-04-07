@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="480" y1="0" x2="480" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9FD2FF" />
+      <stop offset="1" stop-color="#D9EEFF" />
+    </linearGradient>
+    <linearGradient id="ground" x1="480" y1="300" x2="480" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#CFE8C9" />
+      <stop offset="1" stop-color="#9EC79B" />
+    </linearGradient>
+    <linearGradient id="mountain" x1="214" y1="228" x2="730" y2="505" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6E8EAC" />
+      <stop offset="1" stop-color="#4F6D89" />
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="640" rx="34" fill="url(#sky)" />
+  <rect y="334" width="960" height="306" fill="url(#ground)" />
+
+  <path d="M84 454 266 258l168 170 88-102 132 128H84Z" fill="url(#mountain)" opacity=".95" />
+  <path d="M298 446 470 286l102 100 52-48 130 108H298Z" fill="#5C7D99" opacity=".85" />
+  <path d="M0 500c93-37 164-39 270-12 88 22 165 21 247-2 107-29 180-31 443 14v140H0V500Z" fill="#86B481" />
+
+  <circle cx="148" cy="116" r="46" fill="#FFF4C3" opacity=".9" />
+  <path d="M668 462h160v76H668z" fill="#F2F8FF" opacity=".82" />
+  <path d="M684 482h34v56h-34zm46 0h34v56h-34zm46 0h34v56h-34z" fill="#A8C2D9" opacity=".95" />
+  <path d="M100 528h228" stroke="#5E8A5A" stroke-width="12" stroke-linecap="round" opacity=".65" />
+  <path d="M628 558h204" stroke="#5E8A5A" stroke-width="12" stroke-linecap="round" opacity=".65" />
+</svg>

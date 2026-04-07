@@ -15,7 +15,7 @@
   </section>
 
   <mat-card class="card audio-card" *ngFor="let item of audioItems">
-    <img [src]="item.imageUrl" [alt]="item.name" />
+    <img [appImgFallback]="item.imageUrl" [alt]="item.name" />
 
     <div class="meta">
       <h3>{{ item.name }}</h3>
@@ -34,3 +34,4 @@
     <p>Non hai ancora audio sbloccati.</p>
   </mat-card>
 </section>
+

@@ -39,6 +39,6 @@ export const env = {
     secure: String(process.env.SMTP_SECURE || 'true').toLowerCase() !== 'false',
     user: process.env.SMTP_USER || 'info@walkaround.cloud',
     password: process.env.SMTP_PASSWORD || '',
-    from: process.env.SMTP_FROM || 'TourApp <info@walkaround.cloud>'
+    from: process.env.SMTP_FROM || 'Walk Around <info@walkaround.cloud>'
   }
 };

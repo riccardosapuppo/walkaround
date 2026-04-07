@@ -5,9 +5,10 @@ import { RouterModule } from '@angular/router';
 import { MaterialModule } from './material.module';
 import { PoiMapSheetComponent } from './components/poi-map-sheet/poi-map-sheet.component';
 import { DurationLabelPipe } from './pipes/duration-label.pipe';
+import { ImgFallbackDirective } from './directives/img-fallback.directive';
 
 @NgModule({
-  declarations: [PoiMapSheetComponent, DurationLabelPipe],
+  declarations: [PoiMapSheetComponent, DurationLabelPipe, ImgFallbackDirective],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MaterialModule],
   exports: [
     CommonModule,
@@ -16,7 +17,8 @@ import { DurationLabelPipe } from './pipes/duration-label.pipe';
     RouterModule,
     MaterialModule,
     PoiMapSheetComponent,
-    DurationLabelPipe
+    DurationLabelPipe,
+    ImgFallbackDirective
   ]
 })
 export class SharedModule {}

@@ -13,7 +13,7 @@ interface PlayerState {
   previewEnded: boolean;
 }
 
-const STORAGE_KEY = 'tourism.player.progress';
+const STORAGE_KEY = 'walkaround.player.progress';
 
 @Injectable({ providedIn: 'root' })
 export class PlayerService {

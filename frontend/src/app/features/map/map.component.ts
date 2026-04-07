@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -24,6 +25,7 @@ import { NavigationRoute, NavigationService, NavigationStep } from '../../core/s
 import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
 import { StructureLocationService } from '../../core/services/structure-location.service';
+import { formatCityLabel } from '../../core/utils/city-label.util';
 import {
   PoiMapSheetAction,
   PoiMapSheetComponent
@@ -46,13 +48,6 @@ const cityFallbackMap: Record<string, Coordinates> = {
   siracusa: { lat: 37.067, lng: 15.2866 },
   taormina: { lat: 37.8531, lng: 15.2899 },
   ragusa: { lat: 36.9269, lng: 14.7305 }
-};
-
-const cityNameMap: Record<string, string> = {
-  catania: 'Catania',
-  siracusa: 'Siracusa',
-  taormina: 'Taormina',
-  ragusa: 'Ragusa'
 };
 
 const ARRIVAL_THRESHOLD_METERS = 35;
@@ -104,6 +99,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private currentCoordinates?: Coordinates;
   private latestPreparedPois: PoiMapView[] = [];
   private pendingNavigationPoiId: string | null = null;
+  private pendingNavigationFromQuery = false;
   private activeRoute?: NavigationRoute;
   private routeRemainingMetersByPoint: number[] = [];
   private routeStepPointIndexes: number[] = [];
@@ -124,7 +120,8 @@ export class MapComponent implements OnInit, OnDestroy {
     private readonly bottomSheet: MatBottomSheet,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly location: Location
   ) {}
 
   get hasActiveNavigation(): boolean {
@@ -190,6 +187,8 @@ export class MapComponent implements OnInit, OnDestroy {
       }
 
       this.pendingNavigationPoiId = poiId;
+      this.pendingNavigationFromQuery = true;
+      this.tryStartPendingNavigation();
     });
 
     combineLatest([
@@ -272,6 +271,19 @@ export class MapComponent implements OnInit, OnDestroy {
     this.mapRef.flyTo([this.currentCoordinates.lat, this.currentCoordinates.lng], 15, {
       duration: 0.8
     });
+  }
+
+  goBack(): void {
+    if (!this.hasActiveNavigation) {
+      return;
+    }
+
+    if (window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
+    void this.router.navigate(['/home']);
   }
 
   focusNavigationRoute(): void {
@@ -473,6 +485,11 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private startNavigation(poi: PoiMapView): void {
+    if (this.navigationTarget?.id === poi.id && this.activeRoute?.points?.length) {
+      this.focusNavigationRoute();
+      return;
+    }
+
     this.pendingNavigationPoiId = null;
     this.navigationTarget = poi;
     this.activeRoute = undefined;
@@ -572,6 +589,10 @@ export class MapComponent implements OnInit, OnDestroy {
 
     const refreshedTarget = this.latestPreparedPois.find((poi) => poi.id === this.navigationTarget?.id);
     if (!refreshedTarget) {
+      if (!this.latestPreparedPois.length) {
+        return;
+      }
+
       this.clearNavigationState();
       return;
     }
@@ -661,6 +682,18 @@ export class MapComponent implements OnInit, OnDestroy {
     }
 
     this.deferNavigationStart(target);
+    if (this.pendingNavigationFromQuery) {
+      this.pendingNavigationFromQuery = false;
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {
+          nav: null,
+          poiId: null
+        },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
+    }
     this.pendingNavigationPoiId = null;
   }
 
@@ -780,7 +813,7 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private cityName(cityId: string): string {
-    return cityNameMap[cityId] || cityId;
+    return formatCityLabel(cityId);
   }
 
   private associationCityIds(association: HotelAssociation): string[] {
