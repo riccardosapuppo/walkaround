@@ -1,13 +1,14 @@
 <section class="player-page page-shell" *ngIf="poi as currentPoi">
-  <button mat-icon-button class="back" (click)="goBack()">
+  <button mat-icon-button class="back" (click)="goBack()" [attr.aria-label]="'common.goBack' | t">
     <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
   </button>
 
-  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="currentPoi.name" />
+  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="poiName(currentPoi)" />
 
-  <h1 class="page-title">{{ currentPoi.name }}</h1>
+  <h1 class="page-title">{{ poiName(currentPoi) }}</h1>
+  <p class="page-subtitle" *ngIf="poiAudioLabel(currentPoi)">{{ poiAudioLabel(currentPoi) }}</p>
   <p class="page-subtitle">
-    {{ audioUnavailable ? 'Audio non disponibile' : (previewMode ? ('Modalita preview ' + previewSeconds + 's') : 'Audio completo') }}
+    {{ audioUnavailable ? ('player.audioUnavailable' | t) : (previewMode ? ('player.previewLabel' | t:{ seconds: previewSeconds }) : ('player.fullAudio' | t)) }}
     - {{ currentPoi.durationSec | durationLabel }}
   </p>
 
@@ -41,29 +42,34 @@
     </div>
 
     <mat-slide-toggle *ngIf="canToggleOffline" [ngModel]="offlineEnabled" (ngModelChange)="toggleOffline($event)">
-      Scarica offline
+      {{ 'player.downloadOffline' | t }}
     </mat-slide-toggle>
 
-    <p class="preview-note" *ngIf="state.previewEnded">Preview terminata. Sblocca questo luogo o l'intera citta per ascolto completo.</p>
+    <p class="preview-note" *ngIf="state.previewEnded">
+      {{ 'player.previewEnded' | t }}
+    </p>
     </ng-container>
   </section>
 
   <mat-card class="card warning" *ngIf="audioUnavailable">
-    <p>Questo luogo non ha ancora una traccia audio disponibile.</p>
+    <p>{{ 'player.noAudioTrack' | t }}</p>
   </mat-card>
 
-  <p class="description">{{ currentPoi.descriptionLong }}</p>
+  <p class="description" *ngIf="unlocked && !previewMode; else teaserDescription">{{ poiDescriptionLong(currentPoi) }}</p>
+  <ng-template #teaserDescription>
+    <p class="description">{{ poiDescriptionShort(currentPoi) }}</p>
+  </ng-template>
 </section>
 
 <section class="page-shell loading-shell" *ngIf="loading">
   <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-  <p>Caricamento audio guida...</p>
+  <p>{{ 'player.loading' | t }}</p>
 </section>
 
 <section class="page-shell player-page" *ngIf="!loading && !poi">
   <mat-card class="card warning">
-    <p>{{ loadError ? 'Audio guida non disponibile o backend non raggiungibile.' : 'Contenuto non trovato.' }}</p>
-    <button mat-stroked-button color="primary" (click)="goBack()">Torna indietro</button>
+    <p>{{ loadError ? ('player.unavailable' | t) : ('player.notFound' | t) }}</p>
+    <button mat-stroked-button color="primary" (click)="goBack()">{{ 'common.goBack' | t }}</button>
   </mat-card>
 </section>
 

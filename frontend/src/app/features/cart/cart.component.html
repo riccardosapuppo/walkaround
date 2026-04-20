@@ -1,0 +1,62 @@
+<section class="page-shell cart-page">
+  <header class="brand-hero">
+    <div class="brand-hero-stage">
+      <img
+        class="brand-hero-logo"
+        src="/assets/logo.png"
+        [attr.alt]="'common.appName' | t"
+        loading="eager"
+        decoding="sync"
+        fetchpriority="high"
+      />
+      <div class="brand-hero-footer">
+        <p class="brand-hero-slogan">{{ 'common.brandTagline' | t }}</p>
+      </div>
+    </div>
+  </header>
+
+  <mat-card class="card section">
+    <h3>{{ 'cart.placesInCart' | t }}</h3>
+
+    <div class="cart-list" *ngIf="cartItems.length; else emptyCart">
+      <div class="cart-item" *ngFor="let item of cartItems">
+        <div>
+          <p class="cart-item-title">{{ itemLabel(item) }}</p>
+          <p class="cart-item-sub">{{ itemCityName(item) }} - {{ itemAmountLabel(item) }}</p>
+        </div>
+        <button mat-icon-button color="warn" (click)="removeCartItem(item.key)" [attr.aria-label]="'cart.removeAria' | t">
+          <mat-icon fontSet="material-icons-round">delete</mat-icon>
+        </button>
+      </div>
+    </div>
+    <ng-template #emptyCart>
+      <p>{{ 'cart.empty' | t }}</p>
+    </ng-template>
+
+    <div class="cart-total-block" *ngIf="cartItems.length">
+      <p class="cart-total"><strong>{{ 'cart.total' | t }}:</strong> {{ cartTotalLabel() }}</p>
+      <p class="cart-total discount-line" *ngIf="quote && (quote.discountAmount || 0) > 0">
+        <strong>{{ 'cart.discount' | t }}:</strong> -{{ quotedDiscountLabel() }}
+      </p>
+      <p class="cart-total final-line" *ngIf="quote">
+        <strong>{{ 'cart.paypalTotal' | t }}:</strong> {{ quotedFinalLabel() }}
+      </p>
+    </div>
+
+    <div class="paypal-panel" *ngIf="cartItems.length">
+      <p class="paypal-title"><strong>{{ 'cart.paymentMethod' | t }}</strong></p>
+
+      <div class="paypal-loading" *ngIf="loadingQuote">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>{{ 'cart.loadingQuote' | t }}</span>
+      </div>
+
+      <p class="payment-error" *ngIf="paymentError">{{ paymentError }}</p>
+      <div #paypalButtonsContainer class="paypal-buttons" *ngIf="!loadingQuote && !paymentError && quote"></div>
+    </div>
+
+    <div class="cart-actions" *ngIf="cartItems.length">
+      <button mat-stroked-button color="warn" (click)="clearCart()" [disabled]="cartPaying || loadingQuote">{{ 'cart.clear' | t }}</button>
+    </div>
+  </mat-card>
+</section>

@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { AppLanguage } from '../../core/i18n/app-language';
 import { AppStateService } from '../../core/services/app-state.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { PurchaseService } from '../../core/services/purchase.service';
 
 @Component({
@@ -14,14 +16,17 @@ export class WelcomeComponent {
   hotelCode = '';
   isCheckingCode = false;
   showCodeInput = false;
+  language: AppLanguage = 'it';
 
   constructor(
     private readonly router: Router,
     private readonly snackBar: MatSnackBar,
     private readonly appState: AppStateService,
-    private readonly purchaseService: PurchaseService
+    private readonly purchaseService: PurchaseService,
+    public readonly i18n: I18nService
   ) {
     this.hotelCode = this.appState.hotelCode;
+    this.language = this.appState.language;
   }
 
   start(): void {
@@ -31,10 +36,19 @@ export class WelcomeComponent {
     void this.router.navigate(['/home']);
   }
 
+  setLanguage(language: AppLanguage): void {
+    this.language = language;
+    this.appState.setLanguage(language);
+  }
+
+  goToPartnerRegistration(): void {
+    void this.router.navigate(['/partner-registration']);
+  }
+
   validateCode(): void {
     const trimmed = this.hotelCode.trim();
     if (!trimmed) {
-      this.snackBar.open('Inserisci un codice invito/sconto', 'Chiudi', { duration: 2200 });
+      this.snackBar.open(this.i18n.t('welcome.insertInviteCode'), this.i18n.t('common.close'), { duration: 2200 });
       return;
     }
 
@@ -43,18 +57,18 @@ export class WelcomeComponent {
       next: (response) => {
         this.isCheckingCode = false;
         if (!response.valid || !response.association) {
-          this.snackBar.open(response.message || 'Il codice inserito non esiste', 'OK', { duration: 2800 });
+          this.snackBar.open(this.i18n.t('welcome.codeNotFound'), this.i18n.t('common.ok'), { duration: 2800 });
           return;
         }
 
         if (response.association.codeStatus !== 'valid') {
           const invalidMessage =
             response.association.codeStatus === 'expired'
-              ? 'Il codice inserito è scaduto'
+              ? this.i18n.t('welcome.codeExpired')
               : response.association.codeStatus === 'used'
-                ? 'Il codice inserito è già stato utilizzato'
-              : 'Il codice inserito non è più valido';
-          this.snackBar.open(invalidMessage, 'OK', { duration: 2800 });
+                ? this.i18n.t('welcome.codeUsed')
+                : this.i18n.t('welcome.codeNotValid');
+          this.snackBar.open(invalidMessage, this.i18n.t('common.ok'), { duration: 2800 });
           return;
         }
 
@@ -66,12 +80,18 @@ export class WelcomeComponent {
         this.purchaseService.refresh();
         void this.router.navigate(['/home']);
       },
-      error: (error: { error?: { message?: string } }) => {
+      error: (error: { error?: { codeStatus?: 'expired' | 'used' | 'invalid'; message?: string } }) => {
         this.isCheckingCode = false;
-        const message = error?.error?.message || 'Errore validazione codice';
-        this.snackBar.open(message, 'Chiudi', { duration: 2800 });
+        const message =
+          error?.error?.codeStatus === 'expired'
+            ? this.i18n.t('welcome.codeExpired')
+            : error?.error?.codeStatus === 'used'
+              ? this.i18n.t('welcome.codeUsed')
+              : error?.error?.codeStatus === 'invalid'
+                ? this.i18n.t('welcome.codeNotValid')
+                : this.i18n.t('welcome.validationError');
+        this.snackBar.open(message, this.i18n.t('common.close'), { duration: 2800 });
       }
     });
   }
 }
-

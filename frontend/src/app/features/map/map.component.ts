@@ -20,7 +20,9 @@ import {
 import { environment } from '../../../environments/environment';
 import { Poi } from '../../core/models/poi.model';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
+import { CartService } from '../../core/services/cart.service';
 import { Coordinates, GeoService } from '../../core/services/geo.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { NavigationRoute, NavigationService, NavigationStep } from '../../core/services/navigation.service';
 import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
@@ -62,7 +64,7 @@ const MIN_NAV_DURATION_SEC = 30;
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit, OnDestroy {
-  readonly cityUnlockPrice = 14.99;
+  readonly cityUnlockPrice = 15;
   readonly mapOptions = {
     layers: [
       tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -84,10 +86,10 @@ export class MapComponent implements OnInit, OnDestroy {
   navigationEtaLabel = '--';
   navigationArrivalLabel = '--';
   navigationProgress = 0;
-  navigationNextInstruction = 'Calcolo percorso...';
+  navigationNextInstruction = '';
   navigationUpcomingSteps: NavigationStepView[] = [];
   showAllNavigationSteps = false;
-  navigationProviderLabel = 'Ricerca percorso pedonale...';
+  navigationProviderLabel = '';
   navigationProvider: 'osrm' | 'fallback' | null = null;
   isRouting = false;
   activeCityId = 'catania';
@@ -113,16 +115,20 @@ export class MapComponent implements OnInit, OnDestroy {
   constructor(
     private readonly appState: AppStateService,
     private readonly geoService: GeoService,
+    private readonly i18n: I18nService,
     private readonly navigationService: NavigationService,
     private readonly poiService: PoiService,
     private readonly purchaseService: PurchaseService,
     private readonly structureLocationService: StructureLocationService,
+    private readonly cartService: CartService,
     private readonly bottomSheet: MatBottomSheet,
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly location: Location
-  ) {}
+  ) {
+    this.applyNavigationPlaceholders();
+  }
 
   get hasActiveNavigation(): boolean {
     return Boolean(this.navigationTarget);
@@ -203,7 +209,7 @@ export class MapComponent implements OnInit, OnDestroy {
             }),
             map((pois) => ({ cityId, pois })),
             catchError(() => {
-              this.apiErrorMessage = 'Errore caricamento mappa. Controlla backend e proxy API.';
+              this.apiErrorMessage = this.i18n.t('map.apiError');
               return of({ cityId, pois: [] as Poi[] });
             })
           )
@@ -318,7 +324,9 @@ export class MapComponent implements OnInit, OnDestroy {
 
     const url = this.structureLocationService.buildExternalDirectionsUrl(association, this.associatedStructureCoords);
     if (!url) {
-      this.snackBar.open('Dati struttura non sufficienti per la navigazione', 'Chiudi', { duration: 2400 });
+      this.snackBar.open(this.i18n.t('map.structureNavigationUnavailable'), this.i18n.t('common.close'), {
+        duration: 2400
+      });
       return;
     }
 
@@ -355,17 +363,14 @@ export class MapComponent implements OnInit, OnDestroy {
           poi,
           distanceLabel: poi.distanceLabel,
           unlocked: poi.unlocked,
-          isNavigating: this.navigationTarget?.id === poi.id
+          isNavigating: this.navigationTarget?.id === poi.id,
+          isFavorite: this.appState.isFavorite(poi.id),
+          inCart: this.cartService.isPoiInCart(poi.id)
         }
       });
 
       sheet.afterDismissed().subscribe((result?: PoiMapSheetAction) => {
         if (!result) {
-          return;
-        }
-
-        if (result.action === 'open-detail') {
-          void this.router.navigate(['/poi', result.poiId]);
           return;
         }
 
@@ -376,38 +381,60 @@ export class MapComponent implements OnInit, OnDestroy {
 
         if (result.action === 'play') {
           if (!this.hasPlayableAudio(poi)) {
-            this.snackBar.open('Audio non disponibile per questo luogo.', 'OK', { duration: 2400 });
+            this.snackBar.open(this.i18n.t('map.noAudio'), this.i18n.t('common.ok'), { duration: 2400 });
             return;
           }
 
-          void this.router.navigate(['/player', result.poiId], {
-            queryParams: { preview: result.preview }
+          if (result.preview) {
+            void this.router.navigate(['/poi', result.poiId]);
+            return;
+          }
+
+          void this.router.navigate(['/player', result.poiId], { queryParams: { preview: false } });
+          return;
+        }
+
+        if (result.action === 'add-to-cart') {
+          if (this.purchaseService.isPoiUnlocked(poi.id, poi.cityId)) {
+            this.snackBar.open(this.i18n.t('map.placeAlreadyUnlocked'), this.i18n.t('common.ok'), { duration: 2200 });
+            return;
+          }
+
+          if (this.cartService.isPoiInCart(poi.id)) {
+            this.snackBar.open(this.i18n.t('map.placeAlreadyInCart'), this.i18n.t('common.ok'), { duration: 2200 });
+            return;
+          }
+
+          this.cartService.addPoi({
+            poiId: poi.id,
+            cityId: poi.cityId,
+            cityName: this.cityName(poi.cityId),
+            label: this.poiName(poi),
+            amount: poi.priceSingle
+          });
+          this.snackBar.open(this.i18n.t('map.placeAdded', { name: this.poiName(poi) }), this.i18n.t('common.ok'), {
+            duration: 2400
           });
           return;
         }
 
-        if (result.action === 'purchase-poi') {
-          this.purchaseService.purchasePoiSingle(result.poiId, poi.cityId, poi.name, poi.priceSingle).subscribe({
-            next: (dialogResult) => {
-              if (dialogResult?.action === 'paid') {
-                this.snackBar.open(`Luogo sbloccato: ${poi.name}`, 'OK', { duration: 2400 });
-              }
-            },
-            error: () => {
-              this.snackBar.open('Operazione non riuscita', 'Chiudi', { duration: 2400 });
-            }
-          });
+        if (result.action === 'toggle-favorite') {
+          this.appState.toggleFavorite(result.poiId);
           return;
         }
 
         this.purchaseService.purchaseCityBundle(result.cityId, this.cityName(result.cityId), this.cityUnlockPrice).subscribe({
           next: (dialogResult) => {
             if (dialogResult?.action === 'paid') {
-              this.snackBar.open(`Citta sbloccata: ${this.cityName(result.cityId)}`, 'OK', { duration: 2400 });
+              this.snackBar.open(
+                this.i18n.t('map.cityUnlocked', { city: this.cityName(result.cityId) }),
+                this.i18n.t('common.ok'),
+                { duration: 2400 }
+              );
             }
           },
           error: () => {
-            this.snackBar.open('Operazione non riuscita', 'Chiudi', { duration: 2400 });
+            this.snackBar.open(this.i18n.t('map.operationFailed'), this.i18n.t('common.close'), { duration: 2400 });
           }
         });
       });
@@ -496,8 +523,7 @@ export class MapComponent implements OnInit, OnDestroy {
     this.routeRemainingMetersByPoint = [];
     this.routeStepPointIndexes = [];
     this.navigationProvider = null;
-    this.navigationProviderLabel = 'Ricerca percorso pedonale...';
-    this.navigationNextInstruction = 'Calcolo percorso...';
+    this.applyNavigationPlaceholders();
     this.navigationUpcomingSteps = [];
     this.showAllNavigationSteps = false;
     this.navigationProgress = 0;
@@ -560,7 +586,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
           if (route.provider === 'fallback' && !this.hasShownFallbackSnack) {
             this.hasShownFallbackSnack = true;
-            this.snackBar.open('Routing stradale non disponibile: modalita semplificata attiva', 'OK', { duration: 2800 });
+            this.snackBar.open(this.i18n.t('map.routeFallback'), this.i18n.t('common.ok'), { duration: 2800 });
           }
         },
         error: () => {
@@ -577,7 +603,7 @@ export class MapComponent implements OnInit, OnDestroy {
     this.activeRoute = route;
     this.navigationProvider = route.provider;
     this.navigationProviderLabel =
-      route.provider === 'osrm' ? 'Percorso pedonale su strade reali' : 'Modalita semplificata (linea diretta)';
+      route.provider === 'osrm' ? this.i18n.t('map.providerRealRoute') : this.i18n.t('map.providerFallbackRoute');
     this.routeRemainingMetersByPoint = this.buildRemainingDistanceByPoint(route.points);
     this.routeStepPointIndexes = this.buildRouteStepIndexes(route.steps, route.points);
   }
@@ -629,26 +655,30 @@ export class MapComponent implements OnInit, OnDestroy {
       }
 
       const nextStep = this.findNextStep(nearestPointIndex);
-      this.navigationNextInstruction = nextStep?.instruction || 'Prosegui fino alla destinazione';
+      this.navigationNextInstruction = nextStep?.instruction || this.i18n.t('navigation.proceedDestination');
       this.navigationUpcomingSteps = this.buildUpcomingStepViews(nearestPointIndex);
     } else {
-      this.navigationNextInstruction = 'Muoviti verso la destinazione';
+      this.navigationNextInstruction = this.i18n.t('navigation.proceedDestination');
       this.navigationUpcomingSteps = [];
     }
 
-    this.navigationDistanceLabel = this.formatDistance(remainingMeters);
+    this.navigationDistanceLabel = this.i18n.formatDistance(remainingMeters);
     this.navigationEtaLabel = this.formatDurationShort(remainingDurationSec);
-    this.navigationArrivalLabel = new Date(Date.now() + remainingDurationSec * 1000).toLocaleTimeString('it-IT', {
+    this.navigationArrivalLabel = new Intl.DateTimeFormat(this.i18n.locale, {
       hour: '2-digit',
       minute: '2-digit'
-    });
+    }).format(new Date(Date.now() + remainingDurationSec * 1000));
 
     const totalDistance = Math.max(this.activeRoute?.distanceMeters || remainingMeters, 1);
     this.navigationProgress = Math.max(0, Math.min(100, ((totalDistance - remainingMeters) / totalDistance) * 100));
 
     if (!this.hasShownArrivalSnack && remainingMeters <= ARRIVAL_THRESHOLD_METERS) {
       this.hasShownArrivalSnack = true;
-      this.snackBar.open(`Sei arrivato vicino a ${refreshedTarget.name}`, 'OK', { duration: 2400 });
+      this.snackBar.open(
+        this.i18n.t('map.arrivedNear', { name: this.poiName(refreshedTarget) }),
+        this.i18n.t('common.ok'),
+        { duration: 2400 }
+      );
     }
   }
 
@@ -658,11 +688,11 @@ export class MapComponent implements OnInit, OnDestroy {
     this.navigationEtaLabel = '--';
     this.navigationArrivalLabel = '--';
     this.navigationProgress = 0;
-    this.navigationNextInstruction = 'Calcolo percorso...';
+    this.navigationNextInstruction = this.i18n.t('map.calculatingRoute');
     this.navigationUpcomingSteps = [];
     this.showAllNavigationSteps = false;
     this.navigationProvider = null;
-    this.navigationProviderLabel = 'Ricerca percorso pedonale...';
+    this.navigationProviderLabel = this.i18n.t('map.searchingRoute');
     this.isRouting = false;
     this.activeRoute = undefined;
     this.routeRemainingMetersByPoint = [];
@@ -801,19 +831,19 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private formatDistance(distanceMeters: number): string {
-    if (distanceMeters < 1000) {
-      return `${Math.round(distanceMeters)} m`;
-    }
-
-    return `${(distanceMeters / 1000).toFixed(1)} km`;
+    return this.i18n.formatDistance(distanceMeters);
   }
 
-  private hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
-    return Boolean(String(poi?.audioUrl || '').trim());
+  private hasPlayableAudio(poi: Poi | null | undefined): boolean {
+    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
+  }
+
+  poiName(poi: Poi | null | undefined): string {
+    return this.i18n.resolvePoiField(poi?.name, poi?.translations, 'name');
   }
 
   private cityName(cityId: string): string {
-    return formatCityLabel(cityId);
+    return formatCityLabel(cityId, [], this.i18n.language);
   }
 
   private associationCityIds(association: HotelAssociation): string[] {
@@ -822,5 +852,10 @@ export class MapComponent implements OnInit, OnDestroy {
     }
     const singleCityId = String(association.cityId || '').trim();
     return singleCityId ? [singleCityId] : [];
+  }
+
+  private applyNavigationPlaceholders(): void {
+    this.navigationProviderLabel = this.i18n.t('map.searchingRoute');
+    this.navigationNextInstruction = this.i18n.t('map.calculatingRoute');
   }
 }

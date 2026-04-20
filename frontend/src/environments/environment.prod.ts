@@ -3,6 +3,6 @@ export const environment = {
   apiBaseUrl: '/api',
   publicBaseUrl: '/public',
   geofenceRadiusMeters: 120,
-  previewSeconds: 10,
+  previewSeconds: 30,
   defaultCityId: 'catania'
 };

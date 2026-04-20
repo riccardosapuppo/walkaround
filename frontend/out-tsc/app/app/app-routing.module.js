@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { PreloadAllModules, RouterModule } from '@angular/router';
 import * as i0 from "@angular/core";
 import * as i1 from "@angular/router";
 const routes = [
@@ -17,6 +17,11 @@ const routes = [
         path: 'welcome',
         data: { hideBottomNav: true },
         loadChildren: () => import('./features/welcome/welcome.module').then((m) => m.WelcomeModule)
+    },
+    {
+        path: 'partner-registration',
+        data: { hideBottomNav: true },
+        loadChildren: () => import('./features/partner-registration/partner-registration.module').then((m) => m.PartnerRegistrationModule)
     },
     {
         path: 'dashboard',
@@ -55,6 +60,10 @@ const routes = [
         loadChildren: () => import('./features/favorites/favorites.module').then((m) => m.FavoritesModule)
     },
     {
+        path: 'cart',
+        loadChildren: () => import('./features/cart/cart.module').then((m) => m.CartModule)
+    },
+    {
         path: 'profile',
         loadChildren: () => import('./features/profile/profile.module').then((m) => m.ProfileModule)
     },
@@ -75,12 +84,20 @@ const routes = [
 export class AppRoutingModule {
     static { this.ɵfac = function AppRoutingModule_Factory(__ngFactoryType__) { return new (__ngFactoryType__ || AppRoutingModule)(); }; }
     static { this.ɵmod = /*@__PURE__*/ i0.ɵɵdefineNgModule({ type: AppRoutingModule }); }
-    static { this.ɵinj = /*@__PURE__*/ i0.ɵɵdefineInjector({ imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' }), RouterModule] }); }
+    static { this.ɵinj = /*@__PURE__*/ i0.ɵɵdefineInjector({ imports: [RouterModule.forRoot(routes, {
+                scrollPositionRestoration: 'enabled',
+                preloadingStrategy: PreloadAllModules
+            }), RouterModule] }); }
 }
 (() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassMetadata(AppRoutingModule, [{
         type: NgModule,
         args: [{
-                imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' })],
+                imports: [
+                    RouterModule.forRoot(routes, {
+                        scrollPositionRestoration: 'enabled',
+                        preloadingStrategy: PreloadAllModules
+                    })
+                ],
                 exports: [RouterModule]
             }]
     }], null, null); })();

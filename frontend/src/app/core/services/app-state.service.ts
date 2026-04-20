@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
+import { AppLanguage, isAppLanguage } from '../i18n/app-language';
 
 const STORAGE_KEYS = {
   userId: 'walkaround.userId',
@@ -52,9 +53,7 @@ export class AppStateService {
 
   private readonly favoritesSubject = new BehaviorSubject<string[]>(this.readArray(STORAGE_KEYS.favorites));
 
-  private readonly languageSubject = new BehaviorSubject<'it' | 'en'>(
-    (localStorage.getItem(STORAGE_KEYS.language) as 'it' | 'en') || 'it'
-  );
+  private readonly languageSubject = new BehaviorSubject<AppLanguage>(this.readLanguage());
 
   readonly userId$ = this.userIdSubject.asObservable();
   readonly activeCityId$ = this.activeCityIdSubject.asObservable();
@@ -81,6 +80,10 @@ export class AppStateService {
 
   get favoriteIds(): string[] {
     return this.favoritesSubject.value;
+  }
+
+  get language(): AppLanguage {
+    return this.languageSubject.value;
   }
 
   get hasSeenOnboarding(): boolean {
@@ -130,7 +133,7 @@ export class AppStateService {
     this.hotelAssociationSubject.next(association);
   }
 
-  setLanguage(language: 'it' | 'en'): void {
+  setLanguage(language: AppLanguage): void {
     localStorage.setItem(STORAGE_KEYS.language, language);
     this.languageSubject.next(language);
   }
@@ -208,6 +211,11 @@ export class AppStateService {
     } catch {
       return null;
     }
+  }
+
+  private readLanguage(): AppLanguage {
+    const stored = localStorage.getItem(STORAGE_KEYS.language);
+    return isAppLanguage(stored) ? stored : 'it';
   }
 }
 

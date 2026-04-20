@@ -1,40 +1,50 @@
 <div class="sheet-wrap">
-  <img class="sheet-image" [appImgFallback]="data.poi.imageUrl" [alt]="data.poi.name" />
-
-  <div class="sheet-header">
-    <h3>{{ data.poi.name }}</h3>
-    <p>{{ data.distanceLabel }}</p>
+  <div class="sheet-head-row">
+    <h3>{{ poiName() }}</h3>
+    <button mat-icon-button type="button" [attr.aria-label]="'mapSheet.closeAria' | t" (click)="close()">
+      <mat-icon fontSet="material-icons-round">close</mat-icon>
+    </button>
   </div>
 
+  <img class="sheet-image" [appImgFallback]="data.poi.imageUrl" [alt]="poiName()" />
+
+  <p class="sheet-line">{{ poiAddress() }}</p>
+  <p class="sheet-line">{{ data.distanceLabel }} - {{ data.poi.durationSec | durationLabel }}</p>
+  <p class="sheet-teaser">{{ poiDescription() }}</p>
+
   <div class="sheet-actions">
-    <button mat-stroked-button color="primary" (click)="play(true)" [disabled]="!hasPlayableAudio(data.poi)">Ascolta preview</button>
+    <button mat-stroked-button color="primary" (click)="play(true)" [disabled]="!hasPlayableAudio(data.poi)">
+      {{ 'mapSheet.previewAudio' | t }}
+    </button>
 
     <ng-container *ngIf="data.unlocked; else lockedAction">
       <button *ngIf="hasPlayableAudio(data.poi); else unlockedNoAudio" mat-flat-button color="primary" (click)="play(false)">
-        Riproduci
+        {{ 'mapSheet.playAudio' | t }}
       </button>
     </ng-container>
 
     <ng-template #unlockedNoAudio>
-      <button mat-flat-button color="primary" disabled>Audio non disponibile</button>
+      <button mat-flat-button color="primary" disabled>{{ 'mapSheet.audioUnavailable' | t }}</button>
     </ng-template>
 
     <ng-template #lockedAction>
-      <button mat-flat-button color="primary" (click)="purchasePoi()">
-        Sblocca questo luogo €{{ formatPrice(data.poi.priceSingle) }}
+      <button mat-flat-button color="primary" (click)="addToCart()" [disabled]="data.inCart">
+        {{ data.inCart ? ('common.inCart' | t) : ('mapSheet.unlockPlace' | t:{ price: formatPrice(data.poi.priceSingle) }) }}
       </button>
 
       <button mat-stroked-button color="primary" (click)="purchaseCity()">
-        Sblocca {{ cityName(data.poi.cityId) }} €{{ cityUnlockPriceLabel }}
+        {{ 'mapSheet.unlockCity' | t:{ city: cityName(data.poi.cityId), price: i18n.formatCurrency(cityUnlockPrice) } }}
       </button>
     </ng-template>
 
     <button mat-flat-button color="accent" class="navigate-btn" (click)="navigate()">
       <mat-icon fontSet="material-icons-round">near_me</mat-icon>
-      {{ data.isNavigating ? 'Aggiorna navigazione' : 'Avvia navigazione' }}
+      {{ data.isNavigating ? ('mapSheet.updateNavigation' | t) : ('mapSheet.startNavigation' | t) }}
+    </button>
+
+    <button mat-stroked-button color="primary" class="favorite-btn" (click)="toggleFavorite()">
+      <mat-icon fontSet="material-icons-round">{{ data.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+      {{ data.isFavorite ? ('mapSheet.removeFavorite' | t) : ('mapSheet.addFavorite' | t) }}
     </button>
   </div>
-
-  <button mat-button (click)="openDetail()">Vai al dettaglio</button>
 </div>
-

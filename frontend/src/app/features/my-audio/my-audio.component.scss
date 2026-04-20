@@ -1,6 +1,7 @@
 .my-audio {
   display: grid;
   gap: 12px;
+  align-content: start;
 }
 
 .download-box {
@@ -20,27 +21,52 @@
   padding: 12px;
   display: grid;
   gap: 10px;
-  align-items: center;
-  grid-template-columns: 78px 1fr auto;
+  align-items: start;
+  grid-template-columns: 84px 1fr auto;
 
   img {
-    width: 78px;
-    height: 78px;
+    width: 84px;
+    height: 84px;
     border-radius: 12px;
     object-fit: cover;
+    cursor: pointer;
   }
 }
 
 .meta {
+  min-width: 0;
+  cursor: pointer;
+
   h3 {
-    margin: 0;
-    font-size: 1.03rem;
+    margin: 0 0 4px;
+    font-size: 1rem;
+    color: #153250;
   }
 
   p {
-    margin: 4px 0 8px;
-    color: #6d7b93;
+    margin: 0;
+    color: #64768f;
+    font-size: 0.84rem;
   }
+}
+
+.distance {
+  margin-top: 2px !important;
+}
+
+.teaser {
+  margin-top: 6px !important;
+  color: #526985 !important;
+  line-height: 1.36 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.audio-actions {
+  display: flex;
+  flex-direction: column;
 }
 
 .empty {
@@ -49,5 +75,16 @@
   p {
     margin: 0;
     color: #6b7a94;
+  }
+}
+
+@media (max-width: 600px) {
+  .download-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .audio-card {
+    grid-template-columns: 84px 1fr auto;
   }
 }

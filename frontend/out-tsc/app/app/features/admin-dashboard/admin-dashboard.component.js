@@ -15,44 +15,47 @@ import * as i10 from "@angular/material/input";
 import * as i11 from "@angular/material/progress-spinner";
 import * as i12 from "@angular/material/radio";
 import * as i13 from "@angular/material/select";
+import * as i14 from "@angular/material/slide-toggle";
+import * as i15 from "@angular/material/tooltip";
 const _c0 = ["createCatalogCityDialog"];
 const _c1 = ["createCatalogPoiDialog"];
 const _c2 = ["editCatalogCityDialog"];
 const _c3 = ["editCatalogPoiDialog"];
 const _c4 = ["createDiscountCodeDialog"];
 const _c5 = ["editDiscountCodeDialog"];
-const _c6 = ["catalogPoiAudioPlayerDialog"];
-const _c7 = ["poiMapPickerDialog"];
-const _c8 = ["poiMapCanvas"];
-const _c9 = (a0, a1, a2) => ({ "expiry-badge-active": a0, "expiry-badge-expired": a1, "expiry-badge-unknown": a2 });
+const _c6 = ["partnerRequestApprovalDialog"];
+const _c7 = ["catalogPoiAudioPlayerDialog"];
+const _c8 = ["poiMapPickerDialog"];
+const _c9 = ["poiMapCanvas"];
+const _c10 = (a0, a1, a2) => ({ "expiry-badge-active": a0, "expiry-badge-expired": a1, "expiry-badge-unknown": a2 });
 function AdminDashboardComponent_mat_card_1_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-card", 41)(1, "div", 42);
-    i0.ɵɵelement(2, "mat-spinner", 43);
+    i0.ɵɵelementStart(0, "mat-card", 54)(1, "div", 55);
+    i0.ɵɵelement(2, "mat-spinner", 56);
     i0.ɵɵelementStart(3, "p");
     i0.ɵɵtext(4, "Controllo sessione dashboard...");
     i0.ɵɵelementEnd()()();
 } }
 function AdminDashboardComponent_mat_card_2_Template(rf, ctx) { if (rf & 1) {
     const _r1 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "mat-card", 41)(1, "h1", 44);
+    i0.ɵɵelementStart(0, "mat-card", 54)(1, "h1", 57);
     i0.ɵɵtext(2, "Dashboard");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(3, "p", 45);
+    i0.ɵɵelementStart(3, "p", 58);
     i0.ɵɵtext(4, "Accedi per entrare nella dashboard.");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "form", 46);
+    i0.ɵɵelementStart(5, "form", 59);
     i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_mat_card_2_Template_form_ngSubmit_5_listener() { i0.ɵɵrestoreView(_r1); const ctx_r1 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r1.login()); });
-    i0.ɵɵelementStart(6, "mat-form-field", 47)(7, "mat-label");
+    i0.ɵɵelementStart(6, "mat-form-field", 60)(7, "mat-label");
     i0.ɵɵtext(8, "Email");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(9, "input", 48);
+    i0.ɵɵelement(9, "input", 61);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "mat-form-field", 47)(11, "mat-label");
+    i0.ɵɵelementStart(10, "mat-form-field", 60)(11, "mat-label");
     i0.ɵɵtext(12, "Password");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(13, "input", 49);
+    i0.ɵɵelement(13, "input", 62);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(14, "button", 50);
+    i0.ɵɵelementStart(14, "button", 63);
     i0.ɵɵtext(15);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
@@ -66,7 +69,7 @@ function AdminDashboardComponent_mat_card_2_Template(rf, ctx) { if (rf & 1) {
 } }
 function AdminDashboardComponent_div_3_nav_10_button_1_Template(rf, ctx) { if (rf & 1) {
     const _r4 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 65);
+    i0.ɵɵelementStart(0, "button", 79);
     i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_nav_10_button_1_Template_button_click_0_listener() { const section_r5 = i0.ɵɵrestoreView(_r4).$implicit; const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.selectSection(section_r5.id)); });
     i0.ɵɵelementStart(1, "span");
     i0.ɵɵtext(2);
@@ -79,8 +82,8 @@ function AdminDashboardComponent_div_3_nav_10_button_1_Template(rf, ctx) { if (r
     i0.ɵɵtextInterpolate(section_r5.label);
 } }
 function AdminDashboardComponent_div_3_nav_10_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "nav", 63);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_nav_10_button_1_Template, 3, 3, "button", 64);
+    i0.ɵɵelementStart(0, "nav", 77);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_nav_10_button_1_Template, 3, 3, "button", 78);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(2);
@@ -89,13 +92,13 @@ function AdminDashboardComponent_div_3_nav_10_Template(rf, ctx) { if (rf & 1) {
 } }
 function AdminDashboardComponent_div_3_button_14_Template(rf, ctx) { if (rf & 1) {
     const _r6 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 58);
+    i0.ɵɵelementStart(0, "button", 72);
     i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_button_14_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r6); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.exitImpersonation()); });
     i0.ɵɵtext(1, " Torna ad admin ");
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_header_18_p_9_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 45);
+    i0.ɵɵelementStart(0, "p", 58);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
@@ -104,17 +107,17 @@ function AdminDashboardComponent_div_3_header_18_p_9_Template(rf, ctx) { if (rf 
     i0.ɵɵtextInterpolate1(" Modalita impersonazione attiva (origine: ", ctx_r1.impersonatedByEmail, ") ");
 } }
 function AdminDashboardComponent_div_3_header_18_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "header", 66)(1, "div")(2, "h1", 44);
+    i0.ɵɵelementStart(0, "header", 80)(1, "div")(2, "h1", 57);
     i0.ɵɵtext(3, "Utenti");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(4, "p", 45);
+    i0.ɵɵelementStart(4, "p", 58);
     i0.ɵɵtext(5, " Connesso come ");
     i0.ɵɵelementStart(6, "strong");
     i0.ɵɵtext(7);
     i0.ɵɵelementEnd();
     i0.ɵɵtext(8);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_header_18_p_9_Template, 2, 1, "p", 67);
+    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_header_18_p_9_Template, 2, 1, "p", 81);
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(2);
@@ -126,7 +129,7 @@ function AdminDashboardComponent_div_3_header_18_Template(rf, ctx) { if (rf & 1)
     i0.ɵɵproperty("ngIf", ctx_r1.isImpersonating);
 } }
 function AdminDashboardComponent_div_3_mat_card_19_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-card", 68)(1, "h2");
+    i0.ɵɵelementStart(0, "mat-card", 82)(1, "h2");
     i0.ɵɵtext(2, "Accesso dashboard non consentito");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "p");
@@ -143,22 +146,22 @@ function AdminDashboardComponent_div_3_ng_container_20_strong_5_Template(rf, ctx
     i0.ɵɵtextInterpolate(ctx_r1.totalAssociatedUsers);
 } }
 function AdminDashboardComponent_div_3_ng_container_20_ng_template_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_20_p_20_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Il tuo account gestore non ha una struttura assegnata. ");
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_20_div_21_tr_17_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 82);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+    i0.ɵɵelementStart(0, "tr")(1, "td", 96);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
 function AdminDashboardComponent_div_3_ng_container_20_div_21_tr_18_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 84);
+    i0.ɵɵelementStart(0, "tr")(1, "td", 98);
     i0.ɵɵtext(2, "Nessun utente associato alla tua struttura.");
     i0.ɵɵelementEnd()();
 } }
@@ -182,10 +185,10 @@ function AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_tr
     i0.ɵɵelementStart(6, "td")(7, "code");
     i0.ɵɵtext(8);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(9, "td", 86)(10, "span", 87);
+    i0.ɵɵelementStart(9, "td", 100)(10, "span", 101);
     i0.ɵɵtext(11);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(12, AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_tr_1_small_12_Template, 2, 1, "small", 62);
+    i0.ɵɵtemplate(12, AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_tr_1_small_12_Template, 2, 1, "small", 76);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(13, "td");
     i0.ɵɵtext(14);
@@ -215,7 +218,7 @@ function AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_tr
 } }
 function AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_tr_1_Template, 17, 11, "tr", 85);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_tr_1_Template, 17, 11, "tr", 99);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
@@ -223,7 +226,7 @@ function AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_Te
     i0.ɵɵproperty("ngForOf", ctx_r1.associatedUsers);
 } }
 function AdminDashboardComponent_div_3_ng_container_20_div_21_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 80)(1, "table", 81)(2, "thead")(3, "tr")(4, "th");
+    i0.ɵɵelementStart(0, "div", 94)(1, "table", 95)(2, "thead")(3, "tr")(4, "th");
     i0.ɵɵtext(5, "ID Utente App");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(6, "th");
@@ -242,7 +245,7 @@ function AdminDashboardComponent_div_3_ng_container_20_div_21_Template(rf, ctx) 
     i0.ɵɵtext(15, "Spesa totale");
     i0.ɵɵelementEnd()()();
     i0.ɵɵelementStart(16, "tbody");
-    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_container_20_div_21_tr_17_Template, 3, 0, "tr", 62)(18, AdminDashboardComponent_div_3_ng_container_20_div_21_tr_18_Template, 3, 0, "tr", 62)(19, AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_Template, 2, 1, "ng-container", 62);
+    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_container_20_div_21_tr_17_Template, 3, 0, "tr", 76)(18, AdminDashboardComponent_div_3_ng_container_20_div_21_tr_18_Template, 3, 0, "tr", 76)(19, AdminDashboardComponent_div_3_ng_container_20_div_21_ng_container_19_Template, 2, 1, "ng-container", 76);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
@@ -255,24 +258,24 @@ function AdminDashboardComponent_div_3_ng_container_20_div_21_Template(rf, ctx) 
 } }
 function AdminDashboardComponent_div_3_ng_container_20_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "div", 69)(2, "mat-card", 70)(3, "span");
+    i0.ɵɵelementStart(1, "div", 83)(2, "mat-card", 84)(3, "span");
     i0.ɵɵtext(4, "Utenti associati");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_20_strong_5_Template, 2, 1, "strong", 71)(6, AdminDashboardComponent_div_3_ng_container_20_ng_template_6_Template, 2, 0, "ng-template", null, 8, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_20_strong_5_Template, 2, 1, "strong", 85)(6, AdminDashboardComponent_div_3_ng_container_20_ng_template_6_Template, 2, 0, "ng-template", null, 9, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-card", 70)(9, "span");
+    i0.ɵɵelementStart(8, "mat-card", 84)(9, "span");
     i0.ɵɵtext(10, "Struttura");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(11, "strong");
     i0.ɵɵtext(12);
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(13, "mat-card", 72)(14, "div", 73)(15, "div")(16, "h2");
+    i0.ɵɵelementStart(13, "mat-card", 86)(14, "div", 87)(15, "div")(16, "h2");
     i0.ɵɵtext(17, "Utenti associati alla struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(18, "p", 74);
+    i0.ɵɵelementStart(18, "p", 88);
     i0.ɵɵtext(19, "Vista sola lettura: non puoi modificare ruoli o permessi.");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵtemplate(20, AdminDashboardComponent_div_3_ng_container_20_p_20_Template, 2, 0, "p", 75)(21, AdminDashboardComponent_div_3_ng_container_20_div_21_Template, 20, 3, "div", 76);
+    i0.ɵɵtemplate(20, AdminDashboardComponent_div_3_ng_container_20_p_20_Template, 2, 0, "p", 89)(21, AdminDashboardComponent_div_3_ng_container_20_div_21_Template, 20, 3, "div", 90);
     i0.ɵɵelementEnd();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
@@ -297,8 +300,8 @@ function AdminDashboardComponent_div_3_ng_container_21_strong_12_Template(rf, ct
     i0.ɵɵtextInterpolate(ctx_r1.totalPayments);
 } }
 function AdminDashboardComponent_div_3_ng_container_21_ng_template_13_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_21_strong_18_Template(rf, ctx) { if (rf & 1) {
@@ -311,17 +314,17 @@ function AdminDashboardComponent_div_3_ng_container_21_strong_18_Template(rf, ct
     i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(ctx_r1.totalStructureEarnings));
 } }
 function AdminDashboardComponent_div_3_ng_container_21_ng_template_19_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_21_tr_48_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 90);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+    i0.ɵɵelementStart(0, "tr")(1, "td", 104);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
 function AdminDashboardComponent_div_3_ng_container_21_tr_49_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 91);
+    i0.ɵɵelementStart(0, "tr")(1, "td", 105);
     i0.ɵɵtext(2, "Nessun pagamento registrato per la tua struttura.");
     i0.ɵɵelementEnd()();
 } }
@@ -329,7 +332,7 @@ function AdminDashboardComponent_div_3_ng_container_21_ng_container_50_tr_1_Temp
     i0.ɵɵelementStart(0, "tr")(1, "td");
     i0.ɵɵtext(2);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(3, "td", 93)(4, "strong");
+    i0.ɵɵelementStart(3, "td", 107)(4, "strong");
     i0.ɵɵtext(5);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(6, "small");
@@ -350,16 +353,16 @@ function AdminDashboardComponent_div_3_ng_container_21_ng_container_50_tr_1_Temp
     i0.ɵɵtext(17);
     i0.ɵɵpipe(18, "date");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(19, "td", 94)(20, "strong");
+    i0.ɵɵelementStart(19, "td", 108)(20, "strong");
     i0.ɵɵtext(21);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(22, "small");
     i0.ɵɵtext(23);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(24, "td", 95)(25, "small");
+    i0.ɵɵelementStart(24, "td", 109)(25, "small");
     i0.ɵɵtext(26);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(27, "span", 96);
+    i0.ɵɵelementStart(27, "span", 110);
     i0.ɵɵtext(28);
     i0.ɵɵelementEnd()();
     i0.ɵɵelementStart(29, "td");
@@ -422,7 +425,7 @@ function AdminDashboardComponent_div_3_ng_container_21_ng_container_50_tr_1_Temp
 } }
 function AdminDashboardComponent_div_3_ng_container_21_ng_container_50_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_21_ng_container_50_tr_1_Template, 42, 28, "tr", 92);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_21_ng_container_50_tr_1_Template, 42, 28, "tr", 106);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
@@ -431,23 +434,23 @@ function AdminDashboardComponent_div_3_ng_container_21_ng_container_50_Template(
 } }
 function AdminDashboardComponent_div_3_ng_container_21_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "mat-card", 72)(2, "div", 73)(3, "div")(4, "h2");
+    i0.ɵɵelementStart(1, "mat-card", 86)(2, "div", 87)(3, "div")(4, "h2");
     i0.ɵɵtext(5, "Pagamenti struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(6, "p", 74);
+    i0.ɵɵelementStart(6, "p", 88);
     i0.ɵɵtext(7, "Visualizzi solo i pagamenti collegati alla tua struttura.");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(8, "div", 88)(9, "mat-card", 70)(10, "span");
+    i0.ɵɵelementStart(8, "div", 102)(9, "mat-card", 84)(10, "span");
     i0.ɵɵtext(11, "Pagamenti registrati");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(12, AdminDashboardComponent_div_3_ng_container_21_strong_12_Template, 2, 1, "strong", 71)(13, AdminDashboardComponent_div_3_ng_container_21_ng_template_13_Template, 2, 0, "ng-template", null, 9, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(12, AdminDashboardComponent_div_3_ng_container_21_strong_12_Template, 2, 1, "strong", 85)(13, AdminDashboardComponent_div_3_ng_container_21_ng_template_13_Template, 2, 0, "ng-template", null, 10, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(15, "mat-card", 70)(16, "span");
+    i0.ɵɵelementStart(15, "mat-card", 84)(16, "span");
     i0.ɵɵtext(17, "Guadagno struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(18, AdminDashboardComponent_div_3_ng_container_21_strong_18_Template, 2, 1, "strong", 71)(19, AdminDashboardComponent_div_3_ng_container_21_ng_template_19_Template, 2, 0, "ng-template", null, 10, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(18, AdminDashboardComponent_div_3_ng_container_21_strong_18_Template, 2, 1, "strong", 85)(19, AdminDashboardComponent_div_3_ng_container_21_ng_template_19_Template, 2, 0, "ng-template", null, 11, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(21, "div", 80)(22, "table", 89)(23, "thead")(24, "tr")(25, "th");
+    i0.ɵɵelementStart(21, "div", 94)(22, "table", 103)(23, "thead")(24, "tr")(25, "th");
     i0.ɵɵtext(26, "Data");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(27, "th");
@@ -481,7 +484,7 @@ function AdminDashboardComponent_div_3_ng_container_21_Template(rf, ctx) { if (r
     i0.ɵɵtext(46, "Quota struttura");
     i0.ɵɵelementEnd()()();
     i0.ɵɵelementStart(47, "tbody");
-    i0.ɵɵtemplate(48, AdminDashboardComponent_div_3_ng_container_21_tr_48_Template, 3, 0, "tr", 62)(49, AdminDashboardComponent_div_3_ng_container_21_tr_49_Template, 3, 0, "tr", 62)(50, AdminDashboardComponent_div_3_ng_container_21_ng_container_50_Template, 2, 2, "ng-container", 62);
+    i0.ɵɵtemplate(48, AdminDashboardComponent_div_3_ng_container_21_tr_48_Template, 3, 0, "tr", 76)(49, AdminDashboardComponent_div_3_ng_container_21_tr_49_Template, 3, 0, "tr", 76)(50, AdminDashboardComponent_div_3_ng_container_21_ng_container_50_Template, 2, 2, "ng-container", 76);
     i0.ɵɵelementEnd()()()();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
@@ -509,8 +512,8 @@ function AdminDashboardComponent_div_3_ng_container_22_strong_5_Template(rf, ctx
     i0.ɵɵtextInterpolate(ctx_r1.totalUsers);
 } }
 function AdminDashboardComponent_div_3_ng_container_22_ng_template_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_strong_11_Template(rf, ctx) { if (rf & 1) {
@@ -523,12 +526,12 @@ function AdminDashboardComponent_div_3_ng_container_22_strong_11_Template(rf, ct
     i0.ɵɵtextInterpolate(ctx_r1.totalStructures);
 } }
 function AdminDashboardComponent_div_3_ng_container_22_ng_template_12_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_mat_option_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
@@ -543,15 +546,15 @@ function AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-form-field", 47)(1, "mat-label");
+    i0.ɵɵelementStart(0, "mat-form-field", 60)(1, "mat-label");
     i0.ɵɵtext(2, "Struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(3, "mat-select", 112)(4, "mat-option", 113);
+    i0.ɵɵelementStart(3, "mat-select", 126)(4, "mat-option", 127);
     i0.ɵɵtext(5, "Seleziona struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_mat_option_6_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_mat_option_6_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(7, AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_mat_error_7_Template, 2, 0, "mat-error", 62);
+    i0.ɵɵtemplate(7, AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_mat_error_7_Template, 2, 0, "mat-error", 76);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
@@ -565,13 +568,13 @@ function AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field
     i0.ɵɵproperty("ngIf", ctx_r1.isInviteStructureMissing && ctx_r1.inviteForm.controls.structureId.touched);
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_32_p_27_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Nessuna struttura registrata: crea prima una struttura nella sezione dedicata. ");
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_32_div_28_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 116);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 130);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_span_5_Template(rf, ctx) { if (rf & 1) {
@@ -584,13 +587,13 @@ function AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_span_5_
     i0.ɵɵtextInterpolate1("Struttura: ", invite_r15.structureName, "");
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 117)(1, "strong");
+    i0.ɵɵelementStart(0, "div", 131)(1, "strong");
     i0.ɵɵtext(2, "Ultimo invito:");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "span");
     i0.ɵɵtext(4);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_span_5_Template, 2, 1, "span", 62);
+    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_span_5_Template, 2, 1, "span", 76);
     i0.ɵɵelementStart(6, "span");
     i0.ɵɵtext(7);
     i0.ɵɵelementEnd()();
@@ -606,43 +609,43 @@ function AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_Templat
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_32_Template(rf, ctx) { if (rf & 1) {
     const _r13 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "section", 102)(1, "h3");
+    i0.ɵɵelementStart(0, "section", 116)(1, "h3");
     i0.ɵɵtext(2, "Nuovo invito utente");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "p");
     i0.ɵɵtext(4, "Compila i dati, scegli ruolo e struttura se il ruolo e gestore.");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "form", 46);
+    i0.ɵɵelementStart(5, "form", 59);
     i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_container_22_section_32_Template_form_ngSubmit_5_listener() { i0.ɵɵrestoreView(_r13); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.invite()); });
-    i0.ɵɵelementStart(6, "mat-form-field", 47)(7, "mat-label");
+    i0.ɵɵelementStart(6, "mat-form-field", 60)(7, "mat-label");
     i0.ɵɵtext(8, "Nome");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(9, "input", 103);
+    i0.ɵɵelement(9, "input", 117);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "mat-form-field", 47)(11, "mat-label");
+    i0.ɵɵelementStart(10, "mat-form-field", 60)(11, "mat-label");
     i0.ɵɵtext(12, "Cognome");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(13, "input", 104);
+    i0.ɵɵelement(13, "input", 118);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(14, "mat-form-field", 47)(15, "mat-label");
+    i0.ɵɵelementStart(14, "mat-form-field", 60)(15, "mat-label");
     i0.ɵɵtext(16, "Email utente");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(17, "input", 105);
+    i0.ɵɵelement(17, "input", 119);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(18, "mat-form-field", 47)(19, "mat-label");
+    i0.ɵɵelementStart(18, "mat-form-field", 60)(19, "mat-label");
     i0.ɵɵtext(20, "Permesso");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(21, "mat-select", 106)(22, "mat-option", 107);
+    i0.ɵɵelementStart(21, "mat-select", 120)(22, "mat-option", 121);
     i0.ɵɵtext(23, "Gestore struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(24, "mat-option", 108);
+    i0.ɵɵelementStart(24, "mat-option", 122);
     i0.ɵɵtext(25, "Admin");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵtemplate(26, AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_Template, 8, 5, "mat-form-field", 109)(27, AdminDashboardComponent_div_3_ng_container_22_section_32_p_27_Template, 2, 0, "p", 75)(28, AdminDashboardComponent_div_3_ng_container_22_section_32_div_28_Template, 2, 0, "div", 110);
-    i0.ɵɵelementStart(29, "button", 50);
+    i0.ɵɵtemplate(26, AdminDashboardComponent_div_3_ng_container_22_section_32_mat_form_field_26_Template, 8, 5, "mat-form-field", 123)(27, AdminDashboardComponent_div_3_ng_container_22_section_32_p_27_Template, 2, 0, "p", 89)(28, AdminDashboardComponent_div_3_ng_container_22_section_32_div_28_Template, 2, 0, "div", 124);
+    i0.ɵɵelementStart(29, "button", 63);
     i0.ɵɵtext(30);
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_Template, 8, 4, "div", 111);
+    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_container_22_section_32_div_31_Template, 8, 4, "div", 125);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
@@ -662,7 +665,7 @@ function AdminDashboardComponent_div_3_ng_container_22_section_32_Template(rf, c
     i0.ɵɵproperty("ngIf", ctx_r1.lastInvite);
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_mat_option_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
@@ -677,15 +680,15 @@ function AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-form-field", 47)(1, "mat-label");
+    i0.ɵɵelementStart(0, "mat-form-field", 60)(1, "mat-label");
     i0.ɵɵtext(2);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(3, "mat-select", 112)(4, "mat-option", 113);
+    i0.ɵɵelementStart(3, "mat-select", 126)(4, "mat-option", 127);
     i0.ɵɵtext(5);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_mat_option_6_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_mat_option_6_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(7, AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_mat_error_7_Template, 2, 0, "mat-error", 62);
+    i0.ɵɵtemplate(7, AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_mat_error_7_Template, 2, 0, "mat-error", 76);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
@@ -703,61 +706,61 @@ function AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field
     i0.ɵɵproperty("ngIf", ctx_r1.isCreateUserStructureMissing && ctx_r1.createUserForm.controls.structureId.touched);
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_33_p_35_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Nessuna struttura registrata: crea prima una struttura nella sezione dedicata. ");
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_33_div_36_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 116);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 130);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_22_section_33_Template(rf, ctx) { if (rf & 1) {
     const _r16 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "section", 102)(1, "h3");
+    i0.ɵɵelementStart(0, "section", 116)(1, "h3");
     i0.ɵɵtext(2, "Aggiungi utente dashboard");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "p");
     i0.ɵɵtext(4, "Crea direttamente un utente con password. Ruolo non modificabile dopo la creazione.");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "form", 46);
+    i0.ɵɵelementStart(5, "form", 59);
     i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_container_22_section_33_Template_form_ngSubmit_5_listener() { i0.ɵɵrestoreView(_r16); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.createUser()); });
-    i0.ɵɵelementStart(6, "mat-form-field", 47)(7, "mat-label");
+    i0.ɵɵelementStart(6, "mat-form-field", 60)(7, "mat-label");
     i0.ɵɵtext(8, "Nome");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(9, "input", 103);
+    i0.ɵɵelement(9, "input", 117);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "mat-form-field", 47)(11, "mat-label");
+    i0.ɵɵelementStart(10, "mat-form-field", 60)(11, "mat-label");
     i0.ɵɵtext(12, "Cognome");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(13, "input", 104);
+    i0.ɵɵelement(13, "input", 118);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(14, "mat-form-field", 47)(15, "mat-label");
+    i0.ɵɵelementStart(14, "mat-form-field", 60)(15, "mat-label");
     i0.ɵɵtext(16, "Email utente");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(17, "input", 105);
+    i0.ɵɵelement(17, "input", 119);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(18, "mat-form-field", 47)(19, "mat-label");
+    i0.ɵɵelementStart(18, "mat-form-field", 60)(19, "mat-label");
     i0.ɵɵtext(20, "Password iniziale");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(21, "input", 118);
+    i0.ɵɵelement(21, "input", 132);
     i0.ɵɵelementStart(22, "mat-hint");
     i0.ɵɵtext(23, "Minimo 8 caratteri");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(24, "mat-form-field", 47)(25, "mat-label");
+    i0.ɵɵelementStart(24, "mat-form-field", 60)(25, "mat-label");
     i0.ɵɵtext(26, "Ruolo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(27, "mat-select", 106)(28, "mat-option", 119);
+    i0.ɵɵelementStart(27, "mat-select", 120)(28, "mat-option", 133);
     i0.ɵɵtext(29, "Utente normale");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(30, "mat-option", 107);
+    i0.ɵɵelementStart(30, "mat-option", 121);
     i0.ɵɵtext(31, "Gestore struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(32, "mat-option", 108);
+    i0.ɵɵelementStart(32, "mat-option", 122);
     i0.ɵɵtext(33, "Admin");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵtemplate(34, AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_Template, 8, 7, "mat-form-field", 109)(35, AdminDashboardComponent_div_3_ng_container_22_section_33_p_35_Template, 2, 0, "p", 75)(36, AdminDashboardComponent_div_3_ng_container_22_section_33_div_36_Template, 2, 0, "div", 110);
-    i0.ɵɵelementStart(37, "button", 50);
+    i0.ɵɵtemplate(34, AdminDashboardComponent_div_3_ng_container_22_section_33_mat_form_field_34_Template, 8, 7, "mat-form-field", 123)(35, AdminDashboardComponent_div_3_ng_container_22_section_33_p_35_Template, 2, 0, "p", 89)(36, AdminDashboardComponent_div_3_ng_container_22_section_33_div_36_Template, 2, 0, "div", 124);
+    i0.ɵɵelementStart(37, "button", 63);
     i0.ɵɵtext(38);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
@@ -777,12 +780,12 @@ function AdminDashboardComponent_div_3_ng_container_22_section_33_Template(rf, c
 } }
 function AdminDashboardComponent_div_3_ng_container_22_div_34_Template(rf, ctx) { if (rf & 1) {
     const _r18 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 120)(1, "span");
+    i0.ɵɵelementStart(0, "div", 134)(1, "span");
     i0.ɵɵtext(2, " Filtro struttura attivo: ");
     i0.ɵɵelementStart(3, "strong");
     i0.ɵɵtext(4);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(5, "button", 121);
+    i0.ɵɵelementStart(5, "button", 135);
     i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_div_34_Template_button_click_5_listener() { i0.ɵɵrestoreView(_r18); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearUsersStructureFilter()); });
     i0.ɵɵtext(6, "Rimuovi filtro");
     i0.ɵɵelementEnd()();
@@ -791,23 +794,23 @@ function AdminDashboardComponent_div_3_ng_container_22_div_34_Template(rf, ctx) 
     i0.ɵɵadvance(4);
     i0.ɵɵtextInterpolate(ctx_r1.usersStructureFilterName);
 } }
-function AdminDashboardComponent_div_3_ng_container_22_tr_54_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 122);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+function AdminDashboardComponent_div_3_ng_container_22_tr_52_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 96);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_22_tr_55_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 123);
+function AdminDashboardComponent_div_3_ng_container_22_tr_53_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 98);
     i0.ɵɵtext(2, "Nessun utente disponibile.");
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_small_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "small", 136);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_small_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small", 141);
     i0.ɵɵtext(1, " Utente app associato da codice invito/sconto ");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_11_div_1_small_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "small", 143);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_11_div_1_small_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small", 149);
     i0.ɵɵtext(1, " Codice: ");
     i0.ɵɵelementStart(2, "code");
     i0.ɵɵtext(3);
@@ -817,14 +820,14 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_
     i0.ɵɵadvance(3);
     i0.ɵɵtextInterpolate(association_r19.inviteCode);
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_11_div_1_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 139)(1, "div", 140)(2, "small", 141);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_11_div_1_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 144)(1, "div", 145)(2, "small", 146);
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(4, "span");
+    i0.ɵɵelementStart(4, "span", 147);
     i0.ɵɵtext(5);
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_11_div_1_small_6_Template, 4, 1, "small", 142);
+    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_11_div_1_small_6_Template, 4, 1, "small", 148);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const association_r19 = ctx.$implicit;
@@ -833,14 +836,15 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_
     i0.ɵɵtextInterpolate(association_r19.structureName || association_r19.structureId);
     i0.ɵɵadvance();
     i0.ɵɵclassMap(ctx_r1.userAssociationStatusClass(association_r19.status));
+    i0.ɵɵproperty("matTooltip", ctx_r1.userAssociationStatusTooltip(association_r19.status));
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.userAssociationStatusLabel(association_r19.status), " ");
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", association_r19.inviteCode);
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_11_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 137);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_11_div_1_Template, 7, 5, "div", 138);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_11_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 142);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_11_div_1_Template, 7, 6, "div", 143);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const user_r20 = i0.ɵɵnextContext().$implicit;
@@ -848,13 +852,13 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", ctx_r1.userAssociations(user_r20));
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_ng_template_12_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "small", 136);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_ng_template_12_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small", 141);
     i0.ɵɵtext(1, "Nessuna struttura associata");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_16_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 144)(1, "small")(2, "strong");
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_1_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 154)(1, "small")(2, "strong");
     i0.ɵɵtext(3, "Citta:");
     i0.ɵɵelementEnd();
     i0.ɵɵtext(4);
@@ -865,14 +869,14 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_
     i0.ɵɵtext(8);
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
-    const user_r20 = i0.ɵɵnextContext().$implicit;
+    const user_r20 = i0.ɵɵnextContext(2).$implicit;
     i0.ɵɵadvance(4);
     i0.ɵɵtextInterpolate1(" ", user_r20.unlockedCitiesCount, "");
     i0.ɵɵadvance(4);
     i0.ɵɵtextInterpolate1(" ", user_r20.unlockedPoisCount, "");
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_17_span_1_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "span", 147);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_2_span_1_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "span", 157);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
@@ -880,18 +884,18 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", city_r21.cityName || city_r21.cityId, " ");
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_17_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 145);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_17_span_1_Template, 2, 1, "span", 146);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_2_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 155);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_2_span_1_Template, 2, 1, "span", 156);
     i0.ɵɵpipe(2, "slice");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const user_r20 = i0.ɵɵnextContext().$implicit;
+    const user_r20 = i0.ɵɵnextContext(2).$implicit;
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind3(2, 1, ctx_r1.userUnlockedCities(user_r20), 0, 3));
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_18_small_1_span_2_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_3_small_1_span_2_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "span");
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
@@ -900,10 +904,10 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1("(", poi_r22.cityName, ")");
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_18_small_1_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "small", 150);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_3_small_1_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small", 160);
     i0.ɵɵtext(1);
-    i0.ɵɵtemplate(2, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_18_small_1_span_2_Template, 2, 1, "span", 62);
+    i0.ɵɵtemplate(2, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_3_small_1_span_2_Template, 2, 1, "span", 76);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const poi_r22 = ctx.$implicit;
@@ -912,97 +916,110 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", poi_r22.cityName);
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_18_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 148);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_18_small_1_Template, 3, 2, "small", 149);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_3_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 158);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_3_small_1_Template, 3, 2, "small", 159);
     i0.ɵɵpipe(2, "slice");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const user_r20 = i0.ɵɵnextContext().$implicit;
+    const user_r20 = i0.ɵɵnextContext(2).$implicit;
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", i0.ɵɵpipeBind3(2, 1, ctx_r1.userUnlockedPois(user_r20), 0, 3));
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_small_19_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "small", 136);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_small_4_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small", 141);
     i0.ɵɵtext(1, " + altri contenuti sbloccati ");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_ng_template_20_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "small", 136);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_ng_template_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small", 141);
     i0.ɵɵtext(1, "Nessun contenuto sbloccato");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_29_Template(rf, ctx) { if (rf & 1) {
-    const _r23 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 151);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_29_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r23); const user_r20 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.sendPasswordReset(user_r20)); });
-    i0.ɵɵtext(1);
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 150);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_1_Template, 9, 2, "div", 151)(2, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_2_Template, 3, 5, "div", 152)(3, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_div_3_Template, 3, 5, "div", 153)(4, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_small_4_Template, 2, 0, "small", 136)(5, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_ng_template_5_Template, 2, 0, "ng-template", null, 16, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const noUnlockedItems_r23 = i0.ɵɵreference(6);
+    const user_r20 = i0.ɵɵnextContext().$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", user_r20.unlockedCitiesCount || user_r20.unlockedPoisCount)("ngIfElse", noUnlockedItems_r23);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.userUnlockedCities(user_r20).length);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.userUnlockedPois(user_r20).length);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", user_r20.unlockedCitiesCount > 3 || user_r20.unlockedPoisCount > 3);
+} }
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_ng_template_16_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 150)(1, "span", 157);
+    i0.ɵɵtext(2, "Tutti");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "small", 141);
+    i0.ɵɵtext(4, "Accesso completo (profilo admin)");
+    i0.ɵɵelementEnd()();
+} }
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_21_Template(rf, ctx) { if (rf & 1) {
+    const _r24 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 161)(1, "div", 162)(2, "button", 163);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_21_Template_button_click_2_listener() { i0.ɵɵrestoreView(_r24); const user_r20 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.sendPasswordReset(user_r20)); });
+    i0.ɵɵtext(3);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(4, "button", 164);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_21_Template_button_click_4_listener() { i0.ɵɵrestoreView(_r24); const user_r20 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.deleteUser(user_r20)); });
+    i0.ɵɵtext(5);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(6, "button", 165);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_21_Template_button_click_6_listener() { i0.ɵɵrestoreView(_r24); const user_r20 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.impersonate(user_r20)); });
+    i0.ɵɵtext(7);
+    i0.ɵɵelementEnd()();
 } if (rf & 2) {
     const user_r20 = i0.ɵɵnextContext().$implicit;
     const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵadvance(2);
     i0.ɵɵproperty("disabled", ctx_r1.resettingPasswordUserId === user_r20.id || !user_r20.isRegistered);
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.resettingPasswordUserId === user_r20.id ? "Invio reset..." : "Reset password", " ");
-} }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_30_Template(rf, ctx) { if (rf & 1) {
-    const _r24 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 152);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_30_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r24); const user_r20 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.impersonate(user_r20)); });
-    i0.ɵɵtext(1);
-    i0.ɵɵelementEnd();
-} if (rf & 2) {
-    const user_r20 = i0.ɵɵnextContext().$implicit;
-    const ctx_r1 = i0.ɵɵnextContext(4);
-    i0.ɵɵproperty("disabled", ctx_r1.impersonatingUserId === user_r20.id || !user_r20.isRegistered);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", ctx_r1.impersonatingUserId === user_r20.id ? "Accesso..." : "Entra come " + ctx_r1.displayName(user_r20.firstName, user_r20.lastName, user_r20.email), " ");
-} }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_31_Template(rf, ctx) { if (rf & 1) {
-    const _r25 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 153);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_31_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r25); const user_r20 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.deleteUser(user_r20)); });
-    i0.ɵɵtext(1);
-    i0.ɵɵelementEnd();
-} if (rf & 2) {
-    const user_r20 = i0.ɵɵnextContext().$implicit;
-    const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵproperty("disabled", ctx_r1.deletingUserId === user_r20.id || ctx_r1.savingUserId === user_r20.id);
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.deletingUserId === user_r20.id ? "Elimino..." : "Elimina", " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("disabled", ctx_r1.impersonatingUserId === user_r20.id || !user_r20.isRegistered)("matTooltip", "Entra come questo utente per verificare esattamente cosa puo vedere nella dashboard.");
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.impersonatingUserId === user_r20.id ? "Accesso..." : "Entra come questo utente", " ");
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "tr")(1, "td")(2, "strong");
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(4, "small");
     i0.ɵɵtext(5);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_small_6_Template, 2, 0, "small", 124);
+    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_small_6_Template, 2, 0, "small", 136);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(7, "td");
     i0.ɵɵtext(8);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(9, "td")(10, "div", 125);
-    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_11_Template, 2, 1, "div", 126)(12, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_ng_template_12_Template, 2, 0, "ng-template", null, 13, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(9, "td")(10, "div", 137);
+    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_11_Template, 2, 1, "div", 138)(12, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_ng_template_12_Template, 2, 0, "ng-template", null, 14, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(14, "td")(15, "div", 127);
-    i0.ɵɵtemplate(16, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_16_Template, 9, 2, "div", 128)(17, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_17_Template, 3, 5, "div", 129)(18, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_div_18_Template, 3, 5, "div", 130)(19, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_small_19_Template, 2, 0, "small", 124)(20, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_ng_template_20_Template, 2, 0, "ng-template", null, 14, i0.ɵɵtemplateRefExtractor);
-    i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(22, "td")(23, "span", 131);
-    i0.ɵɵtext(24);
-    i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(25, "td");
-    i0.ɵɵtext(26);
+    i0.ɵɵelementStart(14, "td");
+    i0.ɵɵtemplate(15, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_15_Template, 7, 5, "div", 139)(16, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_ng_template_16_Template, 5, 0, "ng-template", null, 15, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(27, "td")(28, "div", 132);
-    i0.ɵɵtemplate(29, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_29_Template, 2, 2, "button", 133)(30, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_30_Template, 2, 2, "button", 134)(31, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_button_31_Template, 2, 2, "button", 135);
-    i0.ɵɵelementEnd()()();
+    i0.ɵɵelementStart(18, "td");
+    i0.ɵɵtext(19);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(20, "td");
+    i0.ɵɵtemplate(21, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_div_21_Template, 8, 7, "div", 140);
+    i0.ɵɵelementEnd()();
 } if (rf & 2) {
     const user_r20 = ctx.$implicit;
-    const noUserAssociations_r26 = i0.ɵɵreference(13);
-    const noUnlockedItems_r27 = i0.ɵɵreference(21);
+    const noUserAssociations_r25 = i0.ɵɵreference(13);
+    const adminUnlockedAll_r26 = i0.ɵɵreference(17);
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance(3);
     i0.ɵɵtextInterpolate(ctx_r1.displayName(user_r20.firstName, user_r20.lastName, user_r20.email));
@@ -1013,31 +1030,17 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_Temp
     i0.ɵɵadvance(2);
     i0.ɵɵtextInterpolate(ctx_r1.roleLabel(user_r20.role));
     i0.ɵɵadvance(3);
-    i0.ɵɵproperty("ngIf", ctx_r1.userAssociations(user_r20).length)("ngIfElse", noUserAssociations_r26);
-    i0.ɵɵadvance(5);
-    i0.ɵɵproperty("ngIf", user_r20.unlockedCitiesCount || user_r20.unlockedPoisCount)("ngIfElse", noUnlockedItems_r27);
-    i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.userUnlockedCities(user_r20).length);
-    i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.userUnlockedPois(user_r20).length);
-    i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", user_r20.unlockedCitiesCount > 3 || user_r20.unlockedPoisCount > 3);
+    i0.ɵɵproperty("ngIf", ctx_r1.userAssociations(user_r20).length)("ngIfElse", noUserAssociations_r25);
     i0.ɵɵadvance(4);
-    i0.ɵɵclassProp("ok", user_r20.isRegistered)("warn", !user_r20.isRegistered);
-    i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", user_r20.isRegistered ? "Si" : "No", " ");
-    i0.ɵɵadvance(2);
+    i0.ɵɵproperty("ngIf", user_r20.role !== "admin")("ngIfElse", adminUnlockedAll_r26);
+    i0.ɵɵadvance(4);
     i0.ɵɵtextInterpolate(ctx_r1.formatDateTime(user_r20.createdAt));
-    i0.ɵɵadvance(3);
-    i0.ɵɵproperty("ngIf", user_r20.id !== ctx_r1.currentUserId && !ctx_r1.isReadOnlyAppUser(user_r20));
-    i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", user_r20.id !== ctx_r1.currentUserId && !ctx_r1.isReadOnlyAppUser(user_r20));
-    i0.ɵɵadvance();
+    i0.ɵɵadvance(2);
     i0.ɵɵproperty("ngIf", user_r20.id !== ctx_r1.currentUserId && !ctx_r1.isReadOnlyAppUser(user_r20));
 } }
-function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_22_ng_container_54_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_tr_1_Template, 32, 20, "tr", 85);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_tr_1_Template, 22, 10, "tr", 99);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
@@ -1047,40 +1050,40 @@ function AdminDashboardComponent_div_3_ng_container_22_ng_container_56_Template(
 function AdminDashboardComponent_div_3_ng_container_22_Template(rf, ctx) { if (rf & 1) {
     const _r12 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "div", 69)(2, "mat-card", 70)(3, "span");
+    i0.ɵɵelementStart(1, "div", 83)(2, "mat-card", 84)(3, "span");
     i0.ɵɵtext(4, "Utenti");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_22_strong_5_Template, 2, 1, "strong", 71)(6, AdminDashboardComponent_div_3_ng_container_22_ng_template_6_Template, 2, 0, "ng-template", null, 11, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_22_strong_5_Template, 2, 1, "strong", 85)(6, AdminDashboardComponent_div_3_ng_container_22_ng_template_6_Template, 2, 0, "ng-template", null, 12, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-card", 70)(9, "span");
+    i0.ɵɵelementStart(8, "mat-card", 84)(9, "span");
     i0.ɵɵtext(10, "Strutture");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_22_strong_11_Template, 2, 1, "strong", 71)(12, AdminDashboardComponent_div_3_ng_container_22_ng_template_12_Template, 2, 0, "ng-template", null, 12, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_22_strong_11_Template, 2, 1, "strong", 85)(12, AdminDashboardComponent_div_3_ng_container_22_ng_template_12_Template, 2, 0, "ng-template", null, 13, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(14, "mat-card", 72)(15, "div", 73)(16, "div")(17, "h2");
+    i0.ɵɵelementStart(14, "mat-card", 86)(15, "div", 87)(16, "div")(17, "h2");
     i0.ɵɵtext(18, "Lista utenti");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(19, "p", 74);
+    i0.ɵɵelementStart(19, "p", 88);
     i0.ɵɵtext(20, "Gestisci struttura utente e operazioni rapide.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(21, "div", 97)(22, "button", 98);
+    i0.ɵɵelementStart(21, "div", 111)(22, "button", 112);
     i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_Template_button_click_22_listener() { i0.ɵɵrestoreView(_r12); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.toggleCreateUserSection()); });
-    i0.ɵɵelementStart(23, "span", 99);
+    i0.ɵɵelementStart(23, "span", 113);
     i0.ɵɵtext(24);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(25, "span");
     i0.ɵɵtext(26);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(27, "button", 98);
+    i0.ɵɵelementStart(27, "button", 112);
     i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_22_Template_button_click_27_listener() { i0.ɵɵrestoreView(_r12); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.toggleInviteSection()); });
-    i0.ɵɵelementStart(28, "span", 99);
+    i0.ɵɵelementStart(28, "span", 113);
     i0.ɵɵtext(29);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(30, "span");
     i0.ɵɵtext(31);
     i0.ɵɵelementEnd()()()();
-    i0.ɵɵtemplate(32, AdminDashboardComponent_div_3_ng_container_22_section_32_Template, 32, 7, "section", 100)(33, AdminDashboardComponent_div_3_ng_container_22_section_33_Template, 39, 6, "section", 100)(34, AdminDashboardComponent_div_3_ng_container_22_div_34_Template, 7, 1, "div", 101);
-    i0.ɵɵelementStart(35, "div", 80)(36, "table", 89)(37, "thead")(38, "tr")(39, "th");
+    i0.ɵɵtemplate(32, AdminDashboardComponent_div_3_ng_container_22_section_32_Template, 32, 7, "section", 114)(33, AdminDashboardComponent_div_3_ng_container_22_section_33_Template, 39, 6, "section", 114)(34, AdminDashboardComponent_div_3_ng_container_22_div_34_Template, 7, 1, "div", 115);
+    i0.ɵɵelementStart(35, "div", 94)(36, "table", 103)(37, "thead")(38, "tr")(39, "th");
     i0.ɵɵtext(40, "Utente");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(41, "th");
@@ -1093,26 +1096,23 @@ function AdminDashboardComponent_div_3_ng_container_22_Template(rf, ctx) { if (r
     i0.ɵɵtext(46, "Sbloccati");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(47, "th");
-    i0.ɵɵtext(48, "Registrato");
+    i0.ɵɵtext(48, "Data registrazione");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(49, "th");
-    i0.ɵɵtext(50, "Data registrazione");
-    i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(51, "th");
-    i0.ɵɵtext(52, "Azioni");
+    i0.ɵɵtext(50, "Azioni");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(53, "tbody");
-    i0.ɵɵtemplate(54, AdminDashboardComponent_div_3_ng_container_22_tr_54_Template, 3, 0, "tr", 62)(55, AdminDashboardComponent_div_3_ng_container_22_tr_55_Template, 3, 0, "tr", 62)(56, AdminDashboardComponent_div_3_ng_container_22_ng_container_56_Template, 2, 1, "ng-container", 62);
+    i0.ɵɵelementStart(51, "tbody");
+    i0.ɵɵtemplate(52, AdminDashboardComponent_div_3_ng_container_22_tr_52_Template, 3, 0, "tr", 76)(53, AdminDashboardComponent_div_3_ng_container_22_tr_53_Template, 3, 0, "tr", 76)(54, AdminDashboardComponent_div_3_ng_container_22_ng_container_54_Template, 2, 1, "ng-container", 76);
     i0.ɵɵelementEnd()()()();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
-    const usersLoadingStat_r28 = i0.ɵɵreference(7);
-    const structuresLoadingStat_r29 = i0.ɵɵreference(13);
+    const usersLoadingStat_r27 = i0.ɵɵreference(7);
+    const structuresLoadingStat_r28 = i0.ɵɵreference(13);
     const ctx_r1 = i0.ɵɵnextContext(2);
     i0.ɵɵadvance(5);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingUsers)("ngIfElse", usersLoadingStat_r28);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingUsers)("ngIfElse", usersLoadingStat_r27);
     i0.ɵɵadvance(6);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingStructures)("ngIfElse", structuresLoadingStat_r29);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingStructures)("ngIfElse", structuresLoadingStat_r28);
     i0.ɵɵadvance(11);
     i0.ɵɵclassProp("active", ctx_r1.showCreateUserSection);
     i0.ɵɵadvance(2);
@@ -1131,7 +1131,7 @@ function AdminDashboardComponent_div_3_ng_container_22_Template(rf, ctx) { if (r
     i0.ɵɵproperty("ngIf", ctx_r1.showCreateUserSection);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r1.isUsersStructureFilterActive);
-    i0.ɵɵadvance(20);
+    i0.ɵɵadvance(18);
     i0.ɵɵproperty("ngIf", ctx_r1.loadingUsers);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", !ctx_r1.loadingUsers && !ctx_r1.usersForDisplay.length);
@@ -1139,20 +1139,20 @@ function AdminDashboardComponent_div_3_ng_container_22_Template(rf, ctx) { if (r
     i0.ɵɵproperty("ngIf", !ctx_r1.loadingUsers);
 } }
 function AdminDashboardComponent_div_3_ng_container_23_p_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 74);
+    i0.ɵɵelementStart(0, "p", 88);
     i0.ɵɵtext(1, " Ogni struttura puo avere piu codici con regole diverse e scadenza dedicata. ");
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_23_p_7_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 74);
+    i0.ɵɵelementStart(0, "p", 88);
     i0.ɵɵtext(1, " Vista sola lettura dei codici sconto della tua struttura. ");
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_23_div_8_Template(rf, ctx) { if (rf & 1) {
-    const _r30 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 97)(1, "button", 98);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_23_div_8_Template_button_click_1_listener() { i0.ɵɵrestoreView(_r30); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.toggleDiscountCodeCreateSection()); });
-    i0.ɵɵelementStart(2, "span", 99);
+    const _r29 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 111)(1, "button", 112);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_23_div_8_Template_button_click_1_listener() { i0.ɵɵrestoreView(_r29); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.toggleDiscountCodeCreateSection()); });
+    i0.ɵɵelementStart(2, "span", 113);
     i0.ɵɵtext(3, "+");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(4, "span");
@@ -1160,12 +1160,12 @@ function AdminDashboardComponent_div_3_ng_container_23_div_8_Template(rf, ctx) {
     i0.ɵɵelementEnd()()();
 } }
 function AdminDashboardComponent_div_3_ng_container_23_tr_18_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 157);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+    i0.ɵɵelementStart(0, "tr")(1, "td", 169);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
 function AdminDashboardComponent_div_3_ng_container_23_tr_19_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 158);
+    i0.ɵɵelementStart(0, "tr")(1, "td", 170);
     i0.ɵɵtext(2, "Nessun codice sconto registrato.");
     i0.ɵɵelementEnd()();
 } }
@@ -1174,110 +1174,110 @@ function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_smal
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const group_r31 = i0.ɵɵnextContext().$implicit;
+    const group_r30 = i0.ɵɵnextContext().$implicit;
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(group_r31.structureAddress);
+    i0.ɵɵtextInterpolate(group_r30.structureAddress);
 } }
 function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_div_23_Template(rf, ctx) { if (rf & 1) {
-    const _r32 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 132)(1, "button", 166);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_div_23_Template_button_click_1_listener() { i0.ɵɵrestoreView(_r32); const discountCode_r33 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.editDiscountCode(discountCode_r33)); });
+    const _r31 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 178)(1, "button", 179);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_div_23_Template_button_click_1_listener() { i0.ɵɵrestoreView(_r31); const discountCode_r32 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.editDiscountCode(discountCode_r32)); });
     i0.ɵɵtext(2, " Modifica ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(3, "button", 167);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_div_23_Template_button_click_3_listener() { i0.ɵɵrestoreView(_r32); const discountCode_r33 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.deleteDiscountCode(discountCode_r33)); });
+    i0.ɵɵelementStart(3, "button", 180);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_div_23_Template_button_click_3_listener() { i0.ɵɵrestoreView(_r31); const discountCode_r32 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.deleteDiscountCode(discountCode_r32)); });
     i0.ɵɵtext(4);
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
-    const discountCode_r33 = i0.ɵɵnextContext().$implicit;
+    const discountCode_r32 = i0.ɵɵnextContext().$implicit;
     const ctx_r1 = i0.ɵɵnextContext(5);
     i0.ɵɵadvance();
-    i0.ɵɵproperty("disabled", ctx_r1.savingDiscountCodeId === discountCode_r33.id || ctx_r1.deletingDiscountCodeId === discountCode_r33.id);
+    i0.ɵɵproperty("disabled", ctx_r1.savingDiscountCodeId === discountCode_r32.id || ctx_r1.deletingDiscountCodeId === discountCode_r32.id);
     i0.ɵɵadvance(2);
-    i0.ɵɵproperty("disabled", ctx_r1.savingDiscountCodeId === discountCode_r33.id || ctx_r1.deletingDiscountCodeId === discountCode_r33.id);
+    i0.ɵɵproperty("disabled", ctx_r1.savingDiscountCodeId === discountCode_r32.id || ctx_r1.deletingDiscountCodeId === discountCode_r32.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", ctx_r1.deletingDiscountCodeId === discountCode_r33.id ? "Elimino..." : "Elimina", " ");
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.deletingDiscountCodeId === discountCode_r32.id ? "Elimino..." : "Elimina", " ");
 } }
 function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_ng_template_24_Template(rf, ctx) { }
 function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 161)(1, "div", 162)(2, "code");
+    i0.ɵɵelementStart(0, "div", 173)(1, "div", 174)(2, "code");
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(4, "span", 163);
+    i0.ɵɵelementStart(4, "span", 175);
     i0.ɵɵtext(5, " Applicabile a: ");
     i0.ɵɵelementStart(6, "strong");
     i0.ɵɵtext(7);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(8, "span", 163);
+    i0.ɵɵelementStart(8, "span", 175);
     i0.ɵɵtext(9, " Citta: ");
     i0.ɵɵelementStart(10, "strong");
     i0.ɵɵtext(11);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(12, "span", 163);
+    i0.ɵɵelementStart(12, "span", 175);
     i0.ɵɵtext(13, " Sconto/Incasso: ");
     i0.ɵɵelementStart(14, "strong");
     i0.ɵɵtext(15);
     i0.ɵɵelementEnd();
     i0.ɵɵtext(16);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(17, "span", 163);
+    i0.ɵɵelementStart(17, "span", 175);
     i0.ɵɵtext(18, " Scadenza: ");
     i0.ɵɵelementStart(19, "strong");
     i0.ɵɵtext(20);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(21, "span", 164);
+    i0.ɵɵelementStart(21, "span", 176);
     i0.ɵɵtext(22);
     i0.ɵɵelementEnd()()();
-    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_div_23_Template, 5, 3, "div", 165)(24, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_ng_template_24_Template, 0, 0, "ng-template", null, 15, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_div_23_Template, 5, 3, "div", 177)(24, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_ng_template_24_Template, 0, 0, "ng-template", null, 17, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const discountCode_r33 = ctx.$implicit;
-    const discountReadOnlyActions_r34 = i0.ɵɵreference(25);
+    const discountCode_r32 = ctx.$implicit;
+    const discountReadOnlyActions_r33 = i0.ɵɵreference(25);
     const ctx_r1 = i0.ɵɵnextContext(5);
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(discountCode_r33.code);
+    i0.ɵɵtextInterpolate(discountCode_r32.code);
     i0.ɵɵadvance(4);
-    i0.ɵɵtextInterpolate(ctx_r1.discountCodeApplyToLabel(discountCode_r33.applyTo));
+    i0.ɵɵtextInterpolate(ctx_r1.discountCodeApplyToLabel(discountCode_r32.applyTo));
     i0.ɵɵadvance(4);
-    i0.ɵɵtextInterpolate(ctx_r1.discountCodeCitiesLabel(discountCode_r33));
+    i0.ɵɵtextInterpolate(ctx_r1.discountCodeCitiesLabel(discountCode_r32));
     i0.ɵɵadvance(4);
-    i0.ɵɵtextInterpolate1("", discountCode_r33.userDiscountPercentApplied, "%");
+    i0.ɵɵtextInterpolate1("", discountCode_r32.userDiscountPercentApplied, "%");
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" / ", ctx_r1.formatCurrency(discountCode_r33.structureFixedAmountApplied), " ");
+    i0.ɵɵtextInterpolate1(" / ", ctx_r1.formatCurrency(discountCode_r32.structureFixedAmountApplied), " ");
     i0.ɵɵadvance(4);
-    i0.ɵɵtextInterpolate(ctx_r1.formatDateTime(discountCode_r33.expiresAt));
+    i0.ɵɵtextInterpolate(ctx_r1.formatDateTime(discountCode_r32.expiresAt));
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngClass", i0.ɵɵpureFunction3(10, _c9, ctx_r1.discountCodeExpiryStatus(discountCode_r33.expiresAt) === "active", ctx_r1.discountCodeExpiryStatus(discountCode_r33.expiresAt) === "expired", ctx_r1.discountCodeExpiryStatus(discountCode_r33.expiresAt) === "unknown"));
+    i0.ɵɵproperty("ngClass", i0.ɵɵpureFunction3(10, _c10, ctx_r1.discountCodeExpiryStatus(discountCode_r32.expiresAt) === "active", ctx_r1.discountCodeExpiryStatus(discountCode_r32.expiresAt) === "expired", ctx_r1.discountCodeExpiryStatus(discountCode_r32.expiresAt) === "unknown"));
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", ctx_r1.discountCodeExpiryStatus(discountCode_r33.expiresAt) === "active" ? "Attivo" : ctx_r1.discountCodeExpiryStatus(discountCode_r33.expiresAt) === "expired" ? "Scaduto" : "Da verificare", " ");
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.discountCodeExpiryStatus(discountCode_r32.expiresAt) === "active" ? "Attivo" : ctx_r1.discountCodeExpiryStatus(discountCode_r32.expiresAt) === "expired" ? "Scaduto" : "Da verificare", " ");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.canManageUsers)("ngIfElse", discountReadOnlyActions_r34);
+    i0.ɵɵproperty("ngIf", ctx_r1.canManageUsers)("ngIfElse", discountReadOnlyActions_r33);
 } }
 function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "tr")(1, "td")(2, "strong");
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_small_4_Template, 2, 1, "small", 62);
+    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_small_4_Template, 2, 1, "small", 76);
     i0.ɵɵelementStart(5, "small");
     i0.ɵɵtext(6);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(7, "td")(8, "div", 159);
-    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_Template, 26, 14, "div", 160);
+    i0.ɵɵelementStart(7, "td")(8, "div", 171);
+    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_div_9_Template, 26, 14, "div", 172);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
-    const group_r31 = ctx.$implicit;
+    const group_r30 = ctx.$implicit;
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(group_r31.structureName || "-");
+    i0.ɵɵtextInterpolate(group_r30.structureName || "-");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", group_r31.structureAddress);
+    i0.ɵɵproperty("ngIf", group_r30.structureAddress);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate2("", group_r31.codes.length, " ", group_r31.codes.length === 1 ? "codice" : "codici", "");
+    i0.ɵɵtextInterpolate2("", group_r30.codes.length, " ", group_r30.codes.length === 1 ? "codice" : "codici", "");
     i0.ɵɵadvance(3);
-    i0.ɵɵproperty("ngForOf", group_r31.codes);
+    i0.ɵɵproperty("ngForOf", group_r30.codes);
 } }
 function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_Template, 10, 5, "tr", 85);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_tr_1_Template, 10, 5, "tr", 99);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
@@ -1286,21 +1286,21 @@ function AdminDashboardComponent_div_3_ng_container_23_ng_container_20_Template(
 } }
 function AdminDashboardComponent_div_3_ng_container_23_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "mat-card", 72)(2, "div", 73)(3, "div")(4, "h2");
+    i0.ɵɵelementStart(1, "mat-card", 86)(2, "div", 87)(3, "div")(4, "h2");
     i0.ɵɵtext(5, "Codici invito e sconto");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_23_p_6_Template, 2, 0, "p", 154)(7, AdminDashboardComponent_div_3_ng_container_23_p_7_Template, 2, 0, "p", 154);
+    i0.ɵɵtemplate(6, AdminDashboardComponent_div_3_ng_container_23_p_6_Template, 2, 0, "p", 166)(7, AdminDashboardComponent_div_3_ng_container_23_p_7_Template, 2, 0, "p", 166);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_container_23_div_8_Template, 6, 0, "div", 155);
+    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_container_23_div_8_Template, 6, 0, "div", 167);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(9, "div", 80)(10, "table", 156)(11, "thead")(12, "tr")(13, "th");
+    i0.ɵɵelementStart(9, "div", 94)(10, "table", 168)(11, "thead")(12, "tr")(13, "th");
     i0.ɵɵtext(14, "Struttura");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(15, "th");
     i0.ɵɵtext(16, "Codici sconto associati");
     i0.ɵɵelementEnd()()();
     i0.ɵɵelementStart(17, "tbody");
-    i0.ɵɵtemplate(18, AdminDashboardComponent_div_3_ng_container_23_tr_18_Template, 3, 0, "tr", 62)(19, AdminDashboardComponent_div_3_ng_container_23_tr_19_Template, 3, 0, "tr", 62)(20, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_Template, 2, 1, "ng-container", 62);
+    i0.ɵɵtemplate(18, AdminDashboardComponent_div_3_ng_container_23_tr_18_Template, 3, 0, "tr", 76)(19, AdminDashboardComponent_div_3_ng_container_23_tr_19_Template, 3, 0, "tr", 76)(20, AdminDashboardComponent_div_3_ng_container_23_ng_container_20_Template, 2, 1, "ng-container", 76);
     i0.ɵɵelementEnd()()()();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
@@ -1325,11 +1325,11 @@ function AdminDashboardComponent_div_3_ng_container_24_strong_5_Template(rf, ctx
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(ctx_r1.paymentsSummary.totalPayments);
+    i0.ɵɵtextInterpolate(ctx_r1.totalPartnerRequests);
 } }
 function AdminDashboardComponent_div_3_ng_container_24_ng_template_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_24_strong_11_Template(rf, ctx) { if (rf & 1) {
@@ -1339,11 +1339,11 @@ function AdminDashboardComponent_div_3_ng_container_24_strong_11_Template(rf, ct
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(ctx_r1.paymentsSummary.totalCollected));
+    i0.ɵɵtextInterpolate(ctx_r1.pendingPartnerRequests);
 } }
 function AdminDashboardComponent_div_3_ng_container_24_ng_template_12_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_24_strong_17_Template(rf, ctx) { if (rf & 1) {
@@ -1353,11 +1353,11 @@ function AdminDashboardComponent_div_3_ng_container_24_strong_17_Template(rf, ct
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(ctx_r1.paymentsSummary.totalDiscountAmount));
+    i0.ɵɵtextInterpolate(ctx_r1.approvedPartnerRequests);
 } }
 function AdminDashboardComponent_div_3_ng_container_24_ng_template_18_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
 function AdminDashboardComponent_div_3_ng_container_24_strong_23_Template(rf, ctx) { if (rf & 1) {
@@ -1367,38 +1367,338 @@ function AdminDashboardComponent_div_3_ng_container_24_strong_23_Template(rf, ct
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(ctx_r1.paymentsSummary.totalStructureEarnings));
+    i0.ɵɵtextInterpolate(ctx_r1.sentPartnerRequestPdfs);
 } }
 function AdminDashboardComponent_div_3_ng_container_24_ng_template_24_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_24_mat_option_40_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_container_24_tr_53_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 96);
+    i0.ɵɵelement(2, "mat-spinner", 97);
+    i0.ɵɵelementEnd()();
+} }
+function AdminDashboardComponent_div_3_ng_container_24_tr_54_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 98);
+    i0.ɵɵtext(2, "Nessuna richiesta partner registrata.");
+    i0.ɵɵelementEnd()();
+} }
+function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_4_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small");
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const structure_r36 = ctx.$implicit;
-    i0.ɵɵproperty("value", structure_r36.id);
+    const request_r36 = i0.ɵɵnextContext().$implicit;
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", structure_r36.name, " ");
+    i0.ɵɵtextInterpolate1("Tipologia: ", request_r36.structureType, "");
 } }
-function AdminDashboardComponent_div_3_ng_container_24_tr_70_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 172);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const request_r36 = i0.ɵɵnextContext().$implicit;
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1("Camere: ", request_r36.roomsCount, "");
+} }
+function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const request_r36 = i0.ɵɵnextContext().$implicit;
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1("P.IVA: ", request_r36.vatNumber, "");
+} }
+function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_7_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const request_r36 = i0.ɵɵnextContext().$implicit;
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1("Sito: ", request_r36.website, "");
+} }
+function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_25_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "small");
+    i0.ɵɵtext(1, "Codice: ");
+    i0.ɵɵelementStart(2, "code");
+    i0.ɵɵtext(3);
+    i0.ɵɵelementEnd()();
+} if (rf & 2) {
+    const request_r36 = i0.ɵɵnextContext().$implicit;
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate(request_r36.discountCode);
+} }
+function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_Template(rf, ctx) { if (rf & 1) {
+    const _r35 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "tr")(1, "td", 182)(2, "strong");
+    i0.ɵɵtext(3);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_4_Template, 2, 1, "small", 76)(5, AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_5_Template, 2, 1, "small", 76)(6, AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_6_Template, 2, 1, "small", 76)(7, AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_7_Template, 2, 1, "small", 76);
+    i0.ɵɵelementStart(8, "small");
+    i0.ɵɵtext(9);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(10, "td", 183)(11, "strong");
+    i0.ɵɵtext(12);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(13, "small");
+    i0.ɵɵtext(14);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(15, "small");
+    i0.ɵɵtext(16);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(17, "td", 184)(18, "small");
+    i0.ɵɵtext(19);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(20, "td", 185)(21, "span", 186);
+    i0.ɵɵtext(22);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(23, "span", 186);
+    i0.ɵɵtext(24);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(25, AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_small_25_Template, 4, 1, "small", 76);
+    i0.ɵɵelementStart(26, "small");
+    i0.ɵɵtext(27);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(28, "td", 187)(29, "small", 188);
+    i0.ɵɵtext(30);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(31, "td")(32, "div", 178)(33, "button", 179);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_Template_button_click_33_listener() { const request_r36 = i0.ɵɵrestoreView(_r35).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.previewPartnerRequestPdf(request_r36)); });
+    i0.ɵɵtext(34);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(35, "button", 189);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_Template_button_click_35_listener() { const request_r36 = i0.ɵɵrestoreView(_r35).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.openPartnerRequestApproval(request_r36)); });
+    i0.ɵɵtext(36);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(37, "button", 180);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_Template_button_click_37_listener() { const request_r36 = i0.ɵɵrestoreView(_r35).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.rejectPartnerRequest(request_r36)); });
+    i0.ɵɵtext(38);
+    i0.ɵɵelementEnd()()()();
+} if (rf & 2) {
+    const request_r36 = ctx.$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate2("#", request_r36.id, " - ", request_r36.structureName, "");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", request_r36.structureType);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", request_r36.roomsCount !== null);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", request_r36.vatNumber);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", request_r36.website);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate1("Inviata il ", ctx_r1.formatDateTime(request_r36.createdAt), "");
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate(ctx_r1.partnerRequestContactName(request_r36));
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(request_r36.contactEmail);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(request_r36.contactPhone);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate(ctx_r1.partnerRequestAddress(request_r36) || "-");
+    i0.ɵɵadvance(2);
+    i0.ɵɵproperty("ngClass", ctx_r1.partnerRequestStatusClass(request_r36.status));
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.partnerRequestStatusLabel(request_r36.status), " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngClass", ctx_r1.partnerRequestPdfStatusClass(request_r36.pdfReleaseStatus));
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" PDF: ", ctx_r1.partnerRequestPdfStatusLabel(request_r36.pdfReleaseStatus), " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", request_r36.discountCode);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate1("Aggiornata ", ctx_r1.formatDateTime(request_r36.updatedAt), "");
+    i0.ɵɵadvance(2);
+    i0.ɵɵclassProp("partner-request-empty-note", !request_r36.notes);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", request_r36.notes || "Nessun messaggio aggiuntivo.", " ");
+    i0.ɵɵadvance(3);
+    i0.ɵɵproperty("disabled", ctx_r1.isPartnerRequestBusy(request_r36));
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.previewingPartnerRequestId === request_r36.id ? "Apro..." : "Anteprima PDF", " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("disabled", ctx_r1.isPartnerRequestBusy(request_r36) || request_r36.status === "approved");
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.approvingPartnerRequestId === request_r36.id ? "Invio..." : "Approva", " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("disabled", ctx_r1.isPartnerRequestBusy(request_r36) || request_r36.status !== "pending");
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.rejectingPartnerRequestId === request_r36.id ? "Nego..." : "Nega", " ");
+} }
+function AdminDashboardComponent_div_3_ng_container_24_ng_container_55_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementContainerStart(0);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_24_ng_container_55_tr_1_Template, 39, 26, "tr", 106);
+    i0.ɵɵelementContainerEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngForOf", ctx_r1.partnerRequests)("ngForTrackBy", ctx_r1.trackByPartnerRequestId);
+} }
+function AdminDashboardComponent_div_3_ng_container_24_Template(rf, ctx) { if (rf & 1) {
+    const _r34 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementContainerStart(0);
+    i0.ɵɵelementStart(1, "div", 83)(2, "mat-card", 84)(3, "span");
+    i0.ɵɵtext(4, "Richieste totali");
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_24_strong_5_Template, 2, 1, "strong", 85)(6, AdminDashboardComponent_div_3_ng_container_24_ng_template_6_Template, 2, 0, "ng-template", null, 18, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(8, "mat-card", 84)(9, "span");
+    i0.ɵɵtext(10, "In attesa");
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_24_strong_11_Template, 2, 1, "strong", 85)(12, AdminDashboardComponent_div_3_ng_container_24_ng_template_12_Template, 2, 0, "ng-template", null, 19, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(14, "mat-card", 84)(15, "span");
+    i0.ɵɵtext(16, "Approvate");
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_container_24_strong_17_Template, 2, 1, "strong", 85)(18, AdminDashboardComponent_div_3_ng_container_24_ng_template_18_Template, 2, 0, "ng-template", null, 20, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(20, "mat-card", 84)(21, "span");
+    i0.ɵɵtext(22, "PDF inviati");
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_24_strong_23_Template, 2, 1, "strong", 85)(24, AdminDashboardComponent_div_3_ng_container_24_ng_template_24_Template, 2, 0, "ng-template", null, 21, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(26, "mat-card", 86)(27, "div", 87)(28, "div")(29, "h2");
+    i0.ɵɵtext(30, "Richieste partner");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(31, "p", 88);
+    i0.ɵɵtext(32, "Approva o nega le richieste partner e genera il PDF promozionale da inviare alla struttura.");
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(33, "div", 111)(34, "button", 179);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_24_Template_button_click_34_listener() { i0.ɵɵrestoreView(_r34); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.loadPartnerRequests()); });
+    i0.ɵɵtext(35);
+    i0.ɵɵelementEnd()()();
+    i0.ɵɵelementStart(36, "div", 94)(37, "table", 181)(38, "thead")(39, "tr")(40, "th");
+    i0.ɵɵtext(41, "Struttura");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(42, "th");
+    i0.ɵɵtext(43, "Referente");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(44, "th");
+    i0.ɵɵtext(45, "Indirizzo");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(46, "th");
+    i0.ɵɵtext(47, "Stato");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(48, "th");
+    i0.ɵɵtext(49, "Messaggio");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(50, "th");
+    i0.ɵɵtext(51, "Azioni");
+    i0.ɵɵelementEnd()()();
+    i0.ɵɵelementStart(52, "tbody");
+    i0.ɵɵtemplate(53, AdminDashboardComponent_div_3_ng_container_24_tr_53_Template, 3, 0, "tr", 76)(54, AdminDashboardComponent_div_3_ng_container_24_tr_54_Template, 3, 0, "tr", 76)(55, AdminDashboardComponent_div_3_ng_container_24_ng_container_55_Template, 2, 2, "ng-container", 76);
+    i0.ɵɵelementEnd()()()();
+    i0.ɵɵelementContainerEnd();
+} if (rf & 2) {
+    const partnerRequestsLoadingStat_r37 = i0.ɵɵreference(7);
+    const partnerPendingLoadingStat_r38 = i0.ɵɵreference(13);
+    const partnerApprovedLoadingStat_r39 = i0.ɵɵreference(19);
+    const partnerPdfLoadingStat_r40 = i0.ɵɵreference(25);
+    const ctx_r1 = i0.ɵɵnextContext(2);
+    i0.ɵɵadvance(5);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPartnerRequests)("ngIfElse", partnerRequestsLoadingStat_r37);
+    i0.ɵɵadvance(6);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPartnerRequests)("ngIfElse", partnerPendingLoadingStat_r38);
+    i0.ɵɵadvance(6);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPartnerRequests)("ngIfElse", partnerApprovedLoadingStat_r39);
+    i0.ɵɵadvance(6);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPartnerRequests)("ngIfElse", partnerPdfLoadingStat_r40);
+    i0.ɵɵadvance(11);
+    i0.ɵɵproperty("disabled", ctx_r1.loadingPartnerRequests);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.loadingPartnerRequests ? "Aggiorno..." : "Aggiorna elenco", " ");
+    i0.ɵɵadvance(18);
+    i0.ɵɵproperty("ngIf", ctx_r1.loadingPartnerRequests);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPartnerRequests && !ctx_r1.partnerRequests.length);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPartnerRequests);
+} }
+function AdminDashboardComponent_div_3_ng_container_25_strong_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "strong");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate(ctx_r1.paymentsSummary.totalPayments);
+} }
+function AdminDashboardComponent_div_3_ng_container_25_ng_template_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_container_25_strong_11_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "strong");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(ctx_r1.paymentsSummary.totalCollected));
+} }
+function AdminDashboardComponent_div_3_ng_container_25_ng_template_12_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_container_25_strong_17_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "strong");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(ctx_r1.paymentsSummary.totalDiscountAmount));
+} }
+function AdminDashboardComponent_div_3_ng_container_25_ng_template_18_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_container_25_strong_23_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "strong");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(ctx_r1.paymentsSummary.totalStructureEarnings));
+} }
+function AdminDashboardComponent_div_3_ng_container_25_ng_template_24_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_container_25_mat_option_40_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const structure_r42 = ctx.$implicit;
+    i0.ɵɵproperty("value", structure_r42.id);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", structure_r42.name, " ");
+} }
+function AdminDashboardComponent_div_3_ng_container_25_tr_70_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 194);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_24_tr_71_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 173);
+function AdminDashboardComponent_div_3_ng_container_25_tr_71_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 195);
     i0.ɵɵtext(2, "Nessun pagamento registrato.");
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_24_ng_container_72_tr_1_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_25_ng_container_72_tr_1_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "tr")(1, "td");
     i0.ɵɵtext(2);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(3, "td", 93)(4, "strong");
+    i0.ɵɵelementStart(3, "td", 107)(4, "strong");
     i0.ɵɵtext(5);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(6, "small");
@@ -1419,16 +1719,16 @@ function AdminDashboardComponent_div_3_ng_container_24_ng_container_72_tr_1_Temp
     i0.ɵɵtext(17);
     i0.ɵɵpipe(18, "date");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(19, "td", 94)(20, "strong");
+    i0.ɵɵelementStart(19, "td", 108)(20, "strong");
     i0.ɵɵtext(21);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(22, "small");
     i0.ɵɵtext(23);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(24, "td", 95)(25, "small");
+    i0.ɵɵelementStart(24, "td", 109)(25, "small");
     i0.ɵɵtext(26);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(27, "span", 96);
+    i0.ɵɵelementStart(27, "span", 110);
     i0.ɵɵtext(28);
     i0.ɵɵelementEnd()();
     i0.ɵɵelementStart(29, "td");
@@ -1453,96 +1753,96 @@ function AdminDashboardComponent_div_3_ng_container_24_ng_container_72_tr_1_Temp
     i0.ɵɵtext(43);
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
-    const payment_r37 = ctx.$implicit;
+    const payment_r43 = ctx.$implicit;
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatDateTime(payment_r37.purchasedAt));
+    i0.ɵɵtextInterpolate(ctx_r1.formatDateTime(payment_r43.purchasedAt));
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate2("", payment_r37.customerFirstName, " ", payment_r37.customerLastName, "");
+    i0.ɵɵtextInterpolate2("", payment_r43.customerFirstName, " ", payment_r43.customerLastName, "");
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(payment_r37.customerEmail);
+    i0.ɵɵtextInterpolate(payment_r43.customerEmail);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(payment_r37.customerPhone);
+    i0.ɵɵtextInterpolate(payment_r43.customerPhone);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(payment_r37.customerAddress);
+    i0.ɵɵtextInterpolate(payment_r43.customerAddress);
     i0.ɵɵadvance(4);
-    i0.ɵɵtextInterpolate(payment_r37.customerId);
+    i0.ɵɵtextInterpolate(payment_r43.customerId);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(i0.ɵɵpipeBind4(18, 24, payment_r37.customerBirthDate, "dd/MM/yyyy", "", "it-IT"));
+    i0.ɵɵtextInterpolate(i0.ɵɵpipeBind4(18, 24, payment_r43.customerBirthDate, "dd/MM/yyyy", "", "it-IT"));
     i0.ɵɵadvance(4);
-    i0.ɵɵtextInterpolate(payment_r37.paymentMethod);
+    i0.ɵɵtextInterpolate(payment_r43.paymentMethod);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(payment_r37.paymentProvider);
+    i0.ɵɵtextInterpolate(payment_r43.paymentProvider);
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(ctx_r1.paymentTargetLabel(payment_r37));
+    i0.ɵɵtextInterpolate(ctx_r1.paymentTargetLabel(payment_r43));
     i0.ɵɵadvance();
-    i0.ɵɵclassProp("bundle", payment_r37.type === "bundle")("single", payment_r37.type === "single");
+    i0.ɵɵclassProp("bundle", payment_r43.type === "bundle")("single", payment_r43.type === "single");
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", payment_r37.type === "bundle" ? "Pacchetto citta" : "Luogo singolo", " ");
+    i0.ɵɵtextInterpolate1(" ", payment_r43.type === "bundle" ? "Pacchetto citta" : "Luogo singolo", " ");
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(payment_r37.baseAmount));
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(payment_r43.baseAmount));
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate2("", ctx_r1.formatCurrency(payment_r37.discountAmount), " (", payment_r37.discountPercent, "%)");
+    i0.ɵɵtextInterpolate2("", ctx_r1.formatCurrency(payment_r43.discountAmount), " (", payment_r43.discountPercent, "%)");
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(payment_r37.paidAmount));
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(payment_r43.paidAmount));
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(payment_r37.paymentStatus);
+    i0.ɵɵtextInterpolate(payment_r43.paymentStatus);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(payment_r37.structureName || "-");
+    i0.ɵɵtextInterpolate(payment_r43.structureName || "-");
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(payment_r37.inviteCode || "-");
+    i0.ɵɵtextInterpolate(payment_r43.inviteCode || "-");
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(payment_r37.structureEarningAmount));
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(payment_r43.structureEarningAmount));
 } }
-function AdminDashboardComponent_div_3_ng_container_24_ng_container_72_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_25_ng_container_72_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_24_ng_container_72_tr_1_Template, 44, 29, "tr", 92);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_25_ng_container_72_tr_1_Template, 44, 29, "tr", 106);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", ctx_r1.payments)("ngForTrackBy", ctx_r1.trackByPaymentId);
 } }
-function AdminDashboardComponent_div_3_ng_container_24_Template(rf, ctx) { if (rf & 1) {
-    const _r35 = i0.ɵɵgetCurrentView();
+function AdminDashboardComponent_div_3_ng_container_25_Template(rf, ctx) { if (rf & 1) {
+    const _r41 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "div", 69)(2, "mat-card", 70)(3, "span");
+    i0.ɵɵelementStart(1, "div", 83)(2, "mat-card", 84)(3, "span");
     i0.ɵɵtext(4, "Pagamenti totali");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_24_strong_5_Template, 2, 1, "strong", 71)(6, AdminDashboardComponent_div_3_ng_container_24_ng_template_6_Template, 2, 0, "ng-template", null, 16, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_25_strong_5_Template, 2, 1, "strong", 85)(6, AdminDashboardComponent_div_3_ng_container_25_ng_template_6_Template, 2, 0, "ng-template", null, 22, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-card", 70)(9, "span");
+    i0.ɵɵelementStart(8, "mat-card", 84)(9, "span");
     i0.ɵɵtext(10, "Incasso totale");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_24_strong_11_Template, 2, 1, "strong", 71)(12, AdminDashboardComponent_div_3_ng_container_24_ng_template_12_Template, 2, 0, "ng-template", null, 17, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_25_strong_11_Template, 2, 1, "strong", 85)(12, AdminDashboardComponent_div_3_ng_container_25_ng_template_12_Template, 2, 0, "ng-template", null, 23, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(14, "mat-card", 70)(15, "span");
+    i0.ɵɵelementStart(14, "mat-card", 84)(15, "span");
     i0.ɵɵtext(16, "Sconti applicati");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_container_24_strong_17_Template, 2, 1, "strong", 71)(18, AdminDashboardComponent_div_3_ng_container_24_ng_template_18_Template, 2, 0, "ng-template", null, 18, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_container_25_strong_17_Template, 2, 1, "strong", 85)(18, AdminDashboardComponent_div_3_ng_container_25_ng_template_18_Template, 2, 0, "ng-template", null, 24, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(20, "mat-card", 70)(21, "span");
+    i0.ɵɵelementStart(20, "mat-card", 84)(21, "span");
     i0.ɵɵtext(22, "Totale quota strutture");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_24_strong_23_Template, 2, 1, "strong", 71)(24, AdminDashboardComponent_div_3_ng_container_24_ng_template_24_Template, 2, 0, "ng-template", null, 19, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_25_strong_23_Template, 2, 1, "strong", 85)(24, AdminDashboardComponent_div_3_ng_container_25_ng_template_24_Template, 2, 0, "ng-template", null, 25, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(26, "mat-card", 72)(27, "div", 73)(28, "div")(29, "h2");
+    i0.ɵɵelementStart(26, "mat-card", 86)(27, "div", 87)(28, "div")(29, "h2");
     i0.ɵɵtext(30, "Pagamenti");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(31, "p", 74);
+    i0.ɵɵelementStart(31, "p", 88);
     i0.ɵɵtext(32, "Storico acquisti con eventuale codice sconto e quota struttura.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(33, "div", 97)(34, "mat-form-field", 168)(35, "mat-label");
+    i0.ɵɵelementStart(33, "div", 111)(34, "mat-form-field", 190)(35, "mat-label");
     i0.ɵɵtext(36, "Filtra per struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(37, "mat-select", 169);
-    i0.ɵɵlistener("selectionChange", function AdminDashboardComponent_div_3_ng_container_24_Template_mat_select_selectionChange_37_listener($event) { i0.ɵɵrestoreView(_r35); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onPaymentsStructureFilterChange($event.value)); });
-    i0.ɵɵelementStart(38, "mat-option", 170);
+    i0.ɵɵelementStart(37, "mat-select", 191);
+    i0.ɵɵlistener("selectionChange", function AdminDashboardComponent_div_3_ng_container_25_Template_mat_select_selectionChange_37_listener($event) { i0.ɵɵrestoreView(_r41); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onPaymentsStructureFilterChange($event.value)); });
+    i0.ɵɵelementStart(38, "mat-option", 192);
     i0.ɵɵtext(39, "Tutte le strutture");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(40, AdminDashboardComponent_div_3_ng_container_24_mat_option_40_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵtemplate(40, AdminDashboardComponent_div_3_ng_container_25_mat_option_40_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd()()()();
-    i0.ɵɵelementStart(41, "div", 80)(42, "table", 171)(43, "thead")(44, "tr")(45, "th");
+    i0.ɵɵelementStart(41, "div", 94)(42, "table", 193)(43, "thead")(44, "tr")(45, "th");
     i0.ɵɵtext(46, "Data");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(47, "th");
@@ -1579,23 +1879,23 @@ function AdminDashboardComponent_div_3_ng_container_24_Template(rf, ctx) { if (r
     i0.ɵɵtext(68, "Quota struttura");
     i0.ɵɵelementEnd()()();
     i0.ɵɵelementStart(69, "tbody");
-    i0.ɵɵtemplate(70, AdminDashboardComponent_div_3_ng_container_24_tr_70_Template, 3, 0, "tr", 62)(71, AdminDashboardComponent_div_3_ng_container_24_tr_71_Template, 3, 0, "tr", 62)(72, AdminDashboardComponent_div_3_ng_container_24_ng_container_72_Template, 2, 2, "ng-container", 62);
+    i0.ɵɵtemplate(70, AdminDashboardComponent_div_3_ng_container_25_tr_70_Template, 3, 0, "tr", 76)(71, AdminDashboardComponent_div_3_ng_container_25_tr_71_Template, 3, 0, "tr", 76)(72, AdminDashboardComponent_div_3_ng_container_25_ng_container_72_Template, 2, 2, "ng-container", 76);
     i0.ɵɵelementEnd()()()();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
-    const adminPaymentsLoadingStat_r38 = i0.ɵɵreference(7);
-    const adminCollectedLoadingStat_r39 = i0.ɵɵreference(13);
-    const adminDiscountLoadingStat_r40 = i0.ɵɵreference(19);
-    const adminEarningsLoadingStat_r41 = i0.ɵɵreference(25);
+    const adminPaymentsLoadingStat_r44 = i0.ɵɵreference(7);
+    const adminCollectedLoadingStat_r45 = i0.ɵɵreference(13);
+    const adminDiscountLoadingStat_r46 = i0.ɵɵreference(19);
+    const adminEarningsLoadingStat_r47 = i0.ɵɵreference(25);
     const ctx_r1 = i0.ɵɵnextContext(2);
     i0.ɵɵadvance(5);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminPaymentsLoadingStat_r38);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminPaymentsLoadingStat_r44);
     i0.ɵɵadvance(6);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminCollectedLoadingStat_r39);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminCollectedLoadingStat_r45);
     i0.ɵɵadvance(6);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminDiscountLoadingStat_r40);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminDiscountLoadingStat_r46);
     i0.ɵɵadvance(6);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminEarningsLoadingStat_r41);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments)("ngIfElse", adminEarningsLoadingStat_r47);
     i0.ɵɵadvance(14);
     i0.ɵɵproperty("value", ctx_r1.selectedPaymentsStructureId);
     i0.ɵɵadvance(3);
@@ -1607,7 +1907,169 @@ function AdminDashboardComponent_div_3_ng_container_24_Template(rf, ctx) { if (r
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayments);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_strong_5_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_26_strong_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "strong");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate(ctx_r1.payPalStatusLabel);
+} }
+function AdminDashboardComponent_div_3_ng_container_26_ng_template_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_container_26_strong_11_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "strong");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", (ctx_r1.payPalSettings == null ? null : ctx_r1.payPalSettings.mode) === "live" ? "Live" : "Sandbox", " ");
+} }
+function AdminDashboardComponent_div_3_ng_container_26_ng_template_12_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_container_26_div_25_span_3_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "span");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1("Ultima verifica: ", ctx_r1.formatDateTime(ctx_r1.payPalSettings.lastVerifiedAt), "");
+} }
+function AdminDashboardComponent_div_3_ng_container_26_div_25_span_4_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "span");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate(ctx_r1.payPalSettings.lastVerificationError);
+} }
+function AdminDashboardComponent_div_3_ng_container_26_div_25_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 212)(1, "strong");
+    i0.ɵɵtext(2);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(3, AdminDashboardComponent_div_3_ng_container_26_div_25_span_3_Template, 2, 1, "span", 76)(4, AdminDashboardComponent_div_3_ng_container_26_div_25_span_4_Template, 2, 1, "span", 76);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(ctx_r1.payPalStatusLabel);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.payPalSettings.lastVerifiedAt);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.payPalSettings.lastVerificationError);
+} }
+function AdminDashboardComponent_div_3_ng_container_26_mat_error_55_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-error");
+    i0.ɵɵtext(1, " Email PayPal non valida ");
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_container_26_Template(rf, ctx) { if (rf & 1) {
+    const _r48 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementContainerStart(0);
+    i0.ɵɵelementStart(1, "div", 83)(2, "mat-card", 84)(3, "span");
+    i0.ɵɵtext(4, "Stato connessione");
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_26_strong_5_Template, 2, 1, "strong", 85)(6, AdminDashboardComponent_div_3_ng_container_26_ng_template_6_Template, 2, 0, "ng-template", null, 26, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(8, "mat-card", 84)(9, "span");
+    i0.ɵɵtext(10, "Ambiente");
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_26_strong_11_Template, 2, 1, "strong", 85)(12, AdminDashboardComponent_div_3_ng_container_26_ng_template_12_Template, 2, 0, "ng-template", null, 27, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(14, "mat-card", 86)(15, "div", 87)(16, "div")(17, "h2");
+    i0.ɵɵtext(18, "Configurazione PayPal");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(19, "p", 88);
+    i0.ɵɵtext(20, "Client ID, secret, ambiente e dati merchant usati dal checkout reale lato utente.");
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(21, "div", 111)(22, "button", 179);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_26_Template_button_click_22_listener() { i0.ɵɵrestoreView(_r48); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.testPayPalSettings()); });
+    i0.ɵɵtext(23);
+    i0.ɵɵelementEnd()()();
+    i0.ɵɵelementStart(24, "form", 196);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_container_26_Template_form_ngSubmit_24_listener() { i0.ɵɵrestoreView(_r48); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.savePayPalSettings()); });
+    i0.ɵɵtemplate(25, AdminDashboardComponent_div_3_ng_container_26_div_25_Template, 5, 3, "div", 197);
+    i0.ɵɵelementStart(26, "div", 198)(27, "mat-form-field", 60)(28, "mat-label");
+    i0.ɵɵtext(29, "Ambiente PayPal");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(30, "mat-select", 199)(31, "mat-option", 200);
+    i0.ɵɵtext(32, "Sandbox");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(33, "mat-option", 201);
+    i0.ɵɵtext(34, "Live");
+    i0.ɵɵelementEnd()()();
+    i0.ɵɵelementStart(35, "mat-form-field", 60)(36, "mat-label");
+    i0.ɵɵtext(37, "Brand name");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(38, "input", 202);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(39, "mat-form-field", 203)(40, "mat-label");
+    i0.ɵɵtext(41, "Client ID");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(42, "input", 204);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(43, "mat-form-field", 203)(44, "mat-label");
+    i0.ɵɵtext(45, "Client secret");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(46, "input", 205);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(47, "mat-form-field", 60)(48, "mat-label");
+    i0.ɵɵtext(49, "Merchant ID");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(50, "input", 206);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(51, "mat-form-field", 60)(52, "mat-label");
+    i0.ɵɵtext(53, "Merchant email");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(54, "input", 207);
+    i0.ɵɵtemplate(55, AdminDashboardComponent_div_3_ng_container_26_mat_error_55_Template, 2, 0, "mat-error", 76);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(56, "mat-form-field", 60)(57, "mat-label");
+    i0.ɵɵtext(58, "Webhook ID");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(59, "input", 208);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(60, "mat-slide-toggle", 209);
+    i0.ɵɵtext(61, "Attiva PayPal per tutti i checkout utente");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(62, "div", 210)(63, "button", 211);
+    i0.ɵɵtext(64);
+    i0.ɵɵelementEnd()()()();
+    i0.ɵɵelementContainerEnd();
+} if (rf & 2) {
+    const payPalStatusLoading_r49 = i0.ɵɵreference(7);
+    const payPalModeLoading_r50 = i0.ɵɵreference(13);
+    const ctx_r1 = i0.ɵɵnextContext(2);
+    i0.ɵɵadvance(5);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayPalSettings)("ngIfElse", payPalStatusLoading_r49);
+    i0.ɵɵadvance(6);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingPayPalSettings)("ngIfElse", payPalModeLoading_r50);
+    i0.ɵɵadvance(11);
+    i0.ɵɵproperty("disabled", ctx_r1.testingPayPalSettings || ctx_r1.loadingPayPalSettings);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.testingPayPalSettings ? "Verifico..." : "Verifica connessione", " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("formGroup", ctx_r1.payPalForm);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.payPalSettings);
+    i0.ɵɵadvance(30);
+    i0.ɵɵproperty("ngIf", ctx_r1.payPalForm.controls.merchantEmail.invalid && ctx_r1.payPalForm.controls.merchantEmail.touched);
+    i0.ɵɵadvance(8);
+    i0.ɵɵproperty("disabled", !ctx_r1.canSavePayPalSettings);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.savingPayPalSettings ? "Salvo..." : "Salva configurazione", " ");
+} }
+function AdminDashboardComponent_div_3_ng_container_27_strong_5_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "strong");
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
@@ -1616,12 +2078,12 @@ function AdminDashboardComponent_div_3_ng_container_25_strong_5_Template(rf, ctx
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate(ctx_r1.catalogCities.length);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_ng_template_6_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+function AdminDashboardComponent_div_3_ng_container_27_ng_template_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_strong_11_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_27_strong_11_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "strong");
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
@@ -1630,32 +2092,32 @@ function AdminDashboardComponent_div_3_ng_container_25_strong_11_Template(rf, ct
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate(ctx_r1.catalogPois.length);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_ng_template_12_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 77);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+function AdminDashboardComponent_div_3_ng_container_27_ng_template_12_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 91);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_26_tr_30_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 182);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+function AdminDashboardComponent_div_3_ng_container_27_div_26_tr_30_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 221);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_26_tr_31_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 183);
+function AdminDashboardComponent_div_3_ng_container_27_div_26_tr_31_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 222);
     i0.ɵɵtext(2, "Nessuna citta disponibile.");
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_tr_1_small_4_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_tr_1_small_4_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "small");
     i0.ɵɵtext(1, "Predefinita");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_tr_1_Template(rf, ctx) { if (rf & 1) {
-    const _r44 = i0.ɵɵgetCurrentView();
+function AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_tr_1_Template(rf, ctx) { if (rf & 1) {
+    const _r53 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementStart(0, "tr")(1, "td")(2, "strong");
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_tr_1_small_4_Template, 2, 0, "small", 62);
+    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_tr_1_small_4_Template, 2, 0, "small", 76);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(5, "td");
     i0.ɵɵtext(6);
@@ -1663,59 +2125,59 @@ function AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_tr
     i0.ɵɵelementStart(7, "td");
     i0.ɵɵtext(8);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(9, "td")(10, "div", 132)(11, "button", 184);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_tr_1_Template_button_click_11_listener() { const city_r45 = i0.ɵɵrestoreView(_r44).$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.editCatalogCity(city_r45)); });
+    i0.ɵɵelementStart(9, "td")(10, "div", 178)(11, "button", 223);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_tr_1_Template_button_click_11_listener() { const city_r54 = i0.ɵɵrestoreView(_r53).$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.editCatalogCity(city_r54)); });
     i0.ɵɵtext(12, "Modifica");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(13, "button", 167);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_tr_1_Template_button_click_13_listener() { const city_r45 = i0.ɵɵrestoreView(_r44).$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.deleteCatalogCity(city_r45)); });
+    i0.ɵɵelementStart(13, "button", 180);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_tr_1_Template_button_click_13_listener() { const city_r54 = i0.ɵɵrestoreView(_r53).$implicit; const ctx_r1 = i0.ɵɵnextContext(5); return i0.ɵɵresetView(ctx_r1.deleteCatalogCity(city_r54)); });
     i0.ɵɵtext(14);
     i0.ɵɵelementEnd()()()();
 } if (rf & 2) {
-    const city_r45 = ctx.$implicit;
+    const city_r54 = ctx.$implicit;
     const ctx_r1 = i0.ɵɵnextContext(5);
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(city_r45.name);
+    i0.ɵɵtextInterpolate(city_r54.name);
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", city_r45.isDefault);
+    i0.ɵɵproperty("ngIf", city_r54.isDefault);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(city_r45.region);
+    i0.ɵɵtextInterpolate(city_r54.region);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(city_r45.poiCount);
+    i0.ɵɵtextInterpolate(city_r54.poiCount);
     i0.ɵɵadvance(5);
-    i0.ɵɵproperty("disabled", ctx_r1.deletingCatalogCityId === city_r45.id);
+    i0.ɵɵproperty("disabled", ctx_r1.deletingCatalogCityId === city_r54.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", ctx_r1.deletingCatalogCityId === city_r45.id ? "Elimino..." : "Elimina", " ");
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.deletingCatalogCityId === city_r54.id ? "Elimino..." : "Elimina", " ");
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_tr_1_Template, 15, 6, "tr", 85);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_tr_1_Template, 15, 6, "tr", 99);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", ctx_r1.catalogCities);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_26_Template(rf, ctx) { if (rf & 1) {
-    const _r43 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 177)(1, "section", 102)(2, "div", 178)(3, "h3");
+function AdminDashboardComponent_div_3_ng_container_27_div_26_Template(rf, ctx) { if (rf & 1) {
+    const _r52 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 216)(1, "section", 116)(2, "div", 217)(3, "h3");
     i0.ɵɵtext(4, "Nuova citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "button", 98);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_div_26_Template_button_click_5_listener() { i0.ɵɵrestoreView(_r43); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.toggleCatalogCityCreateSection()); });
-    i0.ɵɵelementStart(6, "span", 99);
+    i0.ɵɵelementStart(5, "button", 112);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_div_26_Template_button_click_5_listener() { i0.ɵɵrestoreView(_r52); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.toggleCatalogCityCreateSection()); });
+    i0.ɵɵelementStart(6, "span", 113);
     i0.ɵɵtext(7, "+");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(8, "span");
     i0.ɵɵtext(9, "Nuova citta");
     i0.ɵɵelementEnd()()()();
-    i0.ɵɵelementStart(10, "section", 102)(11, "div", 179)(12, "div")(13, "h3");
+    i0.ɵɵelementStart(10, "section", 116)(11, "div", 218)(12, "div")(13, "h3");
     i0.ɵɵtext(14, "Lista citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(15, "p", 74);
+    i0.ɵɵelementStart(15, "p", 88);
     i0.ɵɵtext(16, "Modifica da modale e gestisci i luoghi dalla tab dedicata.");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(17, "div", 180)(18, "table", 181)(19, "thead")(20, "tr")(21, "th");
+    i0.ɵɵelementStart(17, "div", 219)(18, "table", 220)(19, "thead")(20, "tr")(21, "th");
     i0.ɵɵtext(22, "Citta");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(23, "th");
@@ -1728,7 +2190,7 @@ function AdminDashboardComponent_div_3_ng_container_25_div_26_Template(rf, ctx) 
     i0.ɵɵtext(28, "Azioni");
     i0.ɵɵelementEnd()()();
     i0.ɵɵelementStart(29, "tbody");
-    i0.ɵɵtemplate(30, AdminDashboardComponent_div_3_ng_container_25_div_26_tr_30_Template, 3, 0, "tr", 62)(31, AdminDashboardComponent_div_3_ng_container_25_div_26_tr_31_Template, 3, 0, "tr", 62)(32, AdminDashboardComponent_div_3_ng_container_25_div_26_ng_container_32_Template, 2, 1, "ng-container", 62);
+    i0.ɵɵtemplate(30, AdminDashboardComponent_div_3_ng_container_27_div_26_tr_30_Template, 3, 0, "tr", 76)(31, AdminDashboardComponent_div_3_ng_container_27_div_26_tr_31_Template, 3, 0, "tr", 76)(32, AdminDashboardComponent_div_3_ng_container_27_div_26_ng_container_32_Template, 2, 1, "ng-container", 76);
     i0.ɵɵelementEnd()()()()();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
@@ -1739,43 +2201,43 @@ function AdminDashboardComponent_div_3_ng_container_25_div_26_Template(rf, ctx) 
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", !ctx_r1.loadingCatalogCities);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_mat_option_21_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_container_27_div_27_mat_option_21_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const city_r47 = ctx.$implicit;
-    i0.ɵɵproperty("value", city_r47.id);
+    const city_r56 = ctx.$implicit;
+    i0.ɵɵproperty("value", city_r56.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(city_r47.name);
+    i0.ɵɵtextInterpolate(city_r56.name);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_p_22_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+function AdminDashboardComponent_div_3_ng_container_27_div_27_p_22_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, "Crea una citta per iniziare a gestire i POI.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_div_23_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 116);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+function AdminDashboardComponent_div_3_ng_container_27_div_27_div_23_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 130);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_p_24_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+function AdminDashboardComponent_div_3_ng_container_27_div_27_p_24_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Seleziona una citta per vedere la lista dei punti di interesse. ");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_tr_17_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 82);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_tr_17_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 96);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_tr_18_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 84);
+function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_tr_18_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 98);
     i0.ɵɵtext(2, "Nessun luogo nella citta selezionata.");
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_container_19_tr_1_Template(rf, ctx) { if (rf & 1) {
-    const _r48 = i0.ɵɵgetCurrentView();
+function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_ng_container_19_tr_1_Template(rf, ctx) { if (rf & 1) {
+    const _r57 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementStart(0, "tr")(1, "td")(2, "strong");
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd()();
@@ -1788,49 +2250,49 @@ function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_containe
     i0.ɵɵelementStart(8, "td");
     i0.ɵɵtext(9);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "td")(11, "button", 187);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_container_19_tr_1_Template_button_click_11_listener() { const poi_r49 = i0.ɵɵrestoreView(_r48).$implicit; const ctx_r1 = i0.ɵɵnextContext(6); return i0.ɵɵresetView(ctx_r1.openCatalogPoiAudioPlayer(poi_r49)); });
+    i0.ɵɵelementStart(10, "td")(11, "button", 226);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_ng_container_19_tr_1_Template_button_click_11_listener() { const poi_r58 = i0.ɵɵrestoreView(_r57).$implicit; const ctx_r1 = i0.ɵɵnextContext(6); return i0.ɵɵresetView(ctx_r1.openCatalogPoiAudioPlayer(poi_r58)); });
     i0.ɵɵtext(12);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(13, "td")(14, "div", 132)(15, "button", 184);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_container_19_tr_1_Template_button_click_15_listener() { const poi_r49 = i0.ɵɵrestoreView(_r48).$implicit; const ctx_r1 = i0.ɵɵnextContext(6); return i0.ɵɵresetView(ctx_r1.editCatalogPoi(poi_r49)); });
+    i0.ɵɵelementStart(13, "td")(14, "div", 178)(15, "button", 223);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_ng_container_19_tr_1_Template_button_click_15_listener() { const poi_r58 = i0.ɵɵrestoreView(_r57).$implicit; const ctx_r1 = i0.ɵɵnextContext(6); return i0.ɵɵresetView(ctx_r1.editCatalogPoi(poi_r58)); });
     i0.ɵɵtext(16, "Modifica");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(17, "button", 167);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_container_19_tr_1_Template_button_click_17_listener() { const poi_r49 = i0.ɵɵrestoreView(_r48).$implicit; const ctx_r1 = i0.ɵɵnextContext(6); return i0.ɵɵresetView(ctx_r1.deleteCatalogPoi(poi_r49)); });
+    i0.ɵɵelementStart(17, "button", 180);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_ng_container_19_tr_1_Template_button_click_17_listener() { const poi_r58 = i0.ɵɵrestoreView(_r57).$implicit; const ctx_r1 = i0.ɵɵnextContext(6); return i0.ɵɵresetView(ctx_r1.deleteCatalogPoi(poi_r58)); });
     i0.ɵɵtext(18);
     i0.ɵɵelementEnd()()()();
 } if (rf & 2) {
-    const poi_r49 = ctx.$implicit;
+    const poi_r58 = ctx.$implicit;
     const ctx_r1 = i0.ɵɵnextContext(6);
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(poi_r49.name);
+    i0.ɵɵtextInterpolate(poi_r58.name);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(poi_r49.category);
+    i0.ɵɵtextInterpolate(poi_r58.category);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(poi_r49.priceSingle));
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(poi_r58.priceSingle));
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatCatalogPoiDuration(poi_r49));
+    i0.ɵɵtextInterpolate(ctx_r1.formatCatalogPoiDuration(poi_r58));
     i0.ɵɵadvance(2);
-    i0.ɵɵproperty("disabled", !poi_r49.audioUrl);
+    i0.ɵɵproperty("disabled", !poi_r58.audioUrl);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", poi_r49.audioUrl ? ctx_r1.audioFileNameFromUrl(poi_r49.audioUrl) : "Nessun audio", " ");
+    i0.ɵɵtextInterpolate1(" ", poi_r58.audioUrl ? ctx_r1.audioFileNameFromUrl(poi_r58.audioUrl) : "Nessun audio", " ");
     i0.ɵɵadvance(5);
-    i0.ɵɵproperty("disabled", ctx_r1.deletingCatalogPoiId === poi_r49.id);
+    i0.ɵɵproperty("disabled", ctx_r1.deletingCatalogPoiId === poi_r58.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", ctx_r1.deletingCatalogPoiId === poi_r49.id ? "Elimino..." : "Elimina", " ");
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.deletingCatalogPoiId === poi_r58.id ? "Elimino..." : "Elimina", " ");
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_container_19_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_ng_container_19_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_container_19_tr_1_Template, 19, 8, "tr", 92);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_ng_container_19_tr_1_Template, 19, 8, "tr", 106);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(5);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", ctx_r1.catalogPois)("ngForTrackBy", ctx_r1.trackByCatalogPoiId);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 80)(1, "table", 186)(2, "thead")(3, "tr")(4, "th");
+function AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 94)(1, "table", 225)(2, "thead")(3, "tr")(4, "th");
     i0.ɵɵtext(5, "Luogo");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(6, "th");
@@ -1849,7 +2311,7 @@ function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_Template(rf
     i0.ɵɵtext(15, "Azioni");
     i0.ɵɵelementEnd()()();
     i0.ɵɵelementStart(16, "tbody");
-    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_tr_17_Template, 3, 0, "tr", 62)(18, AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_tr_18_Template, 3, 0, "tr", 62)(19, AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_ng_container_19_Template, 2, 2, "ng-container", 62);
+    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_tr_17_Template, 3, 0, "tr", 76)(18, AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_tr_18_Template, 3, 0, "tr", 76)(19, AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_ng_container_19_Template, 2, 2, "ng-container", 76);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
@@ -1860,33 +2322,33 @@ function AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_Template(rf
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", !ctx_r1.loadingCatalogPois);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_div_27_Template(rf, ctx) { if (rf & 1) {
-    const _r46 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 177)(1, "section", 102)(2, "div", 178)(3, "h3");
+function AdminDashboardComponent_div_3_ng_container_27_div_27_Template(rf, ctx) { if (rf & 1) {
+    const _r55 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 216)(1, "section", 116)(2, "div", 217)(3, "h3");
     i0.ɵɵtext(4, "Nuovo luogo di interesse");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "button", 98);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_div_27_Template_button_click_5_listener() { i0.ɵɵrestoreView(_r46); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.toggleCatalogPoiCreateSection()); });
-    i0.ɵɵelementStart(6, "span", 99);
+    i0.ɵɵelementStart(5, "button", 112);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_div_27_Template_button_click_5_listener() { i0.ɵɵrestoreView(_r55); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.toggleCatalogPoiCreateSection()); });
+    i0.ɵɵelementStart(6, "span", 113);
     i0.ɵɵtext(7, "+");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(8, "span");
     i0.ɵɵtext(9, "Nuovo luogo interesse");
     i0.ɵɵelementEnd()()()();
-    i0.ɵɵelementStart(10, "section", 102)(11, "div", 179)(12, "div")(13, "h3");
+    i0.ɵɵelementStart(10, "section", 116)(11, "div", 218)(12, "div")(13, "h3");
     i0.ɵɵtext(14, "Lista luoghi di interesse");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(15, "p", 74);
+    i0.ɵɵelementStart(15, "p", 88);
     i0.ɵɵtext(16, "Sezione in colonna unica per mantenere la lettura pulita.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(17, "mat-form-field", 185)(18, "mat-label");
+    i0.ɵɵelementStart(17, "mat-form-field", 224)(18, "mat-label");
     i0.ɵɵtext(19, "Filtro citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(20, "mat-select", 169);
-    i0.ɵɵlistener("selectionChange", function AdminDashboardComponent_div_3_ng_container_25_div_27_Template_mat_select_selectionChange_20_listener($event) { i0.ɵɵrestoreView(_r46); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.onCatalogCityFilterChange($event.value)); });
-    i0.ɵɵtemplate(21, AdminDashboardComponent_div_3_ng_container_25_div_27_mat_option_21_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(20, "mat-select", 191);
+    i0.ɵɵlistener("selectionChange", function AdminDashboardComponent_div_3_ng_container_27_div_27_Template_mat_select_selectionChange_20_listener($event) { i0.ɵɵrestoreView(_r55); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.onCatalogCityFilterChange($event.value)); });
+    i0.ɵɵtemplate(21, AdminDashboardComponent_div_3_ng_container_27_div_27_mat_option_21_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd()()();
-    i0.ɵɵtemplate(22, AdminDashboardComponent_div_3_ng_container_25_div_27_p_22_Template, 2, 0, "p", 75)(23, AdminDashboardComponent_div_3_ng_container_25_div_27_div_23_Template, 2, 0, "div", 110)(24, AdminDashboardComponent_div_3_ng_container_25_div_27_p_24_Template, 2, 0, "p", 75)(25, AdminDashboardComponent_div_3_ng_container_25_div_27_div_25_Template, 20, 3, "div", 76);
+    i0.ɵɵtemplate(22, AdminDashboardComponent_div_3_ng_container_27_div_27_p_22_Template, 2, 0, "p", 89)(23, AdminDashboardComponent_div_3_ng_container_27_div_27_div_23_Template, 2, 0, "div", 124)(24, AdminDashboardComponent_div_3_ng_container_27_div_27_p_24_Template, 2, 0, "p", 89)(25, AdminDashboardComponent_div_3_ng_container_27_div_27_div_25_Template, 20, 3, "div", 90);
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
@@ -1903,44 +2365,44 @@ function AdminDashboardComponent_div_3_ng_container_25_div_27_Template(rf, ctx) 
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r1.selectedCatalogCityId);
 } }
-function AdminDashboardComponent_div_3_ng_container_25_Template(rf, ctx) { if (rf & 1) {
-    const _r42 = i0.ɵɵgetCurrentView();
+function AdminDashboardComponent_div_3_ng_container_27_Template(rf, ctx) { if (rf & 1) {
+    const _r51 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "div", 69)(2, "mat-card", 70)(3, "span");
+    i0.ɵɵelementStart(1, "div", 83)(2, "mat-card", 84)(3, "span");
     i0.ɵɵtext(4, "Citta totali");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_25_strong_5_Template, 2, 1, "strong", 71)(6, AdminDashboardComponent_div_3_ng_container_25_ng_template_6_Template, 2, 0, "ng-template", null, 20, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(5, AdminDashboardComponent_div_3_ng_container_27_strong_5_Template, 2, 1, "strong", 85)(6, AdminDashboardComponent_div_3_ng_container_27_ng_template_6_Template, 2, 0, "ng-template", null, 28, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-card", 70)(9, "span");
+    i0.ɵɵelementStart(8, "mat-card", 84)(9, "span");
     i0.ɵɵtext(10, "Luoghi nella citta selezionata");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_25_strong_11_Template, 2, 1, "strong", 71)(12, AdminDashboardComponent_div_3_ng_container_25_ng_template_12_Template, 2, 0, "ng-template", null, 21, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(11, AdminDashboardComponent_div_3_ng_container_27_strong_11_Template, 2, 1, "strong", 85)(12, AdminDashboardComponent_div_3_ng_container_27_ng_template_12_Template, 2, 0, "ng-template", null, 29, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(14, "mat-card", 72)(15, "div", 73)(16, "div")(17, "h2");
+    i0.ɵɵelementStart(14, "mat-card", 86)(15, "div", 87)(16, "div")(17, "h2");
     i0.ɵɵtext(18, "Gestione Citta e Luoghi di interesse");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(19, "p", 74);
+    i0.ɵɵelementStart(19, "p", 88);
     i0.ɵɵtext(20, "Catalogo admin con tab dedicati e modifica tramite modali.");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(21, "div", 174)(22, "button", 175);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_Template_button_click_22_listener() { i0.ɵɵrestoreView(_r42); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.selectCatalogTab("cities")); });
+    i0.ɵɵelementStart(21, "div", 213)(22, "button", 214);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_Template_button_click_22_listener() { i0.ɵɵrestoreView(_r51); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.selectCatalogTab("cities")); });
     i0.ɵɵtext(23, " Citta ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(24, "button", 175);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_25_Template_button_click_24_listener() { i0.ɵɵrestoreView(_r42); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.selectCatalogTab("pois")); });
+    i0.ɵɵelementStart(24, "button", 214);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_27_Template_button_click_24_listener() { i0.ɵɵrestoreView(_r51); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.selectCatalogTab("pois")); });
     i0.ɵɵtext(25, " Luoghi interesse ");
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(26, AdminDashboardComponent_div_3_ng_container_25_div_26_Template, 33, 3, "div", 176)(27, AdminDashboardComponent_div_3_ng_container_25_div_27_Template, 26, 6, "div", 176);
+    i0.ɵɵtemplate(26, AdminDashboardComponent_div_3_ng_container_27_div_26_Template, 33, 3, "div", 215)(27, AdminDashboardComponent_div_3_ng_container_27_div_27_Template, 26, 6, "div", 215);
     i0.ɵɵelementEnd();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
-    const catalogCitiesLoadingStat_r50 = i0.ɵɵreference(7);
-    const catalogPoisLoadingStat_r51 = i0.ɵɵreference(13);
+    const catalogCitiesLoadingStat_r59 = i0.ɵɵreference(7);
+    const catalogPoisLoadingStat_r60 = i0.ɵɵreference(13);
     const ctx_r1 = i0.ɵɵnextContext(2);
     i0.ɵɵadvance(5);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingCatalogCities)("ngIfElse", catalogCitiesLoadingStat_r50);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingCatalogCities)("ngIfElse", catalogCitiesLoadingStat_r59);
     i0.ɵɵadvance(6);
-    i0.ɵɵproperty("ngIf", !ctx_r1.loadingCatalogPois)("ngIfElse", catalogPoisLoadingStat_r51);
+    i0.ɵɵproperty("ngIf", !ctx_r1.loadingCatalogPois)("ngIfElse", catalogPoisLoadingStat_r60);
     i0.ɵɵadvance(11);
     i0.ɵɵclassProp("active", ctx_r1.catalogTab === "cities");
     i0.ɵɵadvance(2);
@@ -1950,85 +2412,113 @@ function AdminDashboardComponent_div_3_ng_container_25_Template(rf, ctx) { if (r
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r1.catalogTab === "pois");
 } }
-function AdminDashboardComponent_div_3_ng_template_26_div_23_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 205);
-    i0.ɵɵelement(1, "img", 206);
+function AdminDashboardComponent_div_3_ng_template_28_section_23_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "section", 247)(1, "h3");
+    i0.ɵɵtext(2);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "mat-form-field", 60)(4, "mat-label");
+    i0.ɵɵtext(5);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(6, "input", 230);
+    i0.ɵɵelementEnd()();
+} if (rf & 2) {
+    const language_r62 = ctx.$implicit;
+    i0.ɵɵproperty("formGroupName", language_r62.code);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(language_r62.label);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate1("Nome citta ", language_r62.label, "");
+} }
+function AdminDashboardComponent_div_3_ng_template_28_div_31_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 248);
+    i0.ɵɵelement(1, "img", 249);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
     i0.ɵɵproperty("src", ctx_r1.catalogCityForm.controls.heroImage.value, i0.ɵɵsanitizeUrl);
 } }
-function AdminDashboardComponent_div_3_ng_template_26_ng_template_24_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 207);
+function AdminDashboardComponent_div_3_ng_template_28_ng_template_32_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
     i0.ɵɵtext(1, "Carica un'immagine per la citta.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_26_button_31_Template(rf, ctx) { if (rf & 1) {
-    const _r54 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 208);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_26_button_31_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r54); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogCityImage()); });
+function AdminDashboardComponent_div_3_ng_template_28_button_39_Template(rf, ctx) { if (rf & 1) {
+    const _r64 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_button_39_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r64); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogCityImage()); });
     i0.ɵɵtext(1, " Rimuovi immagine ");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogCityImage || ctx_r1.savingCatalogCity);
 } }
-function AdminDashboardComponent_div_3_ng_template_26_Template(rf, ctx) { if (rf & 1) {
-    const _r52 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_28_Template(rf, ctx) { if (rf & 1) {
+    const _r61 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1, "Nuova citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "form", 189);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_26_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r52); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogCity()); });
-    i0.ɵɵelementStart(3, "div", 190)(4, "mat-form-field", 47)(5, "mat-label");
+    i0.ɵɵelementStart(2, "form", 228);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_28_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r61); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogCity()); });
+    i0.ɵɵelementStart(3, "div", 229)(4, "mat-form-field", 60)(5, "mat-label");
     i0.ɵɵtext(6, "Nome citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(7, "input", 191);
+    i0.ɵɵelement(7, "input", 230);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-form-field", 47)(9, "mat-label");
+    i0.ɵɵelementStart(8, "mat-form-field", 60)(9, "mat-label");
     i0.ɵɵtext(10, "Regione (fissa)");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(11, "input", 192);
+    i0.ɵɵelement(11, "input", 231);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(12, "mat-form-field", 47)(13, "mat-label");
+    i0.ɵɵelementStart(12, "mat-form-field", 60)(13, "mat-label");
     i0.ɵɵtext(14, "Prezzo bundle (EUR)");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(15, "input", 193);
+    i0.ɵɵelement(15, "input", 232);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(16, "input", 194);
-    i0.ɵɵelementStart(17, "div", 195)(18, "div", 196)(19, "strong");
-    i0.ɵɵtext(20, "Immagine citta");
+    i0.ɵɵelementStart(16, "div", 233)(17, "div", 234)(18, "strong");
+    i0.ɵɵtext(19, "Traduzioni app utente");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(21, "span");
-    i0.ɵɵtext(22);
+    i0.ɵɵelementStart(20, "span");
+    i0.ɵɵtext(21, "Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_template_26_div_23_Template, 2, 1, "div", 197)(24, AdminDashboardComponent_div_3_ng_template_26_ng_template_24_Template, 2, 0, "ng-template", null, 22, i0.ɵɵtemplateRefExtractor);
-    i0.ɵɵelementStart(26, "div", 198)(27, "input", 199, 23);
-    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_26_Template_input_change_27_listener($event) { i0.ɵɵrestoreView(_r52); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogCityImageFileSelected($event)); });
+    i0.ɵɵelementStart(22, "div", 235);
+    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_template_28_section_23_Template, 7, 3, "section", 236);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelement(24, "input", 237);
+    i0.ɵɵelementStart(25, "div", 238)(26, "div", 239)(27, "strong");
+    i0.ɵɵtext(28, "Immagine citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(29, "button", 200);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_26_Template_button_click_29_listener() { i0.ɵɵrestoreView(_r52); const createCatalogCityImageInput_r53 = i0.ɵɵreference(28); return i0.ɵɵresetView(createCatalogCityImageInput_r53.click()); });
+    i0.ɵɵelementStart(29, "span");
     i0.ɵɵtext(30);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_template_28_div_31_Template, 2, 1, "div", 240)(32, AdminDashboardComponent_div_3_ng_template_28_ng_template_32_Template, 2, 0, "ng-template", null, 30, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(34, "div", 241)(35, "input", 242, 31);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_28_Template_input_change_35_listener($event) { i0.ɵɵrestoreView(_r61); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogCityImageFileSelected($event)); });
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_template_26_button_31_Template, 2, 1, "button", 201);
+    i0.ɵɵelementStart(37, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_Template_button_click_37_listener() { i0.ɵɵrestoreView(_r61); const createCatalogCityImageInput_r63 = i0.ɵɵreference(36); return i0.ɵɵresetView(createCatalogCityImageInput_r63.click()); });
+    i0.ɵɵtext(38);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(39, AdminDashboardComponent_div_3_ng_template_28_button_39_Template, 2, 1, "button", 244);
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(32, "div", 202)(33, "button", 203);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_26_Template_button_click_33_listener() { i0.ɵɵrestoreView(_r52); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCreateCatalogCityDialog()); });
-    i0.ɵɵtext(34, " Annulla ");
+    i0.ɵɵelementStart(40, "div", 245)(41, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_Template_button_click_41_listener() { i0.ɵɵrestoreView(_r61); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCreateCatalogCityDialog()); });
+    i0.ɵɵtext(42, " Annulla ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(35, "button", 204);
-    i0.ɵɵtext(36);
+    i0.ɵɵelementStart(43, "button", 211);
+    i0.ɵɵtext(44);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
-    const createCityImageEmpty_r55 = i0.ɵɵreference(25);
+    const createCityImageEmpty_r65 = i0.ɵɵreference(33);
     const ctx_r1 = i0.ɵɵnextContext(2);
     i0.ɵɵadvance(2);
     i0.ɵɵproperty("formGroup", ctx_r1.catalogCityForm);
-    i0.ɵɵadvance(20);
+    i0.ɵɵadvance(21);
+    i0.ɵɵproperty("ngForOf", ctx_r1.contentLanguages);
+    i0.ɵɵadvance(7);
     i0.ɵɵtextInterpolate(ctx_r1.catalogCityForm.controls.heroImage.value ? "Pronta" : "Nessuna immagine");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.catalogCityForm.controls.heroImage.value)("ngIfElse", createCityImageEmpty_r55);
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogCityForm.controls.heroImage.value)("ngIfElse", createCityImageEmpty_r65);
     i0.ɵɵadvance(6);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogCityImage || ctx_r1.savingCatalogCity);
     i0.ɵɵadvance();
@@ -2042,62 +2532,172 @@ function AdminDashboardComponent_div_3_ng_template_26_Template(rf, ctx) { if (rf
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.savingCatalogCity ? "Salvataggio..." : "Crea citta", " ");
 } }
-function AdminDashboardComponent_div_3_ng_template_28_mat_option_8_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_template_30_mat_option_8_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const city_r57 = ctx.$implicit;
-    i0.ɵɵproperty("value", city_r57.id);
+    const city_r67 = ctx.$implicit;
+    i0.ɵɵproperty("value", city_r67.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(city_r57.name);
+    i0.ɵɵtextInterpolate(city_r67.name);
 } }
-function AdminDashboardComponent_div_3_ng_template_28_p_9_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+function AdminDashboardComponent_div_3_ng_template_30_p_9_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, "Crea prima almeno una citta.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_28_div_10_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 116);
-    i0.ɵɵelement(1, "mat-spinner", 78);
+function AdminDashboardComponent_div_3_ng_template_30_div_10_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 130);
+    i0.ɵɵelement(1, "mat-spinner", 92);
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_mat_option_9_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_mat_option_9_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const category_r59 = ctx.$implicit;
-    i0.ɵɵproperty("value", category_r59);
+    const category_r69 = ctx.$implicit;
+    i0.ɵɵproperty("value", category_r69);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", category_r59, " ");
+    i0.ɵɵtextInterpolate1(" ", category_r69, " ");
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_div_40_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 205);
-    i0.ɵɵelement(1, "img", 223);
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_div_26_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 267)(1, "span", 268);
+    i0.ɵɵtext(2, "File:");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "strong");
+    i0.ɵɵtext(4);
+    i0.ɵɵelementEnd()();
+} if (rf & 2) {
+    const language_r71 = i0.ɵɵnextContext().$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate(ctx_r1.audioFileNameFromUrl(ctx_r1.catalogPoiTranslationAudioUrl(language_r71.code, "create")));
+} }
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_ng_template_27_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
+    i0.ɵɵtext(1, "Audio opzionale: puoi caricarlo ora o dopo.");
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_button_34_Template(rf, ctx) { if (rf & 1) {
+    const _r73 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_button_34_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r73); const language_r71 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiTranslationAudio(language_r71.code, "create")); });
+    i0.ɵɵtext(1, " Rimuovi audio ");
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const language_r71 = i0.ɵɵnextContext().$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵproperty("disabled", ctx_r1.isCatalogPoiTranslationAudioUploading(language_r71.code, "create") || ctx_r1.savingCatalogPoi);
+} }
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_audio_35_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelement(0, "audio", 269);
+} if (rf & 2) {
+    const language_r71 = i0.ɵɵnextContext().$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵproperty("src", ctx_r1.catalogPoiTranslationAudioUrl(language_r71.code, "create"), i0.ɵɵsanitizeUrl);
+} }
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_Template(rf, ctx) { if (rf & 1) {
+    const _r70 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "section", 247)(1, "h3");
+    i0.ɵɵtext(2);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "mat-form-field", 60)(4, "mat-label");
+    i0.ɵɵtext(5);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(6, "input", 230);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(7, "mat-form-field", 60)(8, "mat-label");
+    i0.ɵɵtext(9);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(10, "textarea", 258);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(11, "mat-form-field", 60)(12, "mat-label");
+    i0.ɵɵtext(13);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(14, "textarea", 259);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(15, "mat-form-field", 60)(16, "mat-label");
+    i0.ɵɵtext(17);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(18, "input", 266);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(19, "input", 261);
+    i0.ɵɵelementStart(20, "div", 238)(21, "div", 239)(22, "strong");
+    i0.ɵɵtext(23);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(24, "span");
+    i0.ɵɵtext(25);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵtemplate(26, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_div_26_Template, 5, 1, "div", 262)(27, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_ng_template_27_Template, 2, 0, "ng-template", null, 36, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(29, "div", 241)(30, "input", 263, 37);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_Template_input_change_30_listener($event) { const language_r71 = i0.ɵɵrestoreView(_r70).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.onCatalogPoiTranslationAudioFileSelected($event, language_r71.code, "create")); });
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(32, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_Template_button_click_32_listener() { i0.ɵɵrestoreView(_r70); const createPoiTranslationAudioInput_r72 = i0.ɵɵreference(31); return i0.ɵɵresetView(createPoiTranslationAudioInput_r72.click()); });
+    i0.ɵɵtext(33);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(34, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_button_34_Template, 2, 1, "button", 244);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(35, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_audio_35_Template, 1, 1, "audio", 264);
+    i0.ɵɵelementEnd()();
+} if (rf & 2) {
+    const language_r71 = ctx.$implicit;
+    const createPoiTranslationAudioEmpty_r74 = i0.ɵɵreference(28);
+    const ctx_r1 = i0.ɵɵnextContext(4);
+    i0.ɵɵproperty("formGroupName", language_r71.code);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(language_r71.label);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate1("Nome luogo ", language_r71.label, "");
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate1("Descrizione breve ", language_r71.label, "");
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate1("Descrizione lunga ", language_r71.label, "");
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate1("Nome audio ", language_r71.label, "");
+    i0.ɵɵadvance(6);
+    i0.ɵɵtextInterpolate1("Audioguida ", language_r71.label, "");
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(ctx_r1.catalogPoiTranslationAudioUrl(language_r71.code, "create") ? "Pronta" : "Nessun audio");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiTranslationAudioUrl(language_r71.code, "create"))("ngIfElse", createPoiTranslationAudioEmpty_r74);
+    i0.ɵɵadvance(6);
+    i0.ɵɵproperty("disabled", ctx_r1.isCatalogPoiTranslationAudioUploading(language_r71.code, "create") || ctx_r1.savingCatalogPoi);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.isCatalogPoiTranslationAudioUploading(language_r71.code, "create") ? "Upload..." : ctx_r1.catalogPoiTranslationAudioUrl(language_r71.code, "create") ? "Sostituisci audio" : "Carica audio", " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiTranslationAudioUrl(language_r71.code, "create"));
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiTranslationAudioUrl(language_r71.code, "create"));
+} }
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_div_48_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 248);
+    i0.ɵɵelement(1, "img", 270);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance();
     i0.ɵɵproperty("src", ctx_r1.catalogPoiForm.controls.imageUrl.value, i0.ɵɵsanitizeUrl);
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_ng_template_41_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 207);
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_ng_template_49_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
     i0.ɵɵtext(1, "Carica un'immagine per il luogo.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_button_48_Template(rf, ctx) { if (rf & 1) {
-    const _r61 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 208);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_button_48_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r61); const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiImage()); });
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_button_56_Template(rf, ctx) { if (rf & 1) {
+    const _r76 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_button_56_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r76); const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiImage()); });
     i0.ɵɵtext(1, " Rimuovi immagine ");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogImage || ctx_r1.savingCatalogPoi);
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_div_56_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 224)(1, "span", 225);
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_div_64_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 267)(1, "span", 268);
     i0.ɵɵtext(2, "File:");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "strong");
@@ -2108,121 +2708,132 @@ function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_div_56_Tem
     i0.ɵɵadvance(4);
     i0.ɵɵtextInterpolate(ctx_r1.audioFileNameFromUrl(ctx_r1.catalogPoiForm.controls.audioUrl.value));
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_ng_template_57_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 207);
-    i0.ɵɵtext(1, "Carica un file audio per il luogo.");
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_ng_template_65_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
+    i0.ɵɵtext(1, "Audio opzionale: puoi caricarlo ora o dopo.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_button_64_Template(rf, ctx) { if (rf & 1) {
-    const _r63 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 208);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_button_64_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r63); const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiAudio()); });
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_button_72_Template(rf, ctx) { if (rf & 1) {
+    const _r78 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_button_72_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r78); const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiAudio()); });
     i0.ɵɵtext(1, " Rimuovi audio ");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogAudio || ctx_r1.savingCatalogPoi);
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_audio_65_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelement(0, "audio", 226);
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_audio_73_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelement(0, "audio", 269);
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵproperty("src", ctx_r1.catalogPoiForm.controls.audioUrl.value, i0.ɵɵsanitizeUrl);
 } }
-function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template(rf, ctx) { if (rf & 1) {
-    const _r58 = i0.ɵɵgetCurrentView();
+function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_Template(rf, ctx) { if (rf & 1) {
+    const _r68 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "mat-form-field", 47)(2, "mat-label");
+    i0.ɵɵelementStart(1, "mat-form-field", 60)(2, "mat-label");
     i0.ɵɵtext(3, "Nome luogo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(4, "input", 191);
+    i0.ɵɵelement(4, "input", 230);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "mat-form-field", 47)(6, "mat-label");
+    i0.ɵɵelementStart(5, "mat-form-field", 60)(6, "mat-label");
     i0.ɵɵtext(7, "Categoria");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-select", 209);
-    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_mat_option_9_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(8, "mat-select", 252);
+    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_mat_option_9_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(10, "div", 210)(11, "mat-form-field", 47)(12, "mat-label");
+    i0.ɵɵelementStart(10, "div", 253)(11, "mat-form-field", 60)(12, "mat-label");
     i0.ɵɵtext(13, "Latitudine");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(14, "input", 211);
+    i0.ɵɵelement(14, "input", 254);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(15, "mat-form-field", 47)(16, "mat-label");
+    i0.ɵɵelementStart(15, "mat-form-field", 60)(16, "mat-label");
     i0.ɵɵtext(17, "Longitudine");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(18, "input", 212);
+    i0.ɵɵelement(18, "input", 255);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(19, "div", 213)(20, "button", 214);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template_button_click_20_listener() { i0.ɵɵrestoreView(_r58); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.openPoiMapPicker("create")); });
-    i0.ɵɵelementStart(21, "span", 99);
+    i0.ɵɵelementStart(19, "div", 256)(20, "button", 257);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_Template_button_click_20_listener() { i0.ɵɵrestoreView(_r68); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.openPoiMapPicker("create")); });
+    i0.ɵɵelementStart(21, "span", 113);
     i0.ɵɵtext(22, "+");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(23, "span");
     i0.ɵɵtext(24, "Apri mappa e cerca coordinate");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(25, "mat-form-field", 47)(26, "mat-label");
+    i0.ɵɵelementStart(25, "mat-form-field", 60)(26, "mat-label");
     i0.ɵɵtext(27, "Descrizione breve");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(28, "textarea", 215);
+    i0.ɵɵelement(28, "textarea", 258);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(29, "mat-form-field", 47)(30, "mat-label");
+    i0.ɵɵelementStart(29, "mat-form-field", 60)(30, "mat-label");
     i0.ɵɵtext(31, "Descrizione lunga");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(32, "textarea", 216);
+    i0.ɵɵelement(32, "textarea", 259);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(33, "input", 217);
-    i0.ɵɵelementStart(34, "div", 195)(35, "div", 196)(36, "strong");
-    i0.ɵɵtext(37, "Immagine luogo");
+    i0.ɵɵelementStart(33, "div", 233)(34, "div", 234)(35, "strong");
+    i0.ɵɵtext(36, "Traduzioni app utente");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(38, "span");
-    i0.ɵɵtext(39);
+    i0.ɵɵelementStart(37, "span");
+    i0.ɵɵtext(38, "Questi contenuti vengono mostrati nell'app utente in base alla lingua selezionata.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(40, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_div_40_Template, 2, 1, "div", 197)(41, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_ng_template_41_Template, 2, 0, "ng-template", null, 24, i0.ɵɵtemplateRefExtractor);
-    i0.ɵɵelementStart(43, "div", 198)(44, "input", 199, 25);
-    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template_input_change_44_listener($event) { i0.ɵɵrestoreView(_r58); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.onCatalogImageFileSelected($event)); });
+    i0.ɵɵelementStart(39, "div", 235);
+    i0.ɵɵtemplate(40, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_section_40_Template, 36, 14, "section", 236);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelement(41, "input", 260);
+    i0.ɵɵelementStart(42, "div", 238)(43, "div", 239)(44, "strong");
+    i0.ɵɵtext(45, "Immagine luogo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(46, "button", 200);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template_button_click_46_listener() { i0.ɵɵrestoreView(_r58); const createCatalogPoiImageInput_r60 = i0.ɵɵreference(45); return i0.ɵɵresetView(createCatalogPoiImageInput_r60.click()); });
+    i0.ɵɵelementStart(46, "span");
     i0.ɵɵtext(47);
-    i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(48, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_button_48_Template, 2, 1, "button", 201);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelement(49, "input", 218);
-    i0.ɵɵelementStart(50, "div", 195)(51, "div", 196)(52, "strong");
-    i0.ɵɵtext(53, "Audioguida");
+    i0.ɵɵtemplate(48, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_div_48_Template, 2, 1, "div", 240)(49, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_ng_template_49_Template, 2, 0, "ng-template", null, 32, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(51, "div", 241)(52, "input", 242, 33);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_Template_input_change_52_listener($event) { i0.ɵɵrestoreView(_r68); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.onCatalogImageFileSelected($event)); });
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(54, "span");
+    i0.ɵɵelementStart(54, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_Template_button_click_54_listener() { i0.ɵɵrestoreView(_r68); const createCatalogPoiImageInput_r75 = i0.ɵɵreference(53); return i0.ɵɵresetView(createCatalogPoiImageInput_r75.click()); });
     i0.ɵɵtext(55);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(56, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_button_56_Template, 2, 1, "button", 244);
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(56, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_div_56_Template, 5, 1, "div", 219)(57, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_ng_template_57_Template, 2, 0, "ng-template", null, 26, i0.ɵɵtemplateRefExtractor);
-    i0.ɵɵelementStart(59, "div", 198)(60, "input", 220, 27);
-    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template_input_change_60_listener($event) { i0.ɵɵrestoreView(_r58); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.onCatalogAudioFileSelected($event)); });
+    i0.ɵɵelement(57, "input", 261);
+    i0.ɵɵelementStart(58, "div", 238)(59, "div", 239)(60, "strong");
+    i0.ɵɵtext(61, "Audioguida");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(62, "button", 200);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template_button_click_62_listener() { i0.ɵɵrestoreView(_r58); const createCatalogPoiAudioInput_r62 = i0.ɵɵreference(61); return i0.ɵɵresetView(createCatalogPoiAudioInput_r62.click()); });
+    i0.ɵɵelementStart(62, "span");
     i0.ɵɵtext(63);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵtemplate(64, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_div_64_Template, 5, 1, "div", 262)(65, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_ng_template_65_Template, 2, 0, "ng-template", null, 34, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(67, "div", 241)(68, "input", 263, 35);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_Template_input_change_68_listener($event) { i0.ɵɵrestoreView(_r68); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.onCatalogAudioFileSelected($event)); });
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(64, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_button_64_Template, 2, 1, "button", 201);
+    i0.ɵɵelementStart(70, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_ng_container_11_Template_button_click_70_listener() { i0.ɵɵrestoreView(_r68); const createCatalogPoiAudioInput_r77 = i0.ɵɵreference(69); return i0.ɵɵresetView(createCatalogPoiAudioInput_r77.click()); });
+    i0.ɵɵtext(71);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(65, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_audio_65_Template, 1, 1, "audio", 221);
+    i0.ɵɵtemplate(72, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_button_72_Template, 2, 1, "button", 244);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(66, "div", 210)(67, "mat-form-field", 47)(68, "mat-label");
-    i0.ɵɵtext(69, "Prezzo singolo (EUR)");
+    i0.ɵɵtemplate(73, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_audio_73_Template, 1, 1, "audio", 264);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(70, "input", 222);
+    i0.ɵɵelementStart(74, "div", 253)(75, "mat-form-field", 60)(76, "mat-label");
+    i0.ɵɵtext(77, "Prezzo singolo (EUR)");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(78, "input", 265);
     i0.ɵɵelementEnd()();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
-    const createPoiImageEmpty_r64 = i0.ɵɵreference(42);
-    const createPoiAudioEmpty_r65 = i0.ɵɵreference(58);
+    const createPoiImageEmpty_r79 = i0.ɵɵreference(50);
+    const createPoiAudioEmpty_r80 = i0.ɵɵreference(66);
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance(9);
     i0.ɵɵproperty("ngForOf", ctx_r1.poiCategoryOptionsFor(ctx_r1.catalogPoiForm.controls.category.value));
-    i0.ɵɵadvance(30);
+    i0.ɵɵadvance(31);
+    i0.ɵɵproperty("ngForOf", ctx_r1.contentLanguages);
+    i0.ɵɵadvance(7);
     i0.ɵɵtextInterpolate(ctx_r1.catalogPoiForm.controls.imageUrl.value ? "Pronta" : "Nessuna immagine");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiForm.controls.imageUrl.value)("ngIfElse", createPoiImageEmpty_r64);
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiForm.controls.imageUrl.value)("ngIfElse", createPoiImageEmpty_r79);
     i0.ɵɵadvance(6);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogImage || ctx_r1.savingCatalogPoi);
     i0.ɵɵadvance();
@@ -2232,7 +2843,7 @@ function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template(r
     i0.ɵɵadvance(7);
     i0.ɵɵtextInterpolate(ctx_r1.catalogPoiForm.controls.audioUrl.value ? "Pronta" : "Nessun audio");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiForm.controls.audioUrl.value)("ngIfElse", createPoiAudioEmpty_r65);
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiForm.controls.audioUrl.value)("ngIfElse", createPoiAudioEmpty_r80);
     i0.ɵɵadvance(6);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogAudio || ctx_r1.savingCatalogPoi);
     i0.ɵɵadvance();
@@ -2242,27 +2853,27 @@ function AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template(r
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiForm.controls.audioUrl.value);
 } }
-function AdminDashboardComponent_div_3_ng_template_28_Template(rf, ctx) { if (rf & 1) {
-    const _r56 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_30_Template(rf, ctx) { if (rf & 1) {
+    const _r66 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1, "Nuovo luogo di interesse");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "form", 189);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_28_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r56); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogPoi()); });
-    i0.ɵɵelementStart(3, "div", 190)(4, "mat-form-field", 47)(5, "mat-label");
+    i0.ɵɵelementStart(2, "form", 228);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_30_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r66); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogPoi()); });
+    i0.ɵɵelementStart(3, "div", 229)(4, "mat-form-field", 60)(5, "mat-label");
     i0.ɵɵtext(6, "Citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(7, "mat-select", 169);
-    i0.ɵɵlistener("selectionChange", function AdminDashboardComponent_div_3_ng_template_28_Template_mat_select_selectionChange_7_listener($event) { i0.ɵɵrestoreView(_r56); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogCityFilterChange($event.value)); });
-    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_template_28_mat_option_8_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(7, "mat-select", 191);
+    i0.ɵɵlistener("selectionChange", function AdminDashboardComponent_div_3_ng_template_30_Template_mat_select_selectionChange_7_listener($event) { i0.ɵɵrestoreView(_r66); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogCityFilterChange($event.value)); });
+    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_template_30_mat_option_8_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_ng_template_28_p_9_Template, 2, 0, "p", 75)(10, AdminDashboardComponent_div_3_ng_template_28_div_10_Template, 2, 0, "div", 110)(11, AdminDashboardComponent_div_3_ng_template_28_ng_container_11_Template, 71, 14, "ng-container", 62);
+    i0.ɵɵtemplate(9, AdminDashboardComponent_div_3_ng_template_30_p_9_Template, 2, 0, "p", 89)(10, AdminDashboardComponent_div_3_ng_template_30_div_10_Template, 2, 0, "div", 124)(11, AdminDashboardComponent_div_3_ng_template_30_ng_container_11_Template, 79, 15, "ng-container", 76);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(12, "div", 202)(13, "button", 203);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_28_Template_button_click_13_listener() { i0.ɵɵrestoreView(_r56); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCreateCatalogPoiDialog()); });
+    i0.ɵɵelementStart(12, "div", 245)(13, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_Template_button_click_13_listener() { i0.ɵɵrestoreView(_r66); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCreateCatalogPoiDialog()); });
     i0.ɵɵtext(14, " Annulla ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(15, "button", 204);
+    i0.ɵɵelementStart(15, "button", 211);
     i0.ɵɵtext(16);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
@@ -2286,85 +2897,113 @@ function AdminDashboardComponent_div_3_ng_template_28_Template(rf, ctx) { if (rf
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.savingCatalogPoi ? "Salvataggio..." : "Crea luogo di interesse", " ");
 } }
-function AdminDashboardComponent_div_3_ng_template_30_div_23_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 205);
-    i0.ɵɵelement(1, "img", 206);
+function AdminDashboardComponent_div_3_ng_template_32_section_23_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "section", 247)(1, "h3");
+    i0.ɵɵtext(2);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "mat-form-field", 60)(4, "mat-label");
+    i0.ɵɵtext(5);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(6, "input", 230);
+    i0.ɵɵelementEnd()();
+} if (rf & 2) {
+    const language_r82 = ctx.$implicit;
+    i0.ɵɵproperty("formGroupName", language_r82.code);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(language_r82.label);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate1("Nome citta ", language_r82.label, "");
+} }
+function AdminDashboardComponent_div_3_ng_template_32_div_31_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 248);
+    i0.ɵɵelement(1, "img", 249);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
     i0.ɵɵproperty("src", ctx_r1.catalogCityEditForm.controls.heroImage.value, i0.ɵɵsanitizeUrl);
 } }
-function AdminDashboardComponent_div_3_ng_template_30_ng_template_24_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 207);
+function AdminDashboardComponent_div_3_ng_template_32_ng_template_32_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
     i0.ɵɵtext(1, "Carica un'immagine per la citta.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_30_button_31_Template(rf, ctx) { if (rf & 1) {
-    const _r68 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 208);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_button_31_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r68); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogCityEditImage()); });
+function AdminDashboardComponent_div_3_ng_template_32_button_39_Template(rf, ctx) { if (rf & 1) {
+    const _r84 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_button_39_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r84); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogCityEditImage()); });
     i0.ɵɵtext(1, " Rimuovi immagine ");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogCityEditImage || ctx_r1.savingCatalogCity);
 } }
-function AdminDashboardComponent_div_3_ng_template_30_Template(rf, ctx) { if (rf & 1) {
-    const _r66 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_32_Template(rf, ctx) { if (rf & 1) {
+    const _r81 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1, "Modifica citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "form", 189);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_30_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r66); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogCityEdit()); });
-    i0.ɵɵelementStart(3, "div", 190)(4, "mat-form-field", 47)(5, "mat-label");
+    i0.ɵɵelementStart(2, "form", 228);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_32_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r81); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogCityEdit()); });
+    i0.ɵɵelementStart(3, "div", 229)(4, "mat-form-field", 60)(5, "mat-label");
     i0.ɵɵtext(6, "Nome citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(7, "input", 191);
+    i0.ɵɵelement(7, "input", 230);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-form-field", 47)(9, "mat-label");
+    i0.ɵɵelementStart(8, "mat-form-field", 60)(9, "mat-label");
     i0.ɵɵtext(10, "Regione");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(11, "input", 227);
+    i0.ɵɵelement(11, "input", 271);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(12, "mat-form-field", 47)(13, "mat-label");
+    i0.ɵɵelementStart(12, "mat-form-field", 60)(13, "mat-label");
     i0.ɵɵtext(14, "Prezzo bundle (EUR)");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(15, "input", 193);
+    i0.ɵɵelement(15, "input", 232);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(16, "input", 194);
-    i0.ɵɵelementStart(17, "div", 195)(18, "div", 196)(19, "strong");
-    i0.ɵɵtext(20, "Immagine citta");
+    i0.ɵɵelementStart(16, "div", 233)(17, "div", 234)(18, "strong");
+    i0.ɵɵtext(19, "Traduzioni app utente");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(21, "span");
-    i0.ɵɵtext(22);
+    i0.ɵɵelementStart(20, "span");
+    i0.ɵɵtext(21, "Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_template_30_div_23_Template, 2, 1, "div", 197)(24, AdminDashboardComponent_div_3_ng_template_30_ng_template_24_Template, 2, 0, "ng-template", null, 28, i0.ɵɵtemplateRefExtractor);
-    i0.ɵɵelementStart(26, "div", 198)(27, "input", 199, 29);
-    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_30_Template_input_change_27_listener($event) { i0.ɵɵrestoreView(_r66); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogCityEditImageFileSelected($event)); });
+    i0.ɵɵelementStart(22, "div", 235);
+    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_template_32_section_23_Template, 7, 3, "section", 236);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelement(24, "input", 237);
+    i0.ɵɵelementStart(25, "div", 238)(26, "div", 239)(27, "strong");
+    i0.ɵɵtext(28, "Immagine citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(29, "button", 200);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_Template_button_click_29_listener() { i0.ɵɵrestoreView(_r66); const catalogCityEditImageInput_r67 = i0.ɵɵreference(28); return i0.ɵɵresetView(catalogCityEditImageInput_r67.click()); });
+    i0.ɵɵelementStart(29, "span");
     i0.ɵɵtext(30);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_template_32_div_31_Template, 2, 1, "div", 240)(32, AdminDashboardComponent_div_3_ng_template_32_ng_template_32_Template, 2, 0, "ng-template", null, 38, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(34, "div", 241)(35, "input", 242, 39);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_32_Template_input_change_35_listener($event) { i0.ɵɵrestoreView(_r81); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogCityEditImageFileSelected($event)); });
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_template_30_button_31_Template, 2, 1, "button", 201);
+    i0.ɵɵelementStart(37, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_Template_button_click_37_listener() { i0.ɵɵrestoreView(_r81); const catalogCityEditImageInput_r83 = i0.ɵɵreference(36); return i0.ɵɵresetView(catalogCityEditImageInput_r83.click()); });
+    i0.ɵɵtext(38);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(39, AdminDashboardComponent_div_3_ng_template_32_button_39_Template, 2, 1, "button", 244);
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(32, "div", 202)(33, "button", 203);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_30_Template_button_click_33_listener() { i0.ɵɵrestoreView(_r66); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCatalogCityEditDialog()); });
-    i0.ɵɵtext(34, " Annulla ");
+    i0.ɵɵelementStart(40, "div", 245)(41, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_Template_button_click_41_listener() { i0.ɵɵrestoreView(_r81); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCatalogCityEditDialog()); });
+    i0.ɵɵtext(42, " Annulla ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(35, "button", 204);
-    i0.ɵɵtext(36);
+    i0.ɵɵelementStart(43, "button", 211);
+    i0.ɵɵtext(44);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
-    const cityEditImageEmpty_r69 = i0.ɵɵreference(25);
+    const cityEditImageEmpty_r85 = i0.ɵɵreference(33);
     const ctx_r1 = i0.ɵɵnextContext(2);
     i0.ɵɵadvance(2);
     i0.ɵɵproperty("formGroup", ctx_r1.catalogCityEditForm);
-    i0.ɵɵadvance(20);
+    i0.ɵɵadvance(21);
+    i0.ɵɵproperty("ngForOf", ctx_r1.contentLanguages);
+    i0.ɵɵadvance(7);
     i0.ɵɵtextInterpolate(ctx_r1.catalogCityEditForm.controls.heroImage.value ? "Pronta" : "Nessuna immagine");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.catalogCityEditForm.controls.heroImage.value)("ngIfElse", cityEditImageEmpty_r69);
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogCityEditForm.controls.heroImage.value)("ngIfElse", cityEditImageEmpty_r85);
     i0.ɵɵadvance(6);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogCityEditImage || ctx_r1.savingCatalogCity);
     i0.ɵɵadvance();
@@ -2378,52 +3017,162 @@ function AdminDashboardComponent_div_3_ng_template_30_Template(rf, ctx) { if (rf
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.savingCatalogCity ? "Salvataggio..." : "Salva citta", " ");
 } }
-function AdminDashboardComponent_div_3_ng_template_32_mat_option_8_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_template_34_mat_option_8_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const city_r71 = ctx.$implicit;
-    i0.ɵɵproperty("value", city_r71.id);
+    const city_r87 = ctx.$implicit;
+    i0.ɵɵproperty("value", city_r87.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(city_r71.name);
+    i0.ɵɵtextInterpolate(city_r87.name);
 } }
-function AdminDashboardComponent_div_3_ng_template_32_mat_option_17_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_template_34_mat_option_17_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const category_r72 = ctx.$implicit;
-    i0.ɵɵproperty("value", category_r72);
+    const category_r88 = ctx.$implicit;
+    i0.ɵɵproperty("value", category_r88);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", category_r72, " ");
+    i0.ɵɵtextInterpolate1(" ", category_r88, " ");
 } }
-function AdminDashboardComponent_div_3_ng_template_32_div_48_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 205);
-    i0.ɵɵelement(1, "img", 223);
+function AdminDashboardComponent_div_3_ng_template_34_section_48_div_26_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 267)(1, "span", 268);
+    i0.ɵɵtext(2, "File:");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "strong");
+    i0.ɵɵtext(4);
+    i0.ɵɵelementEnd()();
+} if (rf & 2) {
+    const language_r90 = i0.ɵɵnextContext().$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate(ctx_r1.audioFileNameFromUrl(ctx_r1.catalogPoiTranslationAudioUrl(language_r90.code, "edit")));
+} }
+function AdminDashboardComponent_div_3_ng_template_34_section_48_ng_template_27_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
+    i0.ɵɵtext(1, "Audio opzionale: puoi caricarlo ora o dopo.");
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_template_34_section_48_button_34_Template(rf, ctx) { if (rf & 1) {
+    const _r92 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_section_48_button_34_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r92); const language_r90 = i0.ɵɵnextContext().$implicit; const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiTranslationAudio(language_r90.code, "edit")); });
+    i0.ɵɵtext(1, " Rimuovi audio ");
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const language_r90 = i0.ɵɵnextContext().$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵproperty("disabled", ctx_r1.isCatalogPoiTranslationAudioUploading(language_r90.code, "edit") || ctx_r1.savingCatalogPoi);
+} }
+function AdminDashboardComponent_div_3_ng_template_34_section_48_audio_35_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelement(0, "audio", 269);
+} if (rf & 2) {
+    const language_r90 = i0.ɵɵnextContext().$implicit;
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵproperty("src", ctx_r1.catalogPoiTranslationAudioUrl(language_r90.code, "edit"), i0.ɵɵsanitizeUrl);
+} }
+function AdminDashboardComponent_div_3_ng_template_34_section_48_Template(rf, ctx) { if (rf & 1) {
+    const _r89 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "section", 247)(1, "h3");
+    i0.ɵɵtext(2);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "mat-form-field", 60)(4, "mat-label");
+    i0.ɵɵtext(5);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(6, "input", 230);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(7, "mat-form-field", 60)(8, "mat-label");
+    i0.ɵɵtext(9);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(10, "textarea", 258);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(11, "mat-form-field", 60)(12, "mat-label");
+    i0.ɵɵtext(13);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(14, "textarea", 259);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(15, "mat-form-field", 60)(16, "mat-label");
+    i0.ɵɵtext(17);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(18, "input", 266);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(19, "input", 261);
+    i0.ɵɵelementStart(20, "div", 238)(21, "div", 239)(22, "strong");
+    i0.ɵɵtext(23);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(24, "span");
+    i0.ɵɵtext(25);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵtemplate(26, AdminDashboardComponent_div_3_ng_template_34_section_48_div_26_Template, 5, 1, "div", 262)(27, AdminDashboardComponent_div_3_ng_template_34_section_48_ng_template_27_Template, 2, 0, "ng-template", null, 44, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(29, "div", 241)(30, "input", 263, 45);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_34_section_48_Template_input_change_30_listener($event) { const language_r90 = i0.ɵɵrestoreView(_r89).$implicit; const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.onCatalogPoiTranslationAudioFileSelected($event, language_r90.code, "edit")); });
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(32, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_section_48_Template_button_click_32_listener() { i0.ɵɵrestoreView(_r89); const editPoiTranslationAudioInput_r91 = i0.ɵɵreference(31); return i0.ɵɵresetView(editPoiTranslationAudioInput_r91.click()); });
+    i0.ɵɵtext(33);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(34, AdminDashboardComponent_div_3_ng_template_34_section_48_button_34_Template, 2, 1, "button", 244);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(35, AdminDashboardComponent_div_3_ng_template_34_section_48_audio_35_Template, 1, 1, "audio", 264);
+    i0.ɵɵelementEnd()();
+} if (rf & 2) {
+    const language_r90 = ctx.$implicit;
+    const editPoiTranslationAudioEmpty_r93 = i0.ɵɵreference(28);
+    const ctx_r1 = i0.ɵɵnextContext(3);
+    i0.ɵɵproperty("formGroupName", language_r90.code);
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(language_r90.label);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate1("Nome luogo ", language_r90.label, "");
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate1("Descrizione breve ", language_r90.label, "");
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate1("Descrizione lunga ", language_r90.label, "");
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate1("Nome audio ", language_r90.label, "");
+    i0.ɵɵadvance(6);
+    i0.ɵɵtextInterpolate1("Audioguida ", language_r90.label, "");
+    i0.ɵɵadvance(2);
+    i0.ɵɵtextInterpolate(ctx_r1.catalogPoiTranslationAudioUrl(language_r90.code, "edit") ? "Pronta" : "Nessun audio");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiTranslationAudioUrl(language_r90.code, "edit"))("ngIfElse", editPoiTranslationAudioEmpty_r93);
+    i0.ɵɵadvance(6);
+    i0.ɵɵproperty("disabled", ctx_r1.isCatalogPoiTranslationAudioUploading(language_r90.code, "edit") || ctx_r1.savingCatalogPoi);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.isCatalogPoiTranslationAudioUploading(language_r90.code, "edit") ? "Upload..." : ctx_r1.catalogPoiTranslationAudioUrl(language_r90.code, "edit") ? "Sostituisci audio" : "Carica audio", " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiTranslationAudioUrl(language_r90.code, "edit"));
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiTranslationAudioUrl(language_r90.code, "edit"));
+} }
+function AdminDashboardComponent_div_3_ng_template_34_div_56_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 248);
+    i0.ɵɵelement(1, "img", 270);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
     i0.ɵɵproperty("src", ctx_r1.catalogPoiEditForm.controls.imageUrl.value, i0.ɵɵsanitizeUrl);
 } }
-function AdminDashboardComponent_div_3_ng_template_32_ng_template_49_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 207);
+function AdminDashboardComponent_div_3_ng_template_34_ng_template_57_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
     i0.ɵɵtext(1, "Carica un'immagine per il luogo.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_32_button_56_Template(rf, ctx) { if (rf & 1) {
-    const _r74 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 208);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_button_56_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r74); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiEditImage()); });
+function AdminDashboardComponent_div_3_ng_template_34_button_64_Template(rf, ctx) { if (rf & 1) {
+    const _r95 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_button_64_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r95); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiEditImage()); });
     i0.ɵɵtext(1, " Rimuovi immagine ");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogPoiEditImage || ctx_r1.savingCatalogPoi);
 } }
-function AdminDashboardComponent_div_3_ng_template_32_div_64_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 224)(1, "span", 225);
+function AdminDashboardComponent_div_3_ng_template_34_div_72_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 267)(1, "span", 268);
     i0.ɵɵtext(2, "File:");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "strong");
@@ -2434,130 +3183,139 @@ function AdminDashboardComponent_div_3_ng_template_32_div_64_Template(rf, ctx) {
     i0.ɵɵadvance(4);
     i0.ɵɵtextInterpolate(ctx_r1.audioFileNameFromUrl(ctx_r1.catalogPoiEditForm.controls.audioUrl.value));
 } }
-function AdminDashboardComponent_div_3_ng_template_32_ng_template_65_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 207);
-    i0.ɵɵtext(1, "Carica un file audio per il luogo.");
+function AdminDashboardComponent_div_3_ng_template_34_ng_template_73_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 250);
+    i0.ɵɵtext(1, "Audio opzionale: puoi caricarlo ora o dopo.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_32_button_72_Template(rf, ctx) { if (rf & 1) {
-    const _r76 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "button", 208);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_button_72_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r76); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiEditAudio()); });
+function AdminDashboardComponent_div_3_ng_template_34_button_80_Template(rf, ctx) { if (rf & 1) {
+    const _r97 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "button", 251);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_button_80_Template_button_click_0_listener() { i0.ɵɵrestoreView(_r97); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.clearCatalogPoiEditAudio()); });
     i0.ɵɵtext(1, " Rimuovi audio ");
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogPoiEditAudio || ctx_r1.savingCatalogPoi);
 } }
-function AdminDashboardComponent_div_3_ng_template_32_audio_73_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelement(0, "audio", 226);
+function AdminDashboardComponent_div_3_ng_template_34_audio_81_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelement(0, "audio", 269);
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵproperty("src", ctx_r1.catalogPoiEditForm.controls.audioUrl.value, i0.ɵɵsanitizeUrl);
 } }
-function AdminDashboardComponent_div_3_ng_template_32_Template(rf, ctx) { if (rf & 1) {
-    const _r70 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_34_Template(rf, ctx) { if (rf & 1) {
+    const _r86 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1, "Modifica luogo di interesse");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "form", 189);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_32_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r70); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogPoiEdit()); });
-    i0.ɵɵelementStart(3, "div", 190)(4, "mat-form-field", 47)(5, "mat-label");
+    i0.ɵɵelementStart(2, "form", 228);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_34_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r86); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveCatalogPoiEdit()); });
+    i0.ɵɵelementStart(3, "div", 229)(4, "mat-form-field", 60)(5, "mat-label");
     i0.ɵɵtext(6, "Citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(7, "mat-select", 228);
-    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_template_32_mat_option_8_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(7, "mat-select", 272);
+    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_template_34_mat_option_8_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(9, "mat-form-field", 47)(10, "mat-label");
+    i0.ɵɵelementStart(9, "mat-form-field", 60)(10, "mat-label");
     i0.ɵɵtext(11, "Nome luogo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(12, "input", 191);
+    i0.ɵɵelement(12, "input", 230);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(13, "mat-form-field", 47)(14, "mat-label");
+    i0.ɵɵelementStart(13, "mat-form-field", 60)(14, "mat-label");
     i0.ɵɵtext(15, "Categoria");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(16, "mat-select", 209);
-    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_template_32_mat_option_17_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(16, "mat-select", 252);
+    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_template_34_mat_option_17_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(18, "div", 210)(19, "mat-form-field", 47)(20, "mat-label");
+    i0.ɵɵelementStart(18, "div", 253)(19, "mat-form-field", 60)(20, "mat-label");
     i0.ɵɵtext(21, "Latitudine");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(22, "input", 211);
+    i0.ɵɵelement(22, "input", 254);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(23, "mat-form-field", 47)(24, "mat-label");
+    i0.ɵɵelementStart(23, "mat-form-field", 60)(24, "mat-label");
     i0.ɵɵtext(25, "Longitudine");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(26, "input", 212);
+    i0.ɵɵelement(26, "input", 255);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(27, "div", 213)(28, "button", 214);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_Template_button_click_28_listener() { i0.ɵɵrestoreView(_r70); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.openPoiMapPicker("edit")); });
-    i0.ɵɵelementStart(29, "span", 99);
+    i0.ɵɵelementStart(27, "div", 256)(28, "button", 257);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_Template_button_click_28_listener() { i0.ɵɵrestoreView(_r86); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.openPoiMapPicker("edit")); });
+    i0.ɵɵelementStart(29, "span", 113);
     i0.ɵɵtext(30, "+");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(31, "span");
     i0.ɵɵtext(32, "Apri mappa e cerca coordinate");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(33, "mat-form-field", 47)(34, "mat-label");
+    i0.ɵɵelementStart(33, "mat-form-field", 60)(34, "mat-label");
     i0.ɵɵtext(35, "Descrizione breve");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(36, "textarea", 215);
+    i0.ɵɵelement(36, "textarea", 258);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(37, "mat-form-field", 47)(38, "mat-label");
+    i0.ɵɵelementStart(37, "mat-form-field", 60)(38, "mat-label");
     i0.ɵɵtext(39, "Descrizione lunga");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(40, "textarea", 216);
+    i0.ɵɵelement(40, "textarea", 259);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(41, "input", 217);
-    i0.ɵɵelementStart(42, "div", 195)(43, "div", 196)(44, "strong");
-    i0.ɵɵtext(45, "Immagine luogo");
+    i0.ɵɵelementStart(41, "div", 233)(42, "div", 234)(43, "strong");
+    i0.ɵɵtext(44, "Traduzioni app utente");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(46, "span");
-    i0.ɵɵtext(47);
+    i0.ɵɵelementStart(45, "span");
+    i0.ɵɵtext(46, "Questi contenuti vengono mostrati nell'app utente in base alla lingua selezionata.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(48, AdminDashboardComponent_div_3_ng_template_32_div_48_Template, 2, 1, "div", 197)(49, AdminDashboardComponent_div_3_ng_template_32_ng_template_49_Template, 2, 0, "ng-template", null, 30, i0.ɵɵtemplateRefExtractor);
-    i0.ɵɵelementStart(51, "div", 198)(52, "input", 199, 31);
-    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_32_Template_input_change_52_listener($event) { i0.ɵɵrestoreView(_r70); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogPoiEditImageFileSelected($event)); });
+    i0.ɵɵelementStart(47, "div", 235);
+    i0.ɵɵtemplate(48, AdminDashboardComponent_div_3_ng_template_34_section_48_Template, 36, 14, "section", 236);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelement(49, "input", 260);
+    i0.ɵɵelementStart(50, "div", 238)(51, "div", 239)(52, "strong");
+    i0.ɵɵtext(53, "Immagine luogo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(54, "button", 200);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_Template_button_click_54_listener() { i0.ɵɵrestoreView(_r70); const catalogPoiEditImageInput_r73 = i0.ɵɵreference(53); return i0.ɵɵresetView(catalogPoiEditImageInput_r73.click()); });
+    i0.ɵɵelementStart(54, "span");
     i0.ɵɵtext(55);
-    i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(56, AdminDashboardComponent_div_3_ng_template_32_button_56_Template, 2, 1, "button", 201);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelement(57, "input", 218);
-    i0.ɵɵelementStart(58, "div", 195)(59, "div", 196)(60, "strong");
-    i0.ɵɵtext(61, "Audioguida");
+    i0.ɵɵtemplate(56, AdminDashboardComponent_div_3_ng_template_34_div_56_Template, 2, 1, "div", 240)(57, AdminDashboardComponent_div_3_ng_template_34_ng_template_57_Template, 2, 0, "ng-template", null, 40, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(59, "div", 241)(60, "input", 242, 41);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_34_Template_input_change_60_listener($event) { i0.ɵɵrestoreView(_r86); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogPoiEditImageFileSelected($event)); });
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(62, "span");
+    i0.ɵɵelementStart(62, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_Template_button_click_62_listener() { i0.ɵɵrestoreView(_r86); const catalogPoiEditImageInput_r94 = i0.ɵɵreference(61); return i0.ɵɵresetView(catalogPoiEditImageInput_r94.click()); });
     i0.ɵɵtext(63);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtemplate(64, AdminDashboardComponent_div_3_ng_template_34_button_64_Template, 2, 1, "button", 244);
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(64, AdminDashboardComponent_div_3_ng_template_32_div_64_Template, 5, 1, "div", 219)(65, AdminDashboardComponent_div_3_ng_template_32_ng_template_65_Template, 2, 0, "ng-template", null, 32, i0.ɵɵtemplateRefExtractor);
-    i0.ɵɵelementStart(67, "div", 198)(68, "input", 220, 33);
-    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_32_Template_input_change_68_listener($event) { i0.ɵɵrestoreView(_r70); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogPoiEditAudioFileSelected($event)); });
+    i0.ɵɵelement(65, "input", 261);
+    i0.ɵɵelementStart(66, "div", 238)(67, "div", 239)(68, "strong");
+    i0.ɵɵtext(69, "Audioguida");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(70, "button", 200);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_Template_button_click_70_listener() { i0.ɵɵrestoreView(_r70); const catalogPoiEditAudioInput_r75 = i0.ɵɵreference(69); return i0.ɵɵresetView(catalogPoiEditAudioInput_r75.click()); });
+    i0.ɵɵelementStart(70, "span");
     i0.ɵɵtext(71);
+    i0.ɵɵelementEnd()();
+    i0.ɵɵtemplate(72, AdminDashboardComponent_div_3_ng_template_34_div_72_Template, 5, 1, "div", 262)(73, AdminDashboardComponent_div_3_ng_template_34_ng_template_73_Template, 2, 0, "ng-template", null, 42, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵelementStart(75, "div", 241)(76, "input", 263, 43);
+    i0.ɵɵlistener("change", function AdminDashboardComponent_div_3_ng_template_34_Template_input_change_76_listener($event) { i0.ɵɵrestoreView(_r86); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.onCatalogPoiEditAudioFileSelected($event)); });
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(72, AdminDashboardComponent_div_3_ng_template_32_button_72_Template, 2, 1, "button", 201);
+    i0.ɵɵelementStart(78, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_Template_button_click_78_listener() { i0.ɵɵrestoreView(_r86); const catalogPoiEditAudioInput_r96 = i0.ɵɵreference(77); return i0.ɵɵresetView(catalogPoiEditAudioInput_r96.click()); });
+    i0.ɵɵtext(79);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(73, AdminDashboardComponent_div_3_ng_template_32_audio_73_Template, 1, 1, "audio", 221);
+    i0.ɵɵtemplate(80, AdminDashboardComponent_div_3_ng_template_34_button_80_Template, 2, 1, "button", 244);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(74, "div", 210)(75, "mat-form-field", 47)(76, "mat-label");
-    i0.ɵɵtext(77, "Prezzo singolo (EUR)");
+    i0.ɵɵtemplate(81, AdminDashboardComponent_div_3_ng_template_34_audio_81_Template, 1, 1, "audio", 264);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(78, "input", 222);
+    i0.ɵɵelementStart(82, "div", 253)(83, "mat-form-field", 60)(84, "mat-label");
+    i0.ɵɵtext(85, "Prezzo singolo (EUR)");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(86, "input", 265);
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(79, "div", 202)(80, "button", 203);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_32_Template_button_click_80_listener() { i0.ɵɵrestoreView(_r70); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCatalogPoiEditDialog()); });
-    i0.ɵɵtext(81, " Annulla ");
+    i0.ɵɵelementStart(87, "div", 245)(88, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_Template_button_click_88_listener() { i0.ɵɵrestoreView(_r86); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCatalogPoiEditDialog()); });
+    i0.ɵɵtext(89, " Annulla ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(82, "button", 204);
-    i0.ɵɵtext(83);
+    i0.ɵɵelementStart(90, "button", 211);
+    i0.ɵɵtext(91);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
-    const poiEditImageEmpty_r77 = i0.ɵɵreference(50);
-    const poiEditAudioEmpty_r78 = i0.ɵɵreference(66);
+    const poiEditImageEmpty_r98 = i0.ɵɵreference(58);
+    const poiEditAudioEmpty_r99 = i0.ɵɵreference(74);
     const ctx_r1 = i0.ɵɵnextContext(2);
     i0.ɵɵadvance(2);
     i0.ɵɵproperty("formGroup", ctx_r1.catalogPoiEditForm);
@@ -2565,10 +3323,12 @@ function AdminDashboardComponent_div_3_ng_template_32_Template(rf, ctx) { if (rf
     i0.ɵɵproperty("ngForOf", ctx_r1.catalogCities);
     i0.ɵɵadvance(9);
     i0.ɵɵproperty("ngForOf", ctx_r1.poiCategoryOptionsFor(ctx_r1.catalogPoiEditForm.controls.category.value));
-    i0.ɵɵadvance(30);
+    i0.ɵɵadvance(31);
+    i0.ɵɵproperty("ngForOf", ctx_r1.contentLanguages);
+    i0.ɵɵadvance(7);
     i0.ɵɵtextInterpolate(ctx_r1.catalogPoiEditForm.controls.imageUrl.value ? "Pronta" : "Nessuna immagine");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiEditForm.controls.imageUrl.value)("ngIfElse", poiEditImageEmpty_r77);
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiEditForm.controls.imageUrl.value)("ngIfElse", poiEditImageEmpty_r98);
     i0.ɵɵadvance(6);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogPoiEditImage || ctx_r1.savingCatalogPoi);
     i0.ɵɵadvance();
@@ -2578,7 +3338,7 @@ function AdminDashboardComponent_div_3_ng_template_32_Template(rf, ctx) { if (rf
     i0.ɵɵadvance(7);
     i0.ɵɵtextInterpolate(ctx_r1.catalogPoiEditForm.controls.audioUrl.value ? "Pronta" : "Nessun audio");
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiEditForm.controls.audioUrl.value)("ngIfElse", poiEditAudioEmpty_r78);
+    i0.ɵɵproperty("ngIf", ctx_r1.catalogPoiEditForm.controls.audioUrl.value)("ngIfElse", poiEditAudioEmpty_r99);
     i0.ɵɵadvance(6);
     i0.ɵɵproperty("disabled", ctx_r1.uploadingCatalogPoiEditAudio || ctx_r1.savingCatalogPoi);
     i0.ɵɵadvance();
@@ -2594,20 +3354,20 @@ function AdminDashboardComponent_div_3_ng_template_32_Template(rf, ctx) { if (rf
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.savingCatalogPoi ? "Salvataggio..." : "Salva luogo", " ");
 } }
-function AdminDashboardComponent_div_3_ng_template_34_Template(rf, ctx) { if (rf & 1) {
-    const _r79 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_36_Template(rf, ctx) { if (rf & 1) {
+    const _r100 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "div", 229)(3, "p", 74);
+    i0.ɵɵelementStart(2, "div", 273)(3, "p", 88);
     i0.ɵɵtext(4, " File audio: ");
     i0.ɵɵelementStart(5, "strong");
     i0.ɵɵtext(6);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelement(7, "audio", 230);
+    i0.ɵɵelement(7, "audio", 274);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "div", 202)(9, "button", 231);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_34_Template_button_click_9_listener() { i0.ɵɵrestoreView(_r79); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCatalogPoiAudioPlayer()); });
+    i0.ɵɵelementStart(8, "div", 245)(9, "button", 275);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_36_Template_button_click_9_listener() { i0.ɵɵrestoreView(_r100); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCatalogPoiAudioPlayer()); });
     i0.ɵɵtext(10, "Chiudi");
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
@@ -2619,13 +3379,13 @@ function AdminDashboardComponent_div_3_ng_template_34_Template(rf, ctx) { if (rf
     i0.ɵɵadvance();
     i0.ɵɵproperty("src", ctx_r1.audioPlayerUrl, i0.ɵɵsanitizeUrl);
 } }
-function AdminDashboardComponent_div_3_ng_template_36_p_12_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+function AdminDashboardComponent_div_3_ng_template_38_p_12_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Cerca un luogo: le coordinate trovate vengono selezionate subito. Poi rifinisci trascinando il marker rosso sulla mappa. ");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_36_p_13_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 241);
+function AdminDashboardComponent_div_3_ng_template_38_p_13_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 285);
     i0.ɵɵtext(1, " Lat: ");
     i0.ɵɵelementStart(2, "strong");
     i0.ɵɵtext(3);
@@ -2643,9 +3403,9 @@ function AdminDashboardComponent_div_3_ng_template_36_p_13_Template(rf, ctx) { i
     i0.ɵɵadvance(4);
     i0.ɵɵtextInterpolate(i0.ɵɵpipeBind2(8, 5, ctx_r1.mapPickerSelectedLng, "1.4-6"));
 } }
-function AdminDashboardComponent_div_3_ng_template_36_div_14_article_1_Template(rf, ctx) { if (rf & 1) {
-    const _r81 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "article", 244)(1, "strong");
+function AdminDashboardComponent_div_3_ng_template_38_div_14_article_1_Template(rf, ctx) { if (rf & 1) {
+    const _r102 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "article", 288)(1, "strong");
     i0.ɵɵtext(2);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "small");
@@ -2653,31 +3413,31 @@ function AdminDashboardComponent_div_3_ng_template_36_div_14_article_1_Template(
     i0.ɵɵpipe(5, "number");
     i0.ɵɵpipe(6, "number");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(7, "div", 132)(8, "button", 245);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_36_div_14_article_1_Template_button_click_8_listener() { const result_r82 = i0.ɵɵrestoreView(_r81).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.selectPoiMapResult(result_r82)); });
+    i0.ɵɵelementStart(7, "div", 178)(8, "button", 289);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_38_div_14_article_1_Template_button_click_8_listener() { const result_r103 = i0.ɵɵrestoreView(_r102).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.selectPoiMapResult(result_r103)); });
     i0.ɵɵtext(9, "Evidenzia su mappa");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "button", 246);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_36_div_14_article_1_Template_button_click_10_listener() { const result_r82 = i0.ɵɵrestoreView(_r81).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.usePoiMapResult(result_r82)); });
+    i0.ɵɵelementStart(10, "button", 290);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_38_div_14_article_1_Template_button_click_10_listener() { const result_r103 = i0.ɵɵrestoreView(_r102).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.usePoiMapResult(result_r103)); });
     i0.ɵɵtext(11, "Usa subito");
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
-    const result_r82 = ctx.$implicit;
+    const result_r103 = ctx.$implicit;
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(result_r82.displayName);
+    i0.ɵɵtextInterpolate(result_r103.displayName);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate2("Lat: ", i0.ɵɵpipeBind2(5, 3, result_r82.lat, "1.4-6"), " | Lng: ", i0.ɵɵpipeBind2(6, 6, result_r82.lng, "1.4-6"), "");
+    i0.ɵɵtextInterpolate2("Lat: ", i0.ɵɵpipeBind2(5, 3, result_r103.lat, "1.4-6"), " | Lng: ", i0.ɵɵpipeBind2(6, 6, result_r103.lng, "1.4-6"), "");
 } }
-function AdminDashboardComponent_div_3_ng_template_36_div_14_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 242);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_template_36_div_14_article_1_Template, 12, 9, "article", 243);
+function AdminDashboardComponent_div_3_ng_template_38_div_14_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 286);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_template_38_div_14_article_1_Template, 12, 9, "article", 287);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", ctx_r1.mapPickerResults);
 } }
-function AdminDashboardComponent_div_3_ng_template_36_small_19_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_template_38_small_19_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "small");
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
@@ -2686,42 +3446,42 @@ function AdminDashboardComponent_div_3_ng_template_36_small_19_Template(rf, ctx)
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate(ctx_r1.mapPickerTargetLabel);
 } }
-function AdminDashboardComponent_div_3_ng_template_36_small_20_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_template_38_small_20_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "small");
     i0.ɵɵtext(1, "Clicca o trascina il marker rosso per precisione.");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_36_Template(rf, ctx) { if (rf & 1) {
-    const _r80 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_38_Template(rf, ctx) { if (rf & 1) {
+    const _r101 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1, "Cerca luogo e seleziona coordinate");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "div", 229)(3, "form", 232);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_36_Template_form_ngSubmit_3_listener() { i0.ɵɵrestoreView(_r80); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.searchPoiMap()); });
-    i0.ɵɵelementStart(4, "mat-form-field", 47)(5, "mat-label");
+    i0.ɵɵelementStart(2, "div", 273)(3, "form", 276);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_38_Template_form_ngSubmit_3_listener() { i0.ɵɵrestoreView(_r101); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.searchPoiMap()); });
+    i0.ɵɵelementStart(4, "mat-form-field", 60)(5, "mat-label");
     i0.ɵɵtext(6, "Cerca luogo o indirizzo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(7, "input", 233);
+    i0.ɵɵelement(7, "input", 277);
     i0.ɵɵelementStart(8, "mat-hint");
     i0.ɵɵtext(9, "Ricerca gratuita tramite OpenStreetMap");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(10, "button", 234);
+    i0.ɵɵelementStart(10, "button", 278);
     i0.ɵɵtext(11);
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(12, AdminDashboardComponent_div_3_ng_template_36_p_12_Template, 2, 0, "p", 75)(13, AdminDashboardComponent_div_3_ng_template_36_p_13_Template, 9, 8, "p", 235)(14, AdminDashboardComponent_div_3_ng_template_36_div_14_Template, 2, 1, "div", 236);
-    i0.ɵɵelementStart(15, "section", 237)(16, "div", 238)(17, "strong");
+    i0.ɵɵtemplate(12, AdminDashboardComponent_div_3_ng_template_38_p_12_Template, 2, 0, "p", 89)(13, AdminDashboardComponent_div_3_ng_template_38_p_13_Template, 9, 8, "p", 279)(14, AdminDashboardComponent_div_3_ng_template_38_div_14_Template, 2, 1, "div", 280);
+    i0.ɵɵelementStart(15, "section", 281)(16, "div", 282)(17, "strong");
     i0.ɵɵtext(18, "Anteprima mappa");
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(19, AdminDashboardComponent_div_3_ng_template_36_small_19_Template, 2, 1, "small", 62)(20, AdminDashboardComponent_div_3_ng_template_36_small_20_Template, 2, 0, "small", 62);
+    i0.ɵɵtemplate(19, AdminDashboardComponent_div_3_ng_template_38_small_19_Template, 2, 1, "small", 76)(20, AdminDashboardComponent_div_3_ng_template_38_small_20_Template, 2, 0, "small", 76);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(21, "div", 239, 34);
+    i0.ɵɵelement(21, "div", 283, 46);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(23, "div", 202)(24, "button", 203);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_36_Template_button_click_24_listener() { i0.ɵɵrestoreView(_r80); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closePoiMapPicker()); });
+    i0.ɵɵelementStart(23, "div", 245)(24, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_38_Template_button_click_24_listener() { i0.ɵɵrestoreView(_r101); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closePoiMapPicker()); });
     i0.ɵɵtext(25, " Chiudi ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(26, "button", 240);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_36_Template_button_click_26_listener() { i0.ɵɵrestoreView(_r80); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.confirmPoiMapSelection()); });
+    i0.ɵɵelementStart(26, "button", 284);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_38_Template_button_click_26_listener() { i0.ɵɵrestoreView(_r101); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.confirmPoiMapSelection()); });
     i0.ɵɵtext(27, " Usa coordinate selezionate ");
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
@@ -2749,103 +3509,103 @@ function AdminDashboardComponent_div_3_ng_template_36_Template(rf, ctx) { if (rf
     i0.ɵɵadvance(2);
     i0.ɵɵproperty("disabled", !ctx_r1.hasPoiMapSelection || ctx_r1.mapPickerLoading);
 } }
-function AdminDashboardComponent_div_3_ng_template_38_mat_option_8_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_template_40_mat_option_8_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const structure_r84 = ctx.$implicit;
-    i0.ɵɵproperty("value", structure_r84.id);
+    const structure_r105 = ctx.$implicit;
+    i0.ɵɵproperty("value", structure_r105.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(structure_r84.name);
+    i0.ɵɵtextInterpolate(structure_r105.name);
 } }
-function AdminDashboardComponent_div_3_ng_template_38_mat_option_28_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_template_40_mat_option_28_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const city_r85 = ctx.$implicit;
-    i0.ɵɵproperty("value", city_r85.id);
+    const city_r106 = ctx.$implicit;
+    i0.ɵɵproperty("value", city_r106.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(city_r85.name);
+    i0.ɵɵtextInterpolate(city_r106.name);
 } }
-function AdminDashboardComponent_div_3_ng_template_38_p_31_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+function AdminDashboardComponent_div_3_ng_template_40_p_31_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Nessuna citta disponibile. Crea prima una citta nella sezione catalogo. ");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_38_div_32_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 116);
-    i0.ɵɵelement(1, "mat-spinner", 262);
+function AdminDashboardComponent_div_3_ng_template_40_div_32_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 130);
+    i0.ɵɵelement(1, "mat-spinner", 306);
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_38_Template(rf, ctx) { if (rf & 1) {
-    const _r83 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_40_Template(rf, ctx) { if (rf & 1) {
+    const _r104 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1, "Aggiungi codice sconto/struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "form", 189);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_38_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r83); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.createDiscountCode()); });
-    i0.ɵɵelementStart(3, "div", 190)(4, "mat-form-field", 47)(5, "mat-label");
+    i0.ɵɵelementStart(2, "form", 228);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_40_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r104); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.createDiscountCode()); });
+    i0.ɵɵelementStart(3, "div", 229)(4, "mat-form-field", 60)(5, "mat-label");
     i0.ɵɵtext(6, "Struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(7, "mat-select", 247);
-    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_template_38_mat_option_8_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(7, "mat-select", 291);
+    i0.ɵɵtemplate(8, AdminDashboardComponent_div_3_ng_template_40_mat_option_8_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(9, "div", 248)(10, "mat-form-field", 249)(11, "mat-label");
+    i0.ɵɵelementStart(9, "div", 292)(10, "mat-form-field", 293)(11, "mat-label");
     i0.ɵɵtext(12, "Codice");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(13, "input", 250);
+    i0.ɵɵelement(13, "input", 294);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(14, "button", 200);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_38_Template_button_click_14_listener() { i0.ɵɵrestoreView(_r83); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.generateDiscountCodeForCreate()); });
+    i0.ɵɵelementStart(14, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_40_Template_button_click_14_listener() { i0.ɵɵrestoreView(_r104); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.generateDiscountCodeForCreate()); });
     i0.ɵɵtext(15, " Genera codice ");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(16, "div", 251)(17, "label");
+    i0.ɵɵelementStart(16, "div", 295)(17, "label");
     i0.ɵɵtext(18, "Applicabile a");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(19, "mat-radio-group", 252)(20, "mat-radio-button", 253);
+    i0.ɵɵelementStart(19, "mat-radio-group", 296)(20, "mat-radio-button", 297);
     i0.ɵɵtext(21, "Luogo singolo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(22, "mat-radio-button", 254);
+    i0.ɵɵelementStart(22, "mat-radio-button", 298);
     i0.ɵɵtext(23, "Pacchetto citta");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(24, "mat-form-field", 47)(25, "mat-label");
+    i0.ɵɵelementStart(24, "mat-form-field", 60)(25, "mat-label");
     i0.ɵɵtext(26, "Citta applicabili");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(27, "mat-select", 255);
-    i0.ɵɵtemplate(28, AdminDashboardComponent_div_3_ng_template_38_mat_option_28_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(27, "mat-select", 299);
+    i0.ɵɵtemplate(28, AdminDashboardComponent_div_3_ng_template_40_mat_option_28_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(29, "mat-hint");
     i0.ɵɵtext(30, "Seleziona una o piu citta");
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_template_38_p_31_Template, 2, 0, "p", 75)(32, AdminDashboardComponent_div_3_ng_template_38_div_32_Template, 2, 0, "div", 110);
-    i0.ɵɵelementStart(33, "mat-form-field", 47)(34, "mat-label");
+    i0.ɵɵtemplate(31, AdminDashboardComponent_div_3_ng_template_40_p_31_Template, 2, 0, "p", 89)(32, AdminDashboardComponent_div_3_ng_template_40_div_32_Template, 2, 0, "div", 124);
+    i0.ɵɵelementStart(33, "mat-form-field", 60)(34, "mat-label");
     i0.ɵɵtext(35);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(36, "input", 256);
+    i0.ɵɵelement(36, "input", 300);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(37, "mat-form-field", 47)(38, "mat-label");
+    i0.ɵɵelementStart(37, "mat-form-field", 60)(38, "mat-label");
     i0.ɵɵtext(39);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(40, "input", 257);
+    i0.ɵɵelement(40, "input", 301);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(41, "mat-form-field", 47)(42, "mat-label");
+    i0.ɵɵelementStart(41, "mat-form-field", 60)(42, "mat-label");
     i0.ɵɵtext(43, "Scadenza");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(44, "input", 258, 35);
-    i0.ɵɵelementStart(46, "button", 259);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_38_Template_button_click_46_listener() { i0.ɵɵrestoreView(_r83); const createDiscountExpiresInput_r86 = i0.ɵɵreference(45); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.openNativeDateTimePicker(createDiscountExpiresInput_r86)); });
-    i0.ɵɵelement(47, "span", 260);
+    i0.ɵɵelement(44, "input", 302, 47);
+    i0.ɵɵelementStart(46, "button", 303);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_40_Template_button_click_46_listener() { i0.ɵɵrestoreView(_r104); const createDiscountExpiresInput_r107 = i0.ɵɵreference(45); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.openNativeDateTimePicker(createDiscountExpiresInput_r107)); });
+    i0.ɵɵelement(47, "span", 304);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(48, "mat-hint");
     i0.ɵɵtext(49, "Seleziona data e ora");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(50, "div", 202)(51, "button", 203);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_38_Template_button_click_51_listener() { i0.ɵɵrestoreView(_r83); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCreateDiscountCodeDialog()); });
+    i0.ɵɵelementStart(50, "div", 245)(51, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_40_Template_button_click_51_listener() { i0.ɵɵrestoreView(_r104); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeCreateDiscountCodeDialog()); });
     i0.ɵɵtext(52, " Annulla ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(53, "button", 261);
+    i0.ɵɵelementStart(53, "button", 305);
     i0.ɵɵtext(54);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
@@ -2873,8 +3633,145 @@ function AdminDashboardComponent_div_3_ng_template_38_Template(rf, ctx) { if (rf
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.creatingDiscountCode ? "Salvataggio..." : "Crea codice", " ");
 } }
-function AdminDashboardComponent_div_3_ng_template_40_p_4_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+function AdminDashboardComponent_div_3_ng_template_42_p_4_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
+    i0.ɵɵtext(1, " Verranno creati automaticamente la struttura ");
+    i0.ɵɵelementStart(2, "strong");
+    i0.ɵɵtext(3);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtext(4, ", il codice sconto e il PDF da inviare a ");
+    i0.ɵɵelementStart(5, "strong");
+    i0.ɵɵtext(6);
+    i0.ɵɵelementEnd();
+    i0.ɵɵtext(7, ". ");
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const request_r109 = ctx.ngIf;
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate(request_r109.structureName);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate(request_r109.contactEmail);
+} }
+function AdminDashboardComponent_div_3_ng_template_42_mat_option_24_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    const city_r110 = ctx.$implicit;
+    i0.ɵɵproperty("value", city_r110.id);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate(city_r110.name);
+} }
+function AdminDashboardComponent_div_3_ng_template_42_p_27_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
+    i0.ɵɵtext(1, " Nessuna citta disponibile. Crea prima una citta nella sezione catalogo. ");
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_template_42_div_28_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 130);
+    i0.ɵɵelement(1, "mat-spinner", 306);
+    i0.ɵɵelementEnd();
+} }
+function AdminDashboardComponent_div_3_ng_template_42_Template(rf, ctx) { if (rf & 1) {
+    const _r108 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
+    i0.ɵɵtext(1, "Approva richiesta partner");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(2, "form", 228);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_42_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r108); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.approvePartnerRequest()); });
+    i0.ɵɵelementStart(3, "div", 229);
+    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_template_42_p_4_Template, 8, 2, "p", 89);
+    i0.ɵɵelementStart(5, "div", 292)(6, "mat-form-field", 293)(7, "mat-label");
+    i0.ɵɵtext(8, "Codice");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(9, "input", 294);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(10, "button", 243);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_42_Template_button_click_10_listener() { i0.ɵɵrestoreView(_r108); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.generateDiscountCodeForPartnerApproval()); });
+    i0.ɵɵtext(11, " Genera codice ");
+    i0.ɵɵelementEnd()();
+    i0.ɵɵelementStart(12, "div", 295)(13, "label");
+    i0.ɵɵtext(14, "Applicabile a");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(15, "mat-radio-group", 296)(16, "mat-radio-button", 297);
+    i0.ɵɵtext(17, "Luogo singolo");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(18, "mat-radio-button", 298);
+    i0.ɵɵtext(19, "Pacchetto citta");
+    i0.ɵɵelementEnd()()();
+    i0.ɵɵelementStart(20, "mat-form-field", 60)(21, "mat-label");
+    i0.ɵɵtext(22, "Citta applicabili");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(23, "mat-select", 299);
+    i0.ɵɵtemplate(24, AdminDashboardComponent_div_3_ng_template_42_mat_option_24_Template, 2, 2, "mat-option", 128);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(25, "mat-hint");
+    i0.ɵɵtext(26, "Seleziona una o piu citta");
+    i0.ɵɵelementEnd()();
+    i0.ɵɵtemplate(27, AdminDashboardComponent_div_3_ng_template_42_p_27_Template, 2, 0, "p", 89)(28, AdminDashboardComponent_div_3_ng_template_42_div_28_Template, 2, 0, "div", 124);
+    i0.ɵɵelementStart(29, "mat-form-field", 60)(30, "mat-label");
+    i0.ɵɵtext(31);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(32, "input", 300);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(33, "mat-form-field", 60)(34, "mat-label");
+    i0.ɵɵtext(35);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(36, "input", 301);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(37, "mat-form-field", 60)(38, "mat-label");
+    i0.ɵɵtext(39, "Scadenza");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(40, "input", 302, 48);
+    i0.ɵɵelementStart(42, "button", 303);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_42_Template_button_click_42_listener() { i0.ɵɵrestoreView(_r108); const partnerApprovalExpiresInput_r111 = i0.ɵɵreference(41); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.openNativeDateTimePicker(partnerApprovalExpiresInput_r111)); });
+    i0.ɵɵelement(43, "span", 304);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(44, "mat-hint");
+    i0.ɵɵtext(45, "Seleziona data e ora");
+    i0.ɵɵelementEnd()()();
+    i0.ɵɵelementStart(46, "div", 245)(47, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_42_Template_button_click_47_listener() { i0.ɵɵrestoreView(_r108); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closePartnerRequestApprovalDialog()); });
+    i0.ɵɵtext(48, " Annulla ");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(49, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_42_Template_button_click_49_listener() { i0.ɵɵrestoreView(_r108); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.previewSelectedPartnerRequestPdf()); });
+    i0.ɵɵtext(50);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(51, "button", 305);
+    i0.ɵɵtext(52);
+    i0.ɵɵelementEnd()()();
+} if (rf & 2) {
+    const ctx_r1 = i0.ɵɵnextContext(2);
+    i0.ɵɵadvance(2);
+    i0.ɵɵproperty("formGroup", ctx_r1.partnerRequestApprovalForm);
+    i0.ɵɵadvance(2);
+    i0.ɵɵproperty("ngIf", ctx_r1.partnerRequestApprovalTarget);
+    i0.ɵɵadvance(6);
+    i0.ɵɵproperty("disabled", ctx_r1.approvingPartnerRequestId !== null);
+    i0.ɵɵadvance(14);
+    i0.ɵɵproperty("ngForOf", ctx_r1.catalogCities);
+    i0.ɵɵadvance(3);
+    i0.ɵɵproperty("ngIf", !ctx_r1.catalogCities.length && !ctx_r1.loadingCatalogCities);
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.loadingCatalogCities);
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate1("Sconto utente ", ctx_r1.partnerRequestApprovalForm.controls.applyTo.value === "bundle" ? "citta" : "luogo", " (%)");
+    i0.ɵɵadvance(4);
+    i0.ɵɵtextInterpolate1("Incasso struttura ", ctx_r1.partnerRequestApprovalForm.controls.applyTo.value === "bundle" ? "citta" : "luogo", " (EUR)");
+    i0.ɵɵadvance(12);
+    i0.ɵɵproperty("disabled", ctx_r1.approvingPartnerRequestId !== null);
+    i0.ɵɵadvance(2);
+    i0.ɵɵproperty("disabled", ctx_r1.previewingPartnerRequestId === (ctx_r1.partnerRequestApprovalTarget == null ? null : ctx_r1.partnerRequestApprovalTarget.id));
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.previewingPartnerRequestId === (ctx_r1.partnerRequestApprovalTarget == null ? null : ctx_r1.partnerRequestApprovalTarget.id) ? "Apro anteprima..." : "Anteprima PDF", " ");
+    i0.ɵɵadvance();
+    i0.ɵɵproperty("disabled", ctx_r1.approvingPartnerRequestId !== null || ctx_r1.partnerRequestApprovalForm.invalid);
+    i0.ɵɵadvance();
+    i0.ɵɵtextInterpolate1(" ", ctx_r1.approvingPartnerRequestId !== null ? "Invio approvazione..." : "Approva e invia", " ");
+} }
+function AdminDashboardComponent_div_3_ng_template_44_p_4_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Codice: ");
     i0.ɵɵelementStart(2, "code");
     i0.ɵɵtext(3);
@@ -2890,80 +3787,80 @@ function AdminDashboardComponent_div_3_ng_template_40_p_4_Template(rf, ctx) { if
     i0.ɵɵadvance(3);
     i0.ɵɵtextInterpolate(ctx_r1.editingDiscountCode.structureName);
 } }
-function AdminDashboardComponent_div_3_ng_template_40_mat_option_17_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "mat-option", 115);
+function AdminDashboardComponent_div_3_ng_template_44_mat_option_17_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "mat-option", 129);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const city_r88 = ctx.$implicit;
-    i0.ɵɵproperty("value", city_r88.id);
+    const city_r113 = ctx.$implicit;
+    i0.ɵɵproperty("value", city_r113.id);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate(city_r88.name);
+    i0.ɵɵtextInterpolate(city_r113.name);
 } }
-function AdminDashboardComponent_div_3_ng_template_40_p_20_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 79);
+function AdminDashboardComponent_div_3_ng_template_44_p_20_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 93);
     i0.ɵɵtext(1, " Nessuna citta disponibile. Crea prima una citta nella sezione catalogo. ");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_40_div_21_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 116);
-    i0.ɵɵelement(1, "mat-spinner", 262);
+function AdminDashboardComponent_div_3_ng_template_44_div_21_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 130);
+    i0.ɵɵelement(1, "mat-spinner", 306);
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_template_40_Template(rf, ctx) { if (rf & 1) {
-    const _r87 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "h2", 188);
+function AdminDashboardComponent_div_3_ng_template_44_Template(rf, ctx) { if (rf & 1) {
+    const _r112 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "h2", 227);
     i0.ɵɵtext(1, "Modifica codice sconto");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(2, "form", 189);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_40_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r87); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveDiscountCodeEdit()); });
-    i0.ɵɵelementStart(3, "div", 190);
-    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_template_40_p_4_Template, 7, 2, "p", 75);
-    i0.ɵɵelementStart(5, "div", 251)(6, "label");
+    i0.ɵɵelementStart(2, "form", 228);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_template_44_Template_form_ngSubmit_2_listener() { i0.ɵɵrestoreView(_r112); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.saveDiscountCodeEdit()); });
+    i0.ɵɵelementStart(3, "div", 229);
+    i0.ɵɵtemplate(4, AdminDashboardComponent_div_3_ng_template_44_p_4_Template, 7, 2, "p", 89);
+    i0.ɵɵelementStart(5, "div", 295)(6, "label");
     i0.ɵɵtext(7, "Applicabile a");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(8, "mat-radio-group", 252)(9, "mat-radio-button", 253);
+    i0.ɵɵelementStart(8, "mat-radio-group", 296)(9, "mat-radio-button", 297);
     i0.ɵɵtext(10, "Luogo singolo");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(11, "mat-radio-button", 254);
+    i0.ɵɵelementStart(11, "mat-radio-button", 298);
     i0.ɵɵtext(12, "Pacchetto citta");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(13, "mat-form-field", 47)(14, "mat-label");
+    i0.ɵɵelementStart(13, "mat-form-field", 60)(14, "mat-label");
     i0.ɵɵtext(15, "Citta applicabili");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(16, "mat-select", 255);
-    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_template_40_mat_option_17_Template, 2, 2, "mat-option", 114);
+    i0.ɵɵelementStart(16, "mat-select", 299);
+    i0.ɵɵtemplate(17, AdminDashboardComponent_div_3_ng_template_44_mat_option_17_Template, 2, 2, "mat-option", 128);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(18, "mat-hint");
     i0.ɵɵtext(19, "Seleziona una o piu citta");
     i0.ɵɵelementEnd()();
-    i0.ɵɵtemplate(20, AdminDashboardComponent_div_3_ng_template_40_p_20_Template, 2, 0, "p", 75)(21, AdminDashboardComponent_div_3_ng_template_40_div_21_Template, 2, 0, "div", 110);
-    i0.ɵɵelementStart(22, "mat-form-field", 47)(23, "mat-label");
+    i0.ɵɵtemplate(20, AdminDashboardComponent_div_3_ng_template_44_p_20_Template, 2, 0, "p", 89)(21, AdminDashboardComponent_div_3_ng_template_44_div_21_Template, 2, 0, "div", 124);
+    i0.ɵɵelementStart(22, "mat-form-field", 60)(23, "mat-label");
     i0.ɵɵtext(24);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(25, "input", 256);
+    i0.ɵɵelement(25, "input", 300);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(26, "mat-form-field", 47)(27, "mat-label");
+    i0.ɵɵelementStart(26, "mat-form-field", 60)(27, "mat-label");
     i0.ɵɵtext(28);
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(29, "input", 257);
+    i0.ɵɵelement(29, "input", 301);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(30, "mat-form-field", 47)(31, "mat-label");
+    i0.ɵɵelementStart(30, "mat-form-field", 60)(31, "mat-label");
     i0.ɵɵtext(32, "Scadenza");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(33, "input", 258, 36);
-    i0.ɵɵelementStart(35, "button", 259);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_40_Template_button_click_35_listener() { i0.ɵɵrestoreView(_r87); const editDiscountExpiresInput_r89 = i0.ɵɵreference(34); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.openNativeDateTimePicker(editDiscountExpiresInput_r89)); });
-    i0.ɵɵelement(36, "span", 260);
+    i0.ɵɵelement(33, "input", 302, 49);
+    i0.ɵɵelementStart(35, "button", 303);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_44_Template_button_click_35_listener() { i0.ɵɵrestoreView(_r112); const editDiscountExpiresInput_r114 = i0.ɵɵreference(34); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.openNativeDateTimePicker(editDiscountExpiresInput_r114)); });
+    i0.ɵɵelement(36, "span", 304);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(37, "mat-hint");
     i0.ɵɵtext(38, "Seleziona data e ora");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(39, "div", 202)(40, "button", 203);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_40_Template_button_click_40_listener() { i0.ɵɵrestoreView(_r87); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeEditDiscountCodeDialog()); });
+    i0.ɵɵelementStart(39, "div", 245)(40, "button", 246);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_template_44_Template_button_click_40_listener() { i0.ɵɵrestoreView(_r112); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.closeEditDiscountCodeDialog()); });
     i0.ɵɵtext(41, " Annulla ");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(42, "button", 261);
+    i0.ɵɵelementStart(42, "button", 305);
     i0.ɵɵtext(43);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
@@ -2989,58 +3886,58 @@ function AdminDashboardComponent_div_3_ng_template_40_Template(rf, ctx) { if (rf
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.updatingDiscountCode ? "Salvataggio..." : "Salva modifiche", " ");
 } }
-function AdminDashboardComponent_div_3_ng_container_42_section_14_mat_error_23_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_46_section_14_mat_error_23_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "mat-error");
     i0.ɵɵtext(1, "Inserisci un CAP valido a 5 cifre");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_42_section_14_Template(rf, ctx) { if (rf & 1) {
-    const _r91 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "section", 102)(1, "h3");
+function AdminDashboardComponent_div_3_ng_container_46_section_14_Template(rf, ctx) { if (rf & 1) {
+    const _r116 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "section", 116)(1, "h3");
     i0.ɵɵtext(2, "Nuova struttura");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "p");
     i0.ɵɵtext(4, "Inserisci nome struttura, via, civico, citta e CAP. I codici sconto si gestiscono nella sezione dedicata.");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "form", 46);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_container_42_section_14_Template_form_ngSubmit_5_listener() { i0.ɵɵrestoreView(_r91); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.registerStructure()); });
-    i0.ɵɵelementStart(6, "mat-form-field", 47)(7, "mat-label");
+    i0.ɵɵelementStart(5, "form", 59);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_container_46_section_14_Template_form_ngSubmit_5_listener() { i0.ɵɵrestoreView(_r116); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.registerStructure()); });
+    i0.ɵɵelementStart(6, "mat-form-field", 60)(7, "mat-label");
     i0.ɵɵtext(8, "Nome struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(9, "input", 263);
+    i0.ɵɵelement(9, "input", 307);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "div", 264)(11, "mat-form-field", 265)(12, "mat-label");
+    i0.ɵɵelementStart(10, "div", 308)(11, "mat-form-field", 309)(12, "mat-label");
     i0.ɵɵtext(13, "Via/Piazza");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(14, "input", 266);
+    i0.ɵɵelement(14, "input", 310);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(15, "mat-form-field", 47)(16, "mat-label");
+    i0.ɵɵelementStart(15, "mat-form-field", 60)(16, "mat-label");
     i0.ɵɵtext(17, "Civico");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(18, "input", 267);
+    i0.ɵɵelement(18, "input", 311);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(19, "mat-form-field", 47)(20, "mat-label");
+    i0.ɵɵelementStart(19, "mat-form-field", 60)(20, "mat-label");
     i0.ɵɵtext(21, "CAP");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(22, "input", 268);
-    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_42_section_14_mat_error_23_Template, 2, 0, "mat-error", 62);
+    i0.ɵɵelement(22, "input", 312);
+    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_46_section_14_mat_error_23_Template, 2, 0, "mat-error", 76);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(24, "mat-form-field", 47)(25, "mat-label");
+    i0.ɵɵelementStart(24, "mat-form-field", 60)(25, "mat-label");
     i0.ɵɵtext(26, "Citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(27, "input", 269);
+    i0.ɵɵelement(27, "input", 313);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(28, "mat-form-field", 47)(29, "mat-label");
+    i0.ɵɵelementStart(28, "mat-form-field", 60)(29, "mat-label");
     i0.ɵɵtext(30, "Provincia (opzionale)");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(31, "input", 270);
+    i0.ɵɵelement(31, "input", 314);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(32, "mat-form-field", 47)(33, "mat-label");
+    i0.ɵɵelementStart(32, "mat-form-field", 60)(33, "mat-label");
     i0.ɵɵtext(34, "Nazione (opzionale)");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(35, "input", 271);
+    i0.ɵɵelement(35, "input", 315);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(36, "button", 50);
+    i0.ɵɵelementStart(36, "button", 63);
     i0.ɵɵtext(37);
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
@@ -3054,62 +3951,62 @@ function AdminDashboardComponent_div_3_ng_container_42_section_14_Template(rf, c
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate1(" ", ctx_r1.creatingStructure ? "Salvataggio..." : "Registra struttura", " ");
 } }
-function AdminDashboardComponent_div_3_ng_container_42_section_15_mat_error_23_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_46_section_15_mat_error_23_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "mat-error");
     i0.ɵɵtext(1, " Inserisci un CAP valido a 5 cifre ");
     i0.ɵɵelementEnd();
 } }
-function AdminDashboardComponent_div_3_ng_container_42_section_15_Template(rf, ctx) { if (rf & 1) {
-    const _r92 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "section", 102)(1, "h3");
+function AdminDashboardComponent_div_3_ng_container_46_section_15_Template(rf, ctx) { if (rf & 1) {
+    const _r117 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "section", 116)(1, "h3");
     i0.ɵɵtext(2, "Modifica struttura");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "p");
     i0.ɵɵtext(4, "Aggiorna nome e indirizzo. Il codice invito resta invariato.");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(5, "form", 46);
-    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_container_42_section_15_Template_form_ngSubmit_5_listener() { i0.ɵɵrestoreView(_r92); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.updateStructure()); });
-    i0.ɵɵelementStart(6, "mat-form-field", 47)(7, "mat-label");
+    i0.ɵɵelementStart(5, "form", 59);
+    i0.ɵɵlistener("ngSubmit", function AdminDashboardComponent_div_3_ng_container_46_section_15_Template_form_ngSubmit_5_listener() { i0.ɵɵrestoreView(_r117); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.updateStructure()); });
+    i0.ɵɵelementStart(6, "mat-form-field", 60)(7, "mat-label");
     i0.ɵɵtext(8, "Nome struttura");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(9, "input", 263);
+    i0.ɵɵelement(9, "input", 307);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "div", 264)(11, "mat-form-field", 265)(12, "mat-label");
+    i0.ɵɵelementStart(10, "div", 308)(11, "mat-form-field", 309)(12, "mat-label");
     i0.ɵɵtext(13, "Via/Piazza");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(14, "input", 266);
+    i0.ɵɵelement(14, "input", 310);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(15, "mat-form-field", 47)(16, "mat-label");
+    i0.ɵɵelementStart(15, "mat-form-field", 60)(16, "mat-label");
     i0.ɵɵtext(17, "Civico");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(18, "input", 267);
+    i0.ɵɵelement(18, "input", 311);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(19, "mat-form-field", 47)(20, "mat-label");
+    i0.ɵɵelementStart(19, "mat-form-field", 60)(20, "mat-label");
     i0.ɵɵtext(21, "CAP");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(22, "input", 268);
-    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_42_section_15_mat_error_23_Template, 2, 0, "mat-error", 62);
+    i0.ɵɵelement(22, "input", 312);
+    i0.ɵɵtemplate(23, AdminDashboardComponent_div_3_ng_container_46_section_15_mat_error_23_Template, 2, 0, "mat-error", 76);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(24, "mat-form-field", 47)(25, "mat-label");
+    i0.ɵɵelementStart(24, "mat-form-field", 60)(25, "mat-label");
     i0.ɵɵtext(26, "Citta");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(27, "input", 269);
+    i0.ɵɵelement(27, "input", 313);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(28, "mat-form-field", 47)(29, "mat-label");
+    i0.ɵɵelementStart(28, "mat-form-field", 60)(29, "mat-label");
     i0.ɵɵtext(30, "Provincia (opzionale)");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(31, "input", 270);
+    i0.ɵɵelement(31, "input", 314);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(32, "mat-form-field", 47)(33, "mat-label");
+    i0.ɵɵelementStart(32, "mat-form-field", 60)(33, "mat-label");
     i0.ɵɵtext(34, "Nazione (opzionale)");
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(35, "input", 271);
+    i0.ɵɵelement(35, "input", 315);
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(36, "div", 132)(37, "button", 50);
+    i0.ɵɵelementStart(36, "div", 178)(37, "button", 63);
     i0.ɵɵtext(38);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(39, "button", 240);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_42_section_15_Template_button_click_39_listener() { i0.ɵɵrestoreView(_r92); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.cancelStructureEdit()); });
+    i0.ɵɵelementStart(39, "button", 284);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_46_section_15_Template_button_click_39_listener() { i0.ɵɵrestoreView(_r117); const ctx_r1 = i0.ɵɵnextContext(3); return i0.ɵɵresetView(ctx_r1.cancelStructureEdit()); });
     i0.ɵɵtext(40, " Annulla ");
     i0.ɵɵelementEnd()()()();
 } if (rf & 2) {
@@ -3125,46 +4022,46 @@ function AdminDashboardComponent_div_3_ng_container_42_section_15_Template(rf, c
     i0.ɵɵadvance();
     i0.ɵɵproperty("disabled", ctx_r1.updatingStructure);
 } }
-function AdminDashboardComponent_div_3_ng_container_42_tr_35_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 122);
-    i0.ɵɵelement(2, "mat-spinner", 83);
+function AdminDashboardComponent_div_3_ng_container_46_tr_35_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 316);
+    i0.ɵɵelement(2, "mat-spinner", 97);
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_42_tr_36_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "tr")(1, "td", 123);
+function AdminDashboardComponent_div_3_ng_container_46_tr_36_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "tr")(1, "td", 317);
     i0.ɵɵtext(2, "Nessuna struttura registrata.");
     i0.ɵɵelementEnd()();
 } }
-function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_div_7_div_1_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 276)(1, "code");
+function AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_div_7_div_1_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 322)(1, "code");
     i0.ɵɵtext(2);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(3, "small");
     i0.ɵɵtext(4);
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
-    const discountCode_r94 = ctx.$implicit;
+    const discountCode_r119 = ctx.$implicit;
     const ctx_r1 = i0.ɵɵnextContext(6);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(discountCode_r94.code);
+    i0.ɵɵtextInterpolate(discountCode_r119.code);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate1("Scade: ", ctx_r1.formatDateTime(discountCode_r94.expiresAt), "");
+    i0.ɵɵtextInterpolate1("Scade: ", ctx_r1.formatDateTime(discountCode_r119.expiresAt), "");
 } }
-function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_div_7_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 274);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_div_7_div_1_Template, 5, 2, "div", 275);
+function AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_div_7_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 320);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_div_7_div_1_Template, 5, 2, "div", 321);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    const structure_r95 = i0.ɵɵnextContext().$implicit;
+    const structure_r120 = i0.ɵɵnextContext().$implicit;
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance();
-    i0.ɵɵproperty("ngForOf", ctx_r1.structureCodes(structure_r95.id));
+    i0.ɵɵproperty("ngForOf", ctx_r1.structureCodes(structure_r120.id));
 } }
-function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_ng_template_8_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_ng_template_8_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵtext(0, "-");
 } }
-function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_Template(rf, ctx) { if (rf & 1) {
-    const _r93 = i0.ɵɵgetCurrentView();
+function AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_Template(rf, ctx) { if (rf & 1) {
+    const _r118 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementStart(0, "tr")(1, "td")(2, "strong");
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd()();
@@ -3172,10 +4069,10 @@ function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_Temp
     i0.ɵɵtext(5);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(6, "td");
-    i0.ɵɵtemplate(7, AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_div_7_Template, 2, 1, "div", 272)(8, AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_ng_template_8_Template, 1, 0, "ng-template", null, 37, i0.ɵɵtemplateRefExtractor);
+    i0.ɵɵtemplate(7, AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_div_7_Template, 2, 1, "div", 318)(8, AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_ng_template_8_Template, 1, 0, "ng-template", null, 50, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(10, "td")(11, "button", 273);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_Template_button_click_11_listener() { const structure_r95 = i0.ɵɵrestoreView(_r93).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.openUsersForStructure(structure_r95)); });
+    i0.ɵɵelementStart(10, "td")(11, "button", 319);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_Template_button_click_11_listener() { const structure_r120 = i0.ɵɵrestoreView(_r118).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.openUsersForStructure(structure_r120)); });
     i0.ɵɵtext(12);
     i0.ɵɵelementEnd()();
     i0.ɵɵelementStart(13, "td");
@@ -3184,57 +4081,57 @@ function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_Temp
     i0.ɵɵelementStart(15, "td");
     i0.ɵɵtext(16);
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(17, "td")(18, "button", 184);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_Template_button_click_18_listener() { const structure_r95 = i0.ɵɵrestoreView(_r93).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.editStructure(structure_r95)); });
+    i0.ɵɵelementStart(17, "td")(18, "button", 223);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_Template_button_click_18_listener() { const structure_r120 = i0.ɵɵrestoreView(_r118).$implicit; const ctx_r1 = i0.ɵɵnextContext(4); return i0.ɵɵresetView(ctx_r1.editStructure(structure_r120)); });
     i0.ɵɵtext(19, " Modifica ");
     i0.ɵɵelementEnd()()();
 } if (rf & 2) {
-    const structure_r95 = ctx.$implicit;
-    const noStructureCodes_r96 = i0.ɵɵreference(9);
+    const structure_r120 = ctx.$implicit;
+    const noStructureCodes_r121 = i0.ɵɵreference(9);
     const ctx_r1 = i0.ɵɵnextContext(4);
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(structure_r95.name);
+    i0.ɵɵtextInterpolate(structure_r120.name);
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatStructureAddress(structure_r95));
+    i0.ɵɵtextInterpolate(ctx_r1.formatStructureAddress(structure_r120));
     i0.ɵɵadvance(2);
-    i0.ɵɵproperty("ngIf", ctx_r1.structureCodes(structure_r95.id).length)("ngIfElse", noStructureCodes_r96);
+    i0.ɵɵproperty("ngIf", ctx_r1.structureCodes(structure_r120.id).length)("ngIfElse", noStructureCodes_r121);
     i0.ɵɵadvance(4);
-    i0.ɵɵproperty("disabled", structure_r95.usersCount <= 0);
+    i0.ɵɵproperty("disabled", structure_r120.usersCount <= 0);
     i0.ɵɵadvance();
-    i0.ɵɵtextInterpolate1(" ", structure_r95.usersCount, " ");
+    i0.ɵɵtextInterpolate1(" ", structure_r120.usersCount, " ");
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(structure_r95.totalStructureEarnings));
+    i0.ɵɵtextInterpolate(ctx_r1.formatCurrency(structure_r120.totalStructureEarnings));
     i0.ɵɵadvance(2);
-    i0.ɵɵtextInterpolate(ctx_r1.formatDateTime(structure_r95.createdAt));
+    i0.ɵɵtextInterpolate(ctx_r1.formatDateTime(structure_r120.createdAt));
 } }
-function AdminDashboardComponent_div_3_ng_container_42_ng_container_37_Template(rf, ctx) { if (rf & 1) {
+function AdminDashboardComponent_div_3_ng_container_46_ng_container_37_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_42_ng_container_37_tr_1_Template, 20, 8, "tr", 85);
+    i0.ɵɵtemplate(1, AdminDashboardComponent_div_3_ng_container_46_ng_container_37_tr_1_Template, 20, 8, "tr", 99);
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext(3);
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngForOf", ctx_r1.structures);
 } }
-function AdminDashboardComponent_div_3_ng_container_42_Template(rf, ctx) { if (rf & 1) {
-    const _r90 = i0.ɵɵgetCurrentView();
+function AdminDashboardComponent_div_3_ng_container_46_Template(rf, ctx) { if (rf & 1) {
+    const _r115 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementContainerStart(0);
-    i0.ɵɵelementStart(1, "mat-card", 72)(2, "div", 73)(3, "div")(4, "h2");
+    i0.ɵɵelementStart(1, "mat-card", 86)(2, "div", 87)(3, "div")(4, "h2");
     i0.ɵɵtext(5, "Lista strutture");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(6, "p", 74);
+    i0.ɵɵelementStart(6, "p", 88);
     i0.ɵɵtext(7, "Gestisci dati struttura. I codici invito/sconto sono gestiti nella sezione dedicata.");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(8, "div", 97)(9, "button", 98);
-    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_42_Template_button_click_9_listener() { i0.ɵɵrestoreView(_r90); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.toggleStructureSection()); });
-    i0.ɵɵelementStart(10, "span", 99);
+    i0.ɵɵelementStart(8, "div", 111)(9, "button", 112);
+    i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_ng_container_46_Template_button_click_9_listener() { i0.ɵɵrestoreView(_r115); const ctx_r1 = i0.ɵɵnextContext(2); return i0.ɵɵresetView(ctx_r1.toggleStructureSection()); });
+    i0.ɵɵelementStart(10, "span", 113);
     i0.ɵɵtext(11);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(12, "span");
     i0.ɵɵtext(13);
     i0.ɵɵelementEnd()()()();
-    i0.ɵɵtemplate(14, AdminDashboardComponent_div_3_ng_container_42_section_14_Template, 38, 4, "section", 100)(15, AdminDashboardComponent_div_3_ng_container_42_section_15_Template, 41, 5, "section", 100);
-    i0.ɵɵelementStart(16, "div", 80)(17, "table", 171)(18, "thead")(19, "tr")(20, "th");
+    i0.ɵɵtemplate(14, AdminDashboardComponent_div_3_ng_container_46_section_14_Template, 38, 4, "section", 114)(15, AdminDashboardComponent_div_3_ng_container_46_section_15_Template, 41, 5, "section", 114);
+    i0.ɵɵelementStart(16, "div", 94)(17, "table", 193)(18, "thead")(19, "tr")(20, "th");
     i0.ɵɵtext(21, "Struttura");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(22, "th");
@@ -3256,7 +4153,7 @@ function AdminDashboardComponent_div_3_ng_container_42_Template(rf, ctx) { if (r
     i0.ɵɵtext(33, "Azioni");
     i0.ɵɵelementEnd()()();
     i0.ɵɵelementStart(34, "tbody");
-    i0.ɵɵtemplate(35, AdminDashboardComponent_div_3_ng_container_42_tr_35_Template, 3, 0, "tr", 62)(36, AdminDashboardComponent_div_3_ng_container_42_tr_36_Template, 3, 0, "tr", 62)(37, AdminDashboardComponent_div_3_ng_container_42_ng_container_37_Template, 2, 1, "ng-container", 62);
+    i0.ɵɵtemplate(35, AdminDashboardComponent_div_3_ng_container_46_tr_35_Template, 3, 0, "tr", 76)(36, AdminDashboardComponent_div_3_ng_container_46_tr_36_Template, 3, 0, "tr", 76)(37, AdminDashboardComponent_div_3_ng_container_46_ng_container_37_Template, 2, 1, "ng-container", 76);
     i0.ɵɵelementEnd()()()();
     i0.ɵɵelementContainerEnd();
 } if (rf & 2) {
@@ -3280,26 +4177,26 @@ function AdminDashboardComponent_div_3_ng_container_42_Template(rf, ctx) { if (r
 } }
 function AdminDashboardComponent_div_3_Template(rf, ctx) { if (rf & 1) {
     const _r3 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 51)(1, "aside", 52)(2, "div", 53)(3, "div", 54);
-    i0.ɵɵtext(4, "T");
+    i0.ɵɵelementStart(0, "div", 64)(1, "aside", 65)(2, "div", 66)(3, "div", 67);
+    i0.ɵɵelement(4, "img", 68);
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(5, "div")(6, "strong");
-    i0.ɵɵtext(7, "TourApp");
+    i0.ɵɵtext(7, "Walk Around");
     i0.ɵɵelementEnd();
     i0.ɵɵelementStart(8, "p");
     i0.ɵɵtext(9, "Dashboard");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵtemplate(10, AdminDashboardComponent_div_3_nav_10_Template, 2, 1, "nav", 55);
-    i0.ɵɵelementStart(11, "div", 56)(12, "span");
+    i0.ɵɵtemplate(10, AdminDashboardComponent_div_3_nav_10_Template, 2, 1, "nav", 69);
+    i0.ɵɵelementStart(11, "div", 70)(12, "span");
     i0.ɵɵtext(13);
     i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(14, AdminDashboardComponent_div_3_button_14_Template, 2, 0, "button", 57);
-    i0.ɵɵelementStart(15, "button", 58);
+    i0.ɵɵtemplate(14, AdminDashboardComponent_div_3_button_14_Template, 2, 0, "button", 71);
+    i0.ɵɵelementStart(15, "button", 72);
     i0.ɵɵlistener("click", function AdminDashboardComponent_div_3_Template_button_click_15_listener() { i0.ɵɵrestoreView(_r3); const ctx_r1 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r1.logout()); });
     i0.ɵɵtext(16, "Logout");
     i0.ɵɵelementEnd()()();
-    i0.ɵɵelementStart(17, "main", 59);
-    i0.ɵɵtemplate(18, AdminDashboardComponent_div_3_header_18_Template, 10, 3, "header", 60)(19, AdminDashboardComponent_div_3_mat_card_19_Template, 5, 0, "mat-card", 61)(20, AdminDashboardComponent_div_3_ng_container_20_Template, 22, 5, "ng-container", 62)(21, AdminDashboardComponent_div_3_ng_container_21_Template, 51, 7, "ng-container", 62)(22, AdminDashboardComponent_div_3_ng_container_22_Template, 57, 18, "ng-container", 62)(23, AdminDashboardComponent_div_3_ng_container_23_Template, 21, 6, "ng-container", 62)(24, AdminDashboardComponent_div_3_ng_container_24_Template, 73, 13, "ng-container", 62)(25, AdminDashboardComponent_div_3_ng_container_25_Template, 28, 10, "ng-container", 62)(26, AdminDashboardComponent_div_3_ng_template_26_Template, 37, 10, "ng-template", null, 0, i0.ɵɵtemplateRefExtractor)(28, AdminDashboardComponent_div_3_ng_template_28_Template, 17, 9, "ng-template", null, 1, i0.ɵɵtemplateRefExtractor)(30, AdminDashboardComponent_div_3_ng_template_30_Template, 37, 10, "ng-template", null, 2, i0.ɵɵtemplateRefExtractor)(32, AdminDashboardComponent_div_3_ng_template_32_Template, 84, 19, "ng-template", null, 3, i0.ɵɵtemplateRefExtractor)(34, AdminDashboardComponent_div_3_ng_template_34_Template, 11, 3, "ng-template", null, 4, i0.ɵɵtemplateRefExtractor)(36, AdminDashboardComponent_div_3_ng_template_36_Template, 28, 12, "ng-template", null, 5, i0.ɵɵtemplateRefExtractor)(38, AdminDashboardComponent_div_3_ng_template_38_Template, 55, 11, "ng-template", null, 6, i0.ɵɵtemplateRefExtractor)(40, AdminDashboardComponent_div_3_ng_template_40_Template, 44, 10, "ng-template", null, 7, i0.ɵɵtemplateRefExtractor)(42, AdminDashboardComponent_div_3_ng_container_42_Template, 38, 9, "ng-container", 62);
+    i0.ɵɵelementStart(17, "main", 73);
+    i0.ɵɵtemplate(18, AdminDashboardComponent_div_3_header_18_Template, 10, 3, "header", 74)(19, AdminDashboardComponent_div_3_mat_card_19_Template, 5, 0, "mat-card", 75)(20, AdminDashboardComponent_div_3_ng_container_20_Template, 22, 5, "ng-container", 76)(21, AdminDashboardComponent_div_3_ng_container_21_Template, 51, 7, "ng-container", 76)(22, AdminDashboardComponent_div_3_ng_container_22_Template, 55, 18, "ng-container", 76)(23, AdminDashboardComponent_div_3_ng_container_23_Template, 21, 6, "ng-container", 76)(24, AdminDashboardComponent_div_3_ng_container_24_Template, 56, 13, "ng-container", 76)(25, AdminDashboardComponent_div_3_ng_container_25_Template, 73, 13, "ng-container", 76)(26, AdminDashboardComponent_div_3_ng_container_26_Template, 65, 11, "ng-container", 76)(27, AdminDashboardComponent_div_3_ng_container_27_Template, 28, 10, "ng-container", 76)(28, AdminDashboardComponent_div_3_ng_template_28_Template, 45, 11, "ng-template", null, 0, i0.ɵɵtemplateRefExtractor)(30, AdminDashboardComponent_div_3_ng_template_30_Template, 17, 9, "ng-template", null, 1, i0.ɵɵtemplateRefExtractor)(32, AdminDashboardComponent_div_3_ng_template_32_Template, 45, 11, "ng-template", null, 2, i0.ɵɵtemplateRefExtractor)(34, AdminDashboardComponent_div_3_ng_template_34_Template, 92, 20, "ng-template", null, 3, i0.ɵɵtemplateRefExtractor)(36, AdminDashboardComponent_div_3_ng_template_36_Template, 11, 3, "ng-template", null, 4, i0.ɵɵtemplateRefExtractor)(38, AdminDashboardComponent_div_3_ng_template_38_Template, 28, 12, "ng-template", null, 5, i0.ɵɵtemplateRefExtractor)(40, AdminDashboardComponent_div_3_ng_template_40_Template, 55, 11, "ng-template", null, 6, i0.ɵɵtemplateRefExtractor)(42, AdminDashboardComponent_div_3_ng_template_42_Template, 53, 13, "ng-template", null, 7, i0.ɵɵtemplateRefExtractor)(44, AdminDashboardComponent_div_3_ng_template_44_Template, 44, 10, "ng-template", null, 8, i0.ɵɵtemplateRefExtractor)(46, AdminDashboardComponent_div_3_ng_container_46_Template, 38, 9, "ng-container", 76);
     i0.ɵɵelementEnd()();
 } if (rf & 2) {
     const ctx_r1 = i0.ɵɵnextContext();
@@ -3322,10 +4219,14 @@ function AdminDashboardComponent_div_3_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r1.canViewDiscountCodes && ctx_r1.activeSection === "discounts");
     i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.canManageUsers && ctx_r1.activeSection === "partnerRequests");
+    i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r1.canManageUsers && ctx_r1.activeSection === "payments");
     i0.ɵɵadvance();
+    i0.ɵɵproperty("ngIf", ctx_r1.canManagePayPal && ctx_r1.activeSection === "paypal");
+    i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r1.canManageCatalog && ctx_r1.activeSection === "catalog");
-    i0.ɵɵadvance(17);
+    i0.ɵɵadvance(19);
     i0.ɵɵproperty("ngIf", ctx_r1.canManageUsers && ctx_r1.activeSection === "structures");
 } }
 export class AdminDashboardComponent {
@@ -3338,6 +4239,11 @@ export class AdminDashboardComponent {
         this.snackBar = snackBar;
         this.noStructureValue = '__none__';
         this.fixedCreateCityRegion = 'Sicilia';
+        this.contentLanguages = [
+            { code: 'en', label: 'Inglese' },
+            { code: 'fr', label: 'Francese' },
+            { code: 'es', label: 'Spagnolo' }
+        ];
         this.poiCategoryOptions = [
             'Monumento',
             'Museo',
@@ -3361,7 +4267,9 @@ export class AdminDashboardComponent {
             { id: 'users', label: 'Utenti' },
             { id: 'structures', label: 'Strutture' },
             { id: 'discounts', label: 'Codici invito/sconto' },
+            { id: 'partnerRequests', label: 'Richieste partner' },
             { id: 'payments', label: 'Pagamenti' },
+            { id: 'paypal', label: 'PayPal' },
             { id: 'catalog', label: 'Citta e Punti interesse' }
         ];
         this.managerSections = [
@@ -3386,11 +4294,15 @@ export class AdminDashboardComponent {
         this.loadingStructures = false;
         this.loadingAssociatedUsers = false;
         this.loadingPayments = false;
+        this.loadingPartnerRequests = false;
+        this.loadingPayPalSettings = false;
         this.creatingStructure = false;
         this.updatingStructure = false;
         this.loadingDiscountCodes = false;
         this.creatingDiscountCode = false;
         this.updatingDiscountCode = false;
+        this.savingPayPalSettings = false;
+        this.testingPayPalSettings = false;
         this.loadingCatalogCities = false;
         this.loadingCatalogPois = false;
         this.savingCatalogCity = false;
@@ -3398,9 +4310,11 @@ export class AdminDashboardComponent {
         this.uploadingCatalogAudio = false;
         this.uploadingCatalogCityImage = false;
         this.uploadingCatalogImage = false;
+        this.uploadingCatalogPoiTranslationAudio = { en: false, fr: false, es: false };
         this.uploadingCatalogCityEditImage = false;
         this.uploadingCatalogPoiEditImage = false;
         this.uploadingCatalogPoiEditAudio = false;
+        this.uploadingCatalogPoiEditTranslationAudio = { en: false, fr: false, es: false };
         this.deletingCatalogCityId = null;
         this.deletingCatalogPoiId = null;
         this.savingUserId = null;
@@ -3417,6 +4331,8 @@ export class AdminDashboardComponent {
         this.discountCodeGroups = [];
         this.associatedUsers = [];
         this.payments = [];
+        this.partnerRequests = [];
+        this.payPalSettings = null;
         this.paymentsSummary = {
             totalPayments: 0,
             totalCollected: 0,
@@ -3428,6 +4344,10 @@ export class AdminDashboardComponent {
         this.selectedCatalogCityId = '';
         this.editingCatalogCityId = null;
         this.editingCatalogPoiId = null;
+        this.partnerRequestApprovalTarget = null;
+        this.approvingPartnerRequestId = null;
+        this.rejectingPartnerRequestId = null;
+        this.previewingPartnerRequestId = null;
         this.lastLoadedCatalogPoisCityId = '';
         this.catalogPoisRequestToken = 0;
         this.hasLoadedCatalogCitiesOnce = false;
@@ -3444,6 +4364,8 @@ export class AdminDashboardComponent {
         this.audioDurationByUrl = {};
         this.pendingAudioDurationUrls = new Set();
         this.invalidAudioDurationUrls = new Set();
+        this.maxCatalogAudioUploadBytes = 15 * 1024 * 1024;
+        this.maxCatalogImageUploadBytes = 10 * 1024 * 1024;
         this.audioPlayerPoiName = '';
         this.audioPlayerFileName = '';
         this.audioPlayerUrl = '';
@@ -3515,11 +4437,40 @@ export class AdminDashboardComponent {
             structureFixedAmount: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
             expiresAt: ['', [Validators.required]]
         });
+        this.partnerRequestApprovalForm = this.formBuilder.nonNullable.group({
+            applyTo: ['bundle', [Validators.required]],
+            cityIds: [[], [Validators.required]],
+            code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern(/^[A-Z0-9]{6}$/)]],
+            userDiscountPercent: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+            structureFixedAmount: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
+            expiresAt: ['', [Validators.required]]
+        });
+        this.payPalForm = this.formBuilder.nonNullable.group({
+            isEnabled: [false],
+            mode: ['sandbox', [Validators.required]],
+            clientId: ['', [Validators.maxLength(400)]],
+            clientSecret: ['', [Validators.maxLength(400)]],
+            merchantId: ['', [Validators.maxLength(180)]],
+            merchantEmail: ['', [Validators.email, Validators.maxLength(180)]],
+            brandName: ['Walk Around', [Validators.maxLength(127)]],
+            webhookId: ['', [Validators.maxLength(180)]]
+        });
         this.catalogCityForm = this.formBuilder.nonNullable.group({
             name: ['', [Validators.required, Validators.maxLength(120)]],
             region: [{ value: this.fixedCreateCityRegion, disabled: true }, [Validators.required, Validators.maxLength(120)]],
             bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-            heroImage: ['', [Validators.required, Validators.maxLength(500)]]
+            heroImage: ['', [Validators.required, Validators.maxLength(500)]],
+            translations: this.formBuilder.nonNullable.group({
+                en: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(120)]]
+                }),
+                fr: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(120)]]
+                }),
+                es: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(120)]]
+                })
+            })
         });
         this.catalogPoiForm = this.formBuilder.nonNullable.group({
             cityId: ['', [Validators.required]],
@@ -3530,15 +4481,49 @@ export class AdminDashboardComponent {
             descriptionShort: ['', [Validators.required, Validators.maxLength(1000)]],
             descriptionLong: ['', [Validators.required, Validators.maxLength(10000)]],
             imageUrl: ['', [Validators.required, Validators.maxLength(500)]],
-            audioUrl: ['', [Validators.required, Validators.maxLength(500)]],
+            audioUrl: ['', [Validators.maxLength(500)]],
             priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-            durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]]
+            durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
+            translations: this.formBuilder.nonNullable.group({
+                en: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(180)]],
+                    descriptionShort: ['', [Validators.maxLength(1000)]],
+                    descriptionLong: ['', [Validators.maxLength(10000)]],
+                    audioLabel: ['', [Validators.maxLength(180)]],
+                    audioUrl: ['', [Validators.maxLength(500)]]
+                }),
+                fr: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(180)]],
+                    descriptionShort: ['', [Validators.maxLength(1000)]],
+                    descriptionLong: ['', [Validators.maxLength(10000)]],
+                    audioLabel: ['', [Validators.maxLength(180)]],
+                    audioUrl: ['', [Validators.maxLength(500)]]
+                }),
+                es: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(180)]],
+                    descriptionShort: ['', [Validators.maxLength(1000)]],
+                    descriptionLong: ['', [Validators.maxLength(10000)]],
+                    audioLabel: ['', [Validators.maxLength(180)]],
+                    audioUrl: ['', [Validators.maxLength(500)]]
+                })
+            })
         });
         this.catalogCityEditForm = this.formBuilder.nonNullable.group({
             name: ['', [Validators.required, Validators.maxLength(120)]],
             region: ['', [Validators.required, Validators.maxLength(120)]],
             bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-            heroImage: ['', [Validators.required, Validators.maxLength(500)]]
+            heroImage: ['', [Validators.required, Validators.maxLength(500)]],
+            translations: this.formBuilder.nonNullable.group({
+                en: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(120)]]
+                }),
+                fr: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(120)]]
+                }),
+                es: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(120)]]
+                })
+            })
         });
         this.catalogPoiEditForm = this.formBuilder.nonNullable.group({
             cityId: ['', [Validators.required]],
@@ -3549,9 +4534,32 @@ export class AdminDashboardComponent {
             descriptionShort: ['', [Validators.required, Validators.maxLength(1000)]],
             descriptionLong: ['', [Validators.required, Validators.maxLength(10000)]],
             imageUrl: ['', [Validators.required, Validators.maxLength(500)]],
-            audioUrl: ['', [Validators.required, Validators.maxLength(500)]],
+            audioUrl: ['', [Validators.maxLength(500)]],
             priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-            durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]]
+            durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
+            translations: this.formBuilder.nonNullable.group({
+                en: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(180)]],
+                    descriptionShort: ['', [Validators.maxLength(1000)]],
+                    descriptionLong: ['', [Validators.maxLength(10000)]],
+                    audioLabel: ['', [Validators.maxLength(180)]],
+                    audioUrl: ['', [Validators.maxLength(500)]]
+                }),
+                fr: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(180)]],
+                    descriptionShort: ['', [Validators.maxLength(1000)]],
+                    descriptionLong: ['', [Validators.maxLength(10000)]],
+                    audioLabel: ['', [Validators.maxLength(180)]],
+                    audioUrl: ['', [Validators.maxLength(500)]]
+                }),
+                es: this.formBuilder.nonNullable.group({
+                    name: ['', [Validators.maxLength(180)]],
+                    descriptionShort: ['', [Validators.maxLength(1000)]],
+                    descriptionLong: ['', [Validators.maxLength(10000)]],
+                    audioLabel: ['', [Validators.maxLength(180)]],
+                    audioUrl: ['', [Validators.maxLength(500)]]
+                })
+            })
         });
         this.poiMapSearchForm = this.formBuilder.nonNullable.group({
             query: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(220)]]
@@ -3582,6 +4590,12 @@ export class AdminDashboardComponent {
                 this.discountCodeCreateForm.controls.code.setValue(normalized, { emitEvent: false });
             }
         });
+        this.partnerRequestApprovalForm.controls.code.valueChanges.subscribe((value) => {
+            const normalized = this.normalizeStructureInviteCode(value || '');
+            if (normalized !== value) {
+                this.partnerRequestApprovalForm.controls.code.setValue(normalized, { emitEvent: false });
+            }
+        });
         this.startCreateCatalogCity();
         this.startCreateCatalogPoi();
     }
@@ -3608,6 +4622,9 @@ export class AdminDashboardComponent {
     get canViewDiscountCodes() {
         return this.canManageUsers || this.isFacilityManager;
     }
+    get canManagePayPal() {
+        return this.canManageUsers;
+    }
     get visibleSections() {
         if (this.canManageUsers) {
             return this.sections;
@@ -3619,6 +4636,22 @@ export class AdminDashboardComponent {
     }
     get isFacilityManager() {
         return this.isAuthenticated && this.currentRole === 'facility_manager';
+    }
+    get canSavePayPalSettings() {
+        return this.canManagePayPal && !this.savingPayPalSettings && this.payPalForm.valid;
+    }
+    get payPalStatusLabel() {
+        const status = this.payPalSettings?.lastVerificationStatus || 'incomplete';
+        if (status === 'valid') {
+            return 'Connessione valida';
+        }
+        if (status === 'invalid') {
+            return 'Connessione non valida';
+        }
+        if (status === 'pending') {
+            return 'Da verificare';
+        }
+        return 'Configurazione incompleta';
     }
     get isImpersonating() {
         return this.isAuthenticated && this.auth.isImpersonating;
@@ -3653,6 +4686,18 @@ export class AdminDashboardComponent {
     }
     get totalPayments() {
         return this.paymentsSummary.totalPayments;
+    }
+    get totalPartnerRequests() {
+        return this.partnerRequests.length;
+    }
+    get pendingPartnerRequests() {
+        return this.partnerRequests.filter((request) => request.status === 'pending').length;
+    }
+    get approvedPartnerRequests() {
+        return this.partnerRequests.filter((request) => request.status === 'approved').length;
+    }
+    get sentPartnerRequestPdfs() {
+        return this.partnerRequests.filter((request) => request.pdfReleaseStatus === 'sent').length;
     }
     get totalStructureEarnings() {
         return this.paymentsSummary.totalStructureEarnings;
@@ -3728,6 +4773,7 @@ export class AdminDashboardComponent {
             !this.savingCatalogPoi &&
             !this.uploadingCatalogAudio &&
             !this.uploadingCatalogImage &&
+            !this.hasCatalogPoiTranslationAudioUploadInProgress('create') &&
             this.catalogPoiForm.valid);
     }
     get canSaveCatalogPoiEdit() {
@@ -3736,6 +4782,7 @@ export class AdminDashboardComponent {
             !this.savingCatalogPoi &&
             !this.uploadingCatalogPoiEditImage &&
             !this.uploadingCatalogPoiEditAudio &&
+            !this.hasCatalogPoiTranslationAudioUploadInProgress('edit') &&
             this.catalogPoiEditForm.valid);
     }
     get canSaveStructureEdit() {
@@ -3763,12 +4810,23 @@ export class AdminDashboardComponent {
             this.closeCreateDiscountCodeDialog();
             this.closeEditDiscountCodeDialog();
         }
+        if (section !== 'partnerRequests') {
+            this.closePartnerRequestApprovalDialog();
+            this.rejectingPartnerRequestId = null;
+            this.previewingPartnerRequestId = null;
+        }
         if (section !== 'catalog') {
             this.closeCreateCatalogCityDialog();
             this.closeCreateCatalogPoiDialog();
         }
         if (section === 'payments' && this.canAccessDashboard) {
             this.loadPayments();
+        }
+        else if (section === 'partnerRequests' && this.canManageUsers) {
+            this.loadPartnerRequests();
+        }
+        else if (section === 'paypal' && this.canManagePayPal) {
+            this.loadPayPalSettings();
         }
         else if (section === 'discounts' && this.canViewDiscountCodes) {
             this.loadDiscountCodes();
@@ -4222,6 +5280,321 @@ export class AdminDashboardComponent {
             }
         });
     }
+    loadPartnerRequests() {
+        if (!this.canManageUsers || this.loadingPartnerRequests) {
+            return;
+        }
+        this.loadingPartnerRequests = true;
+        this.auth.listPartnerRequests().subscribe({
+            next: (rows) => {
+                this.loadingPartnerRequests = false;
+                this.partnerRequests = this.sortPartnerRequests(rows || []);
+            },
+            error: (error) => {
+                this.loadingPartnerRequests = false;
+                const message = error?.error?.message || 'Errore caricamento richieste partner';
+                this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+            }
+        });
+    }
+    openPartnerRequestApproval(request) {
+        if (!this.canManageUsers || !this.partnerRequestApprovalDialog) {
+            return;
+        }
+        if (request.status === 'approved') {
+            return;
+        }
+        if (!this.catalogCities.length && !this.loadingCatalogCities) {
+            this.loadCatalogCities();
+        }
+        this.partnerRequestApprovalTarget = request;
+        this.startPartnerRequestApproval(request);
+        this.partnerRequestApprovalDialogRef?.close();
+        this.partnerRequestApprovalDialogRef = this.dialog.open(this.partnerRequestApprovalDialog, {
+            width: '760px',
+            maxWidth: '95vw'
+        });
+        this.partnerRequestApprovalDialogRef.afterClosed().subscribe(() => {
+            this.partnerRequestApprovalDialogRef = undefined;
+            this.approvingPartnerRequestId = null;
+            this.previewingPartnerRequestId = null;
+            this.startPartnerRequestApproval();
+        });
+    }
+    closePartnerRequestApprovalDialog() {
+        this.partnerRequestApprovalDialogRef?.close();
+        this.partnerRequestApprovalDialogRef = undefined;
+        this.approvingPartnerRequestId = null;
+        this.previewingPartnerRequestId = null;
+        this.startPartnerRequestApproval();
+    }
+    startPartnerRequestApproval(request = null) {
+        this.partnerRequestApprovalTarget = request;
+        this.partnerRequestApprovalForm.reset({
+            applyTo: 'bundle',
+            cityIds: this.catalogCities[0]?.id ? [this.catalogCities[0].id] : [],
+            code: '',
+            userDiscountPercent: 0,
+            structureFixedAmount: 0,
+            expiresAt: this.defaultDiscountCodeExpiryInput()
+        });
+    }
+    generateDiscountCodeForPartnerApproval() {
+        if (!this.canManageUsers || this.approvingPartnerRequestId !== null) {
+            return;
+        }
+        this.auth.generateStructureInviteCode().subscribe({
+            next: (inviteCode) => {
+                this.partnerRequestApprovalForm.controls.code.setValue(inviteCode);
+                this.partnerRequestApprovalForm.controls.code.markAsDirty();
+            },
+            error: (error) => {
+                const message = error?.error?.message || 'Errore generazione codice';
+                this.snackBar.open(message, 'Chiudi', { duration: 3200 });
+            }
+        });
+    }
+    previewPartnerRequestPdf(request, payload) {
+        if (!this.canManageUsers || this.previewingPartnerRequestId !== null) {
+            return;
+        }
+        this.previewingPartnerRequestId = request.id;
+        this.auth
+            .previewPartnerRequestPdf(request.id, payload || { code: request.discountCode || 'SCONTO' })
+            .subscribe({
+            next: (blob) => {
+                this.previewingPartnerRequestId = null;
+                const objectUrl = URL.createObjectURL(blob);
+                const previewLink = document.createElement('a');
+                previewLink.href = objectUrl;
+                previewLink.target = '_blank';
+                previewLink.rel = 'noopener';
+                previewLink.click();
+                window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+            },
+            error: (error) => {
+                this.previewingPartnerRequestId = null;
+                const message = error?.error?.message || 'Errore anteprima PDF';
+                this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+            }
+        });
+    }
+    previewSelectedPartnerRequestPdf() {
+        const request = this.partnerRequestApprovalTarget;
+        if (!request) {
+            return;
+        }
+        const { cityIds, code, userDiscountPercent, structureFixedAmount, expiresAt } = this.partnerRequestApprovalForm.getRawValue();
+        const expiresAtIso = this.toIsoDateTime(expiresAt);
+        this.previewPartnerRequestPdf(request, {
+            cityIds: this.normalizeSelectedCityIds(cityIds),
+            code: this.normalizeStructureInviteCode(code || '') || 'SCONTO',
+            userDiscountPercent: this.normalizePercent(userDiscountPercent),
+            structureFixedAmount: this.normalizeEuroAmount(structureFixedAmount),
+            expiresAt: expiresAtIso
+        });
+    }
+    approvePartnerRequest() {
+        const request = this.partnerRequestApprovalTarget;
+        if (!request || !this.canManageUsers || this.approvingPartnerRequestId !== null) {
+            return;
+        }
+        if (this.partnerRequestApprovalForm.invalid) {
+            this.partnerRequestApprovalForm.markAllAsTouched();
+            return;
+        }
+        const { applyTo, cityIds, code, userDiscountPercent, structureFixedAmount, expiresAt } = this.partnerRequestApprovalForm.getRawValue();
+        const normalizedCode = this.normalizeStructureInviteCode(code || '');
+        if (!normalizedCode) {
+            this.partnerRequestApprovalForm.controls.code.markAsTouched();
+            this.snackBar.open('Codice obbligatorio', 'Chiudi', { duration: 2800 });
+            return;
+        }
+        const expiresAtIso = this.toIsoDateTime(expiresAt);
+        if (!expiresAtIso) {
+            this.partnerRequestApprovalForm.controls.expiresAt.markAsTouched();
+            this.snackBar.open('Scadenza non valida', 'Chiudi', { duration: 2800 });
+            return;
+        }
+        const normalizedCityIds = this.normalizeSelectedCityIds(cityIds);
+        if (!normalizedCityIds.length) {
+            this.partnerRequestApprovalForm.controls.cityIds.markAsTouched();
+            this.snackBar.open('Seleziona almeno una citta', 'Chiudi', { duration: 2800 });
+            return;
+        }
+        const payload = {
+            applyTo,
+            cityIds: normalizedCityIds,
+            code: normalizedCode,
+            userDiscountPercent: this.normalizePercent(userDiscountPercent),
+            structureFixedAmount: this.normalizeEuroAmount(structureFixedAmount),
+            expiresAt: expiresAtIso
+        };
+        this.approvingPartnerRequestId = request.id;
+        this.auth.approvePartnerRequest(request.id, payload).subscribe({
+            next: (updated) => {
+                this.approvingPartnerRequestId = null;
+                this.partnerRequests = this.sortPartnerRequests(this.partnerRequests.map((item) => (item.id === updated.id ? updated : item)));
+                this.closePartnerRequestApprovalDialog();
+                this.loadStructures();
+                this.loadDiscountCodes();
+                this.snackBar.open(`Richiesta ${updated.structureName} approvata e inviata via email`, 'OK', {
+                    duration: 3200
+                });
+            },
+            error: (error) => {
+                this.approvingPartnerRequestId = null;
+                const message = error?.error?.message || 'Errore approvazione richiesta partner';
+                this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+            }
+        });
+    }
+    rejectPartnerRequest(request) {
+        if (!this.canManageUsers || this.rejectingPartnerRequestId !== null || request.status === 'approved') {
+            return;
+        }
+        const confirmed = window.confirm(`Negare la richiesta partner per "${request.structureName}"?`);
+        if (!confirmed) {
+            return;
+        }
+        this.rejectingPartnerRequestId = request.id;
+        this.auth.rejectPartnerRequest(request.id).subscribe({
+            next: (updated) => {
+                this.rejectingPartnerRequestId = null;
+                this.partnerRequests = this.sortPartnerRequests(this.partnerRequests.map((item) => (item.id === updated.id ? updated : item)));
+                this.snackBar.open(`Richiesta ${updated.structureName} negata`, 'OK', { duration: 2600 });
+            },
+            error: (error) => {
+                this.rejectingPartnerRequestId = null;
+                const message = error?.error?.message || 'Errore aggiornamento richiesta partner';
+                this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+            }
+        });
+    }
+    isPartnerRequestBusy(request) {
+        return (this.approvingPartnerRequestId === request.id ||
+            this.rejectingPartnerRequestId === request.id ||
+            this.previewingPartnerRequestId === request.id);
+    }
+    partnerRequestStatusLabel(status) {
+        if (status === 'approved') {
+            return 'Approvata';
+        }
+        if (status === 'rejected') {
+            return 'Negata';
+        }
+        return 'In attesa';
+    }
+    partnerRequestStatusClass(status) {
+        if (status === 'approved') {
+            return 'ok';
+        }
+        if (status === 'rejected') {
+            return 'bad';
+        }
+        return 'warn';
+    }
+    partnerRequestPdfStatusLabel(status) {
+        return status === 'sent' ? 'Inviato' : 'Da inviare';
+    }
+    partnerRequestPdfStatusClass(status) {
+        return status === 'sent' ? 'ok' : 'warn';
+    }
+    loadPayPalSettings() {
+        if (!this.canManagePayPal || this.loadingPayPalSettings) {
+            return;
+        }
+        this.loadingPayPalSettings = true;
+        this.auth.getPayPalSettings().subscribe({
+            next: (settings) => {
+                this.loadingPayPalSettings = false;
+                this.payPalSettings = settings;
+                this.payPalForm.reset({
+                    isEnabled: settings.isEnabled,
+                    mode: settings.mode,
+                    clientId: settings.clientId || '',
+                    clientSecret: settings.clientSecret || '',
+                    merchantId: settings.merchantId || '',
+                    merchantEmail: settings.merchantEmail || '',
+                    brandName: settings.brandName || 'Walk Around',
+                    webhookId: settings.webhookId || ''
+                });
+            },
+            error: (error) => {
+                this.loadingPayPalSettings = false;
+                const message = error?.error?.message || 'Errore caricamento configurazione PayPal';
+                this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+            }
+        });
+    }
+    savePayPalSettings() {
+        if (!this.canSavePayPalSettings) {
+            this.payPalForm.markAllAsTouched();
+            return;
+        }
+        this.savingPayPalSettings = true;
+        const payload = this.payPalForm.getRawValue();
+        this.auth
+            .updatePayPalSettings({
+            isEnabled: payload.isEnabled,
+            mode: payload.mode,
+            clientId: payload.clientId.trim(),
+            clientSecret: payload.clientSecret.trim(),
+            merchantId: payload.merchantId.trim(),
+            merchantEmail: payload.merchantEmail.trim(),
+            brandName: payload.brandName.trim() || 'Walk Around',
+            webhookId: payload.webhookId.trim(),
+            currencyCode: 'EUR'
+        })
+            .subscribe({
+            next: (settings) => {
+                this.savingPayPalSettings = false;
+                this.payPalSettings = settings;
+                this.snackBar.open('Configurazione PayPal salvata', 'OK', { duration: 2400 });
+            },
+            error: (error) => {
+                this.savingPayPalSettings = false;
+                const message = error?.error?.message || 'Errore salvataggio configurazione PayPal';
+                this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+            }
+        });
+    }
+    testPayPalSettings() {
+        if (!this.canManagePayPal || this.testingPayPalSettings) {
+            return;
+        }
+        this.testingPayPalSettings = true;
+        this.auth.testPayPalSettings().subscribe({
+            next: (response) => {
+                this.testingPayPalSettings = false;
+                if (response.settings) {
+                    this.payPalSettings = response.settings;
+                }
+                this.snackBar.open('Connessione PayPal verificata', 'OK', { duration: 2600 });
+            },
+            error: (error) => {
+                this.testingPayPalSettings = false;
+                const message = error?.error?.message || 'Verifica PayPal non riuscita';
+                if (this.payPalSettings) {
+                    this.payPalSettings = {
+                        ...this.payPalSettings,
+                        lastVerificationStatus: 'invalid',
+                        lastVerificationError: message
+                    };
+                }
+                this.snackBar.open(message, 'Chiudi', { duration: 3600 });
+            }
+        });
+    }
+    partnerRequestContactName(request) {
+        return `${request.contactFirstName || ''} ${request.contactLastName || ''}`.trim() || request.contactEmail;
+    }
+    partnerRequestAddress(request) {
+        const line1 = [request.addressStreet, request.addressNumber].filter(Boolean).join(' ');
+        const cityLine = [request.addressPostalCode, request.addressCity, request.addressProvince].filter(Boolean).join(' ');
+        const areaLine = [request.addressRegion, request.addressCountry].filter(Boolean).join(', ');
+        return [line1, cityLine, areaLine].filter(Boolean).join(' - ');
+    }
     onPaymentsStructureFilterChange(structureId) {
         if (!this.canManageUsers) {
             return;
@@ -4575,6 +5948,14 @@ export class AdminDashboardComponent {
                 else if (nextEditCityIds.length !== editCityIds.length) {
                     this.discountCodeEditForm.controls.cityIds.setValue(nextEditCityIds);
                 }
+                const partnerCityIds = this.normalizeSelectedCityIds(this.partnerRequestApprovalForm.controls.cityIds.value);
+                const nextPartnerCityIds = partnerCityIds.filter((cityId) => this.catalogCities.some((city) => city.id === cityId));
+                if (!nextPartnerCityIds.length && firstCityId) {
+                    this.partnerRequestApprovalForm.controls.cityIds.setValue([firstCityId]);
+                }
+                else if (nextPartnerCityIds.length !== partnerCityIds.length) {
+                    this.partnerRequestApprovalForm.controls.cityIds.setValue(nextPartnerCityIds);
+                }
                 const hasSelection = this.ensureCatalogSelectedCity();
                 if (hasSelection) {
                     this.loadCatalogPois(this.selectedCatalogCityId, { force: true });
@@ -4644,7 +6025,8 @@ export class AdminDashboardComponent {
             name: '',
             region: this.fixedCreateCityRegion,
             bundlePrice: 0,
-            heroImage: ''
+            heroImage: '',
+            translations: this.emptyCatalogCityTranslationsFormValue()
         });
         this.catalogCityForm.controls.region.disable({ emitEvent: false });
     }
@@ -4655,7 +6037,8 @@ export class AdminDashboardComponent {
             name: city.name,
             region: city.region,
             bundlePrice: city.bundlePrice,
-            heroImage: city.heroImage
+            heroImage: city.heroImage,
+            translations: this.catalogCityTranslationsFormValue(city.translations)
         });
         if (!this.editCatalogCityDialog) {
             return;
@@ -4697,7 +6080,8 @@ export class AdminDashboardComponent {
             name: '',
             region: '',
             bundlePrice: 0,
-            heroImage: ''
+            heroImage: '',
+            translations: this.emptyCatalogCityTranslationsFormValue()
         });
     }
     saveCatalogCityEdit() {
@@ -4755,6 +6139,7 @@ export class AdminDashboardComponent {
     }
     startCreateCatalogPoi() {
         this.editingCatalogPoiId = null;
+        this.resetCatalogPoiTranslationAudioUploadState('create');
         this.catalogPoiForm.reset({
             cityId: this.selectedCatalogCityId || '',
             name: '',
@@ -4766,11 +6151,13 @@ export class AdminDashboardComponent {
             imageUrl: '',
             audioUrl: '',
             priceSingle: 0,
-            durationSec: 60
+            durationSec: 60,
+            translations: this.emptyCatalogPoiTranslationsFormValue()
         });
     }
     editCatalogPoi(poi) {
         this.editingCatalogPoiId = poi.id;
+        this.resetCatalogPoiTranslationAudioUploadState('edit');
         if (this.selectedCatalogCityId !== poi.cityId) {
             this.selectedCatalogCityId = poi.cityId;
             this.loadCatalogPois(poi.cityId);
@@ -4784,9 +6171,10 @@ export class AdminDashboardComponent {
             descriptionShort: poi.descriptionShort,
             descriptionLong: poi.descriptionLong,
             imageUrl: poi.imageUrl,
-            audioUrl: poi.audioUrl,
+            audioUrl: poi.audioUrl || '',
             priceSingle: poi.priceSingle,
-            durationSec: poi.durationSec
+            durationSec: poi.durationSec,
+            translations: this.catalogPoiTranslationsFormValue(poi.translations)
         });
         if (!this.editCatalogPoiDialog) {
             return;
@@ -4826,6 +6214,7 @@ export class AdminDashboardComponent {
         this.editingCatalogPoiId = null;
         this.uploadingCatalogPoiEditImage = false;
         this.uploadingCatalogPoiEditAudio = false;
+        this.resetCatalogPoiTranslationAudioUploadState('edit');
         this.catalogPoiEditForm.reset({
             cityId: this.selectedCatalogCityId || '',
             name: '',
@@ -4837,7 +6226,8 @@ export class AdminDashboardComponent {
             imageUrl: '',
             audioUrl: '',
             priceSingle: 0,
-            durationSec: 60
+            durationSec: 60,
+            translations: this.emptyCatalogPoiTranslationsFormValue()
         });
     }
     saveCatalogPoiEdit() {
@@ -4895,6 +6285,10 @@ export class AdminDashboardComponent {
         if (!file) {
             return;
         }
+        if (this.isFileLargerThan(file, this.maxCatalogAudioUploadBytes, 'audio')) {
+            target.value = '';
+            return;
+        }
         const fileDurationPromise = this.readAudioDurationFromFile(file);
         const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiForm.controls.cityId.value);
         if (!mediaTarget) {
@@ -4919,6 +6313,10 @@ export class AdminDashboardComponent {
         if (!file) {
             return;
         }
+        if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+            target.value = '';
+            return;
+        }
         const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiForm.controls.cityId.value);
         if (!mediaTarget) {
             this.snackBar.open('Seleziona prima una citta per caricare l immagine', 'Chiudi', { duration: 3200 });
@@ -4941,6 +6339,10 @@ export class AdminDashboardComponent {
         if (!file) {
             return;
         }
+        if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+            target.value = '';
+            return;
+        }
         const cityName = this.catalogCityForm.controls.name.value.trim();
         if (!cityName) {
             this.snackBar.open('Inserisci prima il nome citta', 'Chiudi', { duration: 3200 });
@@ -4961,6 +6363,10 @@ export class AdminDashboardComponent {
         const target = event.target;
         const file = target?.files?.[0];
         if (!file) {
+            return;
+        }
+        if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+            target.value = '';
             return;
         }
         const cityName = this.catalogCityEditForm.controls.name.value.trim();
@@ -4988,6 +6394,10 @@ export class AdminDashboardComponent {
         if (!file) {
             return;
         }
+        if (this.isFileLargerThan(file, this.maxCatalogImageUploadBytes, 'immagine')) {
+            target.value = '';
+            return;
+        }
         const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiEditForm.controls.cityId.value);
         if (!mediaTarget) {
             this.snackBar.open('Seleziona prima una citta per caricare l immagine', 'Chiudi', { duration: 3200 });
@@ -5010,6 +6420,10 @@ export class AdminDashboardComponent {
         if (!file) {
             return;
         }
+        if (this.isFileLargerThan(file, this.maxCatalogAudioUploadBytes, 'audio')) {
+            target.value = '';
+            return;
+        }
         const fileDurationPromise = this.readAudioDurationFromFile(file);
         const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiEditForm.controls.cityId.value);
         if (!mediaTarget) {
@@ -5026,6 +6440,36 @@ export class AdminDashboardComponent {
         }, () => {
             this.uploadingCatalogPoiEditAudio = false;
             target.value = '';
+        });
+    }
+    onCatalogPoiTranslationAudioFileSelected(event, language, target) {
+        const input = event.target;
+        const file = input?.files?.[0];
+        if (!file) {
+            return;
+        }
+        if (this.isFileLargerThan(file, this.maxCatalogAudioUploadBytes, 'audio')) {
+            input.value = '';
+            return;
+        }
+        const form = this.catalogPoiFormForTarget(target);
+        const fileDurationPromise = this.readAudioDurationFromFile(file);
+        const mediaTarget = this.resolvePoiMediaTarget(form.controls.cityId.value);
+        if (!mediaTarget) {
+            this.snackBar.open('Seleziona prima una citta per caricare l audio', 'Chiudi', { duration: 3200 });
+            input.value = '';
+            return;
+        }
+        this.uploadCatalogPoiAudio(file, mediaTarget, (audioUrl) => {
+            const audioControl = this.catalogPoiTranslationAudioControl(target, language);
+            audioControl.setValue(audioUrl);
+            audioControl.markAsDirty();
+            this.applyDetectedDurationToControl(fileDurationPromise, form.controls.durationSec, audioUrl);
+        }, () => {
+            this.setCatalogPoiTranslationAudioUploading(target, language, true);
+        }, () => {
+            this.setCatalogPoiTranslationAudioUploading(target, language, false);
+            input.value = '';
         });
     }
     clearCatalogCityImage() {
@@ -5051,6 +6495,19 @@ export class AdminDashboardComponent {
     clearCatalogPoiEditAudio() {
         this.catalogPoiEditForm.controls.audioUrl.setValue('');
         this.catalogPoiEditForm.controls.audioUrl.markAsDirty();
+    }
+    clearCatalogPoiTranslationAudio(language, target) {
+        const audioControl = this.catalogPoiTranslationAudioControl(target, language);
+        audioControl.setValue('');
+        audioControl.markAsDirty();
+    }
+    catalogPoiTranslationAudioUrl(language, target) {
+        return this.catalogPoiTranslationAudioControl(target, language).value;
+    }
+    isCatalogPoiTranslationAudioUploading(language, target) {
+        return target === 'edit'
+            ? this.uploadingCatalogPoiEditTranslationAudio[language]
+            : this.uploadingCatalogPoiTranslationAudio[language];
     }
     hasUserDraftChanges(user) {
         if (this.isReadOnlyAppUser(user)) {
@@ -5217,6 +6674,8 @@ export class AdminDashboardComponent {
             this.discountCodeGroups = [];
             this.associatedUsers = [];
             this.payments = [];
+            this.partnerRequests = [];
+            this.payPalSettings = null;
             this.paymentsSummary = {
                 totalPayments: 0,
                 totalCollected: 0,
@@ -5239,6 +6698,7 @@ export class AdminDashboardComponent {
             this.editCatalogPoiDialogRef?.close();
             this.createDiscountCodeDialogRef?.close();
             this.editDiscountCodeDialogRef?.close();
+            this.partnerRequestApprovalDialogRef?.close();
             this.catalogPoiAudioPlayerDialogRef?.close();
             this.poiMapPickerDialogRef?.close();
             this.createCatalogCityDialogRef = undefined;
@@ -5247,6 +6707,7 @@ export class AdminDashboardComponent {
             this.editCatalogPoiDialogRef = undefined;
             this.createDiscountCodeDialogRef = undefined;
             this.editDiscountCodeDialogRef = undefined;
+            this.partnerRequestApprovalDialogRef = undefined;
             this.catalogPoiAudioPlayerDialogRef = undefined;
             this.poiMapPickerDialogRef = undefined;
             this.audioPlayerPoiName = '';
@@ -5268,11 +6729,15 @@ export class AdminDashboardComponent {
             this.loadingStructures = false;
             this.loadingAssociatedUsers = false;
             this.loadingPayments = false;
+            this.loadingPartnerRequests = false;
+            this.loadingPayPalSettings = false;
             this.creatingStructure = false;
             this.updatingStructure = false;
             this.loadingDiscountCodes = false;
             this.creatingDiscountCode = false;
             this.updatingDiscountCode = false;
+            this.savingPayPalSettings = false;
+            this.testingPayPalSettings = false;
             this.loadingCatalogCities = false;
             this.loadingCatalogPois = false;
             this.savingCatalogCity = false;
@@ -5280,11 +6745,17 @@ export class AdminDashboardComponent {
             this.uploadingCatalogAudio = false;
             this.uploadingCatalogCityImage = false;
             this.uploadingCatalogImage = false;
+            this.resetCatalogPoiTranslationAudioUploadState('create');
             this.uploadingCatalogCityEditImage = false;
             this.uploadingCatalogPoiEditImage = false;
             this.uploadingCatalogPoiEditAudio = false;
+            this.resetCatalogPoiTranslationAudioUploadState('edit');
             this.deletingCatalogCityId = null;
             this.deletingCatalogPoiId = null;
+            this.partnerRequestApprovalTarget = null;
+            this.approvingPartnerRequestId = null;
+            this.rejectingPartnerRequestId = null;
+            this.previewingPartnerRequestId = null;
             this.savingUserId = null;
             this.savingDiscountCodeId = null;
             this.deletingDiscountCodeId = null;
@@ -5343,7 +6814,8 @@ export class AdminDashboardComponent {
                 name: '',
                 region: this.fixedCreateCityRegion,
                 bundlePrice: 0,
-                heroImage: ''
+                heroImage: '',
+                translations: this.emptyCatalogCityTranslationsFormValue()
             });
             this.catalogCityForm.controls.region.disable({ emitEvent: false });
             this.discountCodeCreateForm.reset({
@@ -5362,11 +6834,22 @@ export class AdminDashboardComponent {
                 structureFixedAmount: 0,
                 expiresAt: ''
             });
+            this.payPalForm.reset({
+                isEnabled: false,
+                mode: 'sandbox',
+                clientId: '',
+                clientSecret: '',
+                merchantId: '',
+                merchantEmail: '',
+                brandName: 'Walk Around',
+                webhookId: ''
+            });
             this.catalogCityEditForm.reset({
                 name: '',
                 region: '',
                 bundlePrice: 0,
-                heroImage: ''
+                heroImage: '',
+                translations: this.emptyCatalogCityTranslationsFormValue()
             });
             this.catalogPoiForm.reset({
                 cityId: '',
@@ -5379,7 +6862,8 @@ export class AdminDashboardComponent {
                 imageUrl: '',
                 audioUrl: '',
                 priceSingle: 0,
-                durationSec: 60
+                durationSec: 60,
+                translations: this.emptyCatalogPoiTranslationsFormValue()
             });
             this.catalogPoiEditForm.reset({
                 cityId: '',
@@ -5392,7 +6876,8 @@ export class AdminDashboardComponent {
                 imageUrl: '',
                 audioUrl: '',
                 priceSingle: 0,
-                durationSec: 60
+                durationSec: 60,
+                translations: this.emptyCatalogPoiTranslationsFormValue()
             });
             this.poiMapSearchForm.reset({
                 query: ''
@@ -5465,6 +6950,21 @@ export class AdminDashboardComponent {
             return 'association-status association-status-expired';
         }
         return 'association-status association-status-invalid';
+    }
+    userAssociationStatusTooltip(status) {
+        if (status === 'assigned') {
+            return 'Assegnata: il codice è collegato all\'utente ma non è ancora stato riscattato.';
+        }
+        if (status === 'used') {
+            return 'Usato: il codice è già stato riscattato e ha già generato lo sblocco.';
+        }
+        if (status === 'active') {
+            return 'Attivo: codice valido e disponibile.';
+        }
+        if (status === 'expired') {
+            return 'Scaduto: codice non più utilizzabile.';
+        }
+        return 'Non valido: codice non riconosciuto o non associabile.';
     }
     openUsersForStructure(structure) {
         if (!this.canManageUsers) {
@@ -5606,6 +7106,9 @@ export class AdminDashboardComponent {
     trackByCatalogPoiId(_index, poi) {
         return poi.id;
     }
+    trackByPartnerRequestId(_index, request) {
+        return request.id;
+    }
     structureCodes(structureId) {
         return this.discountCodesByStructureId[structureId] || [];
     }
@@ -5635,8 +7138,14 @@ export class AdminDashboardComponent {
         if (this.activeSection === 'discounts' || this.activeSection === 'structures') {
             this.loadDiscountCodes();
         }
+        if (this.activeSection === 'partnerRequests' && this.canManageUsers) {
+            this.loadPartnerRequests();
+        }
         if (this.activeSection === 'payments') {
             this.loadPayments();
+        }
+        if (this.activeSection === 'paypal') {
+            this.loadPayPalSettings();
         }
         if (this.activeSection === 'catalog') {
             this.loadCatalogCities();
@@ -5671,7 +7180,8 @@ export class AdminDashboardComponent {
             region: value.region.trim(),
             bundlePrice: Number(value.bundlePrice),
             heroImage: value.heroImage.trim(),
-            isDefault: Boolean(isDefault)
+            isDefault: Boolean(isDefault),
+            translations: this.buildCatalogCityTranslationsPayload(value.translations)
         };
     }
     toCatalogPoiPayload(value) {
@@ -5691,8 +7201,154 @@ export class AdminDashboardComponent {
             imageUrl: value.imageUrl.trim(),
             audioUrl: normalizedAudioUrl,
             priceSingle: Number(value.priceSingle),
-            durationSec: Math.max(1, Math.round(resolvedDuration))
+            durationSec: Math.max(1, Math.round(resolvedDuration)),
+            translations: this.buildCatalogPoiTranslationsPayload(value.translations)
         };
+    }
+    emptyCatalogCityTranslationsFormValue() {
+        return {
+            en: { name: '' },
+            fr: { name: '' },
+            es: { name: '' }
+        };
+    }
+    emptyCatalogPoiTranslationsFormValue() {
+        return {
+            en: {
+                name: '',
+                descriptionShort: '',
+                descriptionLong: '',
+                audioLabel: '',
+                audioUrl: ''
+            },
+            fr: {
+                name: '',
+                descriptionShort: '',
+                descriptionLong: '',
+                audioLabel: '',
+                audioUrl: ''
+            },
+            es: {
+                name: '',
+                descriptionShort: '',
+                descriptionLong: '',
+                audioLabel: '',
+                audioUrl: ''
+            }
+        };
+    }
+    catalogCityTranslationsFormValue(translations) {
+        return {
+            en: { name: String(translations?.en?.name || '') },
+            fr: { name: String(translations?.fr?.name || '') },
+            es: { name: String(translations?.es?.name || '') }
+        };
+    }
+    catalogPoiTranslationsFormValue(translations) {
+        return {
+            en: {
+                name: String(translations?.en?.name || ''),
+                descriptionShort: String(translations?.en?.descriptionShort || ''),
+                descriptionLong: String(translations?.en?.descriptionLong || ''),
+                audioLabel: String(translations?.en?.audioLabel || ''),
+                audioUrl: String(translations?.en?.audioUrl || '')
+            },
+            fr: {
+                name: String(translations?.fr?.name || ''),
+                descriptionShort: String(translations?.fr?.descriptionShort || ''),
+                descriptionLong: String(translations?.fr?.descriptionLong || ''),
+                audioLabel: String(translations?.fr?.audioLabel || ''),
+                audioUrl: String(translations?.fr?.audioUrl || '')
+            },
+            es: {
+                name: String(translations?.es?.name || ''),
+                descriptionShort: String(translations?.es?.descriptionShort || ''),
+                descriptionLong: String(translations?.es?.descriptionLong || ''),
+                audioLabel: String(translations?.es?.audioLabel || ''),
+                audioUrl: String(translations?.es?.audioUrl || '')
+            }
+        };
+    }
+    buildCatalogCityTranslationsPayload(value) {
+        const translations = {};
+        this.contentLanguages.forEach(({ code }) => {
+            const name = this.normalizeTranslationValue(value?.[code]?.name);
+            if (name) {
+                translations[code] = { name };
+            }
+        });
+        return Object.keys(translations).length ? translations : undefined;
+    }
+    buildCatalogPoiTranslationsPayload(value) {
+        const translations = {};
+        this.contentLanguages.forEach(({ code }) => {
+            const name = this.normalizeTranslationValue(value?.[code]?.name);
+            const descriptionShort = this.normalizeTranslationValue(value?.[code]?.descriptionShort);
+            const descriptionLong = this.normalizeTranslationValue(value?.[code]?.descriptionLong);
+            const audioLabel = this.normalizeTranslationValue(value?.[code]?.audioLabel);
+            const audioUrl = this.normalizeTranslationValue(value?.[code]?.audioUrl);
+            if (name || descriptionShort || descriptionLong || audioLabel || audioUrl) {
+                translations[code] = {
+                    ...(name ? { name } : {}),
+                    ...(descriptionShort ? { descriptionShort } : {}),
+                    ...(descriptionLong ? { descriptionLong } : {}),
+                    ...(audioLabel ? { audioLabel } : {}),
+                    ...(audioUrl ? { audioUrl } : {})
+                };
+            }
+        });
+        return Object.keys(translations).length ? translations : undefined;
+    }
+    normalizeTranslationValue(value) {
+        const normalized = String(value || '').trim();
+        return normalized || undefined;
+    }
+    sortPartnerRequests(rows) {
+        return [...rows].sort((left, right) => {
+            const priority = (status) => {
+                if (status === 'pending') {
+                    return 0;
+                }
+                if (status === 'approved') {
+                    return 1;
+                }
+                if (status === 'rejected') {
+                    return 2;
+                }
+                return 3;
+            };
+            const byStatus = priority(left.status) - priority(right.status);
+            if (byStatus !== 0) {
+                return byStatus;
+            }
+            const rightDate = Date.parse(right.createdAt || '');
+            const leftDate = Date.parse(left.createdAt || '');
+            if (Number.isFinite(rightDate) && Number.isFinite(leftDate) && rightDate !== leftDate) {
+                return rightDate - leftDate;
+            }
+            return right.id - left.id;
+        });
+    }
+    catalogPoiFormForTarget(target) {
+        return target === 'edit' ? this.catalogPoiEditForm : this.catalogPoiForm;
+    }
+    catalogPoiTranslationAudioControl(target, language) {
+        return this.catalogPoiFormForTarget(target).controls.translations.controls[language].controls.audioUrl;
+    }
+    hasCatalogPoiTranslationAudioUploadInProgress(target) {
+        return this.contentLanguages.some(({ code }) => this.isCatalogPoiTranslationAudioUploading(code, target));
+    }
+    resetCatalogPoiTranslationAudioUploadState(target) {
+        this.contentLanguages.forEach(({ code }) => {
+            this.setCatalogPoiTranslationAudioUploading(target, code, false);
+        });
+    }
+    setCatalogPoiTranslationAudioUploading(target, language, value) {
+        if (target === 'edit') {
+            this.uploadingCatalogPoiEditTranslationAudio[language] = value;
+            return;
+        }
+        this.uploadingCatalogPoiTranslationAudio[language] = value;
     }
     async initializePoiMap() {
         try {
@@ -5851,6 +7507,14 @@ export class AdminDashboardComponent {
             reader.onerror = () => reject(new Error('Impossibile leggere il file selezionato'));
             reader.readAsDataURL(file);
         });
+    }
+    isFileLargerThan(file, maxBytes, mediaLabel) {
+        if (file.size <= maxBytes) {
+            return false;
+        }
+        const maxMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
+        this.snackBar.open(`File ${mediaLabel} troppo grande (max ${maxMb}MB)`, 'Chiudi', { duration: 3500 });
+        return true;
     }
     normalizeAudioUrl(audioUrl) {
         return String(audioUrl || '').trim();
@@ -6125,6 +7789,7 @@ export class AdminDashboardComponent {
             i0.ɵɵviewQuery(_c6, 5);
             i0.ɵɵviewQuery(_c7, 5);
             i0.ɵɵviewQuery(_c8, 5);
+            i0.ɵɵviewQuery(_c9, 5);
         } if (rf & 2) {
             let _t;
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.createCatalogCityDialog = _t.first);
@@ -6133,12 +7798,13 @@ export class AdminDashboardComponent {
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.editCatalogPoiDialog = _t.first);
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.createDiscountCodeDialog = _t.first);
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.editDiscountCodeDialog = _t.first);
+            i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.partnerRequestApprovalDialog = _t.first);
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.catalogPoiAudioPlayerDialog = _t.first);
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.poiMapPickerDialog = _t.first);
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.poiMapCanvas = _t.first);
-        } }, standalone: false, decls: 4, vars: 3, consts: [["createCatalogCityDialog", ""], ["createCatalogPoiDialog", ""], ["editCatalogCityDialog", ""], ["editCatalogPoiDialog", ""], ["catalogPoiAudioPlayerDialog", ""], ["poiMapPickerDialog", ""], ["createDiscountCodeDialog", ""], ["editDiscountCodeDialog", ""], ["associatedUsersLoadingStat", ""], ["managerPaymentsLoadingStat", ""], ["managerEarningsLoadingStat", ""], ["usersLoadingStat", ""], ["structuresLoadingStat", ""], ["noUserAssociations", ""], ["noUnlockedItems", ""], ["discountReadOnlyActions", ""], ["adminPaymentsLoadingStat", ""], ["adminCollectedLoadingStat", ""], ["adminDiscountLoadingStat", ""], ["adminEarningsLoadingStat", ""], ["catalogCitiesLoadingStat", ""], ["catalogPoisLoadingStat", ""], ["createCityImageEmpty", ""], ["createCatalogCityImageInput", ""], ["createPoiImageEmpty", ""], ["createCatalogPoiImageInput", ""], ["createPoiAudioEmpty", ""], ["createCatalogPoiAudioInput", ""], ["cityEditImageEmpty", ""], ["catalogCityEditImageInput", ""], ["poiEditImageEmpty", ""], ["catalogPoiEditImageInput", ""], ["poiEditAudioEmpty", ""], ["catalogPoiEditAudioInput", ""], ["poiMapCanvas", ""], ["createDiscountExpiresInput", ""], ["editDiscountExpiresInput", ""], ["noStructureCodes", ""], [1, "page-shell", "admin-shell"], ["class", "card login-card", 4, "ngIf"], ["class", "dashboard-layout", 4, "ngIf"], [1, "card", "login-card"], [1, "loading-state"], ["diameter", "34"], [1, "page-title"], [1, "page-subtitle"], [1, "form-grid", 3, "ngSubmit", "formGroup"], ["appearance", "outline"], ["matInput", "", "type", "email", "formControlName", "email", "autocomplete", "username"], ["matInput", "", "type", "password", "formControlName", "password", "autocomplete", "current-password"], ["mat-flat-button", "", "color", "primary", "type", "submit", 1, "big-cta", 3, "disabled"], [1, "dashboard-layout"], [1, "sidebar"], [1, "brand"], [1, "brand-mark"], ["class", "sidebar-nav", 4, "ngIf"], [1, "sidebar-footer"], ["mat-stroked-button", "", "color", "primary", "class", "sidebar-action", 3, "click", 4, "ngIf"], ["mat-stroked-button", "", "color", "primary", 1, "sidebar-action", 3, "click"], [1, "dashboard-main"], ["class", "dashboard-topbar card", 4, "ngIf"], ["class", "card", 4, "ngIf"], [4, "ngIf"], [1, "sidebar-nav"], ["type", "button", "class", "nav-item", 3, "active", "click", 4, "ngFor", "ngForOf"], ["type", "button", 1, "nav-item", 3, "click"], [1, "dashboard-topbar", "card"], ["class", "page-subtitle", 4, "ngIf"], [1, "card"], [1, "stats-grid"], [1, "stat-card"], [4, "ngIf", "ngIfElse"], [1, "card", "table-card"], [1, "table-head"], [1, "table-subtitle"], ["class", "inline-note", 4, "ngIf"], ["class", "table-wrap", 4, "ngIf"], [1, "stat-spinner"], ["diameter", "24"], [1, "inline-note"], [1, "table-wrap"], [1, "modern-table", "users-table", "payments-table", "compact-table"], ["colspan", "6", 1, "empty-cell", "spinner-cell"], ["diameter", "28"], ["colspan", "6", 1, "empty-cell"], [4, "ngFor", "ngForOf"], [1, "associated-code-status-cell"], [1, "association-status"], [1, "stats-grid", "manager-payments-stats"], [1, "modern-table", "users-table"], ["colspan", "11", 1, "empty-cell", "spinner-cell"], ["colspan", "11", 1, "empty-cell"], [4, "ngFor", "ngForOf", "ngForTrackBy"], [1, "payment-user-cell"], [1, "payment-method-cell"], [1, "payment-content-cell"], [1, "payment-type-badge"], [1, "table-actions"], ["type", "button", 1, "toggle-panel-btn", 3, "click"], [1, "toggle-panel-icon"], ["class", "inline-panel", 4, "ngIf"], ["class", "users-structure-filter", 4, "ngIf"], [1, "inline-panel"], ["matInput", "", "type", "text", "formControlName", "firstName", "autocomplete", "given-name"], ["matInput", "", "type", "text", "formControlName", "lastName", "autocomplete", "family-name"], ["matInput", "", "type", "email", "formControlName", "email", "autocomplete", "email"], ["formControlName", "role"], ["value", "facility_manager"], ["value", "admin"], ["appearance", "outline", 4, "ngIf"], ["class", "inline-loader", 4, "ngIf"], ["class", "invite-result", 4, "ngIf"], ["formControlName", "structureId", 3, "disabled"], [3, "value", "disabled"], [3, "value", 4, "ngFor", "ngForOf"], [3, "value"], [1, "inline-loader"], [1, "invite-result"], ["matInput", "", "type", "password", "formControlName", "password", "autocomplete", "new-password"], ["value", "user"], [1, "users-structure-filter"], ["type", "button", 1, "ghost-btn", 3, "click"], ["colspan", "7", 1, "empty-cell", "spinner-cell"], ["colspan", "7", 1, "empty-cell"], ["class", "structure-name muted", 4, "ngIf"], [1, "structure-cell"], ["class", "association-list", 4, "ngIf", "ngIfElse"], [1, "unlocked-cell"], ["class", "unlocked-counts", 4, "ngIf", "ngIfElse"], ["class", "unlocked-tags", 4, "ngIf"], ["class", "unlocked-pois", 4, "ngIf"], [1, "status-pill"], [1, "action-buttons"], ["mat-stroked-button", "", "color", "primary", 3, "disabled", "click", 4, "ngIf"], ["mat-flat-button", "", "color", "accent", 3, "disabled", "click", 4, "ngIf"], ["mat-stroked-button", "", "color", "warn", 3, "disabled", "click", 4, "ngIf"], [1, "structure-name", "muted"], [1, "association-list"], ["class", "association-item", 4, "ngFor", "ngForOf"], [1, "association-item"], [1, "association-head"], [1, "structure-name"], ["class", "structure-code", 4, "ngIf"], [1, "structure-code"], [1, "unlocked-counts"], [1, "unlocked-tags"], ["class", "status-pill ok", 4, "ngFor", "ngForOf"], [1, "status-pill", "ok"], [1, "unlocked-pois"], ["class", "unlocked-poi-item", 4, "ngFor", "ngForOf"], [1, "unlocked-poi-item"], ["mat-stroked-button", "", "color", "primary", 3, "click", "disabled"], ["mat-flat-button", "", "color", "accent", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "warn", 3, "click", "disabled"], ["class", "table-subtitle", 4, "ngIf"], ["class", "table-actions", 4, "ngIf"], [1, "modern-table", "structures-table", "payments-table", "compact-table"], ["colspan", "2", 1, "empty-cell", "spinner-cell"], ["colspan", "2", 1, "empty-cell"], [1, "discount-group-list"], ["class", "discount-group-item", 4, "ngFor", "ngForOf"], [1, "discount-group-item"], [1, "discount-group-main"], [1, "discount-group-meta"], [1, "expiry-badge", 3, "ngClass"], ["class", "action-buttons", 4, "ngIf", "ngIfElse"], ["mat-stroked-button", "", "color", "primary", "type", "button", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "warn", "type", "button", 3, "click", "disabled"], ["appearance", "outline", 1, "compact-filter"], [3, "selectionChange", "value"], ["value", ""], [1, "modern-table", "structures-table"], ["colspan", "12", 1, "empty-cell", "spinner-cell"], ["colspan", "12", 1, "empty-cell"], ["role", "tablist", "aria-label", "Gestione catalogo", 1, "catalog-tabs"], ["type", "button", 1, "catalog-tab", 3, "click"], ["class", "catalog-stack", 4, "ngIf"], [1, "catalog-stack"], [1, "catalog-panel-head"], [1, "catalog-list-head"], [1, "table-wrap", "compact-wrap"], [1, "modern-table", "compact-table"], ["colspan", "4", 1, "empty-cell", "spinner-cell"], ["colspan", "4", 1, "empty-cell"], ["mat-stroked-button", "", "color", "primary", "type", "button", 3, "click"], ["appearance", "outline", 1, "catalog-city-filter", "compact-filter"], [1, "modern-table"], ["type", "button", 1, "audio-link-btn", 3, "click", "disabled"], ["mat-dialog-title", ""], [1, "form-grid", "dialog-form", 3, "ngSubmit", "formGroup"], ["mat-dialog-content", "", 1, "dialog-body"], ["matInput", "", "type", "text", "formControlName", "name"], ["matInput", "", "type", "text", "formControlName", "region", "readonly", ""], ["matInput", "", "type", "number", "min", "0", "step", "0.01", "formControlName", "bundlePrice"], ["type", "hidden", "formControlName", "heroImage"], [1, "media-block"], [1, "media-block-head"], ["class", "media-preview", 4, "ngIf", "ngIfElse"], [1, "media-upload-actions"], ["type", "file", "accept", ".jpg,.jpeg,.png,.webp,.gif,.avif,image/*", "hidden", "", 3, "change"], ["type", "button", 1, "generate-code-btn", 3, "click", "disabled"], ["type", "button", "class", "ghost-btn", 3, "disabled", "click", 4, "ngIf"], ["mat-dialog-actions", "", "align", "end", 1, "dialog-actions"], ["type", "button", 1, "row-save-btn", "secondary", 3, "click", "disabled"], ["mat-flat-button", "", "color", "primary", "type", "submit", 3, "disabled"], [1, "media-preview"], ["alt", "Anteprima immagine citta", 3, "src"], [1, "media-preview", "placeholder"], ["type", "button", 1, "ghost-btn", 3, "click", "disabled"], ["formControlName", "category"], [1, "coords-grid"], ["matInput", "", "type", "number", "step", "0.000001", "formControlName", "lat"], ["matInput", "", "type", "number", "step", "0.000001", "formControlName", "lng"], [1, "map-picker-row"], ["type", "button", 1, "toggle-panel-btn", "subtle", 3, "click"], ["matInput", "", "rows", "2", "formControlName", "descriptionShort"], ["matInput", "", "rows", "5", "formControlName", "descriptionLong"], ["type", "hidden", "formControlName", "imageUrl"], ["type", "hidden", "formControlName", "audioUrl"], ["class", "audio-file-pill", 4, "ngIf", "ngIfElse"], ["type", "file", "accept", ".mp3,.m4a,.wav,.ogg,.aac,audio/*", "hidden", "", 3, "change"], ["class", "media-player", "controls", "", "preload", "none", 3, "src", 4, "ngIf"], ["matInput", "", "type", "number", "step", "0.01", "min", "0", "formControlName", "priceSingle"], ["alt", "Anteprima immagine luogo", 3, "src"], [1, "audio-file-pill"], [1, "audio-file-label"], ["controls", "", "preload", "none", 1, "media-player", 3, "src"], ["matInput", "", "type", "text", "formControlName", "region"], ["formControlName", "cityId"], ["mat-dialog-content", "", 1, "dialog-body", "map-dialog-body"], ["controls", "", "autoplay", "", "preload", "metadata", 1, "media-player", 3, "src"], ["type", "button", 1, "row-save-btn", "secondary", 3, "click"], [1, "map-search-form", 3, "ngSubmit", "formGroup"], ["matInput", "", "type", "text", "formControlName", "query", "autocomplete", "off"], ["type", "submit", 1, "generate-code-btn", 3, "disabled"], ["class", "map-selected-coords", 4, "ngIf"], ["class", "map-results", 4, "ngIf"], [1, "map-preview-panel"], [1, "map-preview-head"], [1, "poi-map-canvas"], ["type", "button", 1, "row-save-btn", 3, "click", "disabled"], [1, "map-selected-coords"], [1, "map-results"], ["class", "map-result-card", 4, "ngFor", "ngForOf"], [1, "map-result-card"], ["type", "button", 1, "row-save-btn", 3, "click"], ["mat-stroked-button", "", "type", "button", 3, "click"], ["formControlName", "structureId"], [1, "invite-code-row"], ["appearance", "outline", 1, "invite-code-field"], ["matInput", "", "type", "text", "formControlName", "code", "maxlength", "6", "autocomplete", "off"], [1, "discount-scope-group"], ["formControlName", "applyTo", 1, "discount-scope-radio"], ["value", "single"], ["value", "bundle"], ["formControlName", "cityIds", "multiple", ""], ["matInput", "", "type", "number", "min", "0", "max", "100", "step", "0.01", "formControlName", "userDiscountPercent"], ["matInput", "", "type", "number", "min", "0", "max", "10000", "step", "0.01", "formControlName", "structureFixedAmount"], ["matInput", "", "type", "datetime-local", "step", "60", "formControlName", "expiresAt"], ["matSuffix", "", "type", "button", "aria-label", "Apri calendario e ora", 1, "date-picker-suffix-btn", 3, "click"], ["aria-hidden", "true", 1, "calendar-icon-glyph"], ["type", "submit", 1, "row-save-btn", 3, "disabled"], ["diameter", "22"], ["matInput", "", "type", "text", "formControlName", "name", "autocomplete", "organization"], [1, "address-grid"], ["appearance", "outline", 1, "address-span-2"], ["matInput", "", "type", "text", "formControlName", "street", "autocomplete", "street-address"], ["matInput", "", "type", "text", "formControlName", "streetNumber"], ["matInput", "", "type", "text", "formControlName", "postalCode", "maxlength", "5", "inputmode", "numeric"], ["matInput", "", "type", "text", "formControlName", "city", "autocomplete", "address-level2"], ["matInput", "", "type", "text", "formControlName", "province", "autocomplete", "address-level1"], ["matInput", "", "type", "text", "formControlName", "country", "autocomplete", "country-name"], ["class", "structure-codes-list", 4, "ngIf", "ngIfElse"], ["type", "button", 1, "table-link-btn", 3, "click", "disabled"], [1, "structure-codes-list"], ["class", "structure-code-item", 4, "ngFor", "ngForOf"], [1, "structure-code-item"]], template: function AdminDashboardComponent_Template(rf, ctx) { if (rf & 1) {
-            i0.ɵɵelementStart(0, "section", 38);
-            i0.ɵɵtemplate(1, AdminDashboardComponent_mat_card_1_Template, 5, 0, "mat-card", 39)(2, AdminDashboardComponent_mat_card_2_Template, 16, 3, "mat-card", 39)(3, AdminDashboardComponent_div_3_Template, 43, 12, "div", 40);
+        } }, standalone: false, decls: 4, vars: 3, consts: [["createCatalogCityDialog", ""], ["createCatalogPoiDialog", ""], ["editCatalogCityDialog", ""], ["editCatalogPoiDialog", ""], ["catalogPoiAudioPlayerDialog", ""], ["poiMapPickerDialog", ""], ["createDiscountCodeDialog", ""], ["partnerRequestApprovalDialog", ""], ["editDiscountCodeDialog", ""], ["associatedUsersLoadingStat", ""], ["managerPaymentsLoadingStat", ""], ["managerEarningsLoadingStat", ""], ["usersLoadingStat", ""], ["structuresLoadingStat", ""], ["noUserAssociations", ""], ["adminUnlockedAll", ""], ["noUnlockedItems", ""], ["discountReadOnlyActions", ""], ["partnerRequestsLoadingStat", ""], ["partnerPendingLoadingStat", ""], ["partnerApprovedLoadingStat", ""], ["partnerPdfLoadingStat", ""], ["adminPaymentsLoadingStat", ""], ["adminCollectedLoadingStat", ""], ["adminDiscountLoadingStat", ""], ["adminEarningsLoadingStat", ""], ["payPalStatusLoading", ""], ["payPalModeLoading", ""], ["catalogCitiesLoadingStat", ""], ["catalogPoisLoadingStat", ""], ["createCityImageEmpty", ""], ["createCatalogCityImageInput", ""], ["createPoiImageEmpty", ""], ["createCatalogPoiImageInput", ""], ["createPoiAudioEmpty", ""], ["createCatalogPoiAudioInput", ""], ["createPoiTranslationAudioEmpty", ""], ["createPoiTranslationAudioInput", ""], ["cityEditImageEmpty", ""], ["catalogCityEditImageInput", ""], ["poiEditImageEmpty", ""], ["catalogPoiEditImageInput", ""], ["poiEditAudioEmpty", ""], ["catalogPoiEditAudioInput", ""], ["editPoiTranslationAudioEmpty", ""], ["editPoiTranslationAudioInput", ""], ["poiMapCanvas", ""], ["createDiscountExpiresInput", ""], ["partnerApprovalExpiresInput", ""], ["editDiscountExpiresInput", ""], ["noStructureCodes", ""], [1, "page-shell", "admin-shell"], ["class", "card login-card", 4, "ngIf"], ["class", "dashboard-layout", 4, "ngIf"], [1, "card", "login-card"], [1, "loading-state"], ["diameter", "34"], [1, "page-title"], [1, "page-subtitle"], [1, "form-grid", 3, "ngSubmit", "formGroup"], ["appearance", "outline"], ["matInput", "", "type", "email", "formControlName", "email", "autocomplete", "username"], ["matInput", "", "type", "password", "formControlName", "password", "autocomplete", "current-password"], ["mat-flat-button", "", "color", "primary", "type", "submit", 1, "big-cta", 3, "disabled"], [1, "dashboard-layout"], [1, "sidebar"], [1, "brand"], [1, "brand-mark"], ["src", "/assets/logo.png", "alt", "Logo Walk Around", "loading", "eager", "decoding", "sync", "fetchpriority", "high"], ["class", "sidebar-nav", 4, "ngIf"], [1, "sidebar-footer"], ["mat-stroked-button", "", "color", "primary", "class", "sidebar-action", 3, "click", 4, "ngIf"], ["mat-stroked-button", "", "color", "primary", 1, "sidebar-action", 3, "click"], [1, "dashboard-main"], ["class", "dashboard-topbar card", 4, "ngIf"], ["class", "card", 4, "ngIf"], [4, "ngIf"], [1, "sidebar-nav"], ["type", "button", "class", "nav-item", 3, "active", "click", 4, "ngFor", "ngForOf"], ["type", "button", 1, "nav-item", 3, "click"], [1, "dashboard-topbar", "card"], ["class", "page-subtitle", 4, "ngIf"], [1, "card"], [1, "stats-grid"], [1, "stat-card"], [4, "ngIf", "ngIfElse"], [1, "card", "table-card"], [1, "table-head"], [1, "table-subtitle"], ["class", "inline-note", 4, "ngIf"], ["class", "table-wrap", 4, "ngIf"], [1, "stat-spinner"], ["diameter", "24"], [1, "inline-note"], [1, "table-wrap"], [1, "modern-table", "users-table", "payments-table", "compact-table"], ["colspan", "6", 1, "empty-cell", "spinner-cell"], ["diameter", "28"], ["colspan", "6", 1, "empty-cell"], [4, "ngFor", "ngForOf"], [1, "associated-code-status-cell"], [1, "association-status"], [1, "stats-grid", "manager-payments-stats"], [1, "modern-table", "users-table"], ["colspan", "11", 1, "empty-cell", "spinner-cell"], ["colspan", "11", 1, "empty-cell"], [4, "ngFor", "ngForOf", "ngForTrackBy"], [1, "payment-user-cell"], [1, "payment-method-cell"], [1, "payment-content-cell"], [1, "payment-type-badge"], [1, "table-actions"], ["type", "button", 1, "toggle-panel-btn", 3, "click"], [1, "toggle-panel-icon"], ["class", "inline-panel", 4, "ngIf"], ["class", "users-structure-filter", 4, "ngIf"], [1, "inline-panel"], ["matInput", "", "type", "text", "formControlName", "firstName", "autocomplete", "given-name"], ["matInput", "", "type", "text", "formControlName", "lastName", "autocomplete", "family-name"], ["matInput", "", "type", "email", "formControlName", "email", "autocomplete", "email"], ["formControlName", "role"], ["value", "facility_manager"], ["value", "admin"], ["appearance", "outline", 4, "ngIf"], ["class", "inline-loader", 4, "ngIf"], ["class", "invite-result", 4, "ngIf"], ["formControlName", "structureId", 3, "disabled"], [3, "value", "disabled"], [3, "value", 4, "ngFor", "ngForOf"], [3, "value"], [1, "inline-loader"], [1, "invite-result"], ["matInput", "", "type", "password", "formControlName", "password", "autocomplete", "new-password"], ["value", "user"], [1, "users-structure-filter"], ["type", "button", 1, "ghost-btn", 3, "click"], ["class", "structure-name muted", 4, "ngIf"], [1, "structure-cell"], ["class", "association-list", 4, "ngIf", "ngIfElse"], ["class", "unlocked-cell", 4, "ngIf", "ngIfElse"], ["class", "action-buttons user-row-actions", 4, "ngIf"], [1, "structure-name", "muted"], [1, "association-list"], ["class", "association-item", 4, "ngFor", "ngForOf"], [1, "association-item"], [1, "association-head"], [1, "structure-name"], [3, "matTooltip"], ["class", "structure-code", 4, "ngIf"], [1, "structure-code"], [1, "unlocked-cell"], ["class", "unlocked-counts", 4, "ngIf", "ngIfElse"], ["class", "unlocked-tags", 4, "ngIf"], ["class", "unlocked-pois", 4, "ngIf"], [1, "unlocked-counts"], [1, "unlocked-tags"], ["class", "status-pill ok", 4, "ngFor", "ngForOf"], [1, "status-pill", "ok"], [1, "unlocked-pois"], ["class", "unlocked-poi-item", 4, "ngFor", "ngForOf"], [1, "unlocked-poi-item"], [1, "action-buttons", "user-row-actions"], [1, "user-row-actions-top"], ["mat-stroked-button", "", "color", "primary", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "warn", 3, "click", "disabled"], ["mat-flat-button", "", "color", "accent", "matTooltipPosition", "above", 1, "user-row-impersonate-btn", 3, "click", "disabled", "matTooltip"], ["class", "table-subtitle", 4, "ngIf"], ["class", "table-actions", 4, "ngIf"], [1, "modern-table", "structures-table", "payments-table", "compact-table"], ["colspan", "2", 1, "empty-cell", "spinner-cell"], ["colspan", "2", 1, "empty-cell"], [1, "discount-group-list"], ["class", "discount-group-item", 4, "ngFor", "ngForOf"], [1, "discount-group-item"], [1, "discount-group-main"], [1, "discount-group-meta"], [1, "expiry-badge", 3, "ngClass"], ["class", "action-buttons", 4, "ngIf", "ngIfElse"], [1, "action-buttons"], ["mat-stroked-button", "", "color", "primary", "type", "button", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "warn", "type", "button", 3, "click", "disabled"], [1, "modern-table", "partner-requests-table"], [1, "partner-request-main-cell"], [1, "partner-request-contact-cell"], [1, "partner-request-address-cell"], [1, "partner-request-status-cell"], [1, "status-pill", 3, "ngClass"], [1, "partner-request-message-cell"], [1, "partner-request-notes"], ["mat-flat-button", "", "color", "primary", "type", "button", 3, "click", "disabled"], ["appearance", "outline", 1, "compact-filter"], [3, "selectionChange", "value"], ["value", ""], [1, "modern-table", "structures-table"], ["colspan", "12", 1, "empty-cell", "spinner-cell"], ["colspan", "12", 1, "empty-cell"], [1, "paypal-settings-form", 3, "ngSubmit", "formGroup"], ["class", "paypal-status-strip", 4, "ngIf"], [1, "form-grid"], ["formControlName", "mode"], ["value", "sandbox"], ["value", "live"], ["matInput", "", "formControlName", "brandName"], ["appearance", "outline", 1, "full-span"], ["matInput", "", "formControlName", "clientId", "autocomplete", "off"], ["matInput", "", "formControlName", "clientSecret", "autocomplete", "off"], ["matInput", "", "formControlName", "merchantId", "autocomplete", "off"], ["matInput", "", "formControlName", "merchantEmail", "autocomplete", "off"], ["matInput", "", "formControlName", "webhookId", "autocomplete", "off"], ["formControlName", "isEnabled"], [1, "paypal-actions"], ["mat-flat-button", "", "color", "primary", "type", "submit", 3, "disabled"], [1, "paypal-status-strip"], ["role", "tablist", "aria-label", "Gestione catalogo", 1, "catalog-tabs"], ["type", "button", 1, "catalog-tab", 3, "click"], ["class", "catalog-stack", 4, "ngIf"], [1, "catalog-stack"], [1, "catalog-panel-head"], [1, "catalog-list-head"], [1, "table-wrap", "compact-wrap"], [1, "modern-table", "compact-table"], ["colspan", "4", 1, "empty-cell", "spinner-cell"], ["colspan", "4", 1, "empty-cell"], ["mat-stroked-button", "", "color", "primary", "type", "button", 3, "click"], ["appearance", "outline", 1, "catalog-city-filter", "compact-filter"], [1, "modern-table"], ["type", "button", 1, "audio-link-btn", 3, "click", "disabled"], ["mat-dialog-title", ""], [1, "form-grid", "dialog-form", 3, "ngSubmit", "formGroup"], ["mat-dialog-content", "", 1, "dialog-body"], ["matInput", "", "type", "text", "formControlName", "name"], ["matInput", "", "type", "text", "formControlName", "region", "readonly", ""], ["matInput", "", "type", "number", "min", "0", "step", "0.01", "formControlName", "bundlePrice"], ["formGroupName", "translations", 1, "translation-panel"], [1, "translation-panel-head"], [1, "translation-grid"], ["class", "translation-card", 3, "formGroupName", 4, "ngFor", "ngForOf"], ["type", "hidden", "formControlName", "heroImage"], [1, "media-block"], [1, "media-block-head"], ["class", "media-preview", 4, "ngIf", "ngIfElse"], [1, "media-upload-actions"], ["type", "file", "accept", ".jpg,.jpeg,.png,.webp,.gif,.avif,image/*", "hidden", "", 3, "change"], ["type", "button", 1, "generate-code-btn", 3, "click", "disabled"], ["type", "button", "class", "ghost-btn", 3, "disabled", "click", 4, "ngIf"], ["mat-dialog-actions", "", "align", "end", 1, "dialog-actions"], ["type", "button", 1, "row-save-btn", "secondary", 3, "click", "disabled"], [1, "translation-card", 3, "formGroupName"], [1, "media-preview"], ["alt", "Anteprima immagine citta", 3, "src"], [1, "media-preview", "placeholder"], ["type", "button", 1, "ghost-btn", 3, "click", "disabled"], ["formControlName", "category"], [1, "coords-grid"], ["matInput", "", "type", "number", "step", "0.000001", "formControlName", "lat"], ["matInput", "", "type", "number", "step", "0.000001", "formControlName", "lng"], [1, "map-picker-row"], ["type", "button", 1, "toggle-panel-btn", "subtle", 3, "click"], ["matInput", "", "rows", "2", "formControlName", "descriptionShort"], ["matInput", "", "rows", "5", "formControlName", "descriptionLong"], ["type", "hidden", "formControlName", "imageUrl"], ["type", "hidden", "formControlName", "audioUrl"], ["class", "audio-file-pill", 4, "ngIf", "ngIfElse"], ["type", "file", "accept", ".mp3,.m4a,.wav,.ogg,.aac,audio/*", "hidden", "", 3, "change"], ["class", "media-player", "controls", "", "preload", "none", 3, "src", 4, "ngIf"], ["matInput", "", "type", "number", "step", "0.01", "min", "0", "formControlName", "priceSingle"], ["matInput", "", "type", "text", "formControlName", "audioLabel"], [1, "audio-file-pill"], [1, "audio-file-label"], ["controls", "", "preload", "none", 1, "media-player", 3, "src"], ["alt", "Anteprima immagine luogo", 3, "src"], ["matInput", "", "type", "text", "formControlName", "region"], ["formControlName", "cityId"], ["mat-dialog-content", "", 1, "dialog-body", "map-dialog-body"], ["controls", "", "autoplay", "", "preload", "metadata", 1, "media-player", 3, "src"], ["type", "button", 1, "row-save-btn", "secondary", 3, "click"], [1, "map-search-form", 3, "ngSubmit", "formGroup"], ["matInput", "", "type", "text", "formControlName", "query", "autocomplete", "off"], ["type", "submit", 1, "generate-code-btn", 3, "disabled"], ["class", "map-selected-coords", 4, "ngIf"], ["class", "map-results", 4, "ngIf"], [1, "map-preview-panel"], [1, "map-preview-head"], [1, "poi-map-canvas"], ["type", "button", 1, "row-save-btn", 3, "click", "disabled"], [1, "map-selected-coords"], [1, "map-results"], ["class", "map-result-card", 4, "ngFor", "ngForOf"], [1, "map-result-card"], ["type", "button", 1, "row-save-btn", 3, "click"], ["mat-stroked-button", "", "type", "button", 3, "click"], ["formControlName", "structureId"], [1, "invite-code-row"], ["appearance", "outline", 1, "invite-code-field"], ["matInput", "", "type", "text", "formControlName", "code", "maxlength", "6", "autocomplete", "off"], [1, "discount-scope-group"], ["formControlName", "applyTo", 1, "discount-scope-radio"], ["value", "single"], ["value", "bundle"], ["formControlName", "cityIds", "multiple", ""], ["matInput", "", "type", "number", "min", "0", "max", "100", "step", "0.01", "formControlName", "userDiscountPercent"], ["matInput", "", "type", "number", "min", "0", "max", "10000", "step", "0.01", "formControlName", "structureFixedAmount"], ["matInput", "", "type", "datetime-local", "step", "60", "formControlName", "expiresAt"], ["matSuffix", "", "type", "button", "aria-label", "Apri calendario e ora", 1, "date-picker-suffix-btn", 3, "click"], ["aria-hidden", "true", 1, "calendar-icon-glyph"], ["type", "submit", 1, "row-save-btn", 3, "disabled"], ["diameter", "22"], ["matInput", "", "type", "text", "formControlName", "name", "autocomplete", "organization"], [1, "address-grid"], ["appearance", "outline", 1, "address-span-2"], ["matInput", "", "type", "text", "formControlName", "street", "autocomplete", "street-address"], ["matInput", "", "type", "text", "formControlName", "streetNumber"], ["matInput", "", "type", "text", "formControlName", "postalCode", "maxlength", "5", "inputmode", "numeric"], ["matInput", "", "type", "text", "formControlName", "city", "autocomplete", "address-level2"], ["matInput", "", "type", "text", "formControlName", "province", "autocomplete", "address-level1"], ["matInput", "", "type", "text", "formControlName", "country", "autocomplete", "country-name"], ["colspan", "7", 1, "empty-cell", "spinner-cell"], ["colspan", "7", 1, "empty-cell"], ["class", "structure-codes-list", 4, "ngIf", "ngIfElse"], ["type", "button", 1, "table-link-btn", 3, "click", "disabled"], [1, "structure-codes-list"], ["class", "structure-code-item", 4, "ngFor", "ngForOf"], [1, "structure-code-item"]], template: function AdminDashboardComponent_Template(rf, ctx) { if (rf & 1) {
+            i0.ɵɵelementStart(0, "section", 51);
+            i0.ɵɵtemplate(1, AdminDashboardComponent_mat_card_1_Template, 5, 0, "mat-card", 52)(2, AdminDashboardComponent_mat_card_2_Template, 16, 3, "mat-card", 52)(3, AdminDashboardComponent_div_3_Template, 47, 14, "div", 53);
             i0.ɵɵelementEnd();
         } if (rf & 2) {
             i0.ɵɵadvance();
@@ -6147,11 +7813,11 @@ export class AdminDashboardComponent {
             i0.ɵɵproperty("ngIf", ctx.authChecked && !ctx.isAuthenticated);
             i0.ɵɵadvance();
             i0.ɵɵproperty("ngIf", ctx.authChecked && ctx.isAuthenticated);
-        } }, dependencies: [i6.NgClass, i6.NgForOf, i6.NgIf, i1.ɵNgNoValidate, i1.DefaultValueAccessor, i1.NumberValueAccessor, i1.NgControlStatus, i1.NgControlStatusGroup, i1.MaxLengthValidator, i1.MinValidator, i1.MaxValidator, i1.FormGroupDirective, i1.FormControlName, i7.MatButton, i8.MatCard, i3.MatDialogTitle, i3.MatDialogActions, i3.MatDialogContent, i9.MatFormField, i9.MatLabel, i9.MatHint, i9.MatError, i9.MatSuffix, i10.MatInput, i11.MatProgressSpinner, i12.MatRadioGroup, i12.MatRadioButton, i13.MatSelect, i13.MatOption, i6.SlicePipe, i6.DecimalPipe, i6.DatePipe], styles: [".admin-shell[_ngcontent-%COMP%] {\n  padding: 0;\n  margin: 0;\n  max-width: none;\n  width: 100%;\n  min-height: 100vh;\n}\n\n.login-card[_ngcontent-%COMP%] {\n  width: min(460px, calc(100% - 32px));\n  padding: 24px;\n  margin: 28px auto;\n}\n\n.form-grid[_ngcontent-%COMP%] {\n  margin-top: 14px;\n  display: grid;\n  gap: 12px;\n}\n\n.dashboard-layout[_ngcontent-%COMP%] {\n  min-height: 100vh;\n  display: grid;\n  grid-template-columns: 250px 1fr;\n  background: linear-gradient(140deg, #eef2f8 0%, #f8fbff 55%, #f4f7fb 100%);\n}\n\n.sidebar[_ngcontent-%COMP%] {\n  background: linear-gradient(175deg, #091733 0%, #0b214b 100%);\n  color: #dfe9ff;\n  padding: 18px 14px;\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n  position: sticky;\n  top: 0;\n  align-self: start;\n  height: 100vh;\n  overflow-y: auto;\n}\n\n.brand[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 4px 6px 12px;\n  border-bottom: 1px solid rgba(168, 189, 235, 0.22);\n}\n\n.brand-mark[_ngcontent-%COMP%] {\n  width: 34px;\n  height: 34px;\n  border-radius: 9px;\n  background: linear-gradient(145deg, #1e6fff, #00b4d8);\n  color: #fff;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-weight: 800;\n}\n\n.brand[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 0;\n  opacity: 0.8;\n  font-size: 0.85rem;\n}\n\n.sidebar-nav[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 8px;\n}\n\n.nav-item[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 12px;\n  color: #e7efff;\n  background: transparent;\n  padding: 12px;\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  cursor: pointer;\n  text-align: left;\n}\n\n.nav-item[_ngcontent-%COMP%]::before {\n  content: '';\n  width: 8px;\n  height: 8px;\n  border-radius: 999px;\n  background: rgba(197, 218, 255, 0.72);\n  flex: 0 0 8px;\n}\n\n.nav-item[_ngcontent-%COMP%]:hover {\n  background: rgba(202, 221, 255, 0.14);\n}\n\n.nav-item.active[_ngcontent-%COMP%] {\n  background: rgba(50, 124, 255, 0.35);\n  box-shadow: inset 0 0 0 1px rgba(153, 195, 255, 0.45);\n}\n\n.nav-item.active[_ngcontent-%COMP%]::before {\n  background: #7fd2ff;\n}\n\n.sidebar-footer[_ngcontent-%COMP%] {\n  margin-top: auto;\n  border-top: 1px solid rgba(168, 189, 235, 0.22);\n  padding: 12px 6px 0;\n  display: grid;\n  gap: 8px;\n}\n\n.sidebar-footer[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  opacity: 0.85;\n  font-size: 0.9rem;\n  word-break: break-all;\n}\n\n.sidebar-action[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.dashboard-main[_ngcontent-%COMP%] {\n  padding: 20px;\n  display: grid;\n  align-content: start;\n  grid-auto-rows: max-content;\n  gap: 16px;\n  min-width: 0;\n  overflow-x: hidden;\n}\n\n.dashboard-topbar[_ngcontent-%COMP%] {\n  padding: 18px;\n}\n\n.stats-grid[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n\n.manager-payments-stats[_ngcontent-%COMP%] {\n  margin-bottom: 12px;\n}\n\n.stat-card[_ngcontent-%COMP%] {\n  border-radius: 14px;\n  border: 1px solid #dce5f7;\n  box-shadow: none;\n  padding: 14px;\n  display: grid;\n  gap: 2px;\n}\n\n.stat-card[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  color: #6f7f99;\n}\n\n.stat-card[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  font-size: 1.55rem;\n  color: #152949;\n}\n\n.stat-spinner[_ngcontent-%COMP%] {\n  min-height: 38px;\n  display: flex;\n  align-items: center;\n}\n\n.stat-spinner[_ngcontent-%COMP%]   .mat-mdc-progress-spinner[_ngcontent-%COMP%] {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n}\n\n.modern-cta[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 12px;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  color: #fff;\n  padding: 11px 16px;\n  font-size: 0.98rem;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.modern-cta[_ngcontent-%COMP%]:hover {\n  filter: brightness(1.06);\n}\n\n.modern-cta.secondary[_ngcontent-%COMP%] {\n  background: linear-gradient(135deg, #2d6c3a, #1f552d);\n}\n\n.table-card[_ngcontent-%COMP%] {\n  padding: 18px;\n  min-width: 0;\n}\n\n.table-card[_ngcontent-%COMP%]   h2[_ngcontent-%COMP%] {\n  margin: 0;\n}\n\n.inline-note[_ngcontent-%COMP%] {\n  margin: 0;\n  color: #a24f28;\n  font-size: 0.92rem;\n}\n\n.invite-result[_ngcontent-%COMP%] {\n  margin-top: 14px;\n  display: grid;\n  gap: 5px;\n  color: #1d3153;\n}\n\n.table-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n\n.table-subtitle[_ngcontent-%COMP%] {\n  margin: 4px 0 0;\n  color: #6a7f9f;\n  font-size: 0.92rem;\n}\n\n.table-actions[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  justify-content: flex-end;\n}\n\n.toggle-panel-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c6d7f3;\n  border-radius: 12px;\n  background: #fff;\n  color: #174074;\n  padding: 9px 12px;\n  font-size: 0.9rem;\n  font-weight: 700;\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  cursor: pointer;\n  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;\n}\n\n.toggle-panel-btn[_ngcontent-%COMP%]:hover {\n  background: #f3f8ff;\n}\n\n.toggle-panel-btn.active[_ngcontent-%COMP%] {\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  border-color: #0d4e9d;\n  color: #fff;\n}\n\n.toggle-panel-btn.subtle[_ngcontent-%COMP%] {\n  border-style: dashed;\n  background: #f6f9ff;\n  color: #204674;\n}\n\n.toggle-panel-icon[_ngcontent-%COMP%] {\n  width: 19px;\n  height: 19px;\n  border-radius: 999px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 0.95rem;\n  line-height: 1;\n  font-weight: 800;\n  color: #0c468a;\n  background: #dfeaff;\n}\n\n.toggle-panel-btn.active[_ngcontent-%COMP%]   .toggle-panel-icon[_ngcontent-%COMP%] {\n  color: #fff;\n  background: rgba(255, 255, 255, 0.26);\n}\n\n.inline-panel[_ngcontent-%COMP%] {\n  border: 1px solid #dfe8f8;\n  border-radius: 12px;\n  background: #f9fcff;\n  padding: 14px;\n  margin-bottom: 12px;\n}\n\n.inline-panel[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n  margin: 0;\n  font-size: 1.02rem;\n  color: #163157;\n}\n\n.inline-panel[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 6px 0 0;\n  color: #617694;\n}\n\n.address-grid[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 10px;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n}\n\n.address-span-2[_ngcontent-%COMP%] {\n  grid-column: span 2;\n}\n\n.invite-code-row[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n  gap: 10px;\n}\n\n.invite-code-field[_ngcontent-%COMP%] {\n  flex: 1;\n  min-width: 0;\n}\n\n.invite-code-field[_ngcontent-%COMP%]   input[_ngcontent-%COMP%] {\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.generate-code-btn[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #1f7a45, #0f5f31);\n  color: #fff;\n  padding: 11px 14px;\n  font-size: 0.9rem;\n  font-weight: 600;\n  min-width: 130px;\n  cursor: pointer;\n}\n\n.generate-code-btn[_ngcontent-%COMP%]:disabled {\n  opacity: 0.7;\n  cursor: not-allowed;\n}\n\n.generate-code-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  filter: brightness(1.07);\n}\n\n.field-note[_ngcontent-%COMP%] {\n  margin: -4px 0 0;\n  font-size: 0.82rem;\n  color: #5f7598;\n}\n\n.discount-code-note[_ngcontent-%COMP%] {\n  padding-left: 2px;\n}\n\n.discount-scope-group[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 8px;\n  padding: 10px 12px;\n  border: 1px solid #dce7f8;\n  border-radius: 10px;\n  background: #f7fbff;\n}\n\n.discount-scope-group[_ngcontent-%COMP%]   label[_ngcontent-%COMP%] {\n  margin: 0;\n  font-size: 0.82rem;\n  font-weight: 700;\n  color: #20436f;\n}\n\n.discount-scope-radio[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 16px;\n  flex-wrap: wrap;\n}\n\n.users-structure-filter[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin: 10px 0 12px;\n  padding: 10px 12px;\n  border: 1px solid #dce8f8;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #20436f;\n}\n\n.users-structure-filter[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #0f4f98;\n}\n\n.table-link-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f4f8ff;\n  color: #174074;\n  font-weight: 700;\n  min-width: 44px;\n  padding: 4px 10px;\n  cursor: pointer;\n}\n\n.table-link-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  background: #e9f1ff;\n}\n\n.table-link-btn[_ngcontent-%COMP%]:disabled {\n  opacity: 0.55;\n  cursor: not-allowed;\n}\n\n.date-picker-suffix-btn[_ngcontent-%COMP%] {\n  width: 30px;\n  height: 30px;\n  margin-right: 6px;\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f6faff;\n  color: #1d4d87;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n}\n\n.date-picker-suffix-btn[_ngcontent-%COMP%]:hover {\n  background: #ebf4ff;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%] {\n  width: 14px;\n  height: 14px;\n  border: 2px solid currentColor;\n  border-radius: 3px;\n  position: relative;\n  display: inline-block;\n  box-sizing: border-box;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%]::before, \n.calendar-icon-glyph[_ngcontent-%COMP%]::after {\n  content: '';\n  position: absolute;\n  top: -4px;\n  width: 2px;\n  height: 4px;\n  border-radius: 2px;\n  background: currentColor;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%]::before {\n  left: 2px;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%]::after {\n  right: 2px;\n}\n\n.table-wrap[_ngcontent-%COMP%] {\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  overflow-x: auto;\n  border: 1px solid #e1e8f7;\n  border-radius: 12px;\n}\n\n.modern-table[_ngcontent-%COMP%] {\n  width: 100%;\n  border-collapse: collapse;\n  min-width: 980px;\n}\n\n.modern-table[_ngcontent-%COMP%]   th[_ngcontent-%COMP%] {\n  text-align: left;\n  font-size: 0.86rem;\n  letter-spacing: 0.02em;\n  color: #5d6f8d;\n  background: #f4f8ff;\n  padding: 12px;\n  border-bottom: 1px solid #e1e8f7;\n}\n\n.modern-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  padding: 12px;\n  border-bottom: 1px solid #edf2fb;\n  vertical-align: top;\n  color: #213459;\n}\n\n.modern-table[_ngcontent-%COMP%]   tbody[_ngcontent-%COMP%]   tr[_ngcontent-%COMP%]:last-child   td[_ngcontent-%COMP%] {\n  border-bottom: 0;\n}\n\n.modern-table[_ngcontent-%COMP%]   tbody[_ngcontent-%COMP%]   tr.row-dirty[_ngcontent-%COMP%] {\n  background: linear-gradient(90deg, rgba(23, 117, 208, 0.06), rgba(23, 117, 208, 0.01));\n}\n\n.modern-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  display: block;\n}\n\n.modern-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  display: block;\n  margin-top: 3px;\n  line-height: 1.32;\n  color: #6f7f99;\n}\n\n.cell-controls[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n\n.table-field[_ngcontent-%COMP%] {\n  min-width: 170px;\n  width: 100%;\n}\n\n.percent-field[_ngcontent-%COMP%] {\n  min-width: 140px;\n  max-width: 160px;\n}\n\n.structure-cell[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 4px;\n}\n\n.association-list[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 7px;\n}\n\n.association-item[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 3px;\n  padding: 6px 8px;\n  border: 1px solid #dce7f7;\n  border-radius: 8px;\n  background: #f8fbff;\n}\n\n.association-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.structure-name[_ngcontent-%COMP%] {\n  color: #1f355c;\n  font-size: 0.84rem;\n}\n\n.structure-code[_ngcontent-%COMP%] {\n  color: #3a5074;\n  font-size: 0.8rem;\n}\n\n.structure-name.muted[_ngcontent-%COMP%], \n.structure-code.muted[_ngcontent-%COMP%] {\n  color: #6f7f99;\n}\n\n.association-status[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  min-height: 20px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.72rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.association-status-active[_ngcontent-%COMP%] {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.association-status-used[_ngcontent-%COMP%] {\n  color: #9a3412;\n  background: #fff4e5;\n  border-color: #f6cf9b;\n}\n\n.association-status-expired[_ngcontent-%COMP%] {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.association-status-invalid[_ngcontent-%COMP%] {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.unlocked-cell[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 6px;\n  min-width: 210px;\n}\n\n.unlocked-counts[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px 12px;\n}\n\n.unlocked-tags[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.unlocked-pois[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 2px;\n}\n\n.unlocked-poi-item[_ngcontent-%COMP%] {\n  color: #4a5f80;\n}\n\n.associated-code-status-cell[_ngcontent-%COMP%] {\n  min-width: 130px;\n}\n\n.associated-code-status-cell[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  display: block;\n  margin-top: 4px;\n  color: #5b6f90;\n  font-size: 0.72rem;\n}\n\n.structure-codes-list[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 6px;\n}\n\n.structure-code-item[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 2px;\n}\n\n.discount-group-list[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 10px;\n}\n\n.discount-group-item[_ngcontent-%COMP%] {\n  border: 1px solid #dfe8f8;\n  border-radius: 10px;\n  background: #f9fcff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.discount-group-main[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.discount-group-main[_ngcontent-%COMP%]   code[_ngcontent-%COMP%] {\n  background: #ecf3ff;\n  border: 1px solid #cfe0fb;\n  border-radius: 8px;\n  padding: 3px 8px;\n  color: #113b6e;\n  font-weight: 700;\n}\n\n.discount-group-meta[_ngcontent-%COMP%] {\n  color: #486286;\n  font-size: 0.86rem;\n}\n\n.discount-group-meta[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #1f355c;\n}\n\n.expiry-badge[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  min-height: 21px;\n  margin-left: 8px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.expiry-badge-active[_ngcontent-%COMP%] {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.expiry-badge-expired[_ngcontent-%COMP%] {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.expiry-badge-unknown[_ngcontent-%COMP%] {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.payment-user-cell[_ngcontent-%COMP%] {\n  min-width: 240px;\n}\n\n.payment-method-cell[_ngcontent-%COMP%] {\n  min-width: 200px;\n}\n\n.payment-content-cell[_ngcontent-%COMP%] {\n  min-width: 180px;\n}\n\n.payments-table[_ngcontent-%COMP%] {\n  min-width: 860px;\n  table-layout: fixed;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-user-cell[_ngcontent-%COMP%] {\n  min-width: 0;\n  width: 220px;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-method-cell[_ngcontent-%COMP%] {\n  min-width: 0;\n  width: 130px;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-content-cell[_ngcontent-%COMP%] {\n  min-width: 0;\n  width: 170px;\n}\n\n.payments-table[_ngcontent-%COMP%]   th[_ngcontent-%COMP%], \n.payments-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  padding: 9px 8px;\n}\n\n.payments-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  overflow-wrap: anywhere;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-user-cell[_ngcontent-%COMP%]   small[_ngcontent-%COMP%], \n.payments-table[_ngcontent-%COMP%]   .payment-method-cell[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: 100%;\n}\n\n.payment-type-badge[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  padding: 2px 9px;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1.2;\n}\n\n.payment-type-badge.bundle[_ngcontent-%COMP%] {\n  color: #0f4f98;\n  background: #e8f1ff;\n  border-color: #c6dbfb;\n}\n\n.payment-type-badge.single[_ngcontent-%COMP%] {\n  color: #196a3a;\n  background: #e9f8ef;\n  border-color: #bde5cc;\n}\n\n.catalog-stack[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 12px;\n}\n\n.catalog-tabs[_ngcontent-%COMP%] {\n  display: inline-flex;\n  gap: 8px;\n  margin-bottom: 12px;\n  padding: 6px;\n  border-radius: 12px;\n  background: #eef4ff;\n  border: 1px solid #d9e5f9;\n}\n\n.catalog-tab[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 9px;\n  padding: 9px 14px;\n  font-size: 0.92rem;\n  font-weight: 700;\n  color: #355179;\n  background: transparent;\n  cursor: pointer;\n}\n\n.catalog-tab.active[_ngcontent-%COMP%] {\n  color: #fff;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  box-shadow: 0 2px 10px rgba(10, 63, 126, 0.28);\n}\n\n.catalog-panel-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin-bottom: 10px;\n}\n\n.catalog-list-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 8px;\n}\n\n.ghost-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c6d7f3;\n  border-radius: 10px;\n  background: #fff;\n  color: #174074;\n  padding: 8px 11px;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.catalog-city-filter[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.compact-filter[_ngcontent-%COMP%] {\n  max-width: 340px;\n}\n\n.coords-grid[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 10px;\n}\n\n.map-picker-row[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: flex-start;\n}\n\n.media-upload-row[_ngcontent-%COMP%], \n.audio-upload-row[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 10px;\n  align-items: flex-start;\n}\n\n.media-block[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 10px;\n}\n\n.media-block-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n}\n\n.media-block-head[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #17345b;\n}\n\n.media-block-head[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  color: #5e7497;\n  font-size: 0.84rem;\n}\n\n.media-preview[_ngcontent-%COMP%] {\n  border-radius: 10px;\n  border: 1px solid #d8e5f9;\n  overflow: hidden;\n  background: #f2f7ff;\n  min-height: 180px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.media-preview.placeholder[_ngcontent-%COMP%] {\n  color: #5f7598;\n  font-size: 0.9rem;\n  text-align: center;\n  padding: 10px;\n}\n\n.media-preview[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n  max-height: 240px;\n  object-fit: cover;\n  display: block;\n}\n\n.media-upload-actions[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 10px;\n  align-items: center;\n  flex-wrap: wrap;\n}\n\n.media-player[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.audio-file-pill[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 10px;\n  background: #f6faff;\n  padding: 10px 12px;\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  flex-wrap: wrap;\n  color: #1c3f6f;\n}\n\n.audio-file-label[_ngcontent-%COMP%] {\n  color: #5f7598;\n  font-size: 0.86rem;\n}\n\n.audio-link-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c9daf7;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #12427a;\n  padding: 6px 10px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  text-align: left;\n  max-width: 100%;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.audio-link-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  background: #ebf4ff;\n}\n\n.audio-link-btn[_ngcontent-%COMP%]:disabled {\n  opacity: 0.6;\n  cursor: not-allowed;\n}\n\n.media-url-field[_ngcontent-%COMP%], \n.audio-url-field[_ngcontent-%COMP%] {\n  flex: 1;\n}\n\n.compact-wrap[_ngcontent-%COMP%]   .modern-table[_ngcontent-%COMP%] {\n  min-width: 620px;\n}\n\n.compact-table[_ngcontent-%COMP%]   th[_ngcontent-%COMP%], \n.compact-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  padding: 10px;\n}\n\n.action-buttons[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n\n.row-save-btn[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #0f4f98, #1c7be0);\n  color: #fff;\n  padding: 8px 12px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;\n}\n\n.row-save-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  filter: brightness(1.05);\n  transform: translateY(-1px);\n}\n\n.row-save-btn[_ngcontent-%COMP%]:disabled {\n  background: #e3eaf8;\n  color: #5f7294;\n  cursor: not-allowed;\n  transform: none;\n}\n\n.row-save-btn.secondary[_ngcontent-%COMP%] {\n  background: #e7eefb;\n  color: #2b456d;\n}\n\n.dialog-form[_ngcontent-%COMP%] {\n  margin-top: 0;\n  width: 100%;\n  min-width: 0;\n}\n\n.dialog-body[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 14px;\n  padding-top: 6px;\n  overflow-x: hidden;\n}\n\n.dialog-body[_ngcontent-%COMP%]    > *[_ngcontent-%COMP%] {\n  min-width: 0;\n}\n\n.dialog-body[_ngcontent-%COMP%]   mat-form-field[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .coords-grid[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .map-picker-row[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .media-block[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .media-upload-row[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .media-player[_ngcontent-%COMP%] {\n  grid-column: 1 / -1;\n}\n\n.dialog-actions[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 10px;\n  padding: 0 24px 18px;\n}\n\n.map-dialog-body[_ngcontent-%COMP%] {\n  grid-template-columns: 1fr;\n}\n\n.map-search-form[_ngcontent-%COMP%] {\n  margin-top: 0;\n  display: grid;\n  gap: 10px;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n}\n\n.map-search-form[_ngcontent-%COMP%]   mat-form-field[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.map-results[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 10px;\n  max-height: min(52vh, 420px);\n  overflow: auto;\n}\n\n.map-selected-coords[_ngcontent-%COMP%] {\n  margin: 0;\n  padding: 8px 10px;\n  border-radius: 10px;\n  border: 1px solid #dbe7fb;\n  background: #f6faff;\n  color: #21446f;\n  font-size: 0.9rem;\n}\n\n.map-result-card[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 6px;\n}\n\n.map-result-card[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #17345b;\n}\n\n.map-result-card[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  color: #5f7598;\n  word-break: break-word;\n}\n\n.map-preview-panel[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.map-preview-head[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 2px;\n}\n\n.map-preview-head[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #17345b;\n}\n\n.map-preview-head[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  color: #5f7598;\n}\n\n.poi-map-canvas[_ngcontent-%COMP%] {\n  width: 100%;\n  height: 340px;\n  border-radius: 10px;\n  overflow: hidden;\n  border: 1px solid #d6e3f8;\n  background: linear-gradient(140deg, #e8eef9, #f4f8ff);\n}\n\n.poi-map-canvas.ready[_ngcontent-%COMP%] {\n  background: #e8eef9;\n}\n\n.status-pill[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  padding: 4px 10px;\n  font-size: 0.78rem;\n  font-weight: 600;\n}\n\n.status-pill.ok[_ngcontent-%COMP%] {\n  color: #17653d;\n  background: #e7f7ee;\n}\n\n.status-pill.warn[_ngcontent-%COMP%] {\n  color: #915b00;\n  background: #fef6dd;\n}\n\n.empty-cell[_ngcontent-%COMP%] {\n  color: #6b7d98;\n  text-align: center;\n  font-style: italic;\n}\n\n.spinner-cell[_ngcontent-%COMP%] {\n  padding: 16px 10px;\n}\n\n.spinner-cell[_ngcontent-%COMP%]   .mat-mdc-progress-spinner[_ngcontent-%COMP%], \n.inline-loader[_ngcontent-%COMP%]   .mat-mdc-progress-spinner[_ngcontent-%COMP%] {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n  margin: 0 auto;\n}\n\n.inline-loader[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  padding: 8px 0;\n}\n\ncode[_ngcontent-%COMP%] {\n  background: #eef4ff;\n  color: #24406c;\n  border-radius: 6px;\n  padding: 3px 7px;\n}\n\n@media (max-width: 1100px) {\n  .dashboard-layout[_ngcontent-%COMP%] {\n    grid-template-columns: 220px 1fr;\n  }\n\n  .brand[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%], \n   .brand[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n    display: none;\n  }\n\n  .brand[_ngcontent-%COMP%] {\n    justify-content: center;\n    border-bottom: 0;\n    padding-bottom: 0;\n  }\n}\n\n@media (max-width: 860px) {\n  .dashboard-layout[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .sidebar[_ngcontent-%COMP%] {\n    padding: 12px;\n    gap: 12px;\n    position: static;\n    top: auto;\n    align-self: auto;\n    height: auto;\n    overflow: visible;\n  }\n\n  .sidebar-nav[_ngcontent-%COMP%] {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n\n  .nav-item[_ngcontent-%COMP%] {\n    justify-content: center;\n  }\n\n  .dashboard-main[_ngcontent-%COMP%] {\n    padding: 14px;\n  }\n\n  .stats-grid[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .table-head[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n\n  .table-actions[_ngcontent-%COMP%] {\n    width: 100%;\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .toggle-panel-btn[_ngcontent-%COMP%] {\n    width: 100%;\n    justify-content: center;\n  }\n\n  .catalog-list-head[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .catalog-tabs[_ngcontent-%COMP%] {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    width: 100%;\n  }\n\n  .invite-code-row[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .address-grid[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .coords-grid[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .map-search-form[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .address-span-2[_ngcontent-%COMP%] {\n    grid-column: auto;\n  }\n\n  .generate-code-btn[_ngcontent-%COMP%] {\n    width: 100%;\n  }\n\n  .media-upload-row[_ngcontent-%COMP%], \n   .media-upload-actions[_ngcontent-%COMP%], \n   .audio-upload-row[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .modern-table[_ngcontent-%COMP%] {\n    min-width: 700px;\n  }\n}"] }); }
+        } }, dependencies: [i6.NgClass, i6.NgForOf, i6.NgIf, i1.ɵNgNoValidate, i1.DefaultValueAccessor, i1.NumberValueAccessor, i1.NgControlStatus, i1.NgControlStatusGroup, i1.MaxLengthValidator, i1.MinValidator, i1.MaxValidator, i1.FormGroupDirective, i1.FormControlName, i1.FormGroupName, i7.MatButton, i8.MatCard, i3.MatDialogTitle, i3.MatDialogActions, i3.MatDialogContent, i9.MatFormField, i9.MatLabel, i9.MatHint, i9.MatError, i9.MatSuffix, i10.MatInput, i11.MatProgressSpinner, i12.MatRadioGroup, i12.MatRadioButton, i13.MatSelect, i13.MatOption, i14.MatSlideToggle, i15.MatTooltip, i6.SlicePipe, i6.DecimalPipe, i6.DatePipe], styles: [".admin-shell[_ngcontent-%COMP%] {\n  padding: 0;\n  margin: 0;\n  max-width: none;\n  width: 100%;\n  min-height: 100vh;\n}\n\n.login-card[_ngcontent-%COMP%] {\n  width: min(460px, calc(100% - 32px));\n  padding: 24px;\n  margin: 28px auto;\n}\n\n.form-grid[_ngcontent-%COMP%] {\n  margin-top: 14px;\n  display: grid;\n  gap: 12px;\n}\n\n.full-span[_ngcontent-%COMP%] {\n  grid-column: 1 / -1;\n}\n\n.paypal-settings-form[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 14px;\n}\n\n.paypal-settings-form[_ngcontent-%COMP%]   .form-grid[_ngcontent-%COMP%] {\n  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));\n}\n\n.paypal-status-strip[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 4px;\n  padding: 12px 14px;\n  border-radius: 12px;\n  border: 1px solid #d8e4f4;\n  background: #f7fbff;\n  color: #2f4764;\n}\n\n.paypal-actions[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n}\n\n.dashboard-layout[_ngcontent-%COMP%] {\n  min-height: 100vh;\n  display: grid;\n  grid-template-columns: 250px 1fr;\n  background: linear-gradient(140deg, #eef2f8 0%, #f8fbff 55%, #f4f7fb 100%);\n}\n\n.sidebar[_ngcontent-%COMP%] {\n  background: linear-gradient(175deg, #091733 0%, #0b214b 100%);\n  color: #dfe9ff;\n  padding: 18px 14px;\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n  position: sticky;\n  top: 0;\n  align-self: start;\n  height: 100vh;\n  overflow-y: auto;\n}\n\n.brand[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 4px 6px 12px;\n  border-bottom: 1px solid rgba(168, 189, 235, 0.22);\n}\n\n.brand-mark[_ngcontent-%COMP%] {\n  width: 34px;\n  height: 34px;\n  border-radius: 9px;\n  overflow: hidden;\n  border: 1px solid rgba(174, 198, 240, 0.36);\n  background: #fff;\n}\n\n.brand-mark[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  display: block;\n}\n\n.brand[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 0;\n  opacity: 0.8;\n  font-size: 0.85rem;\n}\n\n.sidebar-nav[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 8px;\n}\n\n.nav-item[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 12px;\n  color: #e7efff;\n  background: transparent;\n  padding: 12px;\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  cursor: pointer;\n  text-align: left;\n}\n\n.nav-item[_ngcontent-%COMP%]::before {\n  content: '';\n  width: 8px;\n  height: 8px;\n  border-radius: 999px;\n  background: rgba(197, 218, 255, 0.72);\n  flex: 0 0 8px;\n}\n\n.nav-item[_ngcontent-%COMP%]:hover {\n  background: rgba(202, 221, 255, 0.14);\n}\n\n.nav-item.active[_ngcontent-%COMP%] {\n  background: rgba(50, 124, 255, 0.35);\n  box-shadow: inset 0 0 0 1px rgba(153, 195, 255, 0.45);\n}\n\n.nav-item.active[_ngcontent-%COMP%]::before {\n  background: #7fd2ff;\n}\n\n.sidebar-footer[_ngcontent-%COMP%] {\n  margin-top: auto;\n  border-top: 1px solid rgba(168, 189, 235, 0.22);\n  padding: 12px 6px 0;\n  display: grid;\n  gap: 8px;\n}\n\n.sidebar-footer[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  opacity: 0.85;\n  font-size: 0.9rem;\n  word-break: break-all;\n}\n\n.sidebar-action[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.dashboard-main[_ngcontent-%COMP%] {\n  padding: 20px;\n  display: grid;\n  align-content: start;\n  grid-auto-rows: max-content;\n  gap: 16px;\n  min-width: 0;\n  overflow-x: hidden;\n}\n\n.dashboard-topbar[_ngcontent-%COMP%] {\n  padding: 18px;\n}\n\n.stats-grid[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n\n.manager-payments-stats[_ngcontent-%COMP%] {\n  margin-bottom: 12px;\n}\n\n.stat-card[_ngcontent-%COMP%] {\n  border-radius: 14px;\n  border: 1px solid #dce5f7;\n  box-shadow: none;\n  padding: 14px;\n  display: grid;\n  gap: 2px;\n}\n\n.stat-card[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  color: #6f7f99;\n}\n\n.stat-card[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  font-size: 1.55rem;\n  color: #152949;\n}\n\n.stat-spinner[_ngcontent-%COMP%] {\n  min-height: 38px;\n  display: flex;\n  align-items: center;\n}\n\n.stat-spinner[_ngcontent-%COMP%]   .mat-mdc-progress-spinner[_ngcontent-%COMP%] {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n}\n\n.modern-cta[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 12px;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  color: #fff;\n  padding: 11px 16px;\n  font-size: 0.98rem;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.modern-cta[_ngcontent-%COMP%]:hover {\n  filter: brightness(1.06);\n}\n\n.modern-cta.secondary[_ngcontent-%COMP%] {\n  background: linear-gradient(135deg, #2d6c3a, #1f552d);\n}\n\n.table-card[_ngcontent-%COMP%] {\n  padding: 18px;\n  min-width: 0;\n}\n\n.table-card[_ngcontent-%COMP%]   h2[_ngcontent-%COMP%] {\n  margin: 0;\n}\n\n.inline-note[_ngcontent-%COMP%] {\n  margin: 0;\n  color: #a24f28;\n  font-size: 0.92rem;\n}\n\n.invite-result[_ngcontent-%COMP%] {\n  margin-top: 14px;\n  display: grid;\n  gap: 5px;\n  color: #1d3153;\n}\n\n.table-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n\n.table-subtitle[_ngcontent-%COMP%] {\n  margin: 4px 0 0;\n  color: #6a7f9f;\n  font-size: 0.92rem;\n}\n\n.table-actions[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  justify-content: flex-end;\n}\n\n.toggle-panel-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c6d7f3;\n  border-radius: 12px;\n  background: #fff;\n  color: #174074;\n  padding: 9px 12px;\n  font-size: 0.9rem;\n  font-weight: 700;\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  cursor: pointer;\n  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;\n}\n\n.toggle-panel-btn[_ngcontent-%COMP%]:hover {\n  background: #f3f8ff;\n}\n\n.toggle-panel-btn.active[_ngcontent-%COMP%] {\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  border-color: #0d4e9d;\n  color: #fff;\n}\n\n.toggle-panel-btn.subtle[_ngcontent-%COMP%] {\n  border-style: dashed;\n  background: #f6f9ff;\n  color: #204674;\n}\n\n.toggle-panel-icon[_ngcontent-%COMP%] {\n  width: 19px;\n  height: 19px;\n  border-radius: 999px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 0.95rem;\n  line-height: 1;\n  font-weight: 800;\n  color: #0c468a;\n  background: #dfeaff;\n}\n\n.toggle-panel-btn.active[_ngcontent-%COMP%]   .toggle-panel-icon[_ngcontent-%COMP%] {\n  color: #fff;\n  background: rgba(255, 255, 255, 0.26);\n}\n\n.inline-panel[_ngcontent-%COMP%] {\n  border: 1px solid #dfe8f8;\n  border-radius: 12px;\n  background: #f9fcff;\n  padding: 14px;\n  margin-bottom: 12px;\n}\n\n.inline-panel[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n  margin: 0;\n  font-size: 1.02rem;\n  color: #163157;\n}\n\n.inline-panel[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 6px 0 0;\n  color: #617694;\n}\n\n.address-grid[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 10px;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n}\n\n.address-span-2[_ngcontent-%COMP%] {\n  grid-column: span 2;\n}\n\n.invite-code-row[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n  gap: 10px;\n}\n\n.invite-code-field[_ngcontent-%COMP%] {\n  flex: 1;\n  min-width: 0;\n}\n\n.invite-code-field[_ngcontent-%COMP%]   input[_ngcontent-%COMP%] {\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.generate-code-btn[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #1f7a45, #0f5f31);\n  color: #fff;\n  padding: 11px 14px;\n  font-size: 0.9rem;\n  font-weight: 600;\n  min-width: 130px;\n  cursor: pointer;\n}\n\n.generate-code-btn[_ngcontent-%COMP%]:disabled {\n  opacity: 0.7;\n  cursor: not-allowed;\n}\n\n.generate-code-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  filter: brightness(1.07);\n}\n\n.field-note[_ngcontent-%COMP%] {\n  margin: -4px 0 0;\n  font-size: 0.82rem;\n  color: #5f7598;\n}\n\n.discount-code-note[_ngcontent-%COMP%] {\n  padding-left: 2px;\n}\n\n.discount-scope-group[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 8px;\n  padding: 10px 12px;\n  border: 1px solid #dce7f8;\n  border-radius: 10px;\n  background: #f7fbff;\n}\n\n.discount-scope-group[_ngcontent-%COMP%]   label[_ngcontent-%COMP%] {\n  margin: 0;\n  font-size: 0.82rem;\n  font-weight: 700;\n  color: #20436f;\n}\n\n.discount-scope-radio[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 16px;\n  flex-wrap: wrap;\n}\n\n.users-structure-filter[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin: 10px 0 12px;\n  padding: 10px 12px;\n  border: 1px solid #dce8f8;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #20436f;\n}\n\n.users-structure-filter[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #0f4f98;\n}\n\n.table-link-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f4f8ff;\n  color: #174074;\n  font-weight: 700;\n  min-width: 44px;\n  padding: 4px 10px;\n  cursor: pointer;\n}\n\n.table-link-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  background: #e9f1ff;\n}\n\n.table-link-btn[_ngcontent-%COMP%]:disabled {\n  opacity: 0.55;\n  cursor: not-allowed;\n}\n\n.date-picker-suffix-btn[_ngcontent-%COMP%] {\n  width: 30px;\n  height: 30px;\n  margin-right: 6px;\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f6faff;\n  color: #1d4d87;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n}\n\n.date-picker-suffix-btn[_ngcontent-%COMP%]:hover {\n  background: #ebf4ff;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%] {\n  width: 14px;\n  height: 14px;\n  border: 2px solid currentColor;\n  border-radius: 3px;\n  position: relative;\n  display: inline-block;\n  box-sizing: border-box;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%]::before, \n.calendar-icon-glyph[_ngcontent-%COMP%]::after {\n  content: '';\n  position: absolute;\n  top: -4px;\n  width: 2px;\n  height: 4px;\n  border-radius: 2px;\n  background: currentColor;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%]::before {\n  left: 2px;\n}\n\n.calendar-icon-glyph[_ngcontent-%COMP%]::after {\n  right: 2px;\n}\n\n.table-wrap[_ngcontent-%COMP%] {\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  overflow-x: auto;\n  border: 1px solid #e1e8f7;\n  border-radius: 12px;\n}\n\n.modern-table[_ngcontent-%COMP%] {\n  width: 100%;\n  border-collapse: collapse;\n  min-width: 980px;\n}\n\n.modern-table[_ngcontent-%COMP%]   th[_ngcontent-%COMP%] {\n  text-align: left;\n  font-size: 0.86rem;\n  letter-spacing: 0.02em;\n  color: #5d6f8d;\n  background: #f4f8ff;\n  padding: 12px;\n  border-bottom: 1px solid #e1e8f7;\n}\n\n.modern-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  padding: 12px;\n  border-bottom: 1px solid #edf2fb;\n  vertical-align: top;\n  color: #213459;\n}\n\n.modern-table[_ngcontent-%COMP%]   tbody[_ngcontent-%COMP%]   tr[_ngcontent-%COMP%]:last-child   td[_ngcontent-%COMP%] {\n  border-bottom: 0;\n}\n\n.modern-table[_ngcontent-%COMP%]   tbody[_ngcontent-%COMP%]   tr.row-dirty[_ngcontent-%COMP%] {\n  background: linear-gradient(90deg, rgba(23, 117, 208, 0.06), rgba(23, 117, 208, 0.01));\n}\n\n.modern-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  display: block;\n}\n\n.modern-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  display: block;\n  margin-top: 3px;\n  line-height: 1.32;\n  color: #6f7f99;\n}\n\n.cell-controls[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n\n.table-field[_ngcontent-%COMP%] {\n  min-width: 170px;\n  width: 100%;\n}\n\n.percent-field[_ngcontent-%COMP%] {\n  min-width: 140px;\n  max-width: 160px;\n}\n\n.structure-cell[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 4px;\n}\n\n.association-list[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 7px;\n}\n\n.association-item[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 3px;\n  padding: 6px 8px;\n  border: 1px solid #dce7f7;\n  border-radius: 8px;\n  background: #f8fbff;\n}\n\n.association-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.structure-name[_ngcontent-%COMP%] {\n  color: #1f355c;\n  font-size: 0.84rem;\n}\n\n.structure-code[_ngcontent-%COMP%] {\n  color: #3a5074;\n  font-size: 0.8rem;\n}\n\n.structure-name.muted[_ngcontent-%COMP%], \n.structure-code.muted[_ngcontent-%COMP%] {\n  color: #6f7f99;\n}\n\n.association-status[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  min-height: 20px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.72rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.association-status-active[_ngcontent-%COMP%] {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.association-status-used[_ngcontent-%COMP%] {\n  color: #9a3412;\n  background: #fff4e5;\n  border-color: #f6cf9b;\n}\n\n.association-status-expired[_ngcontent-%COMP%] {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.association-status-invalid[_ngcontent-%COMP%] {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.unlocked-cell[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 6px;\n  min-width: 210px;\n}\n\n.unlocked-counts[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px 12px;\n}\n\n.unlocked-tags[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.unlocked-pois[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 2px;\n}\n\n.unlocked-poi-item[_ngcontent-%COMP%] {\n  color: #4a5f80;\n}\n\n.associated-code-status-cell[_ngcontent-%COMP%] {\n  min-width: 130px;\n}\n\n.associated-code-status-cell[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  display: block;\n  margin-top: 4px;\n  color: #5b6f90;\n  font-size: 0.72rem;\n}\n\n.structure-codes-list[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 6px;\n}\n\n.structure-code-item[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 2px;\n}\n\n.discount-group-list[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 10px;\n}\n\n.discount-group-item[_ngcontent-%COMP%] {\n  border: 1px solid #dfe8f8;\n  border-radius: 10px;\n  background: #f9fcff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.discount-group-main[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.discount-group-main[_ngcontent-%COMP%]   code[_ngcontent-%COMP%] {\n  background: #ecf3ff;\n  border: 1px solid #cfe0fb;\n  border-radius: 8px;\n  padding: 3px 8px;\n  color: #113b6e;\n  font-weight: 700;\n}\n\n.discount-group-meta[_ngcontent-%COMP%] {\n  color: #486286;\n  font-size: 0.86rem;\n}\n\n.discount-group-meta[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #1f355c;\n}\n\n.expiry-badge[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  min-height: 21px;\n  margin-left: 8px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.expiry-badge-active[_ngcontent-%COMP%] {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.expiry-badge-expired[_ngcontent-%COMP%] {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.expiry-badge-unknown[_ngcontent-%COMP%] {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.payment-user-cell[_ngcontent-%COMP%] {\n  min-width: 240px;\n}\n\n.payment-method-cell[_ngcontent-%COMP%] {\n  min-width: 200px;\n}\n\n.payment-content-cell[_ngcontent-%COMP%] {\n  min-width: 180px;\n}\n\n.payments-table[_ngcontent-%COMP%] {\n  min-width: 860px;\n  table-layout: fixed;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-user-cell[_ngcontent-%COMP%] {\n  min-width: 0;\n  width: 220px;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-method-cell[_ngcontent-%COMP%] {\n  min-width: 0;\n  width: 130px;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-content-cell[_ngcontent-%COMP%] {\n  min-width: 0;\n  width: 170px;\n}\n\n.payments-table[_ngcontent-%COMP%]   th[_ngcontent-%COMP%], \n.payments-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  padding: 9px 8px;\n}\n\n.payments-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  overflow-wrap: anywhere;\n}\n\n.payments-table[_ngcontent-%COMP%]   .payment-user-cell[_ngcontent-%COMP%]   small[_ngcontent-%COMP%], \n.payments-table[_ngcontent-%COMP%]   .payment-method-cell[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: 100%;\n}\n\n.payment-type-badge[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  padding: 2px 9px;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1.2;\n}\n\n.payment-type-badge.bundle[_ngcontent-%COMP%] {\n  color: #0f4f98;\n  background: #e8f1ff;\n  border-color: #c6dbfb;\n}\n\n.payment-type-badge.single[_ngcontent-%COMP%] {\n  color: #196a3a;\n  background: #e9f8ef;\n  border-color: #bde5cc;\n}\n\n.catalog-stack[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 12px;\n}\n\n.catalog-tabs[_ngcontent-%COMP%] {\n  display: inline-flex;\n  gap: 8px;\n  margin-bottom: 12px;\n  padding: 6px;\n  border-radius: 12px;\n  background: #eef4ff;\n  border: 1px solid #d9e5f9;\n}\n\n.catalog-tab[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 9px;\n  padding: 9px 14px;\n  font-size: 0.92rem;\n  font-weight: 700;\n  color: #355179;\n  background: transparent;\n  cursor: pointer;\n}\n\n.catalog-tab.active[_ngcontent-%COMP%] {\n  color: #fff;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  box-shadow: 0 2px 10px rgba(10, 63, 126, 0.28);\n}\n\n.catalog-panel-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin-bottom: 10px;\n}\n\n.catalog-list-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 8px;\n}\n\n.ghost-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c6d7f3;\n  border-radius: 10px;\n  background: #fff;\n  color: #174074;\n  padding: 8px 11px;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.catalog-city-filter[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.compact-filter[_ngcontent-%COMP%] {\n  max-width: 340px;\n}\n\n.coords-grid[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 10px;\n}\n\n.map-picker-row[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: flex-start;\n}\n\n.media-upload-row[_ngcontent-%COMP%], \n.audio-upload-row[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 10px;\n  align-items: flex-start;\n}\n\n.media-block[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 10px;\n}\n\n.media-block-head[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n}\n\n.media-block-head[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #17345b;\n}\n\n.media-block-head[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  color: #5e7497;\n  font-size: 0.84rem;\n}\n\n.media-preview[_ngcontent-%COMP%] {\n  border-radius: 10px;\n  border: 1px solid #d8e5f9;\n  overflow: hidden;\n  background: #f2f7ff;\n  min-height: 180px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.media-preview.placeholder[_ngcontent-%COMP%] {\n  color: #5f7598;\n  font-size: 0.9rem;\n  text-align: center;\n  padding: 10px;\n}\n\n.media-preview[_ngcontent-%COMP%]   img[_ngcontent-%COMP%] {\n  width: 100%;\n  max-height: 240px;\n  object-fit: cover;\n  display: block;\n}\n\n.media-upload-actions[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 10px;\n  align-items: center;\n  flex-wrap: wrap;\n}\n\n.translation-panel[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #f8fbff;\n  padding: 14px;\n  display: grid;\n  gap: 12px;\n}\n\n.translation-panel-head[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 4px;\n}\n\n.translation-panel-head[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #17345b;\n}\n\n.translation-panel-head[_ngcontent-%COMP%]   span[_ngcontent-%COMP%] {\n  color: #5e7497;\n  font-size: 0.88rem;\n}\n\n.translation-grid[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));\n  gap: 12px;\n}\n\n.translation-card[_ngcontent-%COMP%] {\n  border: 1px solid #d6e2f8;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 10px;\n}\n\n.translation-card[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n  margin: 0;\n  color: #163a67;\n  font-size: 1rem;\n}\n\n.media-player[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.audio-file-pill[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 10px;\n  background: #f6faff;\n  padding: 10px 12px;\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  flex-wrap: wrap;\n  color: #1c3f6f;\n}\n\n.audio-file-label[_ngcontent-%COMP%] {\n  color: #5f7598;\n  font-size: 0.86rem;\n}\n\n.audio-link-btn[_ngcontent-%COMP%] {\n  border: 1px solid #c9daf7;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #12427a;\n  padding: 6px 10px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  text-align: left;\n  max-width: 100%;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.audio-link-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  background: #ebf4ff;\n}\n\n.audio-link-btn[_ngcontent-%COMP%]:disabled {\n  opacity: 0.6;\n  cursor: not-allowed;\n}\n\n.media-url-field[_ngcontent-%COMP%], \n.audio-url-field[_ngcontent-%COMP%] {\n  flex: 1;\n}\n\n.compact-wrap[_ngcontent-%COMP%]   .modern-table[_ngcontent-%COMP%] {\n  min-width: 620px;\n}\n\n.compact-table[_ngcontent-%COMP%]   th[_ngcontent-%COMP%], \n.compact-table[_ngcontent-%COMP%]   td[_ngcontent-%COMP%] {\n  padding: 10px;\n}\n\n.action-buttons[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n\n.user-row-actions[_ngcontent-%COMP%] {\n  width: 100%;\n  display: grid;\n  gap: 8px;\n  align-items: stretch;\n}\n\n.user-row-actions-top[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 8px;\n}\n\n.user-row-actions-top[_ngcontent-%COMP%]   button[_ngcontent-%COMP%], \n.user-row-impersonate-btn[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.row-save-btn[_ngcontent-%COMP%] {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #0f4f98, #1c7be0);\n  color: #fff;\n  padding: 8px 12px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;\n}\n\n.row-save-btn[_ngcontent-%COMP%]:hover:not(:disabled) {\n  filter: brightness(1.05);\n  transform: translateY(-1px);\n}\n\n.row-save-btn[_ngcontent-%COMP%]:disabled {\n  background: #e3eaf8;\n  color: #5f7294;\n  cursor: not-allowed;\n  transform: none;\n}\n\n.row-save-btn.secondary[_ngcontent-%COMP%] {\n  background: #e7eefb;\n  color: #2b456d;\n}\n\n.dialog-form[_ngcontent-%COMP%] {\n  margin-top: 0;\n  width: 100%;\n  min-width: 0;\n}\n\n.dialog-body[_ngcontent-%COMP%] {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 14px;\n  padding-top: 6px;\n  overflow-x: hidden;\n}\n\n.dialog-body[_ngcontent-%COMP%]    > *[_ngcontent-%COMP%] {\n  min-width: 0;\n}\n\n.dialog-body[_ngcontent-%COMP%]   mat-form-field[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .coords-grid[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .map-picker-row[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .media-block[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .translation-panel[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .media-upload-row[_ngcontent-%COMP%], \n.dialog-body[_ngcontent-%COMP%]   .media-player[_ngcontent-%COMP%] {\n  grid-column: 1 / -1;\n}\n\n.dialog-actions[_ngcontent-%COMP%] {\n  display: flex;\n  gap: 10px;\n  padding: 0 24px 18px;\n}\n\n.map-dialog-body[_ngcontent-%COMP%] {\n  grid-template-columns: 1fr;\n}\n\n.map-search-form[_ngcontent-%COMP%] {\n  margin-top: 0;\n  display: grid;\n  gap: 10px;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n}\n\n.map-search-form[_ngcontent-%COMP%]   mat-form-field[_ngcontent-%COMP%] {\n  width: 100%;\n}\n\n.map-results[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 10px;\n  max-height: min(52vh, 420px);\n  overflow: auto;\n}\n\n.map-selected-coords[_ngcontent-%COMP%] {\n  margin: 0;\n  padding: 8px 10px;\n  border-radius: 10px;\n  border: 1px solid #dbe7fb;\n  background: #f6faff;\n  color: #21446f;\n  font-size: 0.9rem;\n}\n\n.map-result-card[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 6px;\n}\n\n.map-result-card[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #17345b;\n}\n\n.map-result-card[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  color: #5f7598;\n  word-break: break-word;\n}\n\n.map-preview-panel[_ngcontent-%COMP%] {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.map-preview-head[_ngcontent-%COMP%] {\n  display: grid;\n  gap: 2px;\n}\n\n.map-preview-head[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%] {\n  color: #17345b;\n}\n\n.map-preview-head[_ngcontent-%COMP%]   small[_ngcontent-%COMP%] {\n  color: #5f7598;\n}\n\n.poi-map-canvas[_ngcontent-%COMP%] {\n  width: 100%;\n  height: 340px;\n  border-radius: 10px;\n  overflow: hidden;\n  border: 1px solid #d6e3f8;\n  background: linear-gradient(140deg, #e8eef9, #f4f8ff);\n}\n\n.poi-map-canvas.ready[_ngcontent-%COMP%] {\n  background: #e8eef9;\n}\n\n.status-pill[_ngcontent-%COMP%] {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  padding: 4px 10px;\n  font-size: 0.78rem;\n  font-weight: 600;\n}\n\n.status-pill.ok[_ngcontent-%COMP%] {\n  color: #17653d;\n  background: #e7f7ee;\n}\n\n.status-pill.warn[_ngcontent-%COMP%] {\n  color: #915b00;\n  background: #fef6dd;\n}\n\n.status-pill.bad[_ngcontent-%COMP%] {\n  color: #b42318;\n  background: #feeceb;\n}\n\n.partner-requests-table[_ngcontent-%COMP%] {\n  min-width: 1220px;\n}\n\n.partner-request-main-cell[_ngcontent-%COMP%] {\n  min-width: 220px;\n}\n\n.partner-request-contact-cell[_ngcontent-%COMP%] {\n  min-width: 180px;\n}\n\n.partner-request-address-cell[_ngcontent-%COMP%] {\n  min-width: 240px;\n}\n\n.partner-request-status-cell[_ngcontent-%COMP%] {\n  min-width: 170px;\n  display: grid;\n  gap: 6px;\n}\n\n.partner-request-message-cell[_ngcontent-%COMP%] {\n  min-width: 260px;\n}\n\n.partner-request-notes[_ngcontent-%COMP%] {\n  white-space: pre-line;\n}\n\n.partner-request-empty-note[_ngcontent-%COMP%] {\n  color: #6b7d98;\n  font-style: italic;\n}\n\n.empty-cell[_ngcontent-%COMP%] {\n  color: #6b7d98;\n  text-align: center;\n  font-style: italic;\n}\n\n.spinner-cell[_ngcontent-%COMP%] {\n  padding: 16px 10px;\n}\n\n.spinner-cell[_ngcontent-%COMP%]   .mat-mdc-progress-spinner[_ngcontent-%COMP%], \n.inline-loader[_ngcontent-%COMP%]   .mat-mdc-progress-spinner[_ngcontent-%COMP%] {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n  margin: 0 auto;\n}\n\n.inline-loader[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  padding: 8px 0;\n}\n\ncode[_ngcontent-%COMP%] {\n  background: #eef4ff;\n  color: #24406c;\n  border-radius: 6px;\n  padding: 3px 7px;\n}\n\n@media (max-width: 1100px) {\n  .dashboard-layout[_ngcontent-%COMP%] {\n    grid-template-columns: 220px 1fr;\n  }\n\n  .brand[_ngcontent-%COMP%]   strong[_ngcontent-%COMP%], \n   .brand[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n    display: none;\n  }\n\n  .brand[_ngcontent-%COMP%] {\n    justify-content: center;\n    border-bottom: 0;\n    padding-bottom: 0;\n  }\n}\n\n@media (max-width: 860px) {\n  .dashboard-layout[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .sidebar[_ngcontent-%COMP%] {\n    padding: 12px;\n    gap: 12px;\n    position: static;\n    top: auto;\n    align-self: auto;\n    height: auto;\n    overflow: visible;\n  }\n\n  .sidebar-nav[_ngcontent-%COMP%] {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n\n  .nav-item[_ngcontent-%COMP%] {\n    justify-content: center;\n  }\n\n  .dashboard-main[_ngcontent-%COMP%] {\n    padding: 14px;\n  }\n\n  .stats-grid[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .table-head[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n\n  .table-actions[_ngcontent-%COMP%] {\n    width: 100%;\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .toggle-panel-btn[_ngcontent-%COMP%] {\n    width: 100%;\n    justify-content: center;\n  }\n\n  .catalog-list-head[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .catalog-tabs[_ngcontent-%COMP%] {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    width: 100%;\n  }\n\n  .invite-code-row[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .address-grid[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .coords-grid[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .map-search-form[_ngcontent-%COMP%] {\n    grid-template-columns: 1fr;\n  }\n\n  .address-span-2[_ngcontent-%COMP%] {\n    grid-column: auto;\n  }\n\n  .generate-code-btn[_ngcontent-%COMP%] {\n    width: 100%;\n  }\n\n  .media-upload-row[_ngcontent-%COMP%], \n   .media-upload-actions[_ngcontent-%COMP%], \n   .audio-upload-row[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .modern-table[_ngcontent-%COMP%] {\n    min-width: 700px;\n  }\n}"] }); }
 }
 (() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassMetadata(AdminDashboardComponent, [{
         type: Component,
-        args: [{ standalone: false, selector: 'app-admin-dashboard', template: "<section class=\"page-shell admin-shell\">\n  <mat-card class=\"card login-card\" *ngIf=\"!authChecked\">\n    <div class=\"loading-state\">\n      <mat-spinner diameter=\"34\"></mat-spinner>\n      <p>Controllo sessione dashboard...</p>\n    </div>\n  </mat-card>\n\n  <mat-card class=\"card login-card\" *ngIf=\"authChecked && !isAuthenticated\">\n    <h1 class=\"page-title\">Dashboard</h1>\n    <p class=\"page-subtitle\">Accedi per entrare nella dashboard.</p>\n\n    <form [formGroup]=\"loginForm\" (ngSubmit)=\"login()\" class=\"form-grid\">\n      <mat-form-field appearance=\"outline\">\n        <mat-label>Email</mat-label>\n        <input matInput type=\"email\" formControlName=\"email\" autocomplete=\"username\" />\n      </mat-form-field>\n\n      <mat-form-field appearance=\"outline\">\n        <mat-label>Password</mat-label>\n        <input matInput type=\"password\" formControlName=\"password\" autocomplete=\"current-password\" />\n      </mat-form-field>\n\n      <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"loggingIn\" type=\"submit\">\n        {{ loggingIn ? 'Accesso...' : 'Accedi' }}\n      </button>\n    </form>\n  </mat-card>\n\n  <div class=\"dashboard-layout\" *ngIf=\"authChecked && isAuthenticated\">\n    <aside class=\"sidebar\">\n      <div class=\"brand\">\n        <div class=\"brand-mark\">T</div>\n        <div>\n          <strong>TourApp</strong>\n          <p>Dashboard</p>\n        </div>\n      </div>\n\n      <nav class=\"sidebar-nav\" *ngIf=\"canAccessDashboard && visibleSections.length\">\n        <button\n          type=\"button\"\n          class=\"nav-item\"\n          *ngFor=\"let section of visibleSections\"\n          [class.active]=\"activeSection === section.id\"\n          (click)=\"selectSection(section.id)\"\n        >\n          <span>{{ section.label }}</span>\n        </button>\n      </nav>\n\n      <div class=\"sidebar-footer\">\n        <span>{{ currentEmail }}</span>\n        <button mat-stroked-button color=\"primary\" class=\"sidebar-action\" *ngIf=\"isImpersonating\" (click)=\"exitImpersonation()\">\n          Torna ad admin\n        </button>\n        <button mat-stroked-button color=\"primary\" class=\"sidebar-action\" (click)=\"logout()\">Logout</button>\n      </div>\n    </aside>\n\n    <main class=\"dashboard-main\">\n      <header class=\"dashboard-topbar card\" *ngIf=\"activeSection === 'users'\">\n        <div>\n          <h1 class=\"page-title\">Utenti</h1>\n          <p class=\"page-subtitle\">\n            Connesso come <strong>{{ currentName || currentEmail }}</strong> - {{ roleLabel(currentRole) }}\n          </p>\n          <p class=\"page-subtitle\" *ngIf=\"isImpersonating\">\n            Modalita impersonazione attiva (origine: {{ impersonatedByEmail }})\n          </p>\n        </div>\n      </header>\n\n      <mat-card class=\"card\" *ngIf=\"!canAccessDashboard\">\n        <h2>Accesso dashboard non consentito</h2>\n        <p>Solo admin e gestori struttura possono accedere alla dashboard.</p>\n      </mat-card>\n\n      <ng-container *ngIf=\"isFacilityManager && activeSection === 'users'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Utenti associati</span>\n            <strong *ngIf=\"!loadingAssociatedUsers; else associatedUsersLoadingStat\">{{ totalAssociatedUsers }}</strong>\n            <ng-template #associatedUsersLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Struttura</span>\n            <strong>{{ managerStructureName }}</strong>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Utenti associati alla struttura</h2>\n              <p class=\"table-subtitle\">Vista sola lettura: non puoi modificare ruoli o permessi.</p>\n            </div>\n          </div>\n\n          <p class=\"inline-note\" *ngIf=\"!managedStructureId\">\n            Il tuo account gestore non ha una struttura assegnata.\n          </p>\n\n          <div class=\"table-wrap\" *ngIf=\"managedStructureId\">\n            <table class=\"modern-table users-table payments-table compact-table\">\n              <thead>\n                <tr>\n                  <th>ID Utente App</th>\n                  <th>Registrato il</th>\n                  <th>Codice associato</th>\n                  <th>Stato codice</th>\n                  <th>Acquisti</th>\n                  <th>Spesa totale</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingAssociatedUsers\">\n                  <td colspan=\"6\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingAssociatedUsers && !associatedUsers.length\">\n                  <td colspan=\"6\" class=\"empty-cell\">Nessun utente associato alla tua struttura.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingAssociatedUsers\">\n                  <tr *ngFor=\"let associatedUser of associatedUsers\">\n                    <td><code>{{ associatedUser.userId }}</code></td>\n                    <td>{{ formatDateTime(associatedUser.associatedAt) }}</td>\n                    <td><code>{{ associatedUser.inviteCode || '-' }}</code></td>\n                    <td class=\"associated-code-status-cell\">\n                      <span\n                        class=\"association-status\"\n                        [class.association-status-used]=\"associatedUser.inviteCodeUsed\"\n                        [class.association-status-active]=\"!associatedUser.inviteCodeUsed\"\n                      >\n                        {{ associatedUser.inviteCodeUsed ? 'Usato' : 'Non usato' }}\n                      </span>\n                      <small *ngIf=\"associatedUser.inviteCodeUsedAt\">{{ formatDateTime(associatedUser.inviteCodeUsedAt) }}</small>\n                    </td>\n                    <td>{{ associatedUser.purchasesCount }}</td>\n                    <td>{{ formatCurrency(associatedUser.totalSpent) }}</td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"isFacilityManager && activeSection === 'payments'\">\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Pagamenti struttura</h2>\n              <p class=\"table-subtitle\">Visualizzi solo i pagamenti collegati alla tua struttura.</p>\n            </div>\n          </div>\n\n          <div class=\"stats-grid manager-payments-stats\">\n            <mat-card class=\"stat-card\">\n              <span>Pagamenti registrati</span>\n              <strong *ngIf=\"!loadingPayments; else managerPaymentsLoadingStat\">{{ totalPayments }}</strong>\n              <ng-template #managerPaymentsLoadingStat>\n                <div class=\"stat-spinner\">\n                  <mat-spinner diameter=\"24\"></mat-spinner>\n                </div>\n              </ng-template>\n            </mat-card>\n            <mat-card class=\"stat-card\">\n              <span>Guadagno struttura</span>\n              <strong *ngIf=\"!loadingPayments; else managerEarningsLoadingStat\">{{ formatCurrency(totalStructureEarnings) }}</strong>\n              <ng-template #managerEarningsLoadingStat>\n                <div class=\"stat-spinner\">\n                  <mat-spinner diameter=\"24\"></mat-spinner>\n                </div>\n              </ng-template>\n            </mat-card>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table users-table\">\n              <thead>\n                <tr>\n                  <th>Data</th>\n                  <th>Utente</th>\n                  <th>Data nascita</th>\n                  <th>Metodo pagamento</th>\n                  <th>Contenuto</th>\n                  <th>Prezzo base</th>\n                  <th>Sconto</th>\n                  <th>Pagato</th>\n                  <th>Stato pagamento</th>\n                  <th>Codice</th>\n                  <th>Quota struttura</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingPayments\">\n                  <td colspan=\"11\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingPayments && !payments.length\">\n                  <td colspan=\"11\" class=\"empty-cell\">Nessun pagamento registrato per la tua struttura.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingPayments\">\n                  <tr *ngFor=\"let payment of payments; trackBy: trackByPaymentId\">\n                    <td>{{ formatDateTime(payment.purchasedAt) }}</td>\n                    <td class=\"payment-user-cell\">\n                      <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>\n                      <small>{{ payment.customerEmail }}</small>\n                      <small>{{ payment.customerPhone }}</small>\n                      <small>{{ payment.customerAddress }}</small>\n                      <small>ID app: <code>{{ payment.customerId }}</code></small>\n                    </td>\n                    <td>{{ payment.customerBirthDate | date: 'dd/MM/yyyy':'':'it-IT' }}</td>\n                    <td class=\"payment-method-cell\">\n                      <strong>{{ payment.paymentMethod }}</strong>\n                      <small>{{ payment.paymentProvider }}</small>\n                    </td>\n                    <td class=\"payment-content-cell\">\n                      <small>{{ paymentTargetLabel(payment) }}</small>\n                      <span class=\"payment-type-badge\" [class.bundle]=\"payment.type === 'bundle'\" [class.single]=\"payment.type === 'single'\">\n                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}\n                      </span>\n                    </td>\n                    <td>{{ formatCurrency(payment.baseAmount) }}</td>\n                    <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>\n                    <td>{{ formatCurrency(payment.paidAmount) }}</td>\n                    <td>{{ payment.paymentStatus }}</td>\n                    <td><code>{{ payment.inviteCode || '-' }}</code></td>\n                    <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManageUsers && activeSection === 'users'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Utenti</span>\n            <strong *ngIf=\"!loadingUsers; else usersLoadingStat\">{{ totalUsers }}</strong>\n            <ng-template #usersLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Strutture</span>\n            <strong *ngIf=\"!loadingStructures; else structuresLoadingStat\">{{ totalStructures }}</strong>\n            <ng-template #structuresLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Lista utenti</h2>\n              <p class=\"table-subtitle\">Gestisci struttura utente e operazioni rapide.</p>\n            </div>\n            <div class=\"table-actions\">\n              <button type=\"button\" class=\"toggle-panel-btn\" [class.active]=\"showCreateUserSection\" (click)=\"toggleCreateUserSection()\">\n                <span class=\"toggle-panel-icon\">{{ showCreateUserSection ? '-' : '+' }}</span>\n                <span>{{ showCreateUserSection ? 'Chiudi aggiunta utente' : 'Aggiungi utente' }}</span>\n              </button>\n              <button type=\"button\" class=\"toggle-panel-btn\" [class.active]=\"showInviteSection\" (click)=\"toggleInviteSection()\">\n                <span class=\"toggle-panel-icon\">{{ showInviteSection ? '-' : '+' }}</span>\n                <span>{{ showInviteSection ? 'Chiudi invito' : 'Invita utente' }}</span>\n              </button>\n            </div>\n          </div>\n\n          <section class=\"inline-panel\" *ngIf=\"showInviteSection\">\n            <h3>Nuovo invito utente</h3>\n            <p>Compila i dati, scegli ruolo e struttura se il ruolo e gestore.</p>\n\n            <form [formGroup]=\"inviteForm\" (ngSubmit)=\"invite()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome</mat-label>\n                <input matInput type=\"text\" formControlName=\"firstName\" autocomplete=\"given-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Cognome</mat-label>\n                <input matInput type=\"text\" formControlName=\"lastName\" autocomplete=\"family-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Email utente</mat-label>\n                <input matInput type=\"email\" formControlName=\"email\" autocomplete=\"email\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Permesso</mat-label>\n                <mat-select formControlName=\"role\">\n                  <mat-option value=\"facility_manager\">Gestore struttura</mat-option>\n                  <mat-option value=\"admin\">Admin</mat-option>\n                </mat-select>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\" *ngIf=\"isInviteStructureRequired\">\n                <mat-label>Struttura</mat-label>\n                <mat-select formControlName=\"structureId\" [disabled]=\"!structures.length\">\n                  <mat-option [value]=\"noStructureValue\" [disabled]=\"true\">Seleziona struttura</mat-option>\n                  <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">\n                    {{ structure.name }}\n                  </mat-option>\n                </mat-select>\n                <mat-error *ngIf=\"isInviteStructureMissing && inviteForm.controls.structureId.touched\">\n                  La struttura e obbligatoria per il gestore\n                </mat-error>\n              </mat-form-field>\n\n              <p class=\"inline-note\" *ngIf=\"isInviteStructureRequired && !structures.length && !loadingStructures\">\n                Nessuna struttura registrata: crea prima una struttura nella sezione dedicata.\n              </p>\n              <div class=\"inline-loader\" *ngIf=\"isInviteStructureRequired && loadingStructures\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n\n              <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"!canSubmitInvite\" type=\"submit\">\n                {{ inviting ? 'Invio...' : 'Invia invito' }}\n              </button>\n            </form>\n\n            <div class=\"invite-result\" *ngIf=\"lastInvite as invite\">\n              <strong>Ultimo invito:</strong>\n              <span>{{ displayName(invite.firstName, invite.lastName, invite.email) }} ({{ invite.email }})</span>\n              <span *ngIf=\"invite.structureName\">Struttura: {{ invite.structureName }}</span>\n              <span>Scadenza: {{ formatDateTime(invite.expiresAt) }}</span>\n            </div>\n          </section>\n\n          <section class=\"inline-panel\" *ngIf=\"showCreateUserSection\">\n            <h3>Aggiungi utente dashboard</h3>\n            <p>Crea direttamente un utente con password. Ruolo non modificabile dopo la creazione.</p>\n\n            <form [formGroup]=\"createUserForm\" (ngSubmit)=\"createUser()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome</mat-label>\n                <input matInput type=\"text\" formControlName=\"firstName\" autocomplete=\"given-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Cognome</mat-label>\n                <input matInput type=\"text\" formControlName=\"lastName\" autocomplete=\"family-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Email utente</mat-label>\n                <input matInput type=\"email\" formControlName=\"email\" autocomplete=\"email\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Password iniziale</mat-label>\n                <input matInput type=\"password\" formControlName=\"password\" autocomplete=\"new-password\" />\n                <mat-hint>Minimo 8 caratteri</mat-hint>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Ruolo</mat-label>\n                <mat-select formControlName=\"role\">\n                  <mat-option value=\"user\">Utente normale</mat-option>\n                  <mat-option value=\"facility_manager\">Gestore struttura</mat-option>\n                  <mat-option value=\"admin\">Admin</mat-option>\n                </mat-select>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\" *ngIf=\"isCreateUserStructureVisible\">\n                <mat-label>{{ isCreateUserStructureRequired ? 'Struttura (obbligatoria)' : 'Struttura (opzionale)' }}</mat-label>\n                <mat-select formControlName=\"structureId\" [disabled]=\"!structures.length\">\n                  <mat-option [value]=\"noStructureValue\" [disabled]=\"isCreateUserStructureRequired\">\n                    {{ isCreateUserStructureRequired ? 'Seleziona struttura' : 'Nessuna struttura' }}\n                  </mat-option>\n                  <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">\n                    {{ structure.name }}\n                  </mat-option>\n                </mat-select>\n                <mat-error *ngIf=\"isCreateUserStructureMissing && createUserForm.controls.structureId.touched\">\n                  La struttura e obbligatoria per il gestore\n                </mat-error>\n              </mat-form-field>\n\n              <p class=\"inline-note\" *ngIf=\"isCreateUserStructureVisible && !structures.length && !loadingStructures\">\n                Nessuna struttura registrata: crea prima una struttura nella sezione dedicata.\n              </p>\n              <div class=\"inline-loader\" *ngIf=\"isCreateUserStructureVisible && loadingStructures\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n\n              <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"!canSubmitCreateUser\" type=\"submit\">\n                {{ creatingUser ? 'Creazione...' : 'Crea utente' }}\n              </button>\n            </form>\n          </section>\n\n          <div class=\"users-structure-filter\" *ngIf=\"isUsersStructureFilterActive\">\n            <span>\n              Filtro struttura attivo:\n              <strong>{{ usersStructureFilterName }}</strong>\n            </span>\n            <button type=\"button\" class=\"ghost-btn\" (click)=\"clearUsersStructureFilter()\">Rimuovi filtro</button>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table users-table\">\n              <thead>\n                <tr>\n                  <th>Utente</th>\n                  <th>Ruolo</th>\n                  <th>Strutture associate</th>\n                  <th>Sbloccati</th>\n                  <th>Registrato</th>\n                  <th>Data registrazione</th>\n                  <th>Azioni</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingUsers\">\n                  <td colspan=\"7\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingUsers && !usersForDisplay.length\">\n                  <td colspan=\"7\" class=\"empty-cell\">Nessun utente disponibile.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingUsers\">\n                  <tr *ngFor=\"let user of usersForDisplay\">\n                    <td>\n                      <strong>{{ displayName(user.firstName, user.lastName, user.email) }}</strong>\n                      <small>{{ user.email }}</small>\n                      <small class=\"structure-name muted\" *ngIf=\"isReadOnlyAppUser(user)\">\n                        Utente app associato da codice invito/sconto\n                      </small>\n                    </td>\n                    <td>{{ roleLabel(user.role) }}</td>\n                    <td>\n                      <div class=\"structure-cell\">\n                        <div class=\"association-list\" *ngIf=\"userAssociations(user).length; else noUserAssociations\">\n                          <div class=\"association-item\" *ngFor=\"let association of userAssociations(user)\">\n                            <div class=\"association-head\">\n                              <small class=\"structure-name\">{{ association.structureName || association.structureId }}</small>\n                              <span [class]=\"userAssociationStatusClass(association.status)\">\n                                {{ userAssociationStatusLabel(association.status) }}\n                              </span>\n                            </div>\n                            <small class=\"structure-code\" *ngIf=\"association.inviteCode\">\n                              Codice: <code>{{ association.inviteCode }}</code>\n                            </small>\n                          </div>\n                        </div>\n                        <ng-template #noUserAssociations>\n                          <small class=\"structure-name muted\">Nessuna struttura associata</small>\n                        </ng-template>\n                      </div>\n                    </td>\n                    <td>\n                      <div class=\"unlocked-cell\">\n                        <div class=\"unlocked-counts\" *ngIf=\"user.unlockedCitiesCount || user.unlockedPoisCount; else noUnlockedItems\">\n                          <small><strong>Citta:</strong> {{ user.unlockedCitiesCount }}</small>\n                          <small><strong>Luoghi:</strong> {{ user.unlockedPoisCount }}</small>\n                        </div>\n                        <div class=\"unlocked-tags\" *ngIf=\"userUnlockedCities(user).length\">\n                          <span class=\"status-pill ok\" *ngFor=\"let city of userUnlockedCities(user) | slice: 0 : 3\">\n                            {{ city.cityName || city.cityId }}\n                          </span>\n                        </div>\n                        <div class=\"unlocked-pois\" *ngIf=\"userUnlockedPois(user).length\">\n                          <small class=\"unlocked-poi-item\" *ngFor=\"let poi of userUnlockedPois(user) | slice: 0 : 3\">\n                            {{ poi.poiName || poi.poiId }}\n                            <span *ngIf=\"poi.cityName\">({{ poi.cityName }})</span>\n                          </small>\n                        </div>\n                        <small class=\"structure-name muted\" *ngIf=\"user.unlockedCitiesCount > 3 || user.unlockedPoisCount > 3\">\n                          + altri contenuti sbloccati\n                        </small>\n                        <ng-template #noUnlockedItems>\n                          <small class=\"structure-name muted\">Nessun contenuto sbloccato</small>\n                        </ng-template>\n                      </div>\n                    </td>\n                    <td>\n                      <span class=\"status-pill\" [class.ok]=\"user.isRegistered\" [class.warn]=\"!user.isRegistered\">\n                        {{ user.isRegistered ? 'Si' : 'No' }}\n                      </span>\n                    </td>\n                    <td>{{ formatDateTime(user.createdAt) }}</td>\n                    <td>\n                      <div class=\"action-buttons\">\n                        <button\n                          mat-stroked-button\n                          color=\"primary\"\n                          *ngIf=\"user.id !== currentUserId && !isReadOnlyAppUser(user)\"\n                          (click)=\"sendPasswordReset(user)\"\n                          [disabled]=\"resettingPasswordUserId === user.id || !user.isRegistered\"\n                        >\n                          {{ resettingPasswordUserId === user.id ? 'Invio reset...' : 'Reset password' }}\n                        </button>\n\n                        <button\n                          mat-flat-button\n                          color=\"accent\"\n                          *ngIf=\"user.id !== currentUserId && !isReadOnlyAppUser(user)\"\n                          (click)=\"impersonate(user)\"\n                          [disabled]=\"impersonatingUserId === user.id || !user.isRegistered\"\n                        >\n                          {{\n                            impersonatingUserId === user.id\n                              ? 'Accesso...'\n                              : 'Entra come ' + displayName(user.firstName, user.lastName, user.email)\n                          }}\n                        </button>\n\n                        <button\n                          mat-stroked-button\n                          color=\"warn\"\n                          *ngIf=\"user.id !== currentUserId && !isReadOnlyAppUser(user)\"\n                          (click)=\"deleteUser(user)\"\n                          [disabled]=\"deletingUserId === user.id || savingUserId === user.id\"\n                        >\n                          {{ deletingUserId === user.id ? 'Elimino...' : 'Elimina' }}\n                        </button>\n                      </div>\n                    </td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canViewDiscountCodes && activeSection === 'discounts'\">\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Codici invito e sconto</h2>\n              <p class=\"table-subtitle\" *ngIf=\"canManageUsers\">\n                Ogni struttura puo avere piu codici con regole diverse e scadenza dedicata.\n              </p>\n              <p class=\"table-subtitle\" *ngIf=\"!canManageUsers\">\n                Vista sola lettura dei codici sconto della tua struttura.\n              </p>\n            </div>\n            <div class=\"table-actions\" *ngIf=\"canManageUsers\">\n              <button type=\"button\" class=\"toggle-panel-btn\" (click)=\"toggleDiscountCodeCreateSection()\">\n                <span class=\"toggle-panel-icon\">+</span>\n                <span>Aggiungi codice sconto/struttura</span>\n              </button>\n            </div>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table structures-table payments-table compact-table\">\n              <thead>\n                <tr>\n                  <th>Struttura</th>\n                  <th>Codici sconto associati</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingDiscountCodes || loadingStructures\">\n                  <td colspan=\"2\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingDiscountCodes && !loadingStructures && !discountCodeGroups.length\">\n                  <td colspan=\"2\" class=\"empty-cell\">Nessun codice sconto registrato.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingDiscountCodes && !loadingStructures\">\n                  <tr *ngFor=\"let group of discountCodeGroups\">\n                    <td>\n                      <strong>{{ group.structureName || '-' }}</strong>\n                      <small *ngIf=\"group.structureAddress\">{{ group.structureAddress }}</small>\n                      <small>{{ group.codes.length }} {{ group.codes.length === 1 ? 'codice' : 'codici' }}</small>\n                    </td>\n                    <td>\n                      <div class=\"discount-group-list\">\n                        <div class=\"discount-group-item\" *ngFor=\"let discountCode of group.codes\">\n                          <div class=\"discount-group-main\">\n                            <code>{{ discountCode.code }}</code>\n                            <span class=\"discount-group-meta\">\n                              Applicabile a:\n                              <strong>{{ discountCodeApplyToLabel(discountCode.applyTo) }}</strong>\n                            </span>\n                            <span class=\"discount-group-meta\">\n                              Citta:\n                              <strong>{{ discountCodeCitiesLabel(discountCode) }}</strong>\n                            </span>\n                            <span class=\"discount-group-meta\">\n                              Sconto/Incasso:\n                              <strong>{{ discountCode.userDiscountPercentApplied }}%</strong>\n                              / {{ formatCurrency(discountCode.structureFixedAmountApplied) }}\n                            </span>\n                            <span class=\"discount-group-meta\">\n                              Scadenza: <strong>{{ formatDateTime(discountCode.expiresAt) }}</strong>\n                              <span\n                                class=\"expiry-badge\"\n                                [ngClass]=\"{\n                                  'expiry-badge-active': discountCodeExpiryStatus(discountCode.expiresAt) === 'active',\n                                  'expiry-badge-expired': discountCodeExpiryStatus(discountCode.expiresAt) === 'expired',\n                                  'expiry-badge-unknown': discountCodeExpiryStatus(discountCode.expiresAt) === 'unknown'\n                                }\"\n                              >\n                                {{\n                                  discountCodeExpiryStatus(discountCode.expiresAt) === 'active'\n                                    ? 'Attivo'\n                                    : discountCodeExpiryStatus(discountCode.expiresAt) === 'expired'\n                                      ? 'Scaduto'\n                                      : 'Da verificare'\n                                }}\n                              </span>\n                            </span>\n                          </div>\n                          <div class=\"action-buttons\" *ngIf=\"canManageUsers; else discountReadOnlyActions\">\n                            <button\n                              mat-stroked-button\n                              color=\"primary\"\n                              type=\"button\"\n                              (click)=\"editDiscountCode(discountCode)\"\n                              [disabled]=\"savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id\"\n                            >\n                              Modifica\n                            </button>\n                            <button\n                              mat-stroked-button\n                              color=\"warn\"\n                              type=\"button\"\n                              (click)=\"deleteDiscountCode(discountCode)\"\n                              [disabled]=\"savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id\"\n                            >\n                              {{ deletingDiscountCodeId === discountCode.id ? 'Elimino...' : 'Elimina' }}\n                            </button>\n                          </div>\n                          <ng-template #discountReadOnlyActions></ng-template>\n                        </div>\n                      </div>\n                    </td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManageUsers && activeSection === 'payments'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Pagamenti totali</span>\n            <strong *ngIf=\"!loadingPayments; else adminPaymentsLoadingStat\">{{ paymentsSummary.totalPayments }}</strong>\n            <ng-template #adminPaymentsLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Incasso totale</span>\n            <strong *ngIf=\"!loadingPayments; else adminCollectedLoadingStat\">{{ formatCurrency(paymentsSummary.totalCollected) }}</strong>\n            <ng-template #adminCollectedLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Sconti applicati</span>\n            <strong *ngIf=\"!loadingPayments; else adminDiscountLoadingStat\">{{ formatCurrency(paymentsSummary.totalDiscountAmount) }}</strong>\n            <ng-template #adminDiscountLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Totale quota strutture</span>\n            <strong *ngIf=\"!loadingPayments; else adminEarningsLoadingStat\">{{ formatCurrency(paymentsSummary.totalStructureEarnings) }}</strong>\n            <ng-template #adminEarningsLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Pagamenti</h2>\n              <p class=\"table-subtitle\">Storico acquisti con eventuale codice sconto e quota struttura.</p>\n            </div>\n            <div class=\"table-actions\">\n              <mat-form-field appearance=\"outline\" class=\"compact-filter\">\n                <mat-label>Filtra per struttura</mat-label>\n                <mat-select\n                  [value]=\"selectedPaymentsStructureId\"\n                  (selectionChange)=\"onPaymentsStructureFilterChange($event.value)\"\n                >\n                  <mat-option value=\"\">Tutte le strutture</mat-option>\n                  <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">\n                    {{ structure.name }}\n                  </mat-option>\n                </mat-select>\n              </mat-form-field>\n            </div>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table structures-table\">\n              <thead>\n                <tr>\n                  <th>Data</th>\n                  <th>Utente</th>\n                  <th>Data nascita</th>\n                  <th>Metodo pagamento</th>\n                  <th>Contenuto</th>\n                  <th>Prezzo base</th>\n                  <th>Sconto</th>\n                  <th>Pagato</th>\n                  <th>Stato pagamento</th>\n                  <th>Struttura</th>\n                  <th>Codice</th>\n                  <th>Quota struttura</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingPayments\">\n                  <td colspan=\"12\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingPayments && !payments.length\">\n                  <td colspan=\"12\" class=\"empty-cell\">Nessun pagamento registrato.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingPayments\">\n                  <tr *ngFor=\"let payment of payments; trackBy: trackByPaymentId\">\n                    <td>{{ formatDateTime(payment.purchasedAt) }}</td>\n                    <td class=\"payment-user-cell\">\n                      <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>\n                      <small>{{ payment.customerEmail }}</small>\n                      <small>{{ payment.customerPhone }}</small>\n                      <small>{{ payment.customerAddress }}</small>\n                      <small>ID app: <code>{{ payment.customerId }}</code></small>\n                    </td>\n                    <td>{{ payment.customerBirthDate | date: 'dd/MM/yyyy':'':'it-IT' }}</td>\n                    <td class=\"payment-method-cell\">\n                      <strong>{{ payment.paymentMethod }}</strong>\n                      <small>{{ payment.paymentProvider }}</small>\n                    </td>\n                    <td class=\"payment-content-cell\">\n                      <small>{{ paymentTargetLabel(payment) }}</small>\n                      <span class=\"payment-type-badge\" [class.bundle]=\"payment.type === 'bundle'\" [class.single]=\"payment.type === 'single'\">\n                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}\n                      </span>\n                    </td>\n                    <td>{{ formatCurrency(payment.baseAmount) }}</td>\n                    <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>\n                    <td>{{ formatCurrency(payment.paidAmount) }}</td>\n                    <td>{{ payment.paymentStatus }}</td>\n                    <td>{{ payment.structureName || '-' }}</td>\n                    <td><code>{{ payment.inviteCode || '-' }}</code></td>\n                    <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManageCatalog && activeSection === 'catalog'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Citta totali</span>\n            <strong *ngIf=\"!loadingCatalogCities; else catalogCitiesLoadingStat\">{{ catalogCities.length }}</strong>\n            <ng-template #catalogCitiesLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Luoghi nella citta selezionata</span>\n            <strong *ngIf=\"!loadingCatalogPois; else catalogPoisLoadingStat\">{{ catalogPois.length }}</strong>\n            <ng-template #catalogPoisLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Gestione Citta e Luoghi di interesse</h2>\n              <p class=\"table-subtitle\">Catalogo admin con tab dedicati e modifica tramite modali.</p>\n            </div>\n          </div>\n\n          <div class=\"catalog-tabs\" role=\"tablist\" aria-label=\"Gestione catalogo\">\n            <button\n              type=\"button\"\n              class=\"catalog-tab\"\n              [class.active]=\"catalogTab === 'cities'\"\n              (click)=\"selectCatalogTab('cities')\"\n            >\n              Citta\n            </button>\n            <button\n              type=\"button\"\n              class=\"catalog-tab\"\n              [class.active]=\"catalogTab === 'pois'\"\n              (click)=\"selectCatalogTab('pois')\"\n            >\n              Luoghi interesse\n            </button>\n          </div>\n\n          <div class=\"catalog-stack\" *ngIf=\"catalogTab === 'cities'\">\n            <section class=\"inline-panel\">\n              <div class=\"catalog-panel-head\">\n                <h3>Nuova citta</h3>\n                <button type=\"button\" class=\"toggle-panel-btn\" (click)=\"toggleCatalogCityCreateSection()\">\n                  <span class=\"toggle-panel-icon\">+</span>\n                  <span>Nuova citta</span>\n                </button>\n              </div>\n            </section>\n\n            <section class=\"inline-panel\">\n              <div class=\"catalog-list-head\">\n                <div>\n                  <h3>Lista citta</h3>\n                  <p class=\"table-subtitle\">Modifica da modale e gestisci i luoghi dalla tab dedicata.</p>\n                </div>\n              </div>\n\n              <div class=\"table-wrap compact-wrap\">\n                <table class=\"modern-table compact-table\">\n                  <thead>\n                    <tr>\n                      <th>Citta</th>\n                      <th>Regione</th>\n                      <th>Luoghi</th>\n                      <th>Azioni</th>\n                    </tr>\n                  </thead>\n                  <tbody>\n                    <tr *ngIf=\"loadingCatalogCities\">\n                      <td colspan=\"4\" class=\"empty-cell spinner-cell\">\n                        <mat-spinner diameter=\"28\"></mat-spinner>\n                      </td>\n                    </tr>\n                    <tr *ngIf=\"!loadingCatalogCities && !catalogCities.length\">\n                      <td colspan=\"4\" class=\"empty-cell\">Nessuna citta disponibile.</td>\n                    </tr>\n                    <ng-container *ngIf=\"!loadingCatalogCities\">\n                      <tr *ngFor=\"let city of catalogCities\">\n                        <td>\n                          <strong>{{ city.name }}</strong>\n                          <small *ngIf=\"city.isDefault\">Predefinita</small>\n                        </td>\n                        <td>{{ city.region }}</td>\n                        <td>{{ city.poiCount }}</td>\n                        <td>\n                          <div class=\"action-buttons\">\n                            <button mat-stroked-button color=\"primary\" type=\"button\" (click)=\"editCatalogCity(city)\">Modifica</button>\n                            <button\n                              mat-stroked-button\n                              color=\"warn\"\n                              type=\"button\"\n                              (click)=\"deleteCatalogCity(city)\"\n                              [disabled]=\"deletingCatalogCityId === city.id\"\n                            >\n                              {{ deletingCatalogCityId === city.id ? 'Elimino...' : 'Elimina' }}\n                            </button>\n                          </div>\n                        </td>\n                      </tr>\n                    </ng-container>\n                  </tbody>\n                </table>\n              </div>\n            </section>\n          </div>\n\n          <div class=\"catalog-stack\" *ngIf=\"catalogTab === 'pois'\">\n            <section class=\"inline-panel\">\n              <div class=\"catalog-panel-head\">\n                <h3>Nuovo luogo di interesse</h3>\n                <button type=\"button\" class=\"toggle-panel-btn\" (click)=\"toggleCatalogPoiCreateSection()\">\n                  <span class=\"toggle-panel-icon\">+</span>\n                  <span>Nuovo luogo interesse</span>\n                </button>\n              </div>\n            </section>\n\n            <section class=\"inline-panel\">\n              <div class=\"catalog-list-head\">\n                <div>\n                  <h3>Lista luoghi di interesse</h3>\n                  <p class=\"table-subtitle\">Sezione in colonna unica per mantenere la lettura pulita.</p>\n                </div>\n                <mat-form-field appearance=\"outline\" class=\"catalog-city-filter compact-filter\">\n                  <mat-label>Filtro citta</mat-label>\n                  <mat-select [value]=\"selectedCatalogCityId\" (selectionChange)=\"onCatalogCityFilterChange($event.value)\">\n                    <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n                  </mat-select>\n                </mat-form-field>\n              </div>\n\n              <p class=\"inline-note\" *ngIf=\"!loadingCatalogCities && !catalogCities.length\">Crea una citta per iniziare a gestire i POI.</p>\n              <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n              <p class=\"inline-note\" *ngIf=\"!loadingCatalogCities && catalogCities.length && !selectedCatalogCityId\">\n                Seleziona una citta per vedere la lista dei punti di interesse.\n              </p>\n\n              <div class=\"table-wrap\" *ngIf=\"selectedCatalogCityId\">\n                <table class=\"modern-table\">\n                  <thead>\n                    <tr>\n                      <th>Luogo</th>\n                      <th>Categoria</th>\n                      <th>Prezzo</th>\n                      <th>Durata</th>\n                      <th>Audio</th>\n                      <th>Azioni</th>\n                    </tr>\n                  </thead>\n                  <tbody>\n                    <tr *ngIf=\"loadingCatalogPois\">\n                      <td colspan=\"6\" class=\"empty-cell spinner-cell\">\n                        <mat-spinner diameter=\"28\"></mat-spinner>\n                      </td>\n                    </tr>\n                    <tr *ngIf=\"!loadingCatalogPois && !catalogPois.length\">\n                      <td colspan=\"6\" class=\"empty-cell\">Nessun luogo nella citta selezionata.</td>\n                    </tr>\n                    <ng-container *ngIf=\"!loadingCatalogPois\">\n                      <tr *ngFor=\"let poi of catalogPois; trackBy: trackByCatalogPoiId\">\n                        <td><strong>{{ poi.name }}</strong></td>\n                        <td>{{ poi.category }}</td>\n                        <td>{{ formatCurrency(poi.priceSingle) }}</td>\n                        <td>{{ formatCatalogPoiDuration(poi) }}</td>\n                        <td>\n                          <button\n                            type=\"button\"\n                            class=\"audio-link-btn\"\n                            [disabled]=\"!poi.audioUrl\"\n                            (click)=\"openCatalogPoiAudioPlayer(poi)\"\n                          >\n                            {{ poi.audioUrl ? audioFileNameFromUrl(poi.audioUrl) : 'Nessun audio' }}\n                          </button>\n                        </td>\n                        <td>\n                          <div class=\"action-buttons\">\n                            <button mat-stroked-button color=\"primary\" type=\"button\" (click)=\"editCatalogPoi(poi)\">Modifica</button>\n                            <button\n                              mat-stroked-button\n                              color=\"warn\"\n                              type=\"button\"\n                              (click)=\"deleteCatalogPoi(poi)\"\n                              [disabled]=\"deletingCatalogPoiId === poi.id\"\n                            >\n                              {{ deletingCatalogPoiId === poi.id ? 'Elimino...' : 'Elimina' }}\n                            </button>\n                          </div>\n                        </td>\n                      </tr>\n                    </ng-container>\n                  </tbody>\n                </table>\n              </div>\n            </section>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-template #createCatalogCityDialog>\n        <h2 mat-dialog-title>Nuova citta</h2>\n        <form [formGroup]=\"catalogCityForm\" (ngSubmit)=\"saveCatalogCity()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Nome citta</mat-label>\n              <input matInput type=\"text\" formControlName=\"name\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Regione (fissa)</mat-label>\n              <input matInput type=\"text\" formControlName=\"region\" readonly />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Prezzo bundle (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" step=\"0.01\" formControlName=\"bundlePrice\" />\n            </mat-form-field>\n\n            <input type=\"hidden\" formControlName=\"heroImage\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Immagine citta</strong>\n                <span>{{ catalogCityForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n              </div>\n\n              <div class=\"media-preview\" *ngIf=\"catalogCityForm.controls.heroImage.value; else createCityImageEmpty\">\n                <img [src]=\"catalogCityForm.controls.heroImage.value\" alt=\"Anteprima immagine citta\" />\n              </div>\n              <ng-template #createCityImageEmpty>\n                <div class=\"media-preview placeholder\">Carica un'immagine per la citta.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #createCatalogCityImageInput\n                  type=\"file\"\n                  accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                  hidden\n                  (change)=\"onCatalogCityImageFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"createCatalogCityImageInput.click()\"\n                  [disabled]=\"uploadingCatalogCityImage || savingCatalogCity\"\n                >\n                  {{\n                    uploadingCatalogCityImage\n                      ? 'Upload...'\n                      : catalogCityForm.controls.heroImage.value\n                        ? 'Sostituisci immagine'\n                        : 'Carica immagine'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogCityForm.controls.heroImage.value\"\n                  (click)=\"clearCatalogCityImage()\"\n                  [disabled]=\"uploadingCatalogCityImage || savingCatalogCity\"\n                >\n                  Rimuovi immagine\n                </button>\n              </div>\n            </div>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCreateCatalogCityDialog()\" [disabled]=\"savingCatalogCity\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogCity\">\n              {{ savingCatalogCity ? 'Salvataggio...' : 'Crea citta' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #createCatalogPoiDialog>\n        <h2 mat-dialog-title>Nuovo luogo di interesse</h2>\n        <form [formGroup]=\"catalogPoiForm\" (ngSubmit)=\"saveCatalogPoi()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta</mat-label>\n              <mat-select [value]=\"selectedCatalogCityId\" (selectionChange)=\"onCatalogCityFilterChange($event.value)\">\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <p class=\"inline-note\" *ngIf=\"!loadingCatalogCities && !catalogCities.length\">Crea prima almeno una citta.</p>\n            <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n              <mat-spinner diameter=\"24\"></mat-spinner>\n            </div>\n\n            <ng-container *ngIf=\"!loadingCatalogCities && catalogCities.length\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome luogo</mat-label>\n                <input matInput type=\"text\" formControlName=\"name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Categoria</mat-label>\n                <mat-select formControlName=\"category\">\n                  <mat-option *ngFor=\"let category of poiCategoryOptionsFor(catalogPoiForm.controls.category.value)\" [value]=\"category\">\n                    {{ category }}\n                  </mat-option>\n                </mat-select>\n              </mat-form-field>\n\n              <div class=\"coords-grid\">\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Latitudine</mat-label>\n                  <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lat\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Longitudine</mat-label>\n                  <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lng\" />\n                </mat-form-field>\n              </div>\n\n              <div class=\"map-picker-row\">\n                <button type=\"button\" class=\"toggle-panel-btn subtle\" (click)=\"openPoiMapPicker('create')\">\n                  <span class=\"toggle-panel-icon\">+</span>\n                  <span>Apri mappa e cerca coordinate</span>\n                </button>\n              </div>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Descrizione breve</mat-label>\n                <textarea matInput rows=\"2\" formControlName=\"descriptionShort\"></textarea>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Descrizione lunga</mat-label>\n                <textarea matInput rows=\"5\" formControlName=\"descriptionLong\"></textarea>\n              </mat-form-field>\n\n              <input type=\"hidden\" formControlName=\"imageUrl\" />\n              <div class=\"media-block\">\n                <div class=\"media-block-head\">\n                  <strong>Immagine luogo</strong>\n                  <span>{{ catalogPoiForm.controls.imageUrl.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n                </div>\n\n                <div class=\"media-preview\" *ngIf=\"catalogPoiForm.controls.imageUrl.value; else createPoiImageEmpty\">\n                  <img [src]=\"catalogPoiForm.controls.imageUrl.value\" alt=\"Anteprima immagine luogo\" />\n                </div>\n                <ng-template #createPoiImageEmpty>\n                  <div class=\"media-preview placeholder\">Carica un'immagine per il luogo.</div>\n                </ng-template>\n\n                <div class=\"media-upload-actions\">\n                  <input\n                    #createCatalogPoiImageInput\n                    type=\"file\"\n                    accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                    hidden\n                    (change)=\"onCatalogImageFileSelected($event)\"\n                  />\n                  <button\n                    type=\"button\"\n                    class=\"generate-code-btn\"\n                    (click)=\"createCatalogPoiImageInput.click()\"\n                    [disabled]=\"uploadingCatalogImage || savingCatalogPoi\"\n                  >\n                    {{ uploadingCatalogImage ? 'Upload...' : catalogPoiForm.controls.imageUrl.value ? 'Sostituisci immagine' : 'Carica immagine' }}\n                  </button>\n                  <button\n                    type=\"button\"\n                    class=\"ghost-btn\"\n                    *ngIf=\"catalogPoiForm.controls.imageUrl.value\"\n                    (click)=\"clearCatalogPoiImage()\"\n                    [disabled]=\"uploadingCatalogImage || savingCatalogPoi\"\n                  >\n                    Rimuovi immagine\n                  </button>\n                </div>\n              </div>\n\n              <input type=\"hidden\" formControlName=\"audioUrl\" />\n              <div class=\"media-block\">\n                <div class=\"media-block-head\">\n                  <strong>Audioguida</strong>\n                  <span>{{ catalogPoiForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>\n                </div>\n\n                <div class=\"audio-file-pill\" *ngIf=\"catalogPoiForm.controls.audioUrl.value; else createPoiAudioEmpty\">\n                  <span class=\"audio-file-label\">File:</span>\n                  <strong>{{ audioFileNameFromUrl(catalogPoiForm.controls.audioUrl.value) }}</strong>\n                </div>\n                <ng-template #createPoiAudioEmpty>\n                  <div class=\"media-preview placeholder\">Carica un file audio per il luogo.</div>\n                </ng-template>\n\n                <div class=\"media-upload-actions\">\n                  <input\n                    #createCatalogPoiAudioInput\n                    type=\"file\"\n                    accept=\".mp3,.m4a,.wav,.ogg,.aac,audio/*\"\n                    hidden\n                    (change)=\"onCatalogAudioFileSelected($event)\"\n                  />\n                  <button\n                    type=\"button\"\n                    class=\"generate-code-btn\"\n                    (click)=\"createCatalogPoiAudioInput.click()\"\n                    [disabled]=\"uploadingCatalogAudio || savingCatalogPoi\"\n                  >\n                    {{ uploadingCatalogAudio ? 'Upload...' : catalogPoiForm.controls.audioUrl.value ? 'Sostituisci audio' : 'Carica audio' }}\n                  </button>\n                  <button\n                    type=\"button\"\n                    class=\"ghost-btn\"\n                    *ngIf=\"catalogPoiForm.controls.audioUrl.value\"\n                    (click)=\"clearCatalogPoiAudio()\"\n                    [disabled]=\"uploadingCatalogAudio || savingCatalogPoi\"\n                  >\n                    Rimuovi audio\n                  </button>\n                </div>\n\n                <audio\n                  class=\"media-player\"\n                  controls\n                  preload=\"none\"\n                  *ngIf=\"catalogPoiForm.controls.audioUrl.value\"\n                  [src]=\"catalogPoiForm.controls.audioUrl.value\"\n                ></audio>\n              </div>\n\n              <div class=\"coords-grid\">\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Prezzo singolo (EUR)</mat-label>\n                  <input matInput type=\"number\" step=\"0.01\" min=\"0\" formControlName=\"priceSingle\" />\n                </mat-form-field>\n              </div>\n            </ng-container>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCreateCatalogPoiDialog()\" [disabled]=\"savingCatalogPoi\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogPoi\">\n              {{ savingCatalogPoi ? 'Salvataggio...' : 'Crea luogo di interesse' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #editCatalogCityDialog>\n        <h2 mat-dialog-title>Modifica citta</h2>\n        <form [formGroup]=\"catalogCityEditForm\" (ngSubmit)=\"saveCatalogCityEdit()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Nome citta</mat-label>\n              <input matInput type=\"text\" formControlName=\"name\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Regione</mat-label>\n              <input matInput type=\"text\" formControlName=\"region\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Prezzo bundle (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" step=\"0.01\" formControlName=\"bundlePrice\" />\n            </mat-form-field>\n\n            <input type=\"hidden\" formControlName=\"heroImage\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Immagine citta</strong>\n                <span>{{ catalogCityEditForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n              </div>\n\n              <div class=\"media-preview\" *ngIf=\"catalogCityEditForm.controls.heroImage.value; else cityEditImageEmpty\">\n                <img [src]=\"catalogCityEditForm.controls.heroImage.value\" alt=\"Anteprima immagine citta\" />\n              </div>\n              <ng-template #cityEditImageEmpty>\n                <div class=\"media-preview placeholder\">Carica un'immagine per la citta.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #catalogCityEditImageInput\n                  type=\"file\"\n                  accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                  hidden\n                  (change)=\"onCatalogCityEditImageFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"catalogCityEditImageInput.click()\"\n                  [disabled]=\"uploadingCatalogCityEditImage || savingCatalogCity\"\n                >\n                  {{\n                    uploadingCatalogCityEditImage\n                      ? 'Upload...'\n                      : catalogCityEditForm.controls.heroImage.value\n                        ? 'Sostituisci immagine'\n                        : 'Carica immagine'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogCityEditForm.controls.heroImage.value\"\n                  (click)=\"clearCatalogCityEditImage()\"\n                  [disabled]=\"uploadingCatalogCityEditImage || savingCatalogCity\"\n                >\n                  Rimuovi immagine\n                </button>\n              </div>\n            </div>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCatalogCityEditDialog()\" [disabled]=\"savingCatalogCity\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogCityEdit\">\n              {{ savingCatalogCity ? 'Salvataggio...' : 'Salva citta' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #editCatalogPoiDialog>\n        <h2 mat-dialog-title>Modifica luogo di interesse</h2>\n        <form [formGroup]=\"catalogPoiEditForm\" (ngSubmit)=\"saveCatalogPoiEdit()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta</mat-label>\n              <mat-select formControlName=\"cityId\">\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Nome luogo</mat-label>\n              <input matInput type=\"text\" formControlName=\"name\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Categoria</mat-label>\n              <mat-select formControlName=\"category\">\n                <mat-option *ngFor=\"let category of poiCategoryOptionsFor(catalogPoiEditForm.controls.category.value)\" [value]=\"category\">\n                  {{ category }}\n                </mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <div class=\"coords-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Latitudine</mat-label>\n                <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lat\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Longitudine</mat-label>\n                <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lng\" />\n              </mat-form-field>\n            </div>\n\n            <div class=\"map-picker-row\">\n              <button type=\"button\" class=\"toggle-panel-btn subtle\" (click)=\"openPoiMapPicker('edit')\">\n                <span class=\"toggle-panel-icon\">+</span>\n                <span>Apri mappa e cerca coordinate</span>\n              </button>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Descrizione breve</mat-label>\n              <textarea matInput rows=\"2\" formControlName=\"descriptionShort\"></textarea>\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Descrizione lunga</mat-label>\n              <textarea matInput rows=\"5\" formControlName=\"descriptionLong\"></textarea>\n            </mat-form-field>\n\n            <input type=\"hidden\" formControlName=\"imageUrl\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Immagine luogo</strong>\n                <span>{{ catalogPoiEditForm.controls.imageUrl.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n              </div>\n\n              <div class=\"media-preview\" *ngIf=\"catalogPoiEditForm.controls.imageUrl.value; else poiEditImageEmpty\">\n                <img [src]=\"catalogPoiEditForm.controls.imageUrl.value\" alt=\"Anteprima immagine luogo\" />\n              </div>\n              <ng-template #poiEditImageEmpty>\n                <div class=\"media-preview placeholder\">Carica un'immagine per il luogo.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #catalogPoiEditImageInput\n                  type=\"file\"\n                  accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                  hidden\n                  (change)=\"onCatalogPoiEditImageFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"catalogPoiEditImageInput.click()\"\n                  [disabled]=\"uploadingCatalogPoiEditImage || savingCatalogPoi\"\n                >\n                  {{\n                    uploadingCatalogPoiEditImage\n                      ? 'Upload...'\n                      : catalogPoiEditForm.controls.imageUrl.value\n                        ? 'Sostituisci immagine'\n                        : 'Carica immagine'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogPoiEditForm.controls.imageUrl.value\"\n                  (click)=\"clearCatalogPoiEditImage()\"\n                  [disabled]=\"uploadingCatalogPoiEditImage || savingCatalogPoi\"\n                >\n                  Rimuovi immagine\n                </button>\n              </div>\n            </div>\n\n            <input type=\"hidden\" formControlName=\"audioUrl\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Audioguida</strong>\n                <span>{{ catalogPoiEditForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>\n              </div>\n\n              <div class=\"audio-file-pill\" *ngIf=\"catalogPoiEditForm.controls.audioUrl.value; else poiEditAudioEmpty\">\n                <span class=\"audio-file-label\">File:</span>\n                <strong>{{ audioFileNameFromUrl(catalogPoiEditForm.controls.audioUrl.value) }}</strong>\n              </div>\n              <ng-template #poiEditAudioEmpty>\n                <div class=\"media-preview placeholder\">Carica un file audio per il luogo.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #catalogPoiEditAudioInput\n                  type=\"file\"\n                  accept=\".mp3,.m4a,.wav,.ogg,.aac,audio/*\"\n                  hidden\n                  (change)=\"onCatalogPoiEditAudioFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"catalogPoiEditAudioInput.click()\"\n                  [disabled]=\"uploadingCatalogPoiEditAudio || savingCatalogPoi\"\n                >\n                  {{\n                    uploadingCatalogPoiEditAudio\n                      ? 'Upload...'\n                      : catalogPoiEditForm.controls.audioUrl.value\n                        ? 'Sostituisci audio'\n                        : 'Carica audio'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogPoiEditForm.controls.audioUrl.value\"\n                  (click)=\"clearCatalogPoiEditAudio()\"\n                  [disabled]=\"uploadingCatalogPoiEditAudio || savingCatalogPoi\"\n                >\n                  Rimuovi audio\n                </button>\n              </div>\n\n              <audio\n                class=\"media-player\"\n                controls\n                preload=\"none\"\n                *ngIf=\"catalogPoiEditForm.controls.audioUrl.value\"\n                [src]=\"catalogPoiEditForm.controls.audioUrl.value\"\n              ></audio>\n            </div>\n\n            <div class=\"coords-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Prezzo singolo (EUR)</mat-label>\n                <input matInput type=\"number\" step=\"0.01\" min=\"0\" formControlName=\"priceSingle\" />\n              </mat-form-field>\n            </div>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCatalogPoiEditDialog()\" [disabled]=\"savingCatalogPoi\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogPoiEdit\">\n              {{ savingCatalogPoi ? 'Salvataggio...' : 'Salva luogo' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #catalogPoiAudioPlayerDialog>\n        <h2 mat-dialog-title>{{ audioPlayerPoiName || 'Anteprima audioguida' }}</h2>\n        <div mat-dialog-content class=\"dialog-body map-dialog-body\">\n          <p class=\"table-subtitle\">\n            File audio: <strong>{{ audioPlayerFileName || '-' }}</strong>\n          </p>\n          <audio class=\"media-player\" controls autoplay preload=\"metadata\" [src]=\"audioPlayerUrl\"></audio>\n        </div>\n        <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n          <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCatalogPoiAudioPlayer()\">Chiudi</button>\n        </div>\n      </ng-template>\n\n      <ng-template #poiMapPickerDialog>\n        <h2 mat-dialog-title>Cerca luogo e seleziona coordinate</h2>\n        <div mat-dialog-content class=\"dialog-body map-dialog-body\">\n          <form [formGroup]=\"poiMapSearchForm\" (ngSubmit)=\"searchPoiMap()\" class=\"map-search-form\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Cerca luogo o indirizzo</mat-label>\n              <input matInput type=\"text\" formControlName=\"query\" autocomplete=\"off\" />\n              <mat-hint>Ricerca gratuita tramite OpenStreetMap</mat-hint>\n            </mat-form-field>\n            <button type=\"submit\" class=\"generate-code-btn\" [disabled]=\"mapPickerLoading\">\n              {{ mapPickerLoading ? 'Ricerca...' : 'Cerca' }}\n            </button>\n          </form>\n\n          <p class=\"inline-note\" *ngIf=\"!mapPickerLoading && !mapPickerResults.length\">\n            Cerca un luogo: le coordinate trovate vengono selezionate subito. Poi rifinisci trascinando il marker rosso sulla mappa.\n          </p>\n\n          <p class=\"map-selected-coords\" *ngIf=\"hasPoiMapSelection\">\n            Lat: <strong>{{ mapPickerSelectedLat | number: '1.4-6' }}</strong> |\n            Lng: <strong>{{ mapPickerSelectedLng | number: '1.4-6' }}</strong>\n          </p>\n\n          <div class=\"map-results\" *ngIf=\"mapPickerResults.length\">\n            <article class=\"map-result-card\" *ngFor=\"let result of mapPickerResults\">\n              <strong>{{ result.displayName }}</strong>\n              <small>Lat: {{ result.lat | number: '1.4-6' }} | Lng: {{ result.lng | number: '1.4-6' }}</small>\n              <div class=\"action-buttons\">\n                <button type=\"button\" class=\"row-save-btn\" (click)=\"selectPoiMapResult(result)\">Evidenzia su mappa</button>\n                <button mat-stroked-button type=\"button\" (click)=\"usePoiMapResult(result)\">Usa subito</button>\n              </div>\n            </article>\n          </div>\n\n          <section class=\"map-preview-panel\">\n            <div class=\"map-preview-head\">\n              <strong>Anteprima mappa</strong>\n              <small *ngIf=\"mapPickerTargetLabel\">{{ mapPickerTargetLabel }}</small>\n              <small *ngIf=\"!mapPickerTargetLabel\">Clicca o trascina il marker rosso per precisione.</small>\n            </div>\n            <div #poiMapCanvas class=\"poi-map-canvas\" [class.ready]=\"mapPickerMapReady\"></div>\n          </section>\n        </div>\n\n        <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n          <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closePoiMapPicker()\" [disabled]=\"mapPickerLoading\">\n            Chiudi\n          </button>\n          <button type=\"button\" class=\"row-save-btn\" (click)=\"confirmPoiMapSelection()\" [disabled]=\"!hasPoiMapSelection || mapPickerLoading\">\n            Usa coordinate selezionate\n          </button>\n        </div>\n      </ng-template>\n\n      <ng-template #createDiscountCodeDialog>\n        <h2 mat-dialog-title>Aggiungi codice sconto/struttura</h2>\n        <form [formGroup]=\"discountCodeCreateForm\" (ngSubmit)=\"createDiscountCode()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Struttura</mat-label>\n              <mat-select formControlName=\"structureId\">\n                <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">{{ structure.name }}</mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <div class=\"invite-code-row\">\n              <mat-form-field appearance=\"outline\" class=\"invite-code-field\">\n                <mat-label>Codice</mat-label>\n                <input matInput type=\"text\" formControlName=\"code\" maxlength=\"6\" autocomplete=\"off\" />\n              </mat-form-field>\n\n              <button type=\"button\" class=\"generate-code-btn\" (click)=\"generateDiscountCodeForCreate()\" [disabled]=\"creatingDiscountCode\">\n                Genera codice\n              </button>\n            </div>\n\n            <div class=\"discount-scope-group\">\n              <label>Applicabile a</label>\n              <mat-radio-group formControlName=\"applyTo\" class=\"discount-scope-radio\">\n                <mat-radio-button value=\"single\">Luogo singolo</mat-radio-button>\n                <mat-radio-button value=\"bundle\">Pacchetto citta</mat-radio-button>\n              </mat-radio-group>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta applicabili</mat-label>\n              <mat-select formControlName=\"cityIds\" multiple>\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n              <mat-hint>Seleziona una o piu citta</mat-hint>\n            </mat-form-field>\n            <p class=\"inline-note\" *ngIf=\"!catalogCities.length && !loadingCatalogCities\">\n              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.\n            </p>\n            <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n              <mat-spinner diameter=\"22\"></mat-spinner>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Sconto utente {{ discountCodeCreateScopeLabel }} (%)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"100\" step=\"0.01\" formControlName=\"userDiscountPercent\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Incasso struttura {{ discountCodeCreateScopeLabel }} (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"10000\" step=\"0.01\" formControlName=\"structureFixedAmount\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Scadenza</mat-label>\n              <input #createDiscountExpiresInput matInput type=\"datetime-local\" step=\"60\" formControlName=\"expiresAt\" />\n              <button\n                class=\"date-picker-suffix-btn\"\n                matSuffix\n                type=\"button\"\n                aria-label=\"Apri calendario e ora\"\n                (click)=\"openNativeDateTimePicker(createDiscountExpiresInput)\"\n              >\n                <span class=\"calendar-icon-glyph\" aria-hidden=\"true\"></span>\n              </button>\n              <mat-hint>Seleziona data e ora</mat-hint>\n            </mat-form-field>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCreateDiscountCodeDialog()\" [disabled]=\"creatingDiscountCode\">\n              Annulla\n            </button>\n            <button type=\"submit\" class=\"row-save-btn\" [disabled]=\"creatingDiscountCode || discountCodeCreateForm.invalid\">\n              {{ creatingDiscountCode ? 'Salvataggio...' : 'Crea codice' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #editDiscountCodeDialog>\n        <h2 mat-dialog-title>Modifica codice sconto</h2>\n        <form [formGroup]=\"discountCodeEditForm\" (ngSubmit)=\"saveDiscountCodeEdit()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <p class=\"inline-note\" *ngIf=\"editingDiscountCode\">\n              Codice: <code>{{ editingDiscountCode.code }}</code> - Struttura: <strong>{{ editingDiscountCode.structureName }}</strong>\n            </p>\n\n            <div class=\"discount-scope-group\">\n              <label>Applicabile a</label>\n              <mat-radio-group formControlName=\"applyTo\" class=\"discount-scope-radio\">\n                <mat-radio-button value=\"single\">Luogo singolo</mat-radio-button>\n                <mat-radio-button value=\"bundle\">Pacchetto citta</mat-radio-button>\n              </mat-radio-group>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta applicabili</mat-label>\n              <mat-select formControlName=\"cityIds\" multiple>\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n              <mat-hint>Seleziona una o piu citta</mat-hint>\n            </mat-form-field>\n            <p class=\"inline-note\" *ngIf=\"!catalogCities.length && !loadingCatalogCities\">\n              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.\n            </p>\n            <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n              <mat-spinner diameter=\"22\"></mat-spinner>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Sconto utente {{ discountCodeEditScopeLabel }} (%)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"100\" step=\"0.01\" formControlName=\"userDiscountPercent\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Incasso struttura {{ discountCodeEditScopeLabel }} (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"10000\" step=\"0.01\" formControlName=\"structureFixedAmount\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Scadenza</mat-label>\n              <input #editDiscountExpiresInput matInput type=\"datetime-local\" step=\"60\" formControlName=\"expiresAt\" />\n              <button\n                class=\"date-picker-suffix-btn\"\n                matSuffix\n                type=\"button\"\n                aria-label=\"Apri calendario e ora\"\n                (click)=\"openNativeDateTimePicker(editDiscountExpiresInput)\"\n              >\n                <span class=\"calendar-icon-glyph\" aria-hidden=\"true\"></span>\n              </button>\n              <mat-hint>Seleziona data e ora</mat-hint>\n            </mat-form-field>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeEditDiscountCodeDialog()\" [disabled]=\"updatingDiscountCode\">\n              Annulla\n            </button>\n            <button type=\"submit\" class=\"row-save-btn\" [disabled]=\"updatingDiscountCode || discountCodeEditForm.invalid\">\n              {{ updatingDiscountCode ? 'Salvataggio...' : 'Salva modifiche' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n      <ng-container *ngIf=\"canManageUsers && activeSection === 'structures'\">\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Lista strutture</h2>\n              <p class=\"table-subtitle\">Gestisci dati struttura. I codici invito/sconto sono gestiti nella sezione dedicata.</p>\n            </div>\n            <div class=\"table-actions\">\n              <button type=\"button\" class=\"toggle-panel-btn\" [class.active]=\"showStructureSection\" (click)=\"toggleStructureSection()\">\n                <span class=\"toggle-panel-icon\">{{ showStructureSection ? '-' : '+' }}</span>\n                <span>{{ showStructureSection ? 'Chiudi aggiunta struttura' : 'Aggiungi struttura' }}</span>\n              </button>\n            </div>\n          </div>\n\n          <section class=\"inline-panel\" *ngIf=\"showStructureSection\">\n            <h3>Nuova struttura</h3>\n            <p>Inserisci nome struttura, via, civico, citta e CAP. I codici sconto si gestiscono nella sezione dedicata.</p>\n\n            <form [formGroup]=\"structureForm\" (ngSubmit)=\"registerStructure()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome struttura</mat-label>\n                <input matInput type=\"text\" formControlName=\"name\" autocomplete=\"organization\" />\n              </mat-form-field>\n\n              <div class=\"address-grid\">\n                <mat-form-field appearance=\"outline\" class=\"address-span-2\">\n                  <mat-label>Via/Piazza</mat-label>\n                  <input matInput type=\"text\" formControlName=\"street\" autocomplete=\"street-address\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Civico</mat-label>\n                  <input matInput type=\"text\" formControlName=\"streetNumber\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>CAP</mat-label>\n                  <input matInput type=\"text\" formControlName=\"postalCode\" maxlength=\"5\" inputmode=\"numeric\" />\n                  <mat-error *ngIf=\"structureForm.controls.postalCode.hasError('pattern')\">Inserisci un CAP valido a 5 cifre</mat-error>\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Citta</mat-label>\n                  <input matInput type=\"text\" formControlName=\"city\" autocomplete=\"address-level2\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Provincia (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"province\" autocomplete=\"address-level1\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Nazione (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"country\" autocomplete=\"country-name\" />\n                </mat-form-field>\n              </div>\n\n              <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"creatingStructure\" type=\"submit\">\n                {{ creatingStructure ? 'Salvataggio...' : 'Registra struttura' }}\n              </button>\n            </form>\n          </section>\n\n          <section class=\"inline-panel\" *ngIf=\"editingStructureId\">\n            <h3>Modifica struttura</h3>\n            <p>Aggiorna nome e indirizzo. Il codice invito resta invariato.</p>\n\n            <form [formGroup]=\"structureEditForm\" (ngSubmit)=\"updateStructure()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome struttura</mat-label>\n                <input matInput type=\"text\" formControlName=\"name\" autocomplete=\"organization\" />\n              </mat-form-field>\n\n              <div class=\"address-grid\">\n                <mat-form-field appearance=\"outline\" class=\"address-span-2\">\n                  <mat-label>Via/Piazza</mat-label>\n                  <input matInput type=\"text\" formControlName=\"street\" autocomplete=\"street-address\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Civico</mat-label>\n                  <input matInput type=\"text\" formControlName=\"streetNumber\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>CAP</mat-label>\n                  <input matInput type=\"text\" formControlName=\"postalCode\" maxlength=\"5\" inputmode=\"numeric\" />\n                  <mat-error *ngIf=\"structureEditForm.controls.postalCode.hasError('pattern')\">\n                    Inserisci un CAP valido a 5 cifre\n                  </mat-error>\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Citta</mat-label>\n                  <input matInput type=\"text\" formControlName=\"city\" autocomplete=\"address-level2\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Provincia (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"province\" autocomplete=\"address-level1\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Nazione (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"country\" autocomplete=\"country-name\" />\n                </mat-form-field>\n              </div>\n\n              <div class=\"action-buttons\">\n                <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"!canSaveStructureEdit\" type=\"submit\">\n                  {{ updatingStructure ? 'Salvataggio...' : 'Salva modifiche struttura' }}\n                </button>\n                <button type=\"button\" class=\"row-save-btn\" (click)=\"cancelStructureEdit()\" [disabled]=\"updatingStructure\">\n                  Annulla\n                </button>\n              </div>\n            </form>\n          </section>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table structures-table\">\n              <thead>\n                <tr>\n                  <th>Struttura</th>\n                  <th>Indirizzo</th>\n                  <th>Codici sconto</th>\n                  <th>Utenti associati</th>\n                  <th>Guadagno maturato</th>\n                  <th>Creata il</th>\n                  <th>Azioni</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingStructures\">\n                  <td colspan=\"7\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!structures.length && !loadingStructures\">\n                  <td colspan=\"7\" class=\"empty-cell\">Nessuna struttura registrata.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingStructures\">\n                  <tr *ngFor=\"let structure of structures\">\n                    <td><strong>{{ structure.name }}</strong></td>\n                    <td>{{ formatStructureAddress(structure) }}</td>\n                    <td>\n                      <div class=\"structure-codes-list\" *ngIf=\"structureCodes(structure.id).length; else noStructureCodes\">\n                        <div class=\"structure-code-item\" *ngFor=\"let discountCode of structureCodes(structure.id)\">\n                          <code>{{ discountCode.code }}</code>\n                          <small>Scade: {{ formatDateTime(discountCode.expiresAt) }}</small>\n                        </div>\n                      </div>\n                      <ng-template #noStructureCodes>-</ng-template>\n                    </td>\n                    <td>\n                      <button\n                        type=\"button\"\n                        class=\"table-link-btn\"\n                        (click)=\"openUsersForStructure(structure)\"\n                        [disabled]=\"structure.usersCount <= 0\"\n                      >\n                        {{ structure.usersCount }}\n                      </button>\n                    </td>\n                    <td>{{ formatCurrency(structure.totalStructureEarnings) }}</td>\n                    <td>{{ formatDateTime(structure.createdAt) }}</td>\n                    <td>\n                      <button mat-stroked-button color=\"primary\" type=\"button\" (click)=\"editStructure(structure)\">\n                        Modifica\n                      </button>\n                    </td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n    </main>\n  </div>\n</section>\n\r\n\r\n\r\n", styles: [".admin-shell {\n  padding: 0;\n  margin: 0;\n  max-width: none;\n  width: 100%;\n  min-height: 100vh;\n}\n\n.login-card {\n  width: min(460px, calc(100% - 32px));\n  padding: 24px;\n  margin: 28px auto;\n}\n\n.form-grid {\n  margin-top: 14px;\n  display: grid;\n  gap: 12px;\n}\n\n.dashboard-layout {\n  min-height: 100vh;\n  display: grid;\n  grid-template-columns: 250px 1fr;\n  background: linear-gradient(140deg, #eef2f8 0%, #f8fbff 55%, #f4f7fb 100%);\n}\n\n.sidebar {\n  background: linear-gradient(175deg, #091733 0%, #0b214b 100%);\n  color: #dfe9ff;\n  padding: 18px 14px;\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n  position: sticky;\n  top: 0;\n  align-self: start;\n  height: 100vh;\n  overflow-y: auto;\n}\n\n.brand {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 4px 6px 12px;\n  border-bottom: 1px solid rgba(168, 189, 235, 0.22);\n}\n\n.brand-mark {\n  width: 34px;\n  height: 34px;\n  border-radius: 9px;\n  background: linear-gradient(145deg, #1e6fff, #00b4d8);\n  color: #fff;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-weight: 800;\n}\n\n.brand p {\n  margin: 0;\n  opacity: 0.8;\n  font-size: 0.85rem;\n}\n\n.sidebar-nav {\n  display: grid;\n  gap: 8px;\n}\n\n.nav-item {\n  border: 0;\n  border-radius: 12px;\n  color: #e7efff;\n  background: transparent;\n  padding: 12px;\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  cursor: pointer;\n  text-align: left;\n}\n\n.nav-item::before {\n  content: '';\n  width: 8px;\n  height: 8px;\n  border-radius: 999px;\n  background: rgba(197, 218, 255, 0.72);\n  flex: 0 0 8px;\n}\n\n.nav-item:hover {\n  background: rgba(202, 221, 255, 0.14);\n}\n\n.nav-item.active {\n  background: rgba(50, 124, 255, 0.35);\n  box-shadow: inset 0 0 0 1px rgba(153, 195, 255, 0.45);\n}\n\n.nav-item.active::before {\n  background: #7fd2ff;\n}\n\n.sidebar-footer {\n  margin-top: auto;\n  border-top: 1px solid rgba(168, 189, 235, 0.22);\n  padding: 12px 6px 0;\n  display: grid;\n  gap: 8px;\n}\n\n.sidebar-footer span {\n  opacity: 0.85;\n  font-size: 0.9rem;\n  word-break: break-all;\n}\n\n.sidebar-action {\n  width: 100%;\n}\n\n.dashboard-main {\n  padding: 20px;\n  display: grid;\n  align-content: start;\n  grid-auto-rows: max-content;\n  gap: 16px;\n  min-width: 0;\n  overflow-x: hidden;\n}\n\n.dashboard-topbar {\n  padding: 18px;\n}\n\n.stats-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n\n.manager-payments-stats {\n  margin-bottom: 12px;\n}\n\n.stat-card {\n  border-radius: 14px;\n  border: 1px solid #dce5f7;\n  box-shadow: none;\n  padding: 14px;\n  display: grid;\n  gap: 2px;\n}\n\n.stat-card span {\n  color: #6f7f99;\n}\n\n.stat-card strong {\n  font-size: 1.55rem;\n  color: #152949;\n}\n\n.stat-spinner {\n  min-height: 38px;\n  display: flex;\n  align-items: center;\n}\n\n.stat-spinner .mat-mdc-progress-spinner {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n}\n\n.modern-cta {\n  border: 0;\n  border-radius: 12px;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  color: #fff;\n  padding: 11px 16px;\n  font-size: 0.98rem;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.modern-cta:hover {\n  filter: brightness(1.06);\n}\n\n.modern-cta.secondary {\n  background: linear-gradient(135deg, #2d6c3a, #1f552d);\n}\n\n.table-card {\n  padding: 18px;\n  min-width: 0;\n}\n\n.table-card h2 {\n  margin: 0;\n}\n\n.inline-note {\n  margin: 0;\n  color: #a24f28;\n  font-size: 0.92rem;\n}\n\n.invite-result {\n  margin-top: 14px;\n  display: grid;\n  gap: 5px;\n  color: #1d3153;\n}\n\n.table-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n\n.table-subtitle {\n  margin: 4px 0 0;\n  color: #6a7f9f;\n  font-size: 0.92rem;\n}\n\n.table-actions {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  justify-content: flex-end;\n}\n\n.toggle-panel-btn {\n  border: 1px solid #c6d7f3;\n  border-radius: 12px;\n  background: #fff;\n  color: #174074;\n  padding: 9px 12px;\n  font-size: 0.9rem;\n  font-weight: 700;\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  cursor: pointer;\n  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;\n}\n\n.toggle-panel-btn:hover {\n  background: #f3f8ff;\n}\n\n.toggle-panel-btn.active {\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  border-color: #0d4e9d;\n  color: #fff;\n}\n\n.toggle-panel-btn.subtle {\n  border-style: dashed;\n  background: #f6f9ff;\n  color: #204674;\n}\n\n.toggle-panel-icon {\n  width: 19px;\n  height: 19px;\n  border-radius: 999px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 0.95rem;\n  line-height: 1;\n  font-weight: 800;\n  color: #0c468a;\n  background: #dfeaff;\n}\n\n.toggle-panel-btn.active .toggle-panel-icon {\n  color: #fff;\n  background: rgba(255, 255, 255, 0.26);\n}\n\n.inline-panel {\n  border: 1px solid #dfe8f8;\n  border-radius: 12px;\n  background: #f9fcff;\n  padding: 14px;\n  margin-bottom: 12px;\n}\n\n.inline-panel h3 {\n  margin: 0;\n  font-size: 1.02rem;\n  color: #163157;\n}\n\n.inline-panel p {\n  margin: 6px 0 0;\n  color: #617694;\n}\n\n.address-grid {\n  display: grid;\n  gap: 10px;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n}\n\n.address-span-2 {\n  grid-column: span 2;\n}\n\n.invite-code-row {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n  gap: 10px;\n}\n\n.invite-code-field {\n  flex: 1;\n  min-width: 0;\n}\n\n.invite-code-field input {\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.generate-code-btn {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #1f7a45, #0f5f31);\n  color: #fff;\n  padding: 11px 14px;\n  font-size: 0.9rem;\n  font-weight: 600;\n  min-width: 130px;\n  cursor: pointer;\n}\n\n.generate-code-btn:disabled {\n  opacity: 0.7;\n  cursor: not-allowed;\n}\n\n.generate-code-btn:hover:not(:disabled) {\n  filter: brightness(1.07);\n}\n\n.field-note {\n  margin: -4px 0 0;\n  font-size: 0.82rem;\n  color: #5f7598;\n}\n\n.discount-code-note {\n  padding-left: 2px;\n}\n\n.discount-scope-group {\n  display: grid;\n  gap: 8px;\n  padding: 10px 12px;\n  border: 1px solid #dce7f8;\n  border-radius: 10px;\n  background: #f7fbff;\n}\n\n.discount-scope-group label {\n  margin: 0;\n  font-size: 0.82rem;\n  font-weight: 700;\n  color: #20436f;\n}\n\n.discount-scope-radio {\n  display: flex;\n  gap: 16px;\n  flex-wrap: wrap;\n}\n\n.users-structure-filter {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin: 10px 0 12px;\n  padding: 10px 12px;\n  border: 1px solid #dce8f8;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #20436f;\n}\n\n.users-structure-filter strong {\n  color: #0f4f98;\n}\n\n.table-link-btn {\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f4f8ff;\n  color: #174074;\n  font-weight: 700;\n  min-width: 44px;\n  padding: 4px 10px;\n  cursor: pointer;\n}\n\n.table-link-btn:hover:not(:disabled) {\n  background: #e9f1ff;\n}\n\n.table-link-btn:disabled {\n  opacity: 0.55;\n  cursor: not-allowed;\n}\n\n.date-picker-suffix-btn {\n  width: 30px;\n  height: 30px;\n  margin-right: 6px;\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f6faff;\n  color: #1d4d87;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n}\n\n.date-picker-suffix-btn:hover {\n  background: #ebf4ff;\n}\n\n.calendar-icon-glyph {\n  width: 14px;\n  height: 14px;\n  border: 2px solid currentColor;\n  border-radius: 3px;\n  position: relative;\n  display: inline-block;\n  box-sizing: border-box;\n}\n\n.calendar-icon-glyph::before,\n.calendar-icon-glyph::after {\n  content: '';\n  position: absolute;\n  top: -4px;\n  width: 2px;\n  height: 4px;\n  border-radius: 2px;\n  background: currentColor;\n}\n\n.calendar-icon-glyph::before {\n  left: 2px;\n}\n\n.calendar-icon-glyph::after {\n  right: 2px;\n}\n\n.table-wrap {\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  overflow-x: auto;\n  border: 1px solid #e1e8f7;\n  border-radius: 12px;\n}\n\n.modern-table {\n  width: 100%;\n  border-collapse: collapse;\n  min-width: 980px;\n}\n\n.modern-table th {\n  text-align: left;\n  font-size: 0.86rem;\n  letter-spacing: 0.02em;\n  color: #5d6f8d;\n  background: #f4f8ff;\n  padding: 12px;\n  border-bottom: 1px solid #e1e8f7;\n}\n\n.modern-table td {\n  padding: 12px;\n  border-bottom: 1px solid #edf2fb;\n  vertical-align: top;\n  color: #213459;\n}\n\n.modern-table tbody tr:last-child td {\n  border-bottom: 0;\n}\n\n.modern-table tbody tr.row-dirty {\n  background: linear-gradient(90deg, rgba(23, 117, 208, 0.06), rgba(23, 117, 208, 0.01));\n}\n\n.modern-table td strong {\n  display: block;\n}\n\n.modern-table td small {\n  display: block;\n  margin-top: 3px;\n  line-height: 1.32;\n  color: #6f7f99;\n}\n\n.cell-controls {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n\n.table-field {\n  min-width: 170px;\n  width: 100%;\n}\n\n.percent-field {\n  min-width: 140px;\n  max-width: 160px;\n}\n\n.structure-cell {\n  display: grid;\n  gap: 4px;\n}\n\n.association-list {\n  display: grid;\n  gap: 7px;\n}\n\n.association-item {\n  display: grid;\n  gap: 3px;\n  padding: 6px 8px;\n  border: 1px solid #dce7f7;\n  border-radius: 8px;\n  background: #f8fbff;\n}\n\n.association-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.structure-name {\n  color: #1f355c;\n  font-size: 0.84rem;\n}\n\n.structure-code {\n  color: #3a5074;\n  font-size: 0.8rem;\n}\n\n.structure-name.muted,\n.structure-code.muted {\n  color: #6f7f99;\n}\n\n.association-status {\n  display: inline-flex;\n  align-items: center;\n  min-height: 20px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.72rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.association-status-active {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.association-status-used {\n  color: #9a3412;\n  background: #fff4e5;\n  border-color: #f6cf9b;\n}\n\n.association-status-expired {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.association-status-invalid {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.unlocked-cell {\n  display: grid;\n  gap: 6px;\n  min-width: 210px;\n}\n\n.unlocked-counts {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px 12px;\n}\n\n.unlocked-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.unlocked-pois {\n  display: grid;\n  gap: 2px;\n}\n\n.unlocked-poi-item {\n  color: #4a5f80;\n}\n\n.associated-code-status-cell {\n  min-width: 130px;\n}\n\n.associated-code-status-cell small {\n  display: block;\n  margin-top: 4px;\n  color: #5b6f90;\n  font-size: 0.72rem;\n}\n\n.structure-codes-list {\n  display: grid;\n  gap: 6px;\n}\n\n.structure-code-item {\n  display: grid;\n  gap: 2px;\n}\n\n.discount-group-list {\n  display: grid;\n  gap: 10px;\n}\n\n.discount-group-item {\n  border: 1px solid #dfe8f8;\n  border-radius: 10px;\n  background: #f9fcff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.discount-group-main {\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.discount-group-main code {\n  background: #ecf3ff;\n  border: 1px solid #cfe0fb;\n  border-radius: 8px;\n  padding: 3px 8px;\n  color: #113b6e;\n  font-weight: 700;\n}\n\n.discount-group-meta {\n  color: #486286;\n  font-size: 0.86rem;\n}\n\n.discount-group-meta strong {\n  color: #1f355c;\n}\n\n.expiry-badge {\n  display: inline-flex;\n  align-items: center;\n  min-height: 21px;\n  margin-left: 8px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.expiry-badge-active {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.expiry-badge-expired {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.expiry-badge-unknown {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.payment-user-cell {\n  min-width: 240px;\n}\n\n.payment-method-cell {\n  min-width: 200px;\n}\n\n.payment-content-cell {\n  min-width: 180px;\n}\n\n.payments-table {\n  min-width: 860px;\n  table-layout: fixed;\n}\n\n.payments-table .payment-user-cell {\n  min-width: 0;\n  width: 220px;\n}\n\n.payments-table .payment-method-cell {\n  min-width: 0;\n  width: 130px;\n}\n\n.payments-table .payment-content-cell {\n  min-width: 0;\n  width: 170px;\n}\n\n.payments-table th,\n.payments-table td {\n  padding: 9px 8px;\n}\n\n.payments-table td {\n  overflow-wrap: anywhere;\n}\n\n.payments-table .payment-user-cell small,\n.payments-table .payment-method-cell small {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: 100%;\n}\n\n.payment-type-badge {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  padding: 2px 9px;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1.2;\n}\n\n.payment-type-badge.bundle {\n  color: #0f4f98;\n  background: #e8f1ff;\n  border-color: #c6dbfb;\n}\n\n.payment-type-badge.single {\n  color: #196a3a;\n  background: #e9f8ef;\n  border-color: #bde5cc;\n}\n\n.catalog-stack {\n  display: grid;\n  gap: 12px;\n}\n\n.catalog-tabs {\n  display: inline-flex;\n  gap: 8px;\n  margin-bottom: 12px;\n  padding: 6px;\n  border-radius: 12px;\n  background: #eef4ff;\n  border: 1px solid #d9e5f9;\n}\n\n.catalog-tab {\n  border: 0;\n  border-radius: 9px;\n  padding: 9px 14px;\n  font-size: 0.92rem;\n  font-weight: 700;\n  color: #355179;\n  background: transparent;\n  cursor: pointer;\n}\n\n.catalog-tab.active {\n  color: #fff;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  box-shadow: 0 2px 10px rgba(10, 63, 126, 0.28);\n}\n\n.catalog-panel-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin-bottom: 10px;\n}\n\n.catalog-list-head {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 8px;\n}\n\n.ghost-btn {\n  border: 1px solid #c6d7f3;\n  border-radius: 10px;\n  background: #fff;\n  color: #174074;\n  padding: 8px 11px;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.catalog-city-filter {\n  width: 100%;\n}\n\n.compact-filter {\n  max-width: 340px;\n}\n\n.coords-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 10px;\n}\n\n.map-picker-row {\n  display: flex;\n  justify-content: flex-start;\n}\n\n.media-upload-row,\n.audio-upload-row {\n  display: flex;\n  gap: 10px;\n  align-items: flex-start;\n}\n\n.media-block {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 10px;\n}\n\n.media-block-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n}\n\n.media-block-head strong {\n  color: #17345b;\n}\n\n.media-block-head span {\n  color: #5e7497;\n  font-size: 0.84rem;\n}\n\n.media-preview {\n  border-radius: 10px;\n  border: 1px solid #d8e5f9;\n  overflow: hidden;\n  background: #f2f7ff;\n  min-height: 180px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.media-preview.placeholder {\n  color: #5f7598;\n  font-size: 0.9rem;\n  text-align: center;\n  padding: 10px;\n}\n\n.media-preview img {\n  width: 100%;\n  max-height: 240px;\n  object-fit: cover;\n  display: block;\n}\n\n.media-upload-actions {\n  display: flex;\n  gap: 10px;\n  align-items: center;\n  flex-wrap: wrap;\n}\n\n.media-player {\n  width: 100%;\n}\n\n.audio-file-pill {\n  border: 1px solid #dbe7fb;\n  border-radius: 10px;\n  background: #f6faff;\n  padding: 10px 12px;\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  flex-wrap: wrap;\n  color: #1c3f6f;\n}\n\n.audio-file-label {\n  color: #5f7598;\n  font-size: 0.86rem;\n}\n\n.audio-link-btn {\n  border: 1px solid #c9daf7;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #12427a;\n  padding: 6px 10px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  text-align: left;\n  max-width: 100%;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.audio-link-btn:hover:not(:disabled) {\n  background: #ebf4ff;\n}\n\n.audio-link-btn:disabled {\n  opacity: 0.6;\n  cursor: not-allowed;\n}\n\n.media-url-field,\n.audio-url-field {\n  flex: 1;\n}\n\n.compact-wrap .modern-table {\n  min-width: 620px;\n}\n\n.compact-table th,\n.compact-table td {\n  padding: 10px;\n}\n\n.action-buttons {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n\n.row-save-btn {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #0f4f98, #1c7be0);\n  color: #fff;\n  padding: 8px 12px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;\n}\n\n.row-save-btn:hover:not(:disabled) {\n  filter: brightness(1.05);\n  transform: translateY(-1px);\n}\n\n.row-save-btn:disabled {\n  background: #e3eaf8;\n  color: #5f7294;\n  cursor: not-allowed;\n  transform: none;\n}\n\n.row-save-btn.secondary {\n  background: #e7eefb;\n  color: #2b456d;\n}\n\n.dialog-form {\n  margin-top: 0;\n  width: 100%;\n  min-width: 0;\n}\n\n.dialog-body {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 14px;\n  padding-top: 6px;\n  overflow-x: hidden;\n}\n\n.dialog-body > * {\n  min-width: 0;\n}\n\n.dialog-body mat-form-field,\n.dialog-body .coords-grid,\n.dialog-body .map-picker-row,\n.dialog-body .media-block,\n.dialog-body .media-upload-row,\n.dialog-body .media-player {\n  grid-column: 1 / -1;\n}\n\n.dialog-actions {\n  display: flex;\n  gap: 10px;\n  padding: 0 24px 18px;\n}\n\n.map-dialog-body {\n  grid-template-columns: 1fr;\n}\n\n.map-search-form {\n  margin-top: 0;\n  display: grid;\n  gap: 10px;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n}\n\n.map-search-form mat-form-field {\n  width: 100%;\n}\n\n.map-results {\n  display: grid;\n  gap: 10px;\n  max-height: min(52vh, 420px);\n  overflow: auto;\n}\n\n.map-selected-coords {\n  margin: 0;\n  padding: 8px 10px;\n  border-radius: 10px;\n  border: 1px solid #dbe7fb;\n  background: #f6faff;\n  color: #21446f;\n  font-size: 0.9rem;\n}\n\n.map-result-card {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 6px;\n}\n\n.map-result-card strong {\n  color: #17345b;\n}\n\n.map-result-card small {\n  color: #5f7598;\n  word-break: break-word;\n}\n\n.map-preview-panel {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.map-preview-head {\n  display: grid;\n  gap: 2px;\n}\n\n.map-preview-head strong {\n  color: #17345b;\n}\n\n.map-preview-head small {\n  color: #5f7598;\n}\n\n.poi-map-canvas {\n  width: 100%;\n  height: 340px;\n  border-radius: 10px;\n  overflow: hidden;\n  border: 1px solid #d6e3f8;\n  background: linear-gradient(140deg, #e8eef9, #f4f8ff);\n}\n\n.poi-map-canvas.ready {\n  background: #e8eef9;\n}\n\n.status-pill {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  padding: 4px 10px;\n  font-size: 0.78rem;\n  font-weight: 600;\n}\n\n.status-pill.ok {\n  color: #17653d;\n  background: #e7f7ee;\n}\n\n.status-pill.warn {\n  color: #915b00;\n  background: #fef6dd;\n}\n\n.empty-cell {\n  color: #6b7d98;\n  text-align: center;\n  font-style: italic;\n}\n\n.spinner-cell {\n  padding: 16px 10px;\n}\n\n.spinner-cell .mat-mdc-progress-spinner,\n.inline-loader .mat-mdc-progress-spinner {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n  margin: 0 auto;\n}\n\n.inline-loader {\n  display: flex;\n  justify-content: center;\n  padding: 8px 0;\n}\n\ncode {\n  background: #eef4ff;\n  color: #24406c;\n  border-radius: 6px;\n  padding: 3px 7px;\n}\n\n@media (max-width: 1100px) {\n  .dashboard-layout {\n    grid-template-columns: 220px 1fr;\n  }\n\n  .brand strong,\n  .brand p {\n    display: none;\n  }\n\n  .brand {\n    justify-content: center;\n    border-bottom: 0;\n    padding-bottom: 0;\n  }\n}\n\n@media (max-width: 860px) {\n  .dashboard-layout {\n    grid-template-columns: 1fr;\n  }\n\n  .sidebar {\n    padding: 12px;\n    gap: 12px;\n    position: static;\n    top: auto;\n    align-self: auto;\n    height: auto;\n    overflow: visible;\n  }\n\n  .sidebar-nav {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n\n  .nav-item {\n    justify-content: center;\n  }\n\n  .dashboard-main {\n    padding: 14px;\n  }\n\n  .stats-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .table-head {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n\n  .table-actions {\n    width: 100%;\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .toggle-panel-btn {\n    width: 100%;\n    justify-content: center;\n  }\n\n  .catalog-list-head {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .catalog-tabs {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    width: 100%;\n  }\n\n  .invite-code-row {\n    grid-template-columns: 1fr;\n  }\n\n  .address-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .coords-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .map-search-form {\n    grid-template-columns: 1fr;\n  }\n\n  .address-span-2 {\n    grid-column: auto;\n  }\n\n  .generate-code-btn {\n    width: 100%;\n  }\n\n  .media-upload-row,\n  .media-upload-actions,\n  .audio-upload-row {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .modern-table {\n    min-width: 700px;\n  }\n}\n"] }]
+        args: [{ standalone: false, selector: 'app-admin-dashboard', template: "<section class=\"page-shell admin-shell\">\n  <mat-card class=\"card login-card\" *ngIf=\"!authChecked\">\n    <div class=\"loading-state\">\n      <mat-spinner diameter=\"34\"></mat-spinner>\n      <p>Controllo sessione dashboard...</p>\n    </div>\n  </mat-card>\n\n  <mat-card class=\"card login-card\" *ngIf=\"authChecked && !isAuthenticated\">\n    <h1 class=\"page-title\">Dashboard</h1>\n    <p class=\"page-subtitle\">Accedi per entrare nella dashboard.</p>\n\n    <form [formGroup]=\"loginForm\" (ngSubmit)=\"login()\" class=\"form-grid\">\n      <mat-form-field appearance=\"outline\">\n        <mat-label>Email</mat-label>\n        <input matInput type=\"email\" formControlName=\"email\" autocomplete=\"username\" />\n      </mat-form-field>\n\n      <mat-form-field appearance=\"outline\">\n        <mat-label>Password</mat-label>\n        <input matInput type=\"password\" formControlName=\"password\" autocomplete=\"current-password\" />\n      </mat-form-field>\n\n      <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"loggingIn\" type=\"submit\">\n        {{ loggingIn ? 'Accesso...' : 'Accedi' }}\n      </button>\n    </form>\n  </mat-card>\n\n  <div class=\"dashboard-layout\" *ngIf=\"authChecked && isAuthenticated\">\n    <aside class=\"sidebar\">\n      <div class=\"brand\">\n        <div class=\"brand-mark\">\n          <img src=\"/assets/logo.png\" alt=\"Logo Walk Around\" loading=\"eager\" decoding=\"sync\" fetchpriority=\"high\" />\n        </div>\n        <div>\n          <strong>Walk Around</strong>\n          <p>Dashboard</p>\n        </div>\n      </div>\n\n      <nav class=\"sidebar-nav\" *ngIf=\"canAccessDashboard && visibleSections.length\">\n        <button\n          type=\"button\"\n          class=\"nav-item\"\n          *ngFor=\"let section of visibleSections\"\n          [class.active]=\"activeSection === section.id\"\n          (click)=\"selectSection(section.id)\"\n        >\n          <span>{{ section.label }}</span>\n        </button>\n      </nav>\n\n      <div class=\"sidebar-footer\">\n        <span>{{ currentEmail }}</span>\n        <button mat-stroked-button color=\"primary\" class=\"sidebar-action\" *ngIf=\"isImpersonating\" (click)=\"exitImpersonation()\">\n          Torna ad admin\n        </button>\n        <button mat-stroked-button color=\"primary\" class=\"sidebar-action\" (click)=\"logout()\">Logout</button>\n      </div>\n    </aside>\n\n    <main class=\"dashboard-main\">\n      <header class=\"dashboard-topbar card\" *ngIf=\"activeSection === 'users'\">\n        <div>\n          <h1 class=\"page-title\">Utenti</h1>\n          <p class=\"page-subtitle\">\n            Connesso come <strong>{{ currentName || currentEmail }}</strong> - {{ roleLabel(currentRole) }}\n          </p>\n          <p class=\"page-subtitle\" *ngIf=\"isImpersonating\">\n            Modalita impersonazione attiva (origine: {{ impersonatedByEmail }})\n          </p>\n        </div>\n      </header>\n\n      <mat-card class=\"card\" *ngIf=\"!canAccessDashboard\">\n        <h2>Accesso dashboard non consentito</h2>\n        <p>Solo admin e gestori struttura possono accedere alla dashboard.</p>\n      </mat-card>\n\n      <ng-container *ngIf=\"isFacilityManager && activeSection === 'users'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Utenti associati</span>\n            <strong *ngIf=\"!loadingAssociatedUsers; else associatedUsersLoadingStat\">{{ totalAssociatedUsers }}</strong>\n            <ng-template #associatedUsersLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Struttura</span>\n            <strong>{{ managerStructureName }}</strong>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Utenti associati alla struttura</h2>\n              <p class=\"table-subtitle\">Vista sola lettura: non puoi modificare ruoli o permessi.</p>\n            </div>\n          </div>\n\n          <p class=\"inline-note\" *ngIf=\"!managedStructureId\">\n            Il tuo account gestore non ha una struttura assegnata.\n          </p>\n\n          <div class=\"table-wrap\" *ngIf=\"managedStructureId\">\n            <table class=\"modern-table users-table payments-table compact-table\">\n              <thead>\n                <tr>\n                  <th>ID Utente App</th>\n                  <th>Registrato il</th>\n                  <th>Codice associato</th>\n                  <th>Stato codice</th>\n                  <th>Acquisti</th>\n                  <th>Spesa totale</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingAssociatedUsers\">\n                  <td colspan=\"6\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingAssociatedUsers && !associatedUsers.length\">\n                  <td colspan=\"6\" class=\"empty-cell\">Nessun utente associato alla tua struttura.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingAssociatedUsers\">\n                  <tr *ngFor=\"let associatedUser of associatedUsers\">\n                    <td><code>{{ associatedUser.userId }}</code></td>\n                    <td>{{ formatDateTime(associatedUser.associatedAt) }}</td>\n                    <td><code>{{ associatedUser.inviteCode || '-' }}</code></td>\n                    <td class=\"associated-code-status-cell\">\n                      <span\n                        class=\"association-status\"\n                        [class.association-status-used]=\"associatedUser.inviteCodeUsed\"\n                        [class.association-status-active]=\"!associatedUser.inviteCodeUsed\"\n                      >\n                        {{ associatedUser.inviteCodeUsed ? 'Usato' : 'Non usato' }}\n                      </span>\n                      <small *ngIf=\"associatedUser.inviteCodeUsedAt\">{{ formatDateTime(associatedUser.inviteCodeUsedAt) }}</small>\n                    </td>\n                    <td>{{ associatedUser.purchasesCount }}</td>\n                    <td>{{ formatCurrency(associatedUser.totalSpent) }}</td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"isFacilityManager && activeSection === 'payments'\">\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Pagamenti struttura</h2>\n              <p class=\"table-subtitle\">Visualizzi solo i pagamenti collegati alla tua struttura.</p>\n            </div>\n          </div>\n\n          <div class=\"stats-grid manager-payments-stats\">\n            <mat-card class=\"stat-card\">\n              <span>Pagamenti registrati</span>\n              <strong *ngIf=\"!loadingPayments; else managerPaymentsLoadingStat\">{{ totalPayments }}</strong>\n              <ng-template #managerPaymentsLoadingStat>\n                <div class=\"stat-spinner\">\n                  <mat-spinner diameter=\"24\"></mat-spinner>\n                </div>\n              </ng-template>\n            </mat-card>\n            <mat-card class=\"stat-card\">\n              <span>Guadagno struttura</span>\n              <strong *ngIf=\"!loadingPayments; else managerEarningsLoadingStat\">{{ formatCurrency(totalStructureEarnings) }}</strong>\n              <ng-template #managerEarningsLoadingStat>\n                <div class=\"stat-spinner\">\n                  <mat-spinner diameter=\"24\"></mat-spinner>\n                </div>\n              </ng-template>\n            </mat-card>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table users-table\">\n              <thead>\n                <tr>\n                  <th>Data</th>\n                  <th>Utente</th>\n                  <th>Data nascita</th>\n                  <th>Metodo pagamento</th>\n                  <th>Contenuto</th>\n                  <th>Prezzo base</th>\n                  <th>Sconto</th>\n                  <th>Pagato</th>\n                  <th>Stato pagamento</th>\n                  <th>Codice</th>\n                  <th>Quota struttura</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingPayments\">\n                  <td colspan=\"11\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingPayments && !payments.length\">\n                  <td colspan=\"11\" class=\"empty-cell\">Nessun pagamento registrato per la tua struttura.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingPayments\">\n                  <tr *ngFor=\"let payment of payments; trackBy: trackByPaymentId\">\n                    <td>{{ formatDateTime(payment.purchasedAt) }}</td>\n                    <td class=\"payment-user-cell\">\n                      <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>\n                      <small>{{ payment.customerEmail }}</small>\n                      <small>{{ payment.customerPhone }}</small>\n                      <small>{{ payment.customerAddress }}</small>\n                      <small>ID app: <code>{{ payment.customerId }}</code></small>\n                    </td>\n                    <td>{{ payment.customerBirthDate | date: 'dd/MM/yyyy':'':'it-IT' }}</td>\n                    <td class=\"payment-method-cell\">\n                      <strong>{{ payment.paymentMethod }}</strong>\n                      <small>{{ payment.paymentProvider }}</small>\n                    </td>\n                    <td class=\"payment-content-cell\">\n                      <small>{{ paymentTargetLabel(payment) }}</small>\n                      <span class=\"payment-type-badge\" [class.bundle]=\"payment.type === 'bundle'\" [class.single]=\"payment.type === 'single'\">\n                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}\n                      </span>\n                    </td>\n                    <td>{{ formatCurrency(payment.baseAmount) }}</td>\n                    <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>\n                    <td>{{ formatCurrency(payment.paidAmount) }}</td>\n                    <td>{{ payment.paymentStatus }}</td>\n                    <td><code>{{ payment.inviteCode || '-' }}</code></td>\n                    <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManageUsers && activeSection === 'users'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Utenti</span>\n            <strong *ngIf=\"!loadingUsers; else usersLoadingStat\">{{ totalUsers }}</strong>\n            <ng-template #usersLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Strutture</span>\n            <strong *ngIf=\"!loadingStructures; else structuresLoadingStat\">{{ totalStructures }}</strong>\n            <ng-template #structuresLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Lista utenti</h2>\n              <p class=\"table-subtitle\">Gestisci struttura utente e operazioni rapide.</p>\n            </div>\n            <div class=\"table-actions\">\n              <button type=\"button\" class=\"toggle-panel-btn\" [class.active]=\"showCreateUserSection\" (click)=\"toggleCreateUserSection()\">\n                <span class=\"toggle-panel-icon\">{{ showCreateUserSection ? '-' : '+' }}</span>\n                <span>{{ showCreateUserSection ? 'Chiudi aggiunta utente' : 'Aggiungi utente' }}</span>\n              </button>\n              <button type=\"button\" class=\"toggle-panel-btn\" [class.active]=\"showInviteSection\" (click)=\"toggleInviteSection()\">\n                <span class=\"toggle-panel-icon\">{{ showInviteSection ? '-' : '+' }}</span>\n                <span>{{ showInviteSection ? 'Chiudi invito' : 'Invita utente' }}</span>\n              </button>\n            </div>\n          </div>\n\n          <section class=\"inline-panel\" *ngIf=\"showInviteSection\">\n            <h3>Nuovo invito utente</h3>\n            <p>Compila i dati, scegli ruolo e struttura se il ruolo e gestore.</p>\n\n            <form [formGroup]=\"inviteForm\" (ngSubmit)=\"invite()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome</mat-label>\n                <input matInput type=\"text\" formControlName=\"firstName\" autocomplete=\"given-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Cognome</mat-label>\n                <input matInput type=\"text\" formControlName=\"lastName\" autocomplete=\"family-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Email utente</mat-label>\n                <input matInput type=\"email\" formControlName=\"email\" autocomplete=\"email\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Permesso</mat-label>\n                <mat-select formControlName=\"role\">\n                  <mat-option value=\"facility_manager\">Gestore struttura</mat-option>\n                  <mat-option value=\"admin\">Admin</mat-option>\n                </mat-select>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\" *ngIf=\"isInviteStructureRequired\">\n                <mat-label>Struttura</mat-label>\n                <mat-select formControlName=\"structureId\" [disabled]=\"!structures.length\">\n                  <mat-option [value]=\"noStructureValue\" [disabled]=\"true\">Seleziona struttura</mat-option>\n                  <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">\n                    {{ structure.name }}\n                  </mat-option>\n                </mat-select>\n                <mat-error *ngIf=\"isInviteStructureMissing && inviteForm.controls.structureId.touched\">\n                  La struttura e obbligatoria per il gestore\n                </mat-error>\n              </mat-form-field>\n\n              <p class=\"inline-note\" *ngIf=\"isInviteStructureRequired && !structures.length && !loadingStructures\">\n                Nessuna struttura registrata: crea prima una struttura nella sezione dedicata.\n              </p>\n              <div class=\"inline-loader\" *ngIf=\"isInviteStructureRequired && loadingStructures\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n\n              <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"!canSubmitInvite\" type=\"submit\">\n                {{ inviting ? 'Invio...' : 'Invia invito' }}\n              </button>\n            </form>\n\n            <div class=\"invite-result\" *ngIf=\"lastInvite as invite\">\n              <strong>Ultimo invito:</strong>\n              <span>{{ displayName(invite.firstName, invite.lastName, invite.email) }} ({{ invite.email }})</span>\n              <span *ngIf=\"invite.structureName\">Struttura: {{ invite.structureName }}</span>\n              <span>Scadenza: {{ formatDateTime(invite.expiresAt) }}</span>\n            </div>\n          </section>\n\n          <section class=\"inline-panel\" *ngIf=\"showCreateUserSection\">\n            <h3>Aggiungi utente dashboard</h3>\n            <p>Crea direttamente un utente con password. Ruolo non modificabile dopo la creazione.</p>\n\n            <form [formGroup]=\"createUserForm\" (ngSubmit)=\"createUser()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome</mat-label>\n                <input matInput type=\"text\" formControlName=\"firstName\" autocomplete=\"given-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Cognome</mat-label>\n                <input matInput type=\"text\" formControlName=\"lastName\" autocomplete=\"family-name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Email utente</mat-label>\n                <input matInput type=\"email\" formControlName=\"email\" autocomplete=\"email\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Password iniziale</mat-label>\n                <input matInput type=\"password\" formControlName=\"password\" autocomplete=\"new-password\" />\n                <mat-hint>Minimo 8 caratteri</mat-hint>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Ruolo</mat-label>\n                <mat-select formControlName=\"role\">\n                  <mat-option value=\"user\">Utente normale</mat-option>\n                  <mat-option value=\"facility_manager\">Gestore struttura</mat-option>\n                  <mat-option value=\"admin\">Admin</mat-option>\n                </mat-select>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\" *ngIf=\"isCreateUserStructureVisible\">\n                <mat-label>{{ isCreateUserStructureRequired ? 'Struttura (obbligatoria)' : 'Struttura (opzionale)' }}</mat-label>\n                <mat-select formControlName=\"structureId\" [disabled]=\"!structures.length\">\n                  <mat-option [value]=\"noStructureValue\" [disabled]=\"isCreateUserStructureRequired\">\n                    {{ isCreateUserStructureRequired ? 'Seleziona struttura' : 'Nessuna struttura' }}\n                  </mat-option>\n                  <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">\n                    {{ structure.name }}\n                  </mat-option>\n                </mat-select>\n                <mat-error *ngIf=\"isCreateUserStructureMissing && createUserForm.controls.structureId.touched\">\n                  La struttura e obbligatoria per il gestore\n                </mat-error>\n              </mat-form-field>\n\n              <p class=\"inline-note\" *ngIf=\"isCreateUserStructureVisible && !structures.length && !loadingStructures\">\n                Nessuna struttura registrata: crea prima una struttura nella sezione dedicata.\n              </p>\n              <div class=\"inline-loader\" *ngIf=\"isCreateUserStructureVisible && loadingStructures\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n\n              <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"!canSubmitCreateUser\" type=\"submit\">\n                {{ creatingUser ? 'Creazione...' : 'Crea utente' }}\n              </button>\n            </form>\n          </section>\n\n          <div class=\"users-structure-filter\" *ngIf=\"isUsersStructureFilterActive\">\n            <span>\n              Filtro struttura attivo:\n              <strong>{{ usersStructureFilterName }}</strong>\n            </span>\n            <button type=\"button\" class=\"ghost-btn\" (click)=\"clearUsersStructureFilter()\">Rimuovi filtro</button>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table users-table\">\n              <thead>\n                <tr>\n                  <th>Utente</th>\n                  <th>Ruolo</th>\n                  <th>Strutture associate</th>\n                  <th>Sbloccati</th>\n                  <th>Data registrazione</th>\n                  <th>Azioni</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingUsers\">\n                  <td colspan=\"6\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingUsers && !usersForDisplay.length\">\n                  <td colspan=\"6\" class=\"empty-cell\">Nessun utente disponibile.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingUsers\">\n                  <tr *ngFor=\"let user of usersForDisplay\">\n                    <td>\n                      <strong>{{ displayName(user.firstName, user.lastName, user.email) }}</strong>\n                      <small>{{ user.email }}</small>\n                      <small class=\"structure-name muted\" *ngIf=\"isReadOnlyAppUser(user)\">\n                        Utente app associato da codice invito/sconto\n                      </small>\n                    </td>\n                    <td>{{ roleLabel(user.role) }}</td>\n                    <td>\n                      <div class=\"structure-cell\">\n                        <div class=\"association-list\" *ngIf=\"userAssociations(user).length; else noUserAssociations\">\n                          <div class=\"association-item\" *ngFor=\"let association of userAssociations(user)\">\n                            <div class=\"association-head\">\n                              <small class=\"structure-name\">{{ association.structureName || association.structureId }}</small>\n                              <span [class]=\"userAssociationStatusClass(association.status)\" [matTooltip]=\"userAssociationStatusTooltip(association.status)\">\n                                {{ userAssociationStatusLabel(association.status) }}\n                              </span>\n                            </div>\n                            <small class=\"structure-code\" *ngIf=\"association.inviteCode\">\n                              Codice: <code>{{ association.inviteCode }}</code>\n                            </small>\n                          </div>\n                        </div>\n                        <ng-template #noUserAssociations>\n                          <small class=\"structure-name muted\">Nessuna struttura associata</small>\n                        </ng-template>\n                      </div>\n                    </td>\n                    <td>\n                      <div class=\"unlocked-cell\" *ngIf=\"user.role !== 'admin'; else adminUnlockedAll\">\n                        <div class=\"unlocked-counts\" *ngIf=\"user.unlockedCitiesCount || user.unlockedPoisCount; else noUnlockedItems\">\n                          <small><strong>Citta:</strong> {{ user.unlockedCitiesCount }}</small>\n                          <small><strong>Luoghi:</strong> {{ user.unlockedPoisCount }}</small>\n                        </div>\n                        <div class=\"unlocked-tags\" *ngIf=\"userUnlockedCities(user).length\">\n                          <span class=\"status-pill ok\" *ngFor=\"let city of userUnlockedCities(user) | slice: 0 : 3\">\n                            {{ city.cityName || city.cityId }}\n                          </span>\n                        </div>\n                        <div class=\"unlocked-pois\" *ngIf=\"userUnlockedPois(user).length\">\n                          <small class=\"unlocked-poi-item\" *ngFor=\"let poi of userUnlockedPois(user) | slice: 0 : 3\">\n                            {{ poi.poiName || poi.poiId }}\n                            <span *ngIf=\"poi.cityName\">({{ poi.cityName }})</span>\n                          </small>\n                        </div>\n                        <small class=\"structure-name muted\" *ngIf=\"user.unlockedCitiesCount > 3 || user.unlockedPoisCount > 3\">\n                          + altri contenuti sbloccati\n                        </small>\n                        <ng-template #noUnlockedItems>\n                          <small class=\"structure-name muted\">Nessun contenuto sbloccato</small>\n                        </ng-template>\n                      </div>\n                      <ng-template #adminUnlockedAll>\n                        <div class=\"unlocked-cell\">\n                          <span class=\"status-pill ok\">Tutti</span>\n                          <small class=\"structure-name muted\">Accesso completo (profilo admin)</small>\n                        </div>\n                      </ng-template>\n                    </td>\n                    <td>{{ formatDateTime(user.createdAt) }}</td>\n                    <td>\n                      <div class=\"action-buttons user-row-actions\" *ngIf=\"user.id !== currentUserId && !isReadOnlyAppUser(user)\">\n                        <div class=\"user-row-actions-top\">\n                          <button\n                            mat-stroked-button\n                            color=\"primary\"\n                            (click)=\"sendPasswordReset(user)\"\n                            [disabled]=\"resettingPasswordUserId === user.id || !user.isRegistered\"\n                          >\n                            {{ resettingPasswordUserId === user.id ? 'Invio reset...' : 'Reset password' }}\n                          </button>\n\n                          <button\n                            mat-stroked-button\n                            color=\"warn\"\n                            (click)=\"deleteUser(user)\"\n                            [disabled]=\"deletingUserId === user.id || savingUserId === user.id\"\n                          >\n                            {{ deletingUserId === user.id ? 'Elimino...' : 'Elimina' }}\n                          </button>\n                        </div>\n\n                        <button\n                          mat-flat-button\n                          color=\"accent\"\n                          class=\"user-row-impersonate-btn\"\n                          (click)=\"impersonate(user)\"\n                          [disabled]=\"impersonatingUserId === user.id || !user.isRegistered\"\n                          [matTooltip]=\"'Entra come questo utente per verificare esattamente cosa puo vedere nella dashboard.'\"\n                          matTooltipPosition=\"above\"\n                        >\n                          {{\n                            impersonatingUserId === user.id\n                              ? 'Accesso...'\n                              : 'Entra come questo utente'\n                          }}\n                        </button>\n                      </div>\n                    </td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canViewDiscountCodes && activeSection === 'discounts'\">\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Codici invito e sconto</h2>\n              <p class=\"table-subtitle\" *ngIf=\"canManageUsers\">\n                Ogni struttura puo avere piu codici con regole diverse e scadenza dedicata.\n              </p>\n              <p class=\"table-subtitle\" *ngIf=\"!canManageUsers\">\n                Vista sola lettura dei codici sconto della tua struttura.\n              </p>\n            </div>\n            <div class=\"table-actions\" *ngIf=\"canManageUsers\">\n              <button type=\"button\" class=\"toggle-panel-btn\" (click)=\"toggleDiscountCodeCreateSection()\">\n                <span class=\"toggle-panel-icon\">+</span>\n                <span>Aggiungi codice sconto/struttura</span>\n              </button>\n            </div>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table structures-table payments-table compact-table\">\n              <thead>\n                <tr>\n                  <th>Struttura</th>\n                  <th>Codici sconto associati</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingDiscountCodes || loadingStructures\">\n                  <td colspan=\"2\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingDiscountCodes && !loadingStructures && !discountCodeGroups.length\">\n                  <td colspan=\"2\" class=\"empty-cell\">Nessun codice sconto registrato.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingDiscountCodes && !loadingStructures\">\n                  <tr *ngFor=\"let group of discountCodeGroups\">\n                    <td>\n                      <strong>{{ group.structureName || '-' }}</strong>\n                      <small *ngIf=\"group.structureAddress\">{{ group.structureAddress }}</small>\n                      <small>{{ group.codes.length }} {{ group.codes.length === 1 ? 'codice' : 'codici' }}</small>\n                    </td>\n                    <td>\n                      <div class=\"discount-group-list\">\n                        <div class=\"discount-group-item\" *ngFor=\"let discountCode of group.codes\">\n                          <div class=\"discount-group-main\">\n                            <code>{{ discountCode.code }}</code>\n                            <span class=\"discount-group-meta\">\n                              Applicabile a:\n                              <strong>{{ discountCodeApplyToLabel(discountCode.applyTo) }}</strong>\n                            </span>\n                            <span class=\"discount-group-meta\">\n                              Citta:\n                              <strong>{{ discountCodeCitiesLabel(discountCode) }}</strong>\n                            </span>\n                            <span class=\"discount-group-meta\">\n                              Sconto/Incasso:\n                              <strong>{{ discountCode.userDiscountPercentApplied }}%</strong>\n                              / {{ formatCurrency(discountCode.structureFixedAmountApplied) }}\n                            </span>\n                            <span class=\"discount-group-meta\">\n                              Scadenza: <strong>{{ formatDateTime(discountCode.expiresAt) }}</strong>\n                              <span\n                                class=\"expiry-badge\"\n                                [ngClass]=\"{\n                                  'expiry-badge-active': discountCodeExpiryStatus(discountCode.expiresAt) === 'active',\n                                  'expiry-badge-expired': discountCodeExpiryStatus(discountCode.expiresAt) === 'expired',\n                                  'expiry-badge-unknown': discountCodeExpiryStatus(discountCode.expiresAt) === 'unknown'\n                                }\"\n                              >\n                                {{\n                                  discountCodeExpiryStatus(discountCode.expiresAt) === 'active'\n                                    ? 'Attivo'\n                                    : discountCodeExpiryStatus(discountCode.expiresAt) === 'expired'\n                                      ? 'Scaduto'\n                                      : 'Da verificare'\n                                }}\n                              </span>\n                            </span>\n                          </div>\n                          <div class=\"action-buttons\" *ngIf=\"canManageUsers; else discountReadOnlyActions\">\n                            <button\n                              mat-stroked-button\n                              color=\"primary\"\n                              type=\"button\"\n                              (click)=\"editDiscountCode(discountCode)\"\n                              [disabled]=\"savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id\"\n                            >\n                              Modifica\n                            </button>\n                            <button\n                              mat-stroked-button\n                              color=\"warn\"\n                              type=\"button\"\n                              (click)=\"deleteDiscountCode(discountCode)\"\n                              [disabled]=\"savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id\"\n                            >\n                              {{ deletingDiscountCodeId === discountCode.id ? 'Elimino...' : 'Elimina' }}\n                            </button>\n                          </div>\n                          <ng-template #discountReadOnlyActions></ng-template>\n                        </div>\n                      </div>\n                    </td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManageUsers && activeSection === 'partnerRequests'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Richieste totali</span>\n            <strong *ngIf=\"!loadingPartnerRequests; else partnerRequestsLoadingStat\">{{ totalPartnerRequests }}</strong>\n            <ng-template #partnerRequestsLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>In attesa</span>\n            <strong *ngIf=\"!loadingPartnerRequests; else partnerPendingLoadingStat\">{{ pendingPartnerRequests }}</strong>\n            <ng-template #partnerPendingLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Approvate</span>\n            <strong *ngIf=\"!loadingPartnerRequests; else partnerApprovedLoadingStat\">{{ approvedPartnerRequests }}</strong>\n            <ng-template #partnerApprovedLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>PDF inviati</span>\n            <strong *ngIf=\"!loadingPartnerRequests; else partnerPdfLoadingStat\">{{ sentPartnerRequestPdfs }}</strong>\n            <ng-template #partnerPdfLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Richieste partner</h2>              \n              <p class=\"table-subtitle\">Approva o nega le richieste partner e genera il PDF promozionale da inviare alla struttura.</p>\n            </div>\n            <div class=\"table-actions\">\n              <button\n                mat-stroked-button\n                color=\"primary\"\n                type=\"button\"\n                (click)=\"loadPartnerRequests()\"\n                [disabled]=\"loadingPartnerRequests\"\n              >\n                {{ loadingPartnerRequests ? 'Aggiorno...' : 'Aggiorna elenco' }}\n              </button>\n            </div>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table partner-requests-table\">\n              <thead>\n                <tr>\n                  <th>Struttura</th>\n                  <th>Referente</th>\n                  <th>Indirizzo</th>\n                  <th>Stato</th>\n                  <th>Messaggio</th>\n                  <th>Azioni</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingPartnerRequests\">\n                  <td colspan=\"6\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingPartnerRequests && !partnerRequests.length\">\n                  <td colspan=\"6\" class=\"empty-cell\">Nessuna richiesta partner registrata.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingPartnerRequests\">\n                  <tr *ngFor=\"let request of partnerRequests; trackBy: trackByPartnerRequestId\">\n                    <td class=\"partner-request-main-cell\">\n                      <strong>#{{ request.id }} - {{ request.structureName }}</strong>\n                      <small *ngIf=\"request.structureType\">Tipologia: {{ request.structureType }}</small>\n                      <small *ngIf=\"request.roomsCount !== null\">Camere: {{ request.roomsCount }}</small>\n                      <small *ngIf=\"request.vatNumber\">P.IVA: {{ request.vatNumber }}</small>\n                      <small *ngIf=\"request.website\">Sito: {{ request.website }}</small>\n                      <small>Inviata il {{ formatDateTime(request.createdAt) }}</small>\n                    </td>\n                    <td class=\"partner-request-contact-cell\">\n                      <strong>{{ partnerRequestContactName(request) }}</strong>\n                      <small>{{ request.contactEmail }}</small>\n                      <small>{{ request.contactPhone }}</small>\n                    </td>\n                    <td class=\"partner-request-address-cell\">\n                      <small>{{ partnerRequestAddress(request) || '-' }}</small>\n                    </td>\n                    <td class=\"partner-request-status-cell\">\n                      <span class=\"status-pill\" [ngClass]=\"partnerRequestStatusClass(request.status)\">\n                        {{ partnerRequestStatusLabel(request.status) }}\n                      </span>\n                      <span class=\"status-pill\" [ngClass]=\"partnerRequestPdfStatusClass(request.pdfReleaseStatus)\">\n                        PDF: {{ partnerRequestPdfStatusLabel(request.pdfReleaseStatus) }}\n                      </span>\n                      <small *ngIf=\"request.discountCode\">Codice: <code>{{ request.discountCode }}</code></small>\n                      <small>Aggiornata {{ formatDateTime(request.updatedAt) }}</small>\n                    </td>\n                    <td class=\"partner-request-message-cell\">\n                      <small class=\"partner-request-notes\" [class.partner-request-empty-note]=\"!request.notes\">\n                        {{ request.notes || 'Nessun messaggio aggiuntivo.' }}\n                      </small>\n                    </td>\n                    <td>\n                      <div class=\"action-buttons\">\n                        <button\n                          mat-stroked-button\n                          color=\"primary\"\n                          type=\"button\"\n                          (click)=\"previewPartnerRequestPdf(request)\"\n                          [disabled]=\"isPartnerRequestBusy(request)\"\n                        >\n                          {{ previewingPartnerRequestId === request.id ? 'Apro...' : 'Anteprima PDF' }}\n                        </button>\n                        <button\n                          mat-flat-button\n                          color=\"primary\"\n                          type=\"button\"\n                          (click)=\"openPartnerRequestApproval(request)\"\n                          [disabled]=\"isPartnerRequestBusy(request) || request.status === 'approved'\"\n                        >\n                          {{ approvingPartnerRequestId === request.id ? 'Invio...' : 'Approva' }}\n                        </button>\n                        <button\n                          mat-stroked-button\n                          color=\"warn\"\n                          type=\"button\"\n                          (click)=\"rejectPartnerRequest(request)\"\n                          [disabled]=\"isPartnerRequestBusy(request) || request.status !== 'pending'\"\n                        >\n                          {{ rejectingPartnerRequestId === request.id ? 'Nego...' : 'Nega' }}\n                        </button>\n                      </div>\n                    </td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManageUsers && activeSection === 'payments'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Pagamenti totali</span>\n            <strong *ngIf=\"!loadingPayments; else adminPaymentsLoadingStat\">{{ paymentsSummary.totalPayments }}</strong>\n            <ng-template #adminPaymentsLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Incasso totale</span>\n            <strong *ngIf=\"!loadingPayments; else adminCollectedLoadingStat\">{{ formatCurrency(paymentsSummary.totalCollected) }}</strong>\n            <ng-template #adminCollectedLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Sconti applicati</span>\n            <strong *ngIf=\"!loadingPayments; else adminDiscountLoadingStat\">{{ formatCurrency(paymentsSummary.totalDiscountAmount) }}</strong>\n            <ng-template #adminDiscountLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Totale quota strutture</span>\n            <strong *ngIf=\"!loadingPayments; else adminEarningsLoadingStat\">{{ formatCurrency(paymentsSummary.totalStructureEarnings) }}</strong>\n            <ng-template #adminEarningsLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Pagamenti</h2>\n              <p class=\"table-subtitle\">Storico acquisti con eventuale codice sconto e quota struttura.</p>\n            </div>\n            <div class=\"table-actions\">\n              <mat-form-field appearance=\"outline\" class=\"compact-filter\">\n                <mat-label>Filtra per struttura</mat-label>\n                <mat-select\n                  [value]=\"selectedPaymentsStructureId\"\n                  (selectionChange)=\"onPaymentsStructureFilterChange($event.value)\"\n                >\n                  <mat-option value=\"\">Tutte le strutture</mat-option>\n                  <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">\n                    {{ structure.name }}\n                  </mat-option>\n                </mat-select>\n              </mat-form-field>\n            </div>\n          </div>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table structures-table\">\n              <thead>\n                <tr>\n                  <th>Data</th>\n                  <th>Utente</th>\n                  <th>Data nascita</th>\n                  <th>Metodo pagamento</th>\n                  <th>Contenuto</th>\n                  <th>Prezzo base</th>\n                  <th>Sconto</th>\n                  <th>Pagato</th>\n                  <th>Stato pagamento</th>\n                  <th>Struttura</th>\n                  <th>Codice</th>\n                  <th>Quota struttura</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingPayments\">\n                  <td colspan=\"12\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!loadingPayments && !payments.length\">\n                  <td colspan=\"12\" class=\"empty-cell\">Nessun pagamento registrato.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingPayments\">\n                  <tr *ngFor=\"let payment of payments; trackBy: trackByPaymentId\">\n                    <td>{{ formatDateTime(payment.purchasedAt) }}</td>\n                    <td class=\"payment-user-cell\">\n                      <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>\n                      <small>{{ payment.customerEmail }}</small>\n                      <small>{{ payment.customerPhone }}</small>\n                      <small>{{ payment.customerAddress }}</small>\n                      <small>ID app: <code>{{ payment.customerId }}</code></small>\n                    </td>\n                    <td>{{ payment.customerBirthDate | date: 'dd/MM/yyyy':'':'it-IT' }}</td>\n                    <td class=\"payment-method-cell\">\n                      <strong>{{ payment.paymentMethod }}</strong>\n                      <small>{{ payment.paymentProvider }}</small>\n                    </td>\n                    <td class=\"payment-content-cell\">\n                      <small>{{ paymentTargetLabel(payment) }}</small>\n                      <span class=\"payment-type-badge\" [class.bundle]=\"payment.type === 'bundle'\" [class.single]=\"payment.type === 'single'\">\n                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}\n                      </span>\n                    </td>\n                    <td>{{ formatCurrency(payment.baseAmount) }}</td>\n                    <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>\n                    <td>{{ formatCurrency(payment.paidAmount) }}</td>\n                    <td>{{ payment.paymentStatus }}</td>\n                    <td>{{ payment.structureName || '-' }}</td>\n                    <td><code>{{ payment.inviteCode || '-' }}</code></td>\n                    <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManagePayPal && activeSection === 'paypal'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Stato connessione</span>\n            <strong *ngIf=\"!loadingPayPalSettings; else payPalStatusLoading\">{{ payPalStatusLabel }}</strong>\n            <ng-template #payPalStatusLoading>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Ambiente</span>\n            <strong *ngIf=\"!loadingPayPalSettings; else payPalModeLoading\">\n              {{ payPalSettings?.mode === 'live' ? 'Live' : 'Sandbox' }}\n            </strong>\n            <ng-template #payPalModeLoading>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Configurazione PayPal</h2>\n              <p class=\"table-subtitle\">Client ID, secret, ambiente e dati merchant usati dal checkout reale lato utente.</p>\n            </div>\n            <div class=\"table-actions\">\n              <button mat-stroked-button color=\"primary\" type=\"button\" (click)=\"testPayPalSettings()\" [disabled]=\"testingPayPalSettings || loadingPayPalSettings\">\n                {{ testingPayPalSettings ? 'Verifico...' : 'Verifica connessione' }}\n              </button>\n            </div>\n          </div>\n\n          <form class=\"paypal-settings-form\" [formGroup]=\"payPalForm\" (ngSubmit)=\"savePayPalSettings()\">\n            <div class=\"paypal-status-strip\" *ngIf=\"payPalSettings\">\n              <strong>{{ payPalStatusLabel }}</strong>\n              <span *ngIf=\"payPalSettings.lastVerifiedAt\">Ultima verifica: {{ formatDateTime(payPalSettings.lastVerifiedAt) }}</span>\n              <span *ngIf=\"payPalSettings.lastVerificationError\">{{ payPalSettings.lastVerificationError }}</span>\n            </div>\n\n            <div class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Ambiente PayPal</mat-label>\n                <mat-select formControlName=\"mode\">\n                  <mat-option value=\"sandbox\">Sandbox</mat-option>\n                  <mat-option value=\"live\">Live</mat-option>\n                </mat-select>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Brand name</mat-label>\n                <input matInput formControlName=\"brandName\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\" class=\"full-span\">\n                <mat-label>Client ID</mat-label>\n                <input matInput formControlName=\"clientId\" autocomplete=\"off\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\" class=\"full-span\">\n                <mat-label>Client secret</mat-label>\n                <input matInput formControlName=\"clientSecret\" autocomplete=\"off\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Merchant ID</mat-label>\n                <input matInput formControlName=\"merchantId\" autocomplete=\"off\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Merchant email</mat-label>\n                <input matInput formControlName=\"merchantEmail\" autocomplete=\"off\" />\n                <mat-error *ngIf=\"payPalForm.controls.merchantEmail.invalid && payPalForm.controls.merchantEmail.touched\">\n                  Email PayPal non valida\n                </mat-error>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Webhook ID</mat-label>\n                <input matInput formControlName=\"webhookId\" autocomplete=\"off\" />\n              </mat-form-field>\n            </div>\n\n            <mat-slide-toggle formControlName=\"isEnabled\">Attiva PayPal per tutti i checkout utente</mat-slide-toggle>\n\n            <div class=\"paypal-actions\">\n              <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSavePayPalSettings\">\n                {{ savingPayPalSettings ? 'Salvo...' : 'Salva configurazione' }}\n              </button>\n            </div>\n          </form>\n        </mat-card>\n      </ng-container>\n\n      <ng-container *ngIf=\"canManageCatalog && activeSection === 'catalog'\">\n        <div class=\"stats-grid\">\n          <mat-card class=\"stat-card\">\n            <span>Citta totali</span>\n            <strong *ngIf=\"!loadingCatalogCities; else catalogCitiesLoadingStat\">{{ catalogCities.length }}</strong>\n            <ng-template #catalogCitiesLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n          <mat-card class=\"stat-card\">\n            <span>Luoghi nella citta selezionata</span>\n            <strong *ngIf=\"!loadingCatalogPois; else catalogPoisLoadingStat\">{{ catalogPois.length }}</strong>\n            <ng-template #catalogPoisLoadingStat>\n              <div class=\"stat-spinner\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n            </ng-template>\n          </mat-card>\n        </div>\n\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Gestione Citta e Luoghi di interesse</h2>\n              <p class=\"table-subtitle\">Catalogo admin con tab dedicati e modifica tramite modali.</p>\n            </div>\n          </div>\n\n          <div class=\"catalog-tabs\" role=\"tablist\" aria-label=\"Gestione catalogo\">\n            <button\n              type=\"button\"\n              class=\"catalog-tab\"\n              [class.active]=\"catalogTab === 'cities'\"\n              (click)=\"selectCatalogTab('cities')\"\n            >\n              Citta\n            </button>\n            <button\n              type=\"button\"\n              class=\"catalog-tab\"\n              [class.active]=\"catalogTab === 'pois'\"\n              (click)=\"selectCatalogTab('pois')\"\n            >\n              Luoghi interesse\n            </button>\n          </div>\n\n          <div class=\"catalog-stack\" *ngIf=\"catalogTab === 'cities'\">\n            <section class=\"inline-panel\">\n              <div class=\"catalog-panel-head\">\n                <h3>Nuova citta</h3>\n                <button type=\"button\" class=\"toggle-panel-btn\" (click)=\"toggleCatalogCityCreateSection()\">\n                  <span class=\"toggle-panel-icon\">+</span>\n                  <span>Nuova citta</span>\n                </button>\n              </div>\n            </section>\n\n            <section class=\"inline-panel\">\n              <div class=\"catalog-list-head\">\n                <div>\n                  <h3>Lista citta</h3>\n                  <p class=\"table-subtitle\">Modifica da modale e gestisci i luoghi dalla tab dedicata.</p>\n                </div>\n              </div>\n\n              <div class=\"table-wrap compact-wrap\">\n                <table class=\"modern-table compact-table\">\n                  <thead>\n                    <tr>\n                      <th>Citta</th>\n                      <th>Regione</th>\n                      <th>Luoghi</th>\n                      <th>Azioni</th>\n                    </tr>\n                  </thead>\n                  <tbody>\n                    <tr *ngIf=\"loadingCatalogCities\">\n                      <td colspan=\"4\" class=\"empty-cell spinner-cell\">\n                        <mat-spinner diameter=\"28\"></mat-spinner>\n                      </td>\n                    </tr>\n                    <tr *ngIf=\"!loadingCatalogCities && !catalogCities.length\">\n                      <td colspan=\"4\" class=\"empty-cell\">Nessuna citta disponibile.</td>\n                    </tr>\n                    <ng-container *ngIf=\"!loadingCatalogCities\">\n                      <tr *ngFor=\"let city of catalogCities\">\n                        <td>\n                          <strong>{{ city.name }}</strong>\n                          <small *ngIf=\"city.isDefault\">Predefinita</small>\n                        </td>\n                        <td>{{ city.region }}</td>\n                        <td>{{ city.poiCount }}</td>\n                        <td>\n                          <div class=\"action-buttons\">\n                            <button mat-stroked-button color=\"primary\" type=\"button\" (click)=\"editCatalogCity(city)\">Modifica</button>\n                            <button\n                              mat-stroked-button\n                              color=\"warn\"\n                              type=\"button\"\n                              (click)=\"deleteCatalogCity(city)\"\n                              [disabled]=\"deletingCatalogCityId === city.id\"\n                            >\n                              {{ deletingCatalogCityId === city.id ? 'Elimino...' : 'Elimina' }}\n                            </button>\n                          </div>\n                        </td>\n                      </tr>\n                    </ng-container>\n                  </tbody>\n                </table>\n              </div>\n            </section>\n          </div>\n\n          <div class=\"catalog-stack\" *ngIf=\"catalogTab === 'pois'\">\n            <section class=\"inline-panel\">\n              <div class=\"catalog-panel-head\">\n                <h3>Nuovo luogo di interesse</h3>\n                <button type=\"button\" class=\"toggle-panel-btn\" (click)=\"toggleCatalogPoiCreateSection()\">\n                  <span class=\"toggle-panel-icon\">+</span>\n                  <span>Nuovo luogo interesse</span>\n                </button>\n              </div>\n            </section>\n\n            <section class=\"inline-panel\">\n              <div class=\"catalog-list-head\">\n                <div>\n                  <h3>Lista luoghi di interesse</h3>\n                  <p class=\"table-subtitle\">Sezione in colonna unica per mantenere la lettura pulita.</p>\n                </div>\n                <mat-form-field appearance=\"outline\" class=\"catalog-city-filter compact-filter\">\n                  <mat-label>Filtro citta</mat-label>\n                  <mat-select [value]=\"selectedCatalogCityId\" (selectionChange)=\"onCatalogCityFilterChange($event.value)\">\n                    <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n                  </mat-select>\n                </mat-form-field>\n              </div>\n\n              <p class=\"inline-note\" *ngIf=\"!loadingCatalogCities && !catalogCities.length\">Crea una citta per iniziare a gestire i POI.</p>\n              <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n                <mat-spinner diameter=\"24\"></mat-spinner>\n              </div>\n              <p class=\"inline-note\" *ngIf=\"!loadingCatalogCities && catalogCities.length && !selectedCatalogCityId\">\n                Seleziona una citta per vedere la lista dei punti di interesse.\n              </p>\n\n              <div class=\"table-wrap\" *ngIf=\"selectedCatalogCityId\">\n                <table class=\"modern-table\">\n                  <thead>\n                    <tr>\n                      <th>Luogo</th>\n                      <th>Categoria</th>\n                      <th>Prezzo</th>\n                      <th>Durata</th>\n                      <th>Audio</th>\n                      <th>Azioni</th>\n                    </tr>\n                  </thead>\n                  <tbody>\n                    <tr *ngIf=\"loadingCatalogPois\">\n                      <td colspan=\"6\" class=\"empty-cell spinner-cell\">\n                        <mat-spinner diameter=\"28\"></mat-spinner>\n                      </td>\n                    </tr>\n                    <tr *ngIf=\"!loadingCatalogPois && !catalogPois.length\">\n                      <td colspan=\"6\" class=\"empty-cell\">Nessun luogo nella citta selezionata.</td>\n                    </tr>\n                    <ng-container *ngIf=\"!loadingCatalogPois\">\n                      <tr *ngFor=\"let poi of catalogPois; trackBy: trackByCatalogPoiId\">\n                        <td><strong>{{ poi.name }}</strong></td>\n                        <td>{{ poi.category }}</td>\n                        <td>{{ formatCurrency(poi.priceSingle) }}</td>\n                        <td>{{ formatCatalogPoiDuration(poi) }}</td>\n                        <td>\n                          <button\n                            type=\"button\"\n                            class=\"audio-link-btn\"\n                            [disabled]=\"!poi.audioUrl\"\n                            (click)=\"openCatalogPoiAudioPlayer(poi)\"\n                          >\n                            {{ poi.audioUrl ? audioFileNameFromUrl(poi.audioUrl) : 'Nessun audio' }}\n                          </button>\n                        </td>\n                        <td>\n                          <div class=\"action-buttons\">\n                            <button mat-stroked-button color=\"primary\" type=\"button\" (click)=\"editCatalogPoi(poi)\">Modifica</button>\n                            <button\n                              mat-stroked-button\n                              color=\"warn\"\n                              type=\"button\"\n                              (click)=\"deleteCatalogPoi(poi)\"\n                              [disabled]=\"deletingCatalogPoiId === poi.id\"\n                            >\n                              {{ deletingCatalogPoiId === poi.id ? 'Elimino...' : 'Elimina' }}\n                            </button>\n                          </div>\n                        </td>\n                      </tr>\n                    </ng-container>\n                  </tbody>\n                </table>\n              </div>\n            </section>\n          </div>\n        </mat-card>\n      </ng-container>\n\n      <ng-template #createCatalogCityDialog>\n        <h2 mat-dialog-title>Nuova citta</h2>\n        <form [formGroup]=\"catalogCityForm\" (ngSubmit)=\"saveCatalogCity()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Nome citta</mat-label>\n              <input matInput type=\"text\" formControlName=\"name\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Regione (fissa)</mat-label>\n              <input matInput type=\"text\" formControlName=\"region\" readonly />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Prezzo bundle (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" step=\"0.01\" formControlName=\"bundlePrice\" />\n            </mat-form-field>\n\n            <div class=\"translation-panel\" formGroupName=\"translations\">\n              <div class=\"translation-panel-head\">\n                <strong>Traduzioni app utente</strong>\n                <span>Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.</span>\n              </div>\n\n              <div class=\"translation-grid\">\n                <section class=\"translation-card\" *ngFor=\"let language of contentLanguages\" [formGroupName]=\"language.code\">\n                  <h3>{{ language.label }}</h3>\n\n                  <mat-form-field appearance=\"outline\">\n                    <mat-label>Nome citta {{ language.label }}</mat-label>\n                    <input matInput type=\"text\" formControlName=\"name\" />\n                  </mat-form-field>\n                </section>\n              </div>\n            </div>\n\n            <input type=\"hidden\" formControlName=\"heroImage\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Immagine citta</strong>\n                <span>{{ catalogCityForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n              </div>\n\n              <div class=\"media-preview\" *ngIf=\"catalogCityForm.controls.heroImage.value; else createCityImageEmpty\">\n                <img [src]=\"catalogCityForm.controls.heroImage.value\" alt=\"Anteprima immagine citta\" />\n              </div>\n              <ng-template #createCityImageEmpty>\n                <div class=\"media-preview placeholder\">Carica un'immagine per la citta.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #createCatalogCityImageInput\n                  type=\"file\"\n                  accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                  hidden\n                  (change)=\"onCatalogCityImageFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"createCatalogCityImageInput.click()\"\n                  [disabled]=\"uploadingCatalogCityImage || savingCatalogCity\"\n                >\n                  {{\n                    uploadingCatalogCityImage\n                      ? 'Upload...'\n                      : catalogCityForm.controls.heroImage.value\n                        ? 'Sostituisci immagine'\n                        : 'Carica immagine'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogCityForm.controls.heroImage.value\"\n                  (click)=\"clearCatalogCityImage()\"\n                  [disabled]=\"uploadingCatalogCityImage || savingCatalogCity\"\n                >\n                  Rimuovi immagine\n                </button>\n              </div>\n            </div>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCreateCatalogCityDialog()\" [disabled]=\"savingCatalogCity\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogCity\">\n              {{ savingCatalogCity ? 'Salvataggio...' : 'Crea citta' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #createCatalogPoiDialog>\n        <h2 mat-dialog-title>Nuovo luogo di interesse</h2>\n        <form [formGroup]=\"catalogPoiForm\" (ngSubmit)=\"saveCatalogPoi()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta</mat-label>\n              <mat-select [value]=\"selectedCatalogCityId\" (selectionChange)=\"onCatalogCityFilterChange($event.value)\">\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <p class=\"inline-note\" *ngIf=\"!loadingCatalogCities && !catalogCities.length\">Crea prima almeno una citta.</p>\n            <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n              <mat-spinner diameter=\"24\"></mat-spinner>\n            </div>\n\n            <ng-container *ngIf=\"!loadingCatalogCities && catalogCities.length\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome luogo</mat-label>\n                <input matInput type=\"text\" formControlName=\"name\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Categoria</mat-label>\n                <mat-select formControlName=\"category\">\n                  <mat-option *ngFor=\"let category of poiCategoryOptionsFor(catalogPoiForm.controls.category.value)\" [value]=\"category\">\n                    {{ category }}\n                  </mat-option>\n                </mat-select>\n              </mat-form-field>\n\n              <div class=\"coords-grid\">\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Latitudine</mat-label>\n                  <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lat\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Longitudine</mat-label>\n                  <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lng\" />\n                </mat-form-field>\n              </div>\n\n              <div class=\"map-picker-row\">\n                <button type=\"button\" class=\"toggle-panel-btn subtle\" (click)=\"openPoiMapPicker('create')\">\n                  <span class=\"toggle-panel-icon\">+</span>\n                  <span>Apri mappa e cerca coordinate</span>\n                </button>\n              </div>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Descrizione breve</mat-label>\n                <textarea matInput rows=\"2\" formControlName=\"descriptionShort\"></textarea>\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Descrizione lunga</mat-label>\n                <textarea matInput rows=\"5\" formControlName=\"descriptionLong\"></textarea>\n              </mat-form-field>\n\n              <div class=\"translation-panel\" formGroupName=\"translations\">\n                <div class=\"translation-panel-head\">\n                  <strong>Traduzioni app utente</strong>\n                  <span>Questi contenuti vengono mostrati nell'app utente in base alla lingua selezionata.</span>\n                </div>\n\n                <div class=\"translation-grid\">\n                  <section class=\"translation-card\" *ngFor=\"let language of contentLanguages\" [formGroupName]=\"language.code\">\n                    <h3>{{ language.label }}</h3>\n\n                    <mat-form-field appearance=\"outline\">\n                      <mat-label>Nome luogo {{ language.label }}</mat-label>\n                      <input matInput type=\"text\" formControlName=\"name\" />\n                    </mat-form-field>\n\n                    <mat-form-field appearance=\"outline\">\n                      <mat-label>Descrizione breve {{ language.label }}</mat-label>\n                      <textarea matInput rows=\"2\" formControlName=\"descriptionShort\"></textarea>\n                    </mat-form-field>\n\n                    <mat-form-field appearance=\"outline\">\n                      <mat-label>Descrizione lunga {{ language.label }}</mat-label>\n                      <textarea matInput rows=\"5\" formControlName=\"descriptionLong\"></textarea>\n                    </mat-form-field>\n\n                    <mat-form-field appearance=\"outline\">\n                      <mat-label>Nome audio {{ language.label }}</mat-label>\n                      <input matInput type=\"text\" formControlName=\"audioLabel\" />\n                    </mat-form-field>\n\n                    <input type=\"hidden\" formControlName=\"audioUrl\" />\n                    <div class=\"media-block\">\n                      <div class=\"media-block-head\">\n                        <strong>Audioguida {{ language.label }}</strong>\n                        <span>{{ catalogPoiTranslationAudioUrl(language.code, 'create') ? 'Pronta' : 'Nessun audio' }}</span>\n                      </div>\n\n                      <div class=\"audio-file-pill\" *ngIf=\"catalogPoiTranslationAudioUrl(language.code, 'create'); else createPoiTranslationAudioEmpty\">\n                        <span class=\"audio-file-label\">File:</span>\n                        <strong>{{ audioFileNameFromUrl(catalogPoiTranslationAudioUrl(language.code, 'create')) }}</strong>\n                      </div>\n                      <ng-template #createPoiTranslationAudioEmpty>\n                        <div class=\"media-preview placeholder\">Audio opzionale: puoi caricarlo ora o dopo.</div>\n                      </ng-template>\n\n                      <div class=\"media-upload-actions\">\n                        <input\n                          #createPoiTranslationAudioInput\n                          type=\"file\"\n                          accept=\".mp3,.m4a,.wav,.ogg,.aac,audio/*\"\n                          hidden\n                          (change)=\"onCatalogPoiTranslationAudioFileSelected($event, language.code, 'create')\"\n                        />\n                        <button\n                          type=\"button\"\n                          class=\"generate-code-btn\"\n                          (click)=\"createPoiTranslationAudioInput.click()\"\n                          [disabled]=\"isCatalogPoiTranslationAudioUploading(language.code, 'create') || savingCatalogPoi\"\n                        >\n                          {{\n                            isCatalogPoiTranslationAudioUploading(language.code, 'create')\n                              ? 'Upload...'\n                              : catalogPoiTranslationAudioUrl(language.code, 'create')\n                                ? 'Sostituisci audio'\n                                : 'Carica audio'\n                          }}\n                        </button>\n                        <button\n                          type=\"button\"\n                          class=\"ghost-btn\"\n                          *ngIf=\"catalogPoiTranslationAudioUrl(language.code, 'create')\"\n                          (click)=\"clearCatalogPoiTranslationAudio(language.code, 'create')\"\n                          [disabled]=\"isCatalogPoiTranslationAudioUploading(language.code, 'create') || savingCatalogPoi\"\n                        >\n                          Rimuovi audio\n                        </button>\n                      </div>\n\n                      <audio\n                        class=\"media-player\"\n                        controls\n                        preload=\"none\"\n                        *ngIf=\"catalogPoiTranslationAudioUrl(language.code, 'create')\"\n                        [src]=\"catalogPoiTranslationAudioUrl(language.code, 'create')\"\n                      ></audio>\n                    </div>\n                  </section>\n                </div>\n              </div>\n\n              <input type=\"hidden\" formControlName=\"imageUrl\" />\n              <div class=\"media-block\">\n                <div class=\"media-block-head\">\n                  <strong>Immagine luogo</strong>\n                  <span>{{ catalogPoiForm.controls.imageUrl.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n                </div>\n\n                <div class=\"media-preview\" *ngIf=\"catalogPoiForm.controls.imageUrl.value; else createPoiImageEmpty\">\n                  <img [src]=\"catalogPoiForm.controls.imageUrl.value\" alt=\"Anteprima immagine luogo\" />\n                </div>\n                <ng-template #createPoiImageEmpty>\n                  <div class=\"media-preview placeholder\">Carica un'immagine per il luogo.</div>\n                </ng-template>\n\n                <div class=\"media-upload-actions\">\n                  <input\n                    #createCatalogPoiImageInput\n                    type=\"file\"\n                    accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                    hidden\n                    (change)=\"onCatalogImageFileSelected($event)\"\n                  />\n                  <button\n                    type=\"button\"\n                    class=\"generate-code-btn\"\n                    (click)=\"createCatalogPoiImageInput.click()\"\n                    [disabled]=\"uploadingCatalogImage || savingCatalogPoi\"\n                  >\n                    {{ uploadingCatalogImage ? 'Upload...' : catalogPoiForm.controls.imageUrl.value ? 'Sostituisci immagine' : 'Carica immagine' }}\n                  </button>\n                  <button\n                    type=\"button\"\n                    class=\"ghost-btn\"\n                    *ngIf=\"catalogPoiForm.controls.imageUrl.value\"\n                    (click)=\"clearCatalogPoiImage()\"\n                    [disabled]=\"uploadingCatalogImage || savingCatalogPoi\"\n                  >\n                    Rimuovi immagine\n                  </button>\n                </div>\n              </div>\n\n              <input type=\"hidden\" formControlName=\"audioUrl\" />\n              <div class=\"media-block\">\n                <div class=\"media-block-head\">\n                  <strong>Audioguida</strong>\n                  <span>{{ catalogPoiForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>\n                </div>\n\n                <div class=\"audio-file-pill\" *ngIf=\"catalogPoiForm.controls.audioUrl.value; else createPoiAudioEmpty\">\n                  <span class=\"audio-file-label\">File:</span>\n                  <strong>{{ audioFileNameFromUrl(catalogPoiForm.controls.audioUrl.value) }}</strong>\n                </div>\n                <ng-template #createPoiAudioEmpty>\n                  <div class=\"media-preview placeholder\">Audio opzionale: puoi caricarlo ora o dopo.</div>\n                </ng-template>\n\n                <div class=\"media-upload-actions\">\n                  <input\n                    #createCatalogPoiAudioInput\n                    type=\"file\"\n                    accept=\".mp3,.m4a,.wav,.ogg,.aac,audio/*\"\n                    hidden\n                    (change)=\"onCatalogAudioFileSelected($event)\"\n                  />\n                  <button\n                    type=\"button\"\n                    class=\"generate-code-btn\"\n                    (click)=\"createCatalogPoiAudioInput.click()\"\n                    [disabled]=\"uploadingCatalogAudio || savingCatalogPoi\"\n                  >\n                    {{ uploadingCatalogAudio ? 'Upload...' : catalogPoiForm.controls.audioUrl.value ? 'Sostituisci audio' : 'Carica audio' }}\n                  </button>\n                  <button\n                    type=\"button\"\n                    class=\"ghost-btn\"\n                    *ngIf=\"catalogPoiForm.controls.audioUrl.value\"\n                    (click)=\"clearCatalogPoiAudio()\"\n                    [disabled]=\"uploadingCatalogAudio || savingCatalogPoi\"\n                  >\n                    Rimuovi audio\n                  </button>\n                </div>\n\n                <audio\n                  class=\"media-player\"\n                  controls\n                  preload=\"none\"\n                  *ngIf=\"catalogPoiForm.controls.audioUrl.value\"\n                  [src]=\"catalogPoiForm.controls.audioUrl.value\"\n                ></audio>\n              </div>\n\n              <div class=\"coords-grid\">\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Prezzo singolo (EUR)</mat-label>\n                  <input matInput type=\"number\" step=\"0.01\" min=\"0\" formControlName=\"priceSingle\" />\n                </mat-form-field>\n              </div>\n            </ng-container>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCreateCatalogPoiDialog()\" [disabled]=\"savingCatalogPoi\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogPoi\">\n              {{ savingCatalogPoi ? 'Salvataggio...' : 'Crea luogo di interesse' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #editCatalogCityDialog>\n        <h2 mat-dialog-title>Modifica citta</h2>\n        <form [formGroup]=\"catalogCityEditForm\" (ngSubmit)=\"saveCatalogCityEdit()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Nome citta</mat-label>\n              <input matInput type=\"text\" formControlName=\"name\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Regione</mat-label>\n              <input matInput type=\"text\" formControlName=\"region\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Prezzo bundle (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" step=\"0.01\" formControlName=\"bundlePrice\" />\n            </mat-form-field>\n\n            <div class=\"translation-panel\" formGroupName=\"translations\">\n              <div class=\"translation-panel-head\">\n                <strong>Traduzioni app utente</strong>\n                <span>Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.</span>\n              </div>\n\n              <div class=\"translation-grid\">\n                <section class=\"translation-card\" *ngFor=\"let language of contentLanguages\" [formGroupName]=\"language.code\">\n                  <h3>{{ language.label }}</h3>\n\n                  <mat-form-field appearance=\"outline\">\n                    <mat-label>Nome citta {{ language.label }}</mat-label>\n                    <input matInput type=\"text\" formControlName=\"name\" />\n                  </mat-form-field>\n                </section>\n              </div>\n            </div>\n\n            <input type=\"hidden\" formControlName=\"heroImage\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Immagine citta</strong>\n                <span>{{ catalogCityEditForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n              </div>\n\n              <div class=\"media-preview\" *ngIf=\"catalogCityEditForm.controls.heroImage.value; else cityEditImageEmpty\">\n                <img [src]=\"catalogCityEditForm.controls.heroImage.value\" alt=\"Anteprima immagine citta\" />\n              </div>\n              <ng-template #cityEditImageEmpty>\n                <div class=\"media-preview placeholder\">Carica un'immagine per la citta.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #catalogCityEditImageInput\n                  type=\"file\"\n                  accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                  hidden\n                  (change)=\"onCatalogCityEditImageFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"catalogCityEditImageInput.click()\"\n                  [disabled]=\"uploadingCatalogCityEditImage || savingCatalogCity\"\n                >\n                  {{\n                    uploadingCatalogCityEditImage\n                      ? 'Upload...'\n                      : catalogCityEditForm.controls.heroImage.value\n                        ? 'Sostituisci immagine'\n                        : 'Carica immagine'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogCityEditForm.controls.heroImage.value\"\n                  (click)=\"clearCatalogCityEditImage()\"\n                  [disabled]=\"uploadingCatalogCityEditImage || savingCatalogCity\"\n                >\n                  Rimuovi immagine\n                </button>\n              </div>\n            </div>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCatalogCityEditDialog()\" [disabled]=\"savingCatalogCity\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogCityEdit\">\n              {{ savingCatalogCity ? 'Salvataggio...' : 'Salva citta' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #editCatalogPoiDialog>\n        <h2 mat-dialog-title>Modifica luogo di interesse</h2>\n        <form [formGroup]=\"catalogPoiEditForm\" (ngSubmit)=\"saveCatalogPoiEdit()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta</mat-label>\n              <mat-select formControlName=\"cityId\">\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Nome luogo</mat-label>\n              <input matInput type=\"text\" formControlName=\"name\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Categoria</mat-label>\n              <mat-select formControlName=\"category\">\n                <mat-option *ngFor=\"let category of poiCategoryOptionsFor(catalogPoiEditForm.controls.category.value)\" [value]=\"category\">\n                  {{ category }}\n                </mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <div class=\"coords-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Latitudine</mat-label>\n                <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lat\" />\n              </mat-form-field>\n\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Longitudine</mat-label>\n                <input matInput type=\"number\" step=\"0.000001\" formControlName=\"lng\" />\n              </mat-form-field>\n            </div>\n\n            <div class=\"map-picker-row\">\n              <button type=\"button\" class=\"toggle-panel-btn subtle\" (click)=\"openPoiMapPicker('edit')\">\n                <span class=\"toggle-panel-icon\">+</span>\n                <span>Apri mappa e cerca coordinate</span>\n              </button>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Descrizione breve</mat-label>\n              <textarea matInput rows=\"2\" formControlName=\"descriptionShort\"></textarea>\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Descrizione lunga</mat-label>\n              <textarea matInput rows=\"5\" formControlName=\"descriptionLong\"></textarea>\n            </mat-form-field>\n\n            <div class=\"translation-panel\" formGroupName=\"translations\">\n              <div class=\"translation-panel-head\">\n                <strong>Traduzioni app utente</strong>\n                <span>Questi contenuti vengono mostrati nell'app utente in base alla lingua selezionata.</span>\n              </div>\n\n              <div class=\"translation-grid\">\n                <section class=\"translation-card\" *ngFor=\"let language of contentLanguages\" [formGroupName]=\"language.code\">\n                  <h3>{{ language.label }}</h3>\n\n                  <mat-form-field appearance=\"outline\">\n                    <mat-label>Nome luogo {{ language.label }}</mat-label>\n                    <input matInput type=\"text\" formControlName=\"name\" />\n                  </mat-form-field>\n\n                  <mat-form-field appearance=\"outline\">\n                    <mat-label>Descrizione breve {{ language.label }}</mat-label>\n                    <textarea matInput rows=\"2\" formControlName=\"descriptionShort\"></textarea>\n                  </mat-form-field>\n\n                  <mat-form-field appearance=\"outline\">\n                    <mat-label>Descrizione lunga {{ language.label }}</mat-label>\n                    <textarea matInput rows=\"5\" formControlName=\"descriptionLong\"></textarea>\n                  </mat-form-field>\n\n                  <mat-form-field appearance=\"outline\">\n                    <mat-label>Nome audio {{ language.label }}</mat-label>\n                    <input matInput type=\"text\" formControlName=\"audioLabel\" />\n                  </mat-form-field>\n\n                  <input type=\"hidden\" formControlName=\"audioUrl\" />\n                  <div class=\"media-block\">\n                    <div class=\"media-block-head\">\n                      <strong>Audioguida {{ language.label }}</strong>\n                      <span>{{ catalogPoiTranslationAudioUrl(language.code, 'edit') ? 'Pronta' : 'Nessun audio' }}</span>\n                    </div>\n\n                    <div class=\"audio-file-pill\" *ngIf=\"catalogPoiTranslationAudioUrl(language.code, 'edit'); else editPoiTranslationAudioEmpty\">\n                      <span class=\"audio-file-label\">File:</span>\n                      <strong>{{ audioFileNameFromUrl(catalogPoiTranslationAudioUrl(language.code, 'edit')) }}</strong>\n                    </div>\n                    <ng-template #editPoiTranslationAudioEmpty>\n                      <div class=\"media-preview placeholder\">Audio opzionale: puoi caricarlo ora o dopo.</div>\n                    </ng-template>\n\n                    <div class=\"media-upload-actions\">\n                      <input\n                        #editPoiTranslationAudioInput\n                        type=\"file\"\n                        accept=\".mp3,.m4a,.wav,.ogg,.aac,audio/*\"\n                        hidden\n                        (change)=\"onCatalogPoiTranslationAudioFileSelected($event, language.code, 'edit')\"\n                      />\n                      <button\n                        type=\"button\"\n                        class=\"generate-code-btn\"\n                        (click)=\"editPoiTranslationAudioInput.click()\"\n                        [disabled]=\"isCatalogPoiTranslationAudioUploading(language.code, 'edit') || savingCatalogPoi\"\n                      >\n                        {{\n                          isCatalogPoiTranslationAudioUploading(language.code, 'edit')\n                            ? 'Upload...'\n                            : catalogPoiTranslationAudioUrl(language.code, 'edit')\n                              ? 'Sostituisci audio'\n                              : 'Carica audio'\n                        }}\n                      </button>\n                      <button\n                        type=\"button\"\n                        class=\"ghost-btn\"\n                        *ngIf=\"catalogPoiTranslationAudioUrl(language.code, 'edit')\"\n                        (click)=\"clearCatalogPoiTranslationAudio(language.code, 'edit')\"\n                        [disabled]=\"isCatalogPoiTranslationAudioUploading(language.code, 'edit') || savingCatalogPoi\"\n                      >\n                        Rimuovi audio\n                      </button>\n                    </div>\n\n                    <audio\n                      class=\"media-player\"\n                      controls\n                      preload=\"none\"\n                      *ngIf=\"catalogPoiTranslationAudioUrl(language.code, 'edit')\"\n                      [src]=\"catalogPoiTranslationAudioUrl(language.code, 'edit')\"\n                    ></audio>\n                  </div>\n                </section>\n              </div>\n            </div>\n\n            <input type=\"hidden\" formControlName=\"imageUrl\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Immagine luogo</strong>\n                <span>{{ catalogPoiEditForm.controls.imageUrl.value ? 'Pronta' : 'Nessuna immagine' }}</span>\n              </div>\n\n              <div class=\"media-preview\" *ngIf=\"catalogPoiEditForm.controls.imageUrl.value; else poiEditImageEmpty\">\n                <img [src]=\"catalogPoiEditForm.controls.imageUrl.value\" alt=\"Anteprima immagine luogo\" />\n              </div>\n              <ng-template #poiEditImageEmpty>\n                <div class=\"media-preview placeholder\">Carica un'immagine per il luogo.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #catalogPoiEditImageInput\n                  type=\"file\"\n                  accept=\".jpg,.jpeg,.png,.webp,.gif,.avif,image/*\"\n                  hidden\n                  (change)=\"onCatalogPoiEditImageFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"catalogPoiEditImageInput.click()\"\n                  [disabled]=\"uploadingCatalogPoiEditImage || savingCatalogPoi\"\n                >\n                  {{\n                    uploadingCatalogPoiEditImage\n                      ? 'Upload...'\n                      : catalogPoiEditForm.controls.imageUrl.value\n                        ? 'Sostituisci immagine'\n                        : 'Carica immagine'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogPoiEditForm.controls.imageUrl.value\"\n                  (click)=\"clearCatalogPoiEditImage()\"\n                  [disabled]=\"uploadingCatalogPoiEditImage || savingCatalogPoi\"\n                >\n                  Rimuovi immagine\n                </button>\n              </div>\n            </div>\n\n            <input type=\"hidden\" formControlName=\"audioUrl\" />\n            <div class=\"media-block\">\n              <div class=\"media-block-head\">\n                <strong>Audioguida</strong>\n                <span>{{ catalogPoiEditForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>\n              </div>\n\n              <div class=\"audio-file-pill\" *ngIf=\"catalogPoiEditForm.controls.audioUrl.value; else poiEditAudioEmpty\">\n                <span class=\"audio-file-label\">File:</span>\n                <strong>{{ audioFileNameFromUrl(catalogPoiEditForm.controls.audioUrl.value) }}</strong>\n              </div>\n              <ng-template #poiEditAudioEmpty>\n                <div class=\"media-preview placeholder\">Audio opzionale: puoi caricarlo ora o dopo.</div>\n              </ng-template>\n\n              <div class=\"media-upload-actions\">\n                <input\n                  #catalogPoiEditAudioInput\n                  type=\"file\"\n                  accept=\".mp3,.m4a,.wav,.ogg,.aac,audio/*\"\n                  hidden\n                  (change)=\"onCatalogPoiEditAudioFileSelected($event)\"\n                />\n                <button\n                  type=\"button\"\n                  class=\"generate-code-btn\"\n                  (click)=\"catalogPoiEditAudioInput.click()\"\n                  [disabled]=\"uploadingCatalogPoiEditAudio || savingCatalogPoi\"\n                >\n                  {{\n                    uploadingCatalogPoiEditAudio\n                      ? 'Upload...'\n                      : catalogPoiEditForm.controls.audioUrl.value\n                        ? 'Sostituisci audio'\n                        : 'Carica audio'\n                  }}\n                </button>\n                <button\n                  type=\"button\"\n                  class=\"ghost-btn\"\n                  *ngIf=\"catalogPoiEditForm.controls.audioUrl.value\"\n                  (click)=\"clearCatalogPoiEditAudio()\"\n                  [disabled]=\"uploadingCatalogPoiEditAudio || savingCatalogPoi\"\n                >\n                  Rimuovi audio\n                </button>\n              </div>\n\n              <audio\n                class=\"media-player\"\n                controls\n                preload=\"none\"\n                *ngIf=\"catalogPoiEditForm.controls.audioUrl.value\"\n                [src]=\"catalogPoiEditForm.controls.audioUrl.value\"\n              ></audio>\n            </div>\n\n            <div class=\"coords-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Prezzo singolo (EUR)</mat-label>\n                <input matInput type=\"number\" step=\"0.01\" min=\"0\" formControlName=\"priceSingle\" />\n              </mat-form-field>\n            </div>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCatalogPoiEditDialog()\" [disabled]=\"savingCatalogPoi\">\n              Annulla\n            </button>\n            <button mat-flat-button color=\"primary\" type=\"submit\" [disabled]=\"!canSaveCatalogPoiEdit\">\n              {{ savingCatalogPoi ? 'Salvataggio...' : 'Salva luogo' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #catalogPoiAudioPlayerDialog>\n        <h2 mat-dialog-title>{{ audioPlayerPoiName || 'Anteprima audioguida' }}</h2>\n        <div mat-dialog-content class=\"dialog-body map-dialog-body\">\n          <p class=\"table-subtitle\">\n            File audio: <strong>{{ audioPlayerFileName || '-' }}</strong>\n          </p>\n          <audio class=\"media-player\" controls autoplay preload=\"metadata\" [src]=\"audioPlayerUrl\"></audio>\n        </div>\n        <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n          <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCatalogPoiAudioPlayer()\">Chiudi</button>\n        </div>\n      </ng-template>\n\n      <ng-template #poiMapPickerDialog>\n        <h2 mat-dialog-title>Cerca luogo e seleziona coordinate</h2>\n        <div mat-dialog-content class=\"dialog-body map-dialog-body\">\n          <form [formGroup]=\"poiMapSearchForm\" (ngSubmit)=\"searchPoiMap()\" class=\"map-search-form\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Cerca luogo o indirizzo</mat-label>\n              <input matInput type=\"text\" formControlName=\"query\" autocomplete=\"off\" />\n              <mat-hint>Ricerca gratuita tramite OpenStreetMap</mat-hint>\n            </mat-form-field>\n            <button type=\"submit\" class=\"generate-code-btn\" [disabled]=\"mapPickerLoading\">\n              {{ mapPickerLoading ? 'Ricerca...' : 'Cerca' }}\n            </button>\n          </form>\n\n          <p class=\"inline-note\" *ngIf=\"!mapPickerLoading && !mapPickerResults.length\">\n            Cerca un luogo: le coordinate trovate vengono selezionate subito. Poi rifinisci trascinando il marker rosso sulla mappa.\n          </p>\n\n          <p class=\"map-selected-coords\" *ngIf=\"hasPoiMapSelection\">\n            Lat: <strong>{{ mapPickerSelectedLat | number: '1.4-6' }}</strong> |\n            Lng: <strong>{{ mapPickerSelectedLng | number: '1.4-6' }}</strong>\n          </p>\n\n          <div class=\"map-results\" *ngIf=\"mapPickerResults.length\">\n            <article class=\"map-result-card\" *ngFor=\"let result of mapPickerResults\">\n              <strong>{{ result.displayName }}</strong>\n              <small>Lat: {{ result.lat | number: '1.4-6' }} | Lng: {{ result.lng | number: '1.4-6' }}</small>\n              <div class=\"action-buttons\">\n                <button type=\"button\" class=\"row-save-btn\" (click)=\"selectPoiMapResult(result)\">Evidenzia su mappa</button>\n                <button mat-stroked-button type=\"button\" (click)=\"usePoiMapResult(result)\">Usa subito</button>\n              </div>\n            </article>\n          </div>\n\n          <section class=\"map-preview-panel\">\n            <div class=\"map-preview-head\">\n              <strong>Anteprima mappa</strong>\n              <small *ngIf=\"mapPickerTargetLabel\">{{ mapPickerTargetLabel }}</small>\n              <small *ngIf=\"!mapPickerTargetLabel\">Clicca o trascina il marker rosso per precisione.</small>\n            </div>\n            <div #poiMapCanvas class=\"poi-map-canvas\" [class.ready]=\"mapPickerMapReady\"></div>\n          </section>\n        </div>\n\n        <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n          <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closePoiMapPicker()\" [disabled]=\"mapPickerLoading\">\n            Chiudi\n          </button>\n          <button type=\"button\" class=\"row-save-btn\" (click)=\"confirmPoiMapSelection()\" [disabled]=\"!hasPoiMapSelection || mapPickerLoading\">\n            Usa coordinate selezionate\n          </button>\n        </div>\n      </ng-template>\n\n      <ng-template #createDiscountCodeDialog>\n        <h2 mat-dialog-title>Aggiungi codice sconto/struttura</h2>\n        <form [formGroup]=\"discountCodeCreateForm\" (ngSubmit)=\"createDiscountCode()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Struttura</mat-label>\n              <mat-select formControlName=\"structureId\">\n                <mat-option *ngFor=\"let structure of structures\" [value]=\"structure.id\">{{ structure.name }}</mat-option>\n              </mat-select>\n            </mat-form-field>\n\n            <div class=\"invite-code-row\">\n              <mat-form-field appearance=\"outline\" class=\"invite-code-field\">\n                <mat-label>Codice</mat-label>\n                <input matInput type=\"text\" formControlName=\"code\" maxlength=\"6\" autocomplete=\"off\" />\n              </mat-form-field>\n\n              <button type=\"button\" class=\"generate-code-btn\" (click)=\"generateDiscountCodeForCreate()\" [disabled]=\"creatingDiscountCode\">\n                Genera codice\n              </button>\n            </div>\n\n            <div class=\"discount-scope-group\">\n              <label>Applicabile a</label>\n              <mat-radio-group formControlName=\"applyTo\" class=\"discount-scope-radio\">\n                <mat-radio-button value=\"single\">Luogo singolo</mat-radio-button>\n                <mat-radio-button value=\"bundle\">Pacchetto citta</mat-radio-button>\n              </mat-radio-group>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta applicabili</mat-label>\n              <mat-select formControlName=\"cityIds\" multiple>\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n              <mat-hint>Seleziona una o piu citta</mat-hint>\n            </mat-form-field>\n            <p class=\"inline-note\" *ngIf=\"!catalogCities.length && !loadingCatalogCities\">\n              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.\n            </p>\n            <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n              <mat-spinner diameter=\"22\"></mat-spinner>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Sconto utente {{ discountCodeCreateScopeLabel }} (%)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"100\" step=\"0.01\" formControlName=\"userDiscountPercent\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Incasso struttura {{ discountCodeCreateScopeLabel }} (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"10000\" step=\"0.01\" formControlName=\"structureFixedAmount\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Scadenza</mat-label>\n              <input #createDiscountExpiresInput matInput type=\"datetime-local\" step=\"60\" formControlName=\"expiresAt\" />\n              <button\n                class=\"date-picker-suffix-btn\"\n                matSuffix\n                type=\"button\"\n                aria-label=\"Apri calendario e ora\"\n                (click)=\"openNativeDateTimePicker(createDiscountExpiresInput)\"\n              >\n                <span class=\"calendar-icon-glyph\" aria-hidden=\"true\"></span>\n              </button>\n              <mat-hint>Seleziona data e ora</mat-hint>\n            </mat-form-field>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeCreateDiscountCodeDialog()\" [disabled]=\"creatingDiscountCode\">\n              Annulla\n            </button>\n            <button type=\"submit\" class=\"row-save-btn\" [disabled]=\"creatingDiscountCode || discountCodeCreateForm.invalid\">\n              {{ creatingDiscountCode ? 'Salvataggio...' : 'Crea codice' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #partnerRequestApprovalDialog>\n        <h2 mat-dialog-title>Approva richiesta partner</h2>\n        <form [formGroup]=\"partnerRequestApprovalForm\" (ngSubmit)=\"approvePartnerRequest()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <p class=\"inline-note\" *ngIf=\"partnerRequestApprovalTarget as request\">\n              Verranno creati automaticamente la struttura <strong>{{ request.structureName }}</strong>, il codice sconto e il PDF da inviare a\n              <strong>{{ request.contactEmail }}</strong>.\n            </p>\n\n            <div class=\"invite-code-row\">\n              <mat-form-field appearance=\"outline\" class=\"invite-code-field\">\n                <mat-label>Codice</mat-label>\n                <input matInput type=\"text\" formControlName=\"code\" maxlength=\"6\" autocomplete=\"off\" />\n              </mat-form-field>\n\n              <button type=\"button\" class=\"generate-code-btn\" (click)=\"generateDiscountCodeForPartnerApproval()\" [disabled]=\"approvingPartnerRequestId !== null\">\n                Genera codice\n              </button>\n            </div>\n\n            <div class=\"discount-scope-group\">\n              <label>Applicabile a</label>\n              <mat-radio-group formControlName=\"applyTo\" class=\"discount-scope-radio\">\n                <mat-radio-button value=\"single\">Luogo singolo</mat-radio-button>\n                <mat-radio-button value=\"bundle\">Pacchetto citta</mat-radio-button>\n              </mat-radio-group>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta applicabili</mat-label>\n              <mat-select formControlName=\"cityIds\" multiple>\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n              <mat-hint>Seleziona una o piu citta</mat-hint>\n            </mat-form-field>\n            <p class=\"inline-note\" *ngIf=\"!catalogCities.length && !loadingCatalogCities\">\n              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.\n            </p>\n            <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n              <mat-spinner diameter=\"22\"></mat-spinner>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Sconto utente {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo' }} (%)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"100\" step=\"0.01\" formControlName=\"userDiscountPercent\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Incasso struttura {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo' }} (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"10000\" step=\"0.01\" formControlName=\"structureFixedAmount\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Scadenza</mat-label>\n              <input #partnerApprovalExpiresInput matInput type=\"datetime-local\" step=\"60\" formControlName=\"expiresAt\" />\n              <button\n                class=\"date-picker-suffix-btn\"\n                matSuffix\n                type=\"button\"\n                aria-label=\"Apri calendario e ora\"\n                (click)=\"openNativeDateTimePicker(partnerApprovalExpiresInput)\"\n              >\n                <span class=\"calendar-icon-glyph\" aria-hidden=\"true\"></span>\n              </button>\n              <mat-hint>Seleziona data e ora</mat-hint>\n            </mat-form-field>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closePartnerRequestApprovalDialog()\" [disabled]=\"approvingPartnerRequestId !== null\">\n              Annulla\n            </button>\n            <button\n              type=\"button\"\n              class=\"row-save-btn secondary\"\n              (click)=\"previewSelectedPartnerRequestPdf()\"\n              [disabled]=\"previewingPartnerRequestId === partnerRequestApprovalTarget?.id\"\n            >\n              {{ previewingPartnerRequestId === partnerRequestApprovalTarget?.id ? 'Apro anteprima...' : 'Anteprima PDF' }}\n            </button>\n            <button type=\"submit\" class=\"row-save-btn\" [disabled]=\"approvingPartnerRequestId !== null || partnerRequestApprovalForm.invalid\">\n              {{ approvingPartnerRequestId !== null ? 'Invio approvazione...' : 'Approva e invia' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n\n      <ng-template #editDiscountCodeDialog>\n        <h2 mat-dialog-title>Modifica codice sconto</h2>\n        <form [formGroup]=\"discountCodeEditForm\" (ngSubmit)=\"saveDiscountCodeEdit()\" class=\"form-grid dialog-form\">\n          <div mat-dialog-content class=\"dialog-body\">\n            <p class=\"inline-note\" *ngIf=\"editingDiscountCode\">\n              Codice: <code>{{ editingDiscountCode.code }}</code> - Struttura: <strong>{{ editingDiscountCode.structureName }}</strong>\n            </p>\n\n            <div class=\"discount-scope-group\">\n              <label>Applicabile a</label>\n              <mat-radio-group formControlName=\"applyTo\" class=\"discount-scope-radio\">\n                <mat-radio-button value=\"single\">Luogo singolo</mat-radio-button>\n                <mat-radio-button value=\"bundle\">Pacchetto citta</mat-radio-button>\n              </mat-radio-group>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Citta applicabili</mat-label>\n              <mat-select formControlName=\"cityIds\" multiple>\n                <mat-option *ngFor=\"let city of catalogCities\" [value]=\"city.id\">{{ city.name }}</mat-option>\n              </mat-select>\n              <mat-hint>Seleziona una o piu citta</mat-hint>\n            </mat-form-field>\n            <p class=\"inline-note\" *ngIf=\"!catalogCities.length && !loadingCatalogCities\">\n              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.\n            </p>\n            <div class=\"inline-loader\" *ngIf=\"loadingCatalogCities\">\n              <mat-spinner diameter=\"22\"></mat-spinner>\n            </div>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Sconto utente {{ discountCodeEditScopeLabel }} (%)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"100\" step=\"0.01\" formControlName=\"userDiscountPercent\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Incasso struttura {{ discountCodeEditScopeLabel }} (EUR)</mat-label>\n              <input matInput type=\"number\" min=\"0\" max=\"10000\" step=\"0.01\" formControlName=\"structureFixedAmount\" />\n            </mat-form-field>\n\n            <mat-form-field appearance=\"outline\">\n              <mat-label>Scadenza</mat-label>\n              <input #editDiscountExpiresInput matInput type=\"datetime-local\" step=\"60\" formControlName=\"expiresAt\" />\n              <button\n                class=\"date-picker-suffix-btn\"\n                matSuffix\n                type=\"button\"\n                aria-label=\"Apri calendario e ora\"\n                (click)=\"openNativeDateTimePicker(editDiscountExpiresInput)\"\n              >\n                <span class=\"calendar-icon-glyph\" aria-hidden=\"true\"></span>\n              </button>\n              <mat-hint>Seleziona data e ora</mat-hint>\n            </mat-form-field>\n          </div>\n\n          <div mat-dialog-actions align=\"end\" class=\"dialog-actions\">\n            <button type=\"button\" class=\"row-save-btn secondary\" (click)=\"closeEditDiscountCodeDialog()\" [disabled]=\"updatingDiscountCode\">\n              Annulla\n            </button>\n            <button type=\"submit\" class=\"row-save-btn\" [disabled]=\"updatingDiscountCode || discountCodeEditForm.invalid\">\n              {{ updatingDiscountCode ? 'Salvataggio...' : 'Salva modifiche' }}\n            </button>\n          </div>\n        </form>\n      </ng-template>\n      <ng-container *ngIf=\"canManageUsers && activeSection === 'structures'\">\n        <mat-card class=\"card table-card\">\n          <div class=\"table-head\">\n            <div>\n              <h2>Lista strutture</h2>\n              <p class=\"table-subtitle\">Gestisci dati struttura. I codici invito/sconto sono gestiti nella sezione dedicata.</p>\n            </div>\n            <div class=\"table-actions\">\n              <button type=\"button\" class=\"toggle-panel-btn\" [class.active]=\"showStructureSection\" (click)=\"toggleStructureSection()\">\n                <span class=\"toggle-panel-icon\">{{ showStructureSection ? '-' : '+' }}</span>\n                <span>{{ showStructureSection ? 'Chiudi aggiunta struttura' : 'Aggiungi struttura' }}</span>\n              </button>\n            </div>\n          </div>\n\n          <section class=\"inline-panel\" *ngIf=\"showStructureSection\">\n            <h3>Nuova struttura</h3>\n            <p>Inserisci nome struttura, via, civico, citta e CAP. I codici sconto si gestiscono nella sezione dedicata.</p>\n\n            <form [formGroup]=\"structureForm\" (ngSubmit)=\"registerStructure()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome struttura</mat-label>\n                <input matInput type=\"text\" formControlName=\"name\" autocomplete=\"organization\" />\n              </mat-form-field>\n\n              <div class=\"address-grid\">\n                <mat-form-field appearance=\"outline\" class=\"address-span-2\">\n                  <mat-label>Via/Piazza</mat-label>\n                  <input matInput type=\"text\" formControlName=\"street\" autocomplete=\"street-address\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Civico</mat-label>\n                  <input matInput type=\"text\" formControlName=\"streetNumber\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>CAP</mat-label>\n                  <input matInput type=\"text\" formControlName=\"postalCode\" maxlength=\"5\" inputmode=\"numeric\" />\n                  <mat-error *ngIf=\"structureForm.controls.postalCode.hasError('pattern')\">Inserisci un CAP valido a 5 cifre</mat-error>\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Citta</mat-label>\n                  <input matInput type=\"text\" formControlName=\"city\" autocomplete=\"address-level2\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Provincia (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"province\" autocomplete=\"address-level1\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Nazione (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"country\" autocomplete=\"country-name\" />\n                </mat-form-field>\n              </div>\n\n              <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"creatingStructure\" type=\"submit\">\n                {{ creatingStructure ? 'Salvataggio...' : 'Registra struttura' }}\n              </button>\n            </form>\n          </section>\n\n          <section class=\"inline-panel\" *ngIf=\"editingStructureId\">\n            <h3>Modifica struttura</h3>\n            <p>Aggiorna nome e indirizzo. Il codice invito resta invariato.</p>\n\n            <form [formGroup]=\"structureEditForm\" (ngSubmit)=\"updateStructure()\" class=\"form-grid\">\n              <mat-form-field appearance=\"outline\">\n                <mat-label>Nome struttura</mat-label>\n                <input matInput type=\"text\" formControlName=\"name\" autocomplete=\"organization\" />\n              </mat-form-field>\n\n              <div class=\"address-grid\">\n                <mat-form-field appearance=\"outline\" class=\"address-span-2\">\n                  <mat-label>Via/Piazza</mat-label>\n                  <input matInput type=\"text\" formControlName=\"street\" autocomplete=\"street-address\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Civico</mat-label>\n                  <input matInput type=\"text\" formControlName=\"streetNumber\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>CAP</mat-label>\n                  <input matInput type=\"text\" formControlName=\"postalCode\" maxlength=\"5\" inputmode=\"numeric\" />\n                  <mat-error *ngIf=\"structureEditForm.controls.postalCode.hasError('pattern')\">\n                    Inserisci un CAP valido a 5 cifre\n                  </mat-error>\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Citta</mat-label>\n                  <input matInput type=\"text\" formControlName=\"city\" autocomplete=\"address-level2\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Provincia (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"province\" autocomplete=\"address-level1\" />\n                </mat-form-field>\n\n                <mat-form-field appearance=\"outline\">\n                  <mat-label>Nazione (opzionale)</mat-label>\n                  <input matInput type=\"text\" formControlName=\"country\" autocomplete=\"country-name\" />\n                </mat-form-field>\n              </div>\n\n              <div class=\"action-buttons\">\n                <button mat-flat-button color=\"primary\" class=\"big-cta\" [disabled]=\"!canSaveStructureEdit\" type=\"submit\">\n                  {{ updatingStructure ? 'Salvataggio...' : 'Salva modifiche struttura' }}\n                </button>\n                <button type=\"button\" class=\"row-save-btn\" (click)=\"cancelStructureEdit()\" [disabled]=\"updatingStructure\">\n                  Annulla\n                </button>\n              </div>\n            </form>\n          </section>\n\n          <div class=\"table-wrap\">\n            <table class=\"modern-table structures-table\">\n              <thead>\n                <tr>\n                  <th>Struttura</th>\n                  <th>Indirizzo</th>\n                  <th>Codici sconto</th>\n                  <th>Utenti associati</th>\n                  <th>Guadagno maturato</th>\n                  <th>Creata il</th>\n                  <th>Azioni</th>\n                </tr>\n              </thead>\n              <tbody>\n                <tr *ngIf=\"loadingStructures\">\n                  <td colspan=\"7\" class=\"empty-cell spinner-cell\">\n                    <mat-spinner diameter=\"28\"></mat-spinner>\n                  </td>\n                </tr>\n                <tr *ngIf=\"!structures.length && !loadingStructures\">\n                  <td colspan=\"7\" class=\"empty-cell\">Nessuna struttura registrata.</td>\n                </tr>\n                <ng-container *ngIf=\"!loadingStructures\">\n                  <tr *ngFor=\"let structure of structures\">\n                    <td><strong>{{ structure.name }}</strong></td>\n                    <td>{{ formatStructureAddress(structure) }}</td>\n                    <td>\n                      <div class=\"structure-codes-list\" *ngIf=\"structureCodes(structure.id).length; else noStructureCodes\">\n                        <div class=\"structure-code-item\" *ngFor=\"let discountCode of structureCodes(structure.id)\">\n                          <code>{{ discountCode.code }}</code>\n                          <small>Scade: {{ formatDateTime(discountCode.expiresAt) }}</small>\n                        </div>\n                      </div>\n                      <ng-template #noStructureCodes>-</ng-template>\n                    </td>\n                    <td>\n                      <button\n                        type=\"button\"\n                        class=\"table-link-btn\"\n                        (click)=\"openUsersForStructure(structure)\"\n                        [disabled]=\"structure.usersCount <= 0\"\n                      >\n                        {{ structure.usersCount }}\n                      </button>\n                    </td>\n                    <td>{{ formatCurrency(structure.totalStructureEarnings) }}</td>\n                    <td>{{ formatDateTime(structure.createdAt) }}</td>\n                    <td>\n                      <button mat-stroked-button color=\"primary\" type=\"button\" (click)=\"editStructure(structure)\">\n                        Modifica\n                      </button>\n                    </td>\n                  </tr>\n                </ng-container>\n              </tbody>\n            </table>\n          </div>\n        </mat-card>\n      </ng-container>\n    </main>\n  </div>\n</section>\n\n\n", styles: [".admin-shell {\n  padding: 0;\n  margin: 0;\n  max-width: none;\n  width: 100%;\n  min-height: 100vh;\n}\n\n.login-card {\n  width: min(460px, calc(100% - 32px));\n  padding: 24px;\n  margin: 28px auto;\n}\n\n.form-grid {\n  margin-top: 14px;\n  display: grid;\n  gap: 12px;\n}\n\n.full-span {\n  grid-column: 1 / -1;\n}\n\n.paypal-settings-form {\n  display: grid;\n  gap: 14px;\n}\n\n.paypal-settings-form .form-grid {\n  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));\n}\n\n.paypal-status-strip {\n  display: grid;\n  gap: 4px;\n  padding: 12px 14px;\n  border-radius: 12px;\n  border: 1px solid #d8e4f4;\n  background: #f7fbff;\n  color: #2f4764;\n}\n\n.paypal-actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 10px;\n}\n\n.dashboard-layout {\n  min-height: 100vh;\n  display: grid;\n  grid-template-columns: 250px 1fr;\n  background: linear-gradient(140deg, #eef2f8 0%, #f8fbff 55%, #f4f7fb 100%);\n}\n\n.sidebar {\n  background: linear-gradient(175deg, #091733 0%, #0b214b 100%);\n  color: #dfe9ff;\n  padding: 18px 14px;\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n  position: sticky;\n  top: 0;\n  align-self: start;\n  height: 100vh;\n  overflow-y: auto;\n}\n\n.brand {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 4px 6px 12px;\n  border-bottom: 1px solid rgba(168, 189, 235, 0.22);\n}\n\n.brand-mark {\n  width: 34px;\n  height: 34px;\n  border-radius: 9px;\n  overflow: hidden;\n  border: 1px solid rgba(174, 198, 240, 0.36);\n  background: #fff;\n}\n\n.brand-mark img {\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  display: block;\n}\n\n.brand p {\n  margin: 0;\n  opacity: 0.8;\n  font-size: 0.85rem;\n}\n\n.sidebar-nav {\n  display: grid;\n  gap: 8px;\n}\n\n.nav-item {\n  border: 0;\n  border-radius: 12px;\n  color: #e7efff;\n  background: transparent;\n  padding: 12px;\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  cursor: pointer;\n  text-align: left;\n}\n\n.nav-item::before {\n  content: '';\n  width: 8px;\n  height: 8px;\n  border-radius: 999px;\n  background: rgba(197, 218, 255, 0.72);\n  flex: 0 0 8px;\n}\n\n.nav-item:hover {\n  background: rgba(202, 221, 255, 0.14);\n}\n\n.nav-item.active {\n  background: rgba(50, 124, 255, 0.35);\n  box-shadow: inset 0 0 0 1px rgba(153, 195, 255, 0.45);\n}\n\n.nav-item.active::before {\n  background: #7fd2ff;\n}\n\n.sidebar-footer {\n  margin-top: auto;\n  border-top: 1px solid rgba(168, 189, 235, 0.22);\n  padding: 12px 6px 0;\n  display: grid;\n  gap: 8px;\n}\n\n.sidebar-footer span {\n  opacity: 0.85;\n  font-size: 0.9rem;\n  word-break: break-all;\n}\n\n.sidebar-action {\n  width: 100%;\n}\n\n.dashboard-main {\n  padding: 20px;\n  display: grid;\n  align-content: start;\n  grid-auto-rows: max-content;\n  gap: 16px;\n  min-width: 0;\n  overflow-x: hidden;\n}\n\n.dashboard-topbar {\n  padding: 18px;\n}\n\n.stats-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 12px;\n}\n\n.manager-payments-stats {\n  margin-bottom: 12px;\n}\n\n.stat-card {\n  border-radius: 14px;\n  border: 1px solid #dce5f7;\n  box-shadow: none;\n  padding: 14px;\n  display: grid;\n  gap: 2px;\n}\n\n.stat-card span {\n  color: #6f7f99;\n}\n\n.stat-card strong {\n  font-size: 1.55rem;\n  color: #152949;\n}\n\n.stat-spinner {\n  min-height: 38px;\n  display: flex;\n  align-items: center;\n}\n\n.stat-spinner .mat-mdc-progress-spinner {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n}\n\n.modern-cta {\n  border: 0;\n  border-radius: 12px;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  color: #fff;\n  padding: 11px 16px;\n  font-size: 0.98rem;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.modern-cta:hover {\n  filter: brightness(1.06);\n}\n\n.modern-cta.secondary {\n  background: linear-gradient(135deg, #2d6c3a, #1f552d);\n}\n\n.table-card {\n  padding: 18px;\n  min-width: 0;\n}\n\n.table-card h2 {\n  margin: 0;\n}\n\n.inline-note {\n  margin: 0;\n  color: #a24f28;\n  font-size: 0.92rem;\n}\n\n.invite-result {\n  margin-top: 14px;\n  display: grid;\n  gap: 5px;\n  color: #1d3153;\n}\n\n.table-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 12px;\n}\n\n.table-subtitle {\n  margin: 4px 0 0;\n  color: #6a7f9f;\n  font-size: 0.92rem;\n}\n\n.table-actions {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  justify-content: flex-end;\n}\n\n.toggle-panel-btn {\n  border: 1px solid #c6d7f3;\n  border-radius: 12px;\n  background: #fff;\n  color: #174074;\n  padding: 9px 12px;\n  font-size: 0.9rem;\n  font-weight: 700;\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  cursor: pointer;\n  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;\n}\n\n.toggle-panel-btn:hover {\n  background: #f3f8ff;\n}\n\n.toggle-panel-btn.active {\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  border-color: #0d4e9d;\n  color: #fff;\n}\n\n.toggle-panel-btn.subtle {\n  border-style: dashed;\n  background: #f6f9ff;\n  color: #204674;\n}\n\n.toggle-panel-icon {\n  width: 19px;\n  height: 19px;\n  border-radius: 999px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 0.95rem;\n  line-height: 1;\n  font-weight: 800;\n  color: #0c468a;\n  background: #dfeaff;\n}\n\n.toggle-panel-btn.active .toggle-panel-icon {\n  color: #fff;\n  background: rgba(255, 255, 255, 0.26);\n}\n\n.inline-panel {\n  border: 1px solid #dfe8f8;\n  border-radius: 12px;\n  background: #f9fcff;\n  padding: 14px;\n  margin-bottom: 12px;\n}\n\n.inline-panel h3 {\n  margin: 0;\n  font-size: 1.02rem;\n  color: #163157;\n}\n\n.inline-panel p {\n  margin: 6px 0 0;\n  color: #617694;\n}\n\n.address-grid {\n  display: grid;\n  gap: 10px;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n}\n\n.address-span-2 {\n  grid-column: span 2;\n}\n\n.invite-code-row {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n  gap: 10px;\n}\n\n.invite-code-field {\n  flex: 1;\n  min-width: 0;\n}\n\n.invite-code-field input {\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n}\n\n.generate-code-btn {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #1f7a45, #0f5f31);\n  color: #fff;\n  padding: 11px 14px;\n  font-size: 0.9rem;\n  font-weight: 600;\n  min-width: 130px;\n  cursor: pointer;\n}\n\n.generate-code-btn:disabled {\n  opacity: 0.7;\n  cursor: not-allowed;\n}\n\n.generate-code-btn:hover:not(:disabled) {\n  filter: brightness(1.07);\n}\n\n.field-note {\n  margin: -4px 0 0;\n  font-size: 0.82rem;\n  color: #5f7598;\n}\n\n.discount-code-note {\n  padding-left: 2px;\n}\n\n.discount-scope-group {\n  display: grid;\n  gap: 8px;\n  padding: 10px 12px;\n  border: 1px solid #dce7f8;\n  border-radius: 10px;\n  background: #f7fbff;\n}\n\n.discount-scope-group label {\n  margin: 0;\n  font-size: 0.82rem;\n  font-weight: 700;\n  color: #20436f;\n}\n\n.discount-scope-radio {\n  display: flex;\n  gap: 16px;\n  flex-wrap: wrap;\n}\n\n.users-structure-filter {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin: 10px 0 12px;\n  padding: 10px 12px;\n  border: 1px solid #dce8f8;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #20436f;\n}\n\n.users-structure-filter strong {\n  color: #0f4f98;\n}\n\n.table-link-btn {\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f4f8ff;\n  color: #174074;\n  font-weight: 700;\n  min-width: 44px;\n  padding: 4px 10px;\n  cursor: pointer;\n}\n\n.table-link-btn:hover:not(:disabled) {\n  background: #e9f1ff;\n}\n\n.table-link-btn:disabled {\n  opacity: 0.55;\n  cursor: not-allowed;\n}\n\n.date-picker-suffix-btn {\n  width: 30px;\n  height: 30px;\n  margin-right: 6px;\n  border: 1px solid #c6d7f3;\n  border-radius: 8px;\n  background: #f6faff;\n  color: #1d4d87;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n}\n\n.date-picker-suffix-btn:hover {\n  background: #ebf4ff;\n}\n\n.calendar-icon-glyph {\n  width: 14px;\n  height: 14px;\n  border: 2px solid currentColor;\n  border-radius: 3px;\n  position: relative;\n  display: inline-block;\n  box-sizing: border-box;\n}\n\n.calendar-icon-glyph::before,\n.calendar-icon-glyph::after {\n  content: '';\n  position: absolute;\n  top: -4px;\n  width: 2px;\n  height: 4px;\n  border-radius: 2px;\n  background: currentColor;\n}\n\n.calendar-icon-glyph::before {\n  left: 2px;\n}\n\n.calendar-icon-glyph::after {\n  right: 2px;\n}\n\n.table-wrap {\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  overflow-x: auto;\n  border: 1px solid #e1e8f7;\n  border-radius: 12px;\n}\n\n.modern-table {\n  width: 100%;\n  border-collapse: collapse;\n  min-width: 980px;\n}\n\n.modern-table th {\n  text-align: left;\n  font-size: 0.86rem;\n  letter-spacing: 0.02em;\n  color: #5d6f8d;\n  background: #f4f8ff;\n  padding: 12px;\n  border-bottom: 1px solid #e1e8f7;\n}\n\n.modern-table td {\n  padding: 12px;\n  border-bottom: 1px solid #edf2fb;\n  vertical-align: top;\n  color: #213459;\n}\n\n.modern-table tbody tr:last-child td {\n  border-bottom: 0;\n}\n\n.modern-table tbody tr.row-dirty {\n  background: linear-gradient(90deg, rgba(23, 117, 208, 0.06), rgba(23, 117, 208, 0.01));\n}\n\n.modern-table td strong {\n  display: block;\n}\n\n.modern-table td small {\n  display: block;\n  margin-top: 3px;\n  line-height: 1.32;\n  color: #6f7f99;\n}\n\n.cell-controls {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n\n.table-field {\n  min-width: 170px;\n  width: 100%;\n}\n\n.percent-field {\n  min-width: 140px;\n  max-width: 160px;\n}\n\n.structure-cell {\n  display: grid;\n  gap: 4px;\n}\n\n.association-list {\n  display: grid;\n  gap: 7px;\n}\n\n.association-item {\n  display: grid;\n  gap: 3px;\n  padding: 6px 8px;\n  border: 1px solid #dce7f7;\n  border-radius: 8px;\n  background: #f8fbff;\n}\n\n.association-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 8px;\n}\n\n.structure-name {\n  color: #1f355c;\n  font-size: 0.84rem;\n}\n\n.structure-code {\n  color: #3a5074;\n  font-size: 0.8rem;\n}\n\n.structure-name.muted,\n.structure-code.muted {\n  color: #6f7f99;\n}\n\n.association-status {\n  display: inline-flex;\n  align-items: center;\n  min-height: 20px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.72rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.association-status-active {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.association-status-used {\n  color: #9a3412;\n  background: #fff4e5;\n  border-color: #f6cf9b;\n}\n\n.association-status-expired {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.association-status-invalid {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.unlocked-cell {\n  display: grid;\n  gap: 6px;\n  min-width: 210px;\n}\n\n.unlocked-counts {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px 12px;\n}\n\n.unlocked-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n.unlocked-pois {\n  display: grid;\n  gap: 2px;\n}\n\n.unlocked-poi-item {\n  color: #4a5f80;\n}\n\n.associated-code-status-cell {\n  min-width: 130px;\n}\n\n.associated-code-status-cell small {\n  display: block;\n  margin-top: 4px;\n  color: #5b6f90;\n  font-size: 0.72rem;\n}\n\n.structure-codes-list {\n  display: grid;\n  gap: 6px;\n}\n\n.structure-code-item {\n  display: grid;\n  gap: 2px;\n}\n\n.discount-group-list {\n  display: grid;\n  gap: 10px;\n}\n\n.discount-group-item {\n  border: 1px solid #dfe8f8;\n  border-radius: 10px;\n  background: #f9fcff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.discount-group-main {\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 12px;\n}\n\n.discount-group-main code {\n  background: #ecf3ff;\n  border: 1px solid #cfe0fb;\n  border-radius: 8px;\n  padding: 3px 8px;\n  color: #113b6e;\n  font-weight: 700;\n}\n\n.discount-group-meta {\n  color: #486286;\n  font-size: 0.86rem;\n}\n\n.discount-group-meta strong {\n  color: #1f355c;\n}\n\n.expiry-badge {\n  display: inline-flex;\n  align-items: center;\n  min-height: 21px;\n  margin-left: 8px;\n  padding: 1px 8px;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1;\n}\n\n.expiry-badge-active {\n  color: #0f6b3f;\n  background: #e8f7ef;\n  border-color: #b8e4cb;\n}\n\n.expiry-badge-expired {\n  color: #b42318;\n  background: #fff1f1;\n  border-color: #f5c2c2;\n}\n\n.expiry-badge-unknown {\n  color: #4b5565;\n  background: #edf1f6;\n  border-color: #d3dce8;\n}\n\n.payment-user-cell {\n  min-width: 240px;\n}\n\n.payment-method-cell {\n  min-width: 200px;\n}\n\n.payment-content-cell {\n  min-width: 180px;\n}\n\n.payments-table {\n  min-width: 860px;\n  table-layout: fixed;\n}\n\n.payments-table .payment-user-cell {\n  min-width: 0;\n  width: 220px;\n}\n\n.payments-table .payment-method-cell {\n  min-width: 0;\n  width: 130px;\n}\n\n.payments-table .payment-content-cell {\n  min-width: 0;\n  width: 170px;\n}\n\n.payments-table th,\n.payments-table td {\n  padding: 9px 8px;\n}\n\n.payments-table td {\n  overflow-wrap: anywhere;\n}\n\n.payments-table .payment-user-cell small,\n.payments-table .payment-method-cell small {\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  max-width: 100%;\n}\n\n.payment-type-badge {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  border: 1px solid transparent;\n  padding: 2px 9px;\n  font-size: 0.74rem;\n  font-weight: 700;\n  line-height: 1.2;\n}\n\n.payment-type-badge.bundle {\n  color: #0f4f98;\n  background: #e8f1ff;\n  border-color: #c6dbfb;\n}\n\n.payment-type-badge.single {\n  color: #196a3a;\n  background: #e9f8ef;\n  border-color: #bde5cc;\n}\n\n.catalog-stack {\n  display: grid;\n  gap: 12px;\n}\n\n.catalog-tabs {\n  display: inline-flex;\n  gap: 8px;\n  margin-bottom: 12px;\n  padding: 6px;\n  border-radius: 12px;\n  background: #eef4ff;\n  border: 1px solid #d9e5f9;\n}\n\n.catalog-tab {\n  border: 0;\n  border-radius: 9px;\n  padding: 9px 14px;\n  font-size: 0.92rem;\n  font-weight: 700;\n  color: #355179;\n  background: transparent;\n  cursor: pointer;\n}\n\n.catalog-tab.active {\n  color: #fff;\n  background: linear-gradient(135deg, #1b75d0, #0d4e9d);\n  box-shadow: 0 2px 10px rgba(10, 63, 126, 0.28);\n}\n\n.catalog-panel-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n  margin-bottom: 10px;\n}\n\n.catalog-list-head {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 12px;\n  margin-bottom: 8px;\n}\n\n.ghost-btn {\n  border: 1px solid #c6d7f3;\n  border-radius: 10px;\n  background: #fff;\n  color: #174074;\n  padding: 8px 11px;\n  font-weight: 600;\n  cursor: pointer;\n}\n\n.catalog-city-filter {\n  width: 100%;\n}\n\n.compact-filter {\n  max-width: 340px;\n}\n\n.coords-grid {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 10px;\n}\n\n.map-picker-row {\n  display: flex;\n  justify-content: flex-start;\n}\n\n.media-upload-row,\n.audio-upload-row {\n  display: flex;\n  gap: 10px;\n  align-items: flex-start;\n}\n\n.media-block {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 10px;\n}\n\n.media-block-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 10px;\n}\n\n.media-block-head strong {\n  color: #17345b;\n}\n\n.media-block-head span {\n  color: #5e7497;\n  font-size: 0.84rem;\n}\n\n.media-preview {\n  border-radius: 10px;\n  border: 1px solid #d8e5f9;\n  overflow: hidden;\n  background: #f2f7ff;\n  min-height: 180px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.media-preview.placeholder {\n  color: #5f7598;\n  font-size: 0.9rem;\n  text-align: center;\n  padding: 10px;\n}\n\n.media-preview img {\n  width: 100%;\n  max-height: 240px;\n  object-fit: cover;\n  display: block;\n}\n\n.media-upload-actions {\n  display: flex;\n  gap: 10px;\n  align-items: center;\n  flex-wrap: wrap;\n}\n\n.translation-panel {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #f8fbff;\n  padding: 14px;\n  display: grid;\n  gap: 12px;\n}\n\n.translation-panel-head {\n  display: grid;\n  gap: 4px;\n}\n\n.translation-panel-head strong {\n  color: #17345b;\n}\n\n.translation-panel-head span {\n  color: #5e7497;\n  font-size: 0.88rem;\n}\n\n.translation-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));\n  gap: 12px;\n}\n\n.translation-card {\n  border: 1px solid #d6e2f8;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 10px;\n}\n\n.translation-card h3 {\n  margin: 0;\n  color: #163a67;\n  font-size: 1rem;\n}\n\n.media-player {\n  width: 100%;\n}\n\n.audio-file-pill {\n  border: 1px solid #dbe7fb;\n  border-radius: 10px;\n  background: #f6faff;\n  padding: 10px 12px;\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  flex-wrap: wrap;\n  color: #1c3f6f;\n}\n\n.audio-file-label {\n  color: #5f7598;\n  font-size: 0.86rem;\n}\n\n.audio-link-btn {\n  border: 1px solid #c9daf7;\n  border-radius: 10px;\n  background: #f7fbff;\n  color: #12427a;\n  padding: 6px 10px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  text-align: left;\n  max-width: 100%;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.audio-link-btn:hover:not(:disabled) {\n  background: #ebf4ff;\n}\n\n.audio-link-btn:disabled {\n  opacity: 0.6;\n  cursor: not-allowed;\n}\n\n.media-url-field,\n.audio-url-field {\n  flex: 1;\n}\n\n.compact-wrap .modern-table {\n  min-width: 620px;\n}\n\n.compact-table th,\n.compact-table td {\n  padding: 10px;\n}\n\n.action-buttons {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n\n.user-row-actions {\n  width: 100%;\n  display: grid;\n  gap: 8px;\n  align-items: stretch;\n}\n\n.user-row-actions-top {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 8px;\n}\n\n.user-row-actions-top button,\n.user-row-impersonate-btn {\n  width: 100%;\n}\n\n.row-save-btn {\n  border: 0;\n  border-radius: 10px;\n  background: linear-gradient(135deg, #0f4f98, #1c7be0);\n  color: #fff;\n  padding: 8px 12px;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;\n}\n\n.row-save-btn:hover:not(:disabled) {\n  filter: brightness(1.05);\n  transform: translateY(-1px);\n}\n\n.row-save-btn:disabled {\n  background: #e3eaf8;\n  color: #5f7294;\n  cursor: not-allowed;\n  transform: none;\n}\n\n.row-save-btn.secondary {\n  background: #e7eefb;\n  color: #2b456d;\n}\n\n.dialog-form {\n  margin-top: 0;\n  width: 100%;\n  min-width: 0;\n}\n\n.dialog-body {\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n  gap: 14px;\n  padding-top: 6px;\n  overflow-x: hidden;\n}\n\n.dialog-body > * {\n  min-width: 0;\n}\n\n.dialog-body mat-form-field,\n.dialog-body .coords-grid,\n.dialog-body .map-picker-row,\n.dialog-body .media-block,\n.dialog-body .translation-panel,\n.dialog-body .media-upload-row,\n.dialog-body .media-player {\n  grid-column: 1 / -1;\n}\n\n.dialog-actions {\n  display: flex;\n  gap: 10px;\n  padding: 0 24px 18px;\n}\n\n.map-dialog-body {\n  grid-template-columns: 1fr;\n}\n\n.map-search-form {\n  margin-top: 0;\n  display: grid;\n  gap: 10px;\n  grid-template-columns: minmax(0, 1fr) auto;\n  align-items: start;\n}\n\n.map-search-form mat-form-field {\n  width: 100%;\n}\n\n.map-results {\n  display: grid;\n  gap: 10px;\n  max-height: min(52vh, 420px);\n  overflow: auto;\n}\n\n.map-selected-coords {\n  margin: 0;\n  padding: 8px 10px;\n  border-radius: 10px;\n  border: 1px solid #dbe7fb;\n  background: #f6faff;\n  color: #21446f;\n  font-size: 0.9rem;\n}\n\n.map-result-card {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 12px;\n  display: grid;\n  gap: 6px;\n}\n\n.map-result-card strong {\n  color: #17345b;\n}\n\n.map-result-card small {\n  color: #5f7598;\n  word-break: break-word;\n}\n\n.map-preview-panel {\n  border: 1px solid #dbe7fb;\n  border-radius: 12px;\n  background: #fff;\n  padding: 10px;\n  display: grid;\n  gap: 8px;\n}\n\n.map-preview-head {\n  display: grid;\n  gap: 2px;\n}\n\n.map-preview-head strong {\n  color: #17345b;\n}\n\n.map-preview-head small {\n  color: #5f7598;\n}\n\n.poi-map-canvas {\n  width: 100%;\n  height: 340px;\n  border-radius: 10px;\n  overflow: hidden;\n  border: 1px solid #d6e3f8;\n  background: linear-gradient(140deg, #e8eef9, #f4f8ff);\n}\n\n.poi-map-canvas.ready {\n  background: #e8eef9;\n}\n\n.status-pill {\n  display: inline-flex;\n  align-items: center;\n  border-radius: 999px;\n  padding: 4px 10px;\n  font-size: 0.78rem;\n  font-weight: 600;\n}\n\n.status-pill.ok {\n  color: #17653d;\n  background: #e7f7ee;\n}\n\n.status-pill.warn {\n  color: #915b00;\n  background: #fef6dd;\n}\n\n.status-pill.bad {\n  color: #b42318;\n  background: #feeceb;\n}\n\n.partner-requests-table {\n  min-width: 1220px;\n}\n\n.partner-request-main-cell {\n  min-width: 220px;\n}\n\n.partner-request-contact-cell {\n  min-width: 180px;\n}\n\n.partner-request-address-cell {\n  min-width: 240px;\n}\n\n.partner-request-status-cell {\n  min-width: 170px;\n  display: grid;\n  gap: 6px;\n}\n\n.partner-request-message-cell {\n  min-width: 260px;\n}\n\n.partner-request-notes {\n  white-space: pre-line;\n}\n\n.partner-request-empty-note {\n  color: #6b7d98;\n  font-style: italic;\n}\n\n.empty-cell {\n  color: #6b7d98;\n  text-align: center;\n  font-style: italic;\n}\n\n.spinner-cell {\n  padding: 16px 10px;\n}\n\n.spinner-cell .mat-mdc-progress-spinner,\n.inline-loader .mat-mdc-progress-spinner {\n  --mdc-circular-progress-active-indicator-color: #1c7be0;\n  margin: 0 auto;\n}\n\n.inline-loader {\n  display: flex;\n  justify-content: center;\n  padding: 8px 0;\n}\n\ncode {\n  background: #eef4ff;\n  color: #24406c;\n  border-radius: 6px;\n  padding: 3px 7px;\n}\n\n@media (max-width: 1100px) {\n  .dashboard-layout {\n    grid-template-columns: 220px 1fr;\n  }\n\n  .brand strong,\n  .brand p {\n    display: none;\n  }\n\n  .brand {\n    justify-content: center;\n    border-bottom: 0;\n    padding-bottom: 0;\n  }\n}\n\n@media (max-width: 860px) {\n  .dashboard-layout {\n    grid-template-columns: 1fr;\n  }\n\n  .sidebar {\n    padding: 12px;\n    gap: 12px;\n    position: static;\n    top: auto;\n    align-self: auto;\n    height: auto;\n    overflow: visible;\n  }\n\n  .sidebar-nav {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n\n  .nav-item {\n    justify-content: center;\n  }\n\n  .dashboard-main {\n    padding: 14px;\n  }\n\n  .stats-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .table-head {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n\n  .table-actions {\n    width: 100%;\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .toggle-panel-btn {\n    width: 100%;\n    justify-content: center;\n  }\n\n  .catalog-list-head {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .catalog-tabs {\n    display: grid;\n    grid-template-columns: 1fr 1fr;\n    width: 100%;\n  }\n\n  .invite-code-row {\n    grid-template-columns: 1fr;\n  }\n\n  .address-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .coords-grid {\n    grid-template-columns: 1fr;\n  }\n\n  .map-search-form {\n    grid-template-columns: 1fr;\n  }\n\n  .address-span-2 {\n    grid-column: auto;\n  }\n\n  .generate-code-btn {\n    width: 100%;\n  }\n\n  .media-upload-row,\n  .media-upload-actions,\n  .audio-upload-row {\n    flex-direction: column;\n    align-items: stretch;\n  }\n\n  .modern-table {\n    min-width: 700px;\n  }\n}\n"] }]
     }], () => [{ type: i1.FormBuilder }, { type: i2.AdminAuthService }, { type: i3.MatDialog }, { type: i4.Router }, { type: i4.ActivatedRoute }, { type: i5.MatSnackBar }], { createCatalogCityDialog: [{
             type: ViewChild,
             args: ['createCatalogCityDialog']
@@ -6170,6 +7836,9 @@ export class AdminDashboardComponent {
         }], editDiscountCodeDialog: [{
             type: ViewChild,
             args: ['editDiscountCodeDialog']
+        }], partnerRequestApprovalDialog: [{
+            type: ViewChild,
+            args: ['partnerRequestApprovalDialog']
         }], catalogPoiAudioPlayerDialog: [{
             type: ViewChild,
             args: ['catalogPoiAudioPlayerDialog']
@@ -6180,4 +7849,4 @@ export class AdminDashboardComponent {
             type: ViewChild,
             args: ['poiMapCanvas']
         }] }); })();
-(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(AdminDashboardComponent, { className: "AdminDashboardComponent", filePath: "src/app/features/admin-dashboard/admin-dashboard.component.ts", lineNumber: 48 }); })();
+(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(AdminDashboardComponent, { className: "AdminDashboardComponent", filePath: "frontend/src/app/features/admin-dashboard/admin-dashboard.component.ts", lineNumber: 65 }); })();

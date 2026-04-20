@@ -2,6 +2,15 @@ import { env } from '../config/env.js';
 
 let transporterPromise;
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function getTransporter() {
   if (!transporterPromise) {
     transporterPromise = import('nodemailer')
@@ -83,5 +92,63 @@ export async function sendPasswordResetEmail({ to, resetLink, requestedByEmail, 
       `<p>Il link scade il <strong>${expiresLabel}</strong>.</p>`,
       `<p>Se non hai richiesto il reset, ignora questa email.</p>`
     ].join('')
+  });
+}
+
+export async function sendPartnerApprovalEmail({
+  to,
+  contactName,
+  structureName,
+  discountCode,
+  cityNames,
+  expiresAt,
+  pdfBuffer,
+  pdfFileName
+}) {
+  const transporter = await getTransporter();
+  const recipientName = String(contactName || '').trim() || 'partner';
+  const cityLabel = Array.isArray(cityNames) && cityNames.length ? cityNames.join(', ') : 'le citta configurate in dashboard';
+  const expiresLabel = expiresAt
+    ? new Date(expiresAt).toLocaleString('it-IT', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      })
+    : null;
+
+  await transporter.sendMail({
+    from: env.smtp.from,
+    to,
+    subject: 'Walk Around - Richiesta partner approvata',
+    text: [
+      `Ciao ${recipientName},`,
+      ``,
+      `la richiesta partner per ${structureName} e stata approvata.`,
+      `Il codice sconto associato alla struttura e: ${discountCode}.`,
+      `Citta abilitate: ${cityLabel}.`,
+      expiresLabel ? `Scadenza del codice: ${expiresLabel}.` : null,
+      `In allegato trovi il PDF pronto da esporre ai turisti.`,
+      ``,
+      `Per qualsiasi dubbio puoi rispondere a questa email.`
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    html: [
+      `<p>Ciao ${escapeHtml(recipientName)},</p>`,
+      `<p>la richiesta partner per <strong>${escapeHtml(structureName)}</strong> e stata approvata.</p>`,
+      `<p>Il codice sconto associato alla struttura e <strong>${escapeHtml(discountCode)}</strong>.</p>`,
+      `<p>Citta abilitate: <strong>${escapeHtml(cityLabel)}</strong>.</p>`,
+      expiresLabel ? `<p>Scadenza del codice: <strong>${escapeHtml(expiresLabel)}</strong>.</p>` : '',
+      `<p>In allegato trovi il PDF pronto da esporre ai turisti.</p>`,
+      `<p>Per qualsiasi dubbio puoi rispondere a questa email.</p>`
+    ].join(''),
+    attachments: pdfBuffer
+      ? [
+          {
+            filename: pdfFileName || 'walk-around-partner.pdf',
+            content: pdfBuffer,
+            contentType: 'application/pdf'
+          }
+        ]
+      : []
   });
 }

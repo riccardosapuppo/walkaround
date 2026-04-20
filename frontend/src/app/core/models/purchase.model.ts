@@ -14,6 +14,8 @@ export interface PurchaseItem {
   structureFixedAmount?: number;
   structureEarningAmount?: number;
   purchasedAt: string;
+  expiresAt?: string | null;
+  isActive?: boolean;
 }
 
 export interface PurchasesResponse {

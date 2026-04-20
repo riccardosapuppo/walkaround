@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Poi } from '../../../core/models/poi.model';
+import { I18nService } from '../../../core/services/i18n.service';
 import { formatCityLabel } from '../../../core/utils/city-label.util';
 
 export interface PoiMapSheetData {
@@ -8,14 +9,16 @@ export interface PoiMapSheetData {
   distanceLabel: string;
   unlocked: boolean;
   isNavigating: boolean;
+  isFavorite: boolean;
+  inCart: boolean;
 }
 
 export type PoiMapSheetAction =
-  | { action: 'open-detail'; poiId: string }
   | { action: 'navigate'; poiId: string }
   | { action: 'play'; poiId: string; preview: boolean }
-  | { action: 'purchase-poi'; poiId: string }
-  | { action: 'purchase-city'; cityId: string };
+  | { action: 'add-to-cart'; poiId: string }
+  | { action: 'purchase-city'; cityId: string }
+  | { action: 'toggle-favorite'; poiId: string };
 
 @Component({
   standalone: false,
@@ -24,15 +27,16 @@ export type PoiMapSheetAction =
   styleUrls: ['./poi-map-sheet.component.scss']
 })
 export class PoiMapSheetComponent {
-  readonly cityUnlockPriceLabel = '14,99';
+  readonly cityUnlockPrice = 15;
 
   constructor(
     @Inject(MAT_BOTTOM_SHEET_DATA) readonly data: PoiMapSheetData,
-    private readonly bottomSheetRef: MatBottomSheetRef<PoiMapSheetComponent>
+    private readonly bottomSheetRef: MatBottomSheetRef<PoiMapSheetComponent>,
+    public readonly i18n: I18nService
   ) {}
 
-  openDetail(): void {
-    this.bottomSheetRef.dismiss({ action: 'open-detail', poiId: this.data.poi.id } satisfies PoiMapSheetAction);
+  close(): void {
+    this.bottomSheetRef.dismiss();
   }
 
   navigate(): void {
@@ -47,9 +51,9 @@ export class PoiMapSheetComponent {
     this.bottomSheetRef.dismiss({ action: 'play', poiId: this.data.poi.id, preview } satisfies PoiMapSheetAction);
   }
 
-  purchasePoi(): void {
+  addToCart(): void {
     this.bottomSheetRef.dismiss({
-      action: 'purchase-poi',
+      action: 'add-to-cart',
       poiId: this.data.poi.id
     } satisfies PoiMapSheetAction);
   }
@@ -61,16 +65,34 @@ export class PoiMapSheetComponent {
     } satisfies PoiMapSheetAction);
   }
 
+  toggleFavorite(): void {
+    this.bottomSheetRef.dismiss({
+      action: 'toggle-favorite',
+      poiId: this.data.poi.id
+    } satisfies PoiMapSheetAction);
+  }
+
   formatPrice(amount: number): string {
-    return amount.toFixed(2).replace('.', ',');
+    return this.i18n.formatCurrency(Number(amount || 0));
   }
 
   cityName(cityId: string): string {
-    return formatCityLabel(cityId);
+    return formatCityLabel(cityId, [], this.i18n.language);
   }
 
-  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
-    return Boolean(String(poi?.audioUrl || '').trim());
+  poiAddress(): string {
+    return `${this.cityName(this.data.poi.cityId)} - ${this.i18n.t('common.coordinates')} ${this.data.poi.lat.toFixed(4)}, ${this.data.poi.lng.toFixed(4)}`;
+  }
+
+  hasPlayableAudio(poi: Poi | null | undefined): boolean {
+    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
+  }
+
+  poiName(): string {
+    return this.i18n.resolvePoiField(this.data.poi.name, this.data.poi.translations, 'name');
+  }
+
+  poiDescription(): string {
+    return this.i18n.resolvePoiField(this.data.poi.descriptionShort, this.data.poi.translations, 'descriptionShort');
   }
 }
-

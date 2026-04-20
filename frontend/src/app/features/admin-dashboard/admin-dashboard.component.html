@@ -31,7 +31,7 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">
-          <img src="/assets/logo.png" alt="Logo Walk Around" />
+          <img src="/assets/logo.png" alt="Logo Walk Around" loading="eager" decoding="sync" fetchpriority="high" />
         </div>
         <div>
           <strong>Walk Around</strong>
@@ -660,6 +660,158 @@
         </mat-card>
       </ng-container>
 
+      <ng-container *ngIf="canManageUsers && activeSection === 'partnerRequests'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Richieste totali</span>
+            <strong *ngIf="!loadingPartnerRequests; else partnerRequestsLoadingStat">{{ totalPartnerRequests }}</strong>
+            <ng-template #partnerRequestsLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>In attesa</span>
+            <strong *ngIf="!loadingPartnerRequests; else partnerPendingLoadingStat">{{ pendingPartnerRequests }}</strong>
+            <ng-template #partnerPendingLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Approvate</span>
+            <strong *ngIf="!loadingPartnerRequests; else partnerApprovedLoadingStat">{{ approvedPartnerRequests }}</strong>
+            <ng-template #partnerApprovedLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>PDF inviati</span>
+            <strong *ngIf="!loadingPartnerRequests; else partnerPdfLoadingStat">{{ sentPartnerRequestPdfs }}</strong>
+            <ng-template #partnerPdfLoadingStat>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+        </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Richieste partner</h2>              
+              <p class="table-subtitle">Approva o nega le richieste partner e genera il PDF promozionale da inviare alla struttura.</p>
+            </div>
+            <div class="table-actions">
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                (click)="loadPartnerRequests()"
+                [disabled]="loadingPartnerRequests"
+              >
+                {{ loadingPartnerRequests ? 'Aggiorno...' : 'Aggiorna elenco' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="modern-table partner-requests-table">
+              <thead>
+                <tr>
+                  <th>Struttura</th>
+                  <th>Referente</th>
+                  <th>Indirizzo</th>
+                  <th>Stato</th>
+                  <th>Messaggio</th>
+                  <th>Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="loadingPartnerRequests">
+                  <td colspan="6" class="empty-cell spinner-cell">
+                    <mat-spinner diameter="28"></mat-spinner>
+                  </td>
+                </tr>
+                <tr *ngIf="!loadingPartnerRequests && !partnerRequests.length">
+                  <td colspan="6" class="empty-cell">Nessuna richiesta partner registrata.</td>
+                </tr>
+                <ng-container *ngIf="!loadingPartnerRequests">
+                  <tr *ngFor="let request of partnerRequests; trackBy: trackByPartnerRequestId">
+                    <td class="partner-request-main-cell">
+                      <strong>#{{ request.id }} - {{ request.structureName }}</strong>
+                      <small *ngIf="request.structureType">Tipologia: {{ request.structureType }}</small>
+                      <small *ngIf="request.roomsCount !== null">Camere: {{ request.roomsCount }}</small>
+                      <small *ngIf="request.vatNumber">P.IVA: {{ request.vatNumber }}</small>
+                      <small *ngIf="request.website">Sito: {{ request.website }}</small>
+                      <small>Inviata il {{ formatDateTime(request.createdAt) }}</small>
+                    </td>
+                    <td class="partner-request-contact-cell">
+                      <strong>{{ partnerRequestContactName(request) }}</strong>
+                      <small>{{ request.contactEmail }}</small>
+                      <small>{{ request.contactPhone }}</small>
+                    </td>
+                    <td class="partner-request-address-cell">
+                      <small>{{ partnerRequestAddress(request) || '-' }}</small>
+                    </td>
+                    <td class="partner-request-status-cell">
+                      <span class="status-pill" [ngClass]="partnerRequestStatusClass(request.status)">
+                        {{ partnerRequestStatusLabel(request.status) }}
+                      </span>
+                      <span class="status-pill" [ngClass]="partnerRequestPdfStatusClass(request.pdfReleaseStatus)">
+                        PDF: {{ partnerRequestPdfStatusLabel(request.pdfReleaseStatus) }}
+                      </span>
+                      <small *ngIf="request.discountCode">Codice: <code>{{ request.discountCode }}</code></small>
+                      <small>Aggiornata {{ formatDateTime(request.updatedAt) }}</small>
+                    </td>
+                    <td class="partner-request-message-cell">
+                      <small class="partner-request-notes" [class.partner-request-empty-note]="!request.notes">
+                        {{ request.notes || 'Nessun messaggio aggiuntivo.' }}
+                      </small>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button
+                          mat-stroked-button
+                          color="primary"
+                          type="button"
+                          (click)="previewPartnerRequestPdf(request)"
+                          [disabled]="isPartnerRequestBusy(request)"
+                        >
+                          {{ previewingPartnerRequestId === request.id ? 'Apro...' : 'Anteprima PDF' }}
+                        </button>
+                        <button
+                          mat-flat-button
+                          color="primary"
+                          type="button"
+                          (click)="openPartnerRequestApproval(request)"
+                          [disabled]="isPartnerRequestBusy(request) || request.status === 'approved'"
+                        >
+                          {{ approvingPartnerRequestId === request.id ? 'Invio...' : 'Approva' }}
+                        </button>
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          type="button"
+                          (click)="rejectPartnerRequest(request)"
+                          [disabled]="isPartnerRequestBusy(request) || request.status !== 'pending'"
+                        >
+                          {{ rejectingPartnerRequestId === request.id ? 'Nego...' : 'Nega' }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+
       <ng-container *ngIf="canManageUsers && activeSection === 'payments'">
         <div class="stats-grid">
           <mat-card class="stat-card">
@@ -782,6 +934,104 @@
               </tbody>
             </table>
           </div>
+        </mat-card>
+      </ng-container>
+
+      <ng-container *ngIf="canManagePayPal && activeSection === 'paypal'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Stato connessione</span>
+            <strong *ngIf="!loadingPayPalSettings; else payPalStatusLoading">{{ payPalStatusLabel }}</strong>
+            <ng-template #payPalStatusLoading>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Ambiente</span>
+            <strong *ngIf="!loadingPayPalSettings; else payPalModeLoading">
+              {{ payPalSettings?.mode === 'live' ? 'Live' : 'Sandbox' }}
+            </strong>
+            <ng-template #payPalModeLoading>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+        </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Configurazione PayPal</h2>
+              <p class="table-subtitle">Client ID, secret, ambiente e dati merchant usati dal checkout reale lato utente.</p>
+            </div>
+            <div class="table-actions">
+              <button mat-stroked-button color="primary" type="button" (click)="testPayPalSettings()" [disabled]="testingPayPalSettings || loadingPayPalSettings">
+                {{ testingPayPalSettings ? 'Verifico...' : 'Verifica connessione' }}
+              </button>
+            </div>
+          </div>
+
+          <form class="paypal-settings-form" [formGroup]="payPalForm" (ngSubmit)="savePayPalSettings()">
+            <div class="paypal-status-strip" *ngIf="payPalSettings">
+              <strong>{{ payPalStatusLabel }}</strong>
+              <span *ngIf="payPalSettings.lastVerifiedAt">Ultima verifica: {{ formatDateTime(payPalSettings.lastVerifiedAt) }}</span>
+              <span *ngIf="payPalSettings.lastVerificationError">{{ payPalSettings.lastVerificationError }}</span>
+            </div>
+
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Ambiente PayPal</mat-label>
+                <mat-select formControlName="mode">
+                  <mat-option value="sandbox">Sandbox</mat-option>
+                  <mat-option value="live">Live</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Brand name</mat-label>
+                <input matInput formControlName="brandName" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-span">
+                <mat-label>Client ID</mat-label>
+                <input matInput formControlName="clientId" autocomplete="off" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-span">
+                <mat-label>Client secret</mat-label>
+                <input matInput formControlName="clientSecret" autocomplete="off" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Merchant ID</mat-label>
+                <input matInput formControlName="merchantId" autocomplete="off" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Merchant email</mat-label>
+                <input matInput formControlName="merchantEmail" autocomplete="off" />
+                <mat-error *ngIf="payPalForm.controls.merchantEmail.invalid && payPalForm.controls.merchantEmail.touched">
+                  Email PayPal non valida
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Webhook ID</mat-label>
+                <input matInput formControlName="webhookId" autocomplete="off" />
+              </mat-form-field>
+            </div>
+
+            <mat-slide-toggle formControlName="isEnabled">Attiva PayPal per tutti i checkout utente</mat-slide-toggle>
+
+            <div class="paypal-actions">
+              <button mat-flat-button color="primary" type="submit" [disabled]="!canSavePayPalSettings">
+                {{ savingPayPalSettings ? 'Salvo...' : 'Salva configurazione' }}
+              </button>
+            </div>
+          </form>
         </mat-card>
       </ng-container>
 
@@ -1015,6 +1265,24 @@
               <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
             </mat-form-field>
 
+            <div class="translation-panel" formGroupName="translations">
+              <div class="translation-panel-head">
+                <strong>Traduzioni app utente</strong>
+                <span>Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.</span>
+              </div>
+
+              <div class="translation-grid">
+                <section class="translation-card" *ngFor="let language of contentLanguages" [formGroupName]="language.code">
+                  <h3>{{ language.label }}</h3>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nome citta {{ language.label }}</mat-label>
+                    <input matInput type="text" formControlName="name" />
+                  </mat-form-field>
+                </section>
+              </div>
+            </div>
+
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
               <div class="media-block-head">
@@ -1134,6 +1402,96 @@
                 <mat-label>Descrizione lunga</mat-label>
                 <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
               </mat-form-field>
+
+              <div class="translation-panel" formGroupName="translations">
+                <div class="translation-panel-head">
+                  <strong>Traduzioni app utente</strong>
+                  <span>Questi contenuti vengono mostrati nell'app utente in base alla lingua selezionata.</span>
+                </div>
+
+                <div class="translation-grid">
+                  <section class="translation-card" *ngFor="let language of contentLanguages" [formGroupName]="language.code">
+                    <h3>{{ language.label }}</h3>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Nome luogo {{ language.label }}</mat-label>
+                      <input matInput type="text" formControlName="name" />
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Descrizione breve {{ language.label }}</mat-label>
+                      <textarea matInput rows="2" formControlName="descriptionShort"></textarea>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Descrizione lunga {{ language.label }}</mat-label>
+                      <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Nome audio {{ language.label }}</mat-label>
+                      <input matInput type="text" formControlName="audioLabel" />
+                    </mat-form-field>
+
+                    <input type="hidden" formControlName="audioUrl" />
+                    <div class="media-block">
+                      <div class="media-block-head">
+                        <strong>Audioguida {{ language.label }}</strong>
+                        <span>{{ catalogPoiTranslationAudioUrl(language.code, 'create') ? 'Pronta' : 'Nessun audio' }}</span>
+                      </div>
+
+                      <div class="audio-file-pill" *ngIf="catalogPoiTranslationAudioUrl(language.code, 'create'); else createPoiTranslationAudioEmpty">
+                        <span class="audio-file-label">File:</span>
+                        <strong>{{ audioFileNameFromUrl(catalogPoiTranslationAudioUrl(language.code, 'create')) }}</strong>
+                      </div>
+                      <ng-template #createPoiTranslationAudioEmpty>
+                        <div class="media-preview placeholder">Audio opzionale: puoi caricarlo ora o dopo.</div>
+                      </ng-template>
+
+                      <div class="media-upload-actions">
+                        <input
+                          #createPoiTranslationAudioInput
+                          type="file"
+                          accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
+                          hidden
+                          (change)="onCatalogPoiTranslationAudioFileSelected($event, language.code, 'create')"
+                        />
+                        <button
+                          type="button"
+                          class="generate-code-btn"
+                          (click)="createPoiTranslationAudioInput.click()"
+                          [disabled]="isCatalogPoiTranslationAudioUploading(language.code, 'create') || savingCatalogPoi"
+                        >
+                          {{
+                            isCatalogPoiTranslationAudioUploading(language.code, 'create')
+                              ? 'Upload...'
+                              : catalogPoiTranslationAudioUrl(language.code, 'create')
+                                ? 'Sostituisci audio'
+                                : 'Carica audio'
+                          }}
+                        </button>
+                        <button
+                          type="button"
+                          class="ghost-btn"
+                          *ngIf="catalogPoiTranslationAudioUrl(language.code, 'create')"
+                          (click)="clearCatalogPoiTranslationAudio(language.code, 'create')"
+                          [disabled]="isCatalogPoiTranslationAudioUploading(language.code, 'create') || savingCatalogPoi"
+                        >
+                          Rimuovi audio
+                        </button>
+                      </div>
+
+                      <audio
+                        class="media-player"
+                        controls
+                        preload="none"
+                        *ngIf="catalogPoiTranslationAudioUrl(language.code, 'create')"
+                        [src]="catalogPoiTranslationAudioUrl(language.code, 'create')"
+                      ></audio>
+                    </div>
+                  </section>
+                </div>
+              </div>
 
               <input type="hidden" formControlName="imageUrl" />
               <div class="media-block">
@@ -1267,6 +1625,24 @@
               <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
             </mat-form-field>
 
+            <div class="translation-panel" formGroupName="translations">
+              <div class="translation-panel-head">
+                <strong>Traduzioni app utente</strong>
+                <span>Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.</span>
+              </div>
+
+              <div class="translation-grid">
+                <section class="translation-card" *ngFor="let language of contentLanguages" [formGroupName]="language.code">
+                  <h3>{{ language.label }}</h3>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nome citta {{ language.label }}</mat-label>
+                    <input matInput type="text" formControlName="name" />
+                  </mat-form-field>
+                </section>
+              </div>
+            </div>
+
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
               <div class="media-block-head">
@@ -1380,6 +1756,96 @@
               <mat-label>Descrizione lunga</mat-label>
               <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
             </mat-form-field>
+
+            <div class="translation-panel" formGroupName="translations">
+              <div class="translation-panel-head">
+                <strong>Traduzioni app utente</strong>
+                <span>Questi contenuti vengono mostrati nell'app utente in base alla lingua selezionata.</span>
+              </div>
+
+              <div class="translation-grid">
+                <section class="translation-card" *ngFor="let language of contentLanguages" [formGroupName]="language.code">
+                  <h3>{{ language.label }}</h3>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nome luogo {{ language.label }}</mat-label>
+                    <input matInput type="text" formControlName="name" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Descrizione breve {{ language.label }}</mat-label>
+                    <textarea matInput rows="2" formControlName="descriptionShort"></textarea>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Descrizione lunga {{ language.label }}</mat-label>
+                    <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nome audio {{ language.label }}</mat-label>
+                    <input matInput type="text" formControlName="audioLabel" />
+                  </mat-form-field>
+
+                  <input type="hidden" formControlName="audioUrl" />
+                  <div class="media-block">
+                    <div class="media-block-head">
+                      <strong>Audioguida {{ language.label }}</strong>
+                      <span>{{ catalogPoiTranslationAudioUrl(language.code, 'edit') ? 'Pronta' : 'Nessun audio' }}</span>
+                    </div>
+
+                    <div class="audio-file-pill" *ngIf="catalogPoiTranslationAudioUrl(language.code, 'edit'); else editPoiTranslationAudioEmpty">
+                      <span class="audio-file-label">File:</span>
+                      <strong>{{ audioFileNameFromUrl(catalogPoiTranslationAudioUrl(language.code, 'edit')) }}</strong>
+                    </div>
+                    <ng-template #editPoiTranslationAudioEmpty>
+                      <div class="media-preview placeholder">Audio opzionale: puoi caricarlo ora o dopo.</div>
+                    </ng-template>
+
+                    <div class="media-upload-actions">
+                      <input
+                        #editPoiTranslationAudioInput
+                        type="file"
+                        accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
+                        hidden
+                        (change)="onCatalogPoiTranslationAudioFileSelected($event, language.code, 'edit')"
+                      />
+                      <button
+                        type="button"
+                        class="generate-code-btn"
+                        (click)="editPoiTranslationAudioInput.click()"
+                        [disabled]="isCatalogPoiTranslationAudioUploading(language.code, 'edit') || savingCatalogPoi"
+                      >
+                        {{
+                          isCatalogPoiTranslationAudioUploading(language.code, 'edit')
+                            ? 'Upload...'
+                            : catalogPoiTranslationAudioUrl(language.code, 'edit')
+                              ? 'Sostituisci audio'
+                              : 'Carica audio'
+                        }}
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost-btn"
+                        *ngIf="catalogPoiTranslationAudioUrl(language.code, 'edit')"
+                        (click)="clearCatalogPoiTranslationAudio(language.code, 'edit')"
+                        [disabled]="isCatalogPoiTranslationAudioUploading(language.code, 'edit') || savingCatalogPoi"
+                      >
+                        Rimuovi audio
+                      </button>
+                    </div>
+
+                    <audio
+                      class="media-player"
+                      controls
+                      preload="none"
+                      *ngIf="catalogPoiTranslationAudioUrl(language.code, 'edit')"
+                      [src]="catalogPoiTranslationAudioUrl(language.code, 'edit')"
+                    ></audio>
+                  </div>
+                </section>
+              </div>
+            </div>
 
             <input type="hidden" formControlName="imageUrl" />
             <div class="media-block">
@@ -1653,6 +2119,93 @@
         </form>
       </ng-template>
 
+      <ng-template #partnerRequestApprovalDialog>
+        <h2 mat-dialog-title>Approva richiesta partner</h2>
+        <form [formGroup]="partnerRequestApprovalForm" (ngSubmit)="approvePartnerRequest()" class="form-grid dialog-form">
+          <div mat-dialog-content class="dialog-body">
+            <p class="inline-note" *ngIf="partnerRequestApprovalTarget as request">
+              Verranno creati automaticamente la struttura <strong>{{ request.structureName }}</strong>, il codice sconto e il PDF da inviare a
+              <strong>{{ request.contactEmail }}</strong>.
+            </p>
+
+            <div class="invite-code-row">
+              <mat-form-field appearance="outline" class="invite-code-field">
+                <mat-label>Codice</mat-label>
+                <input matInput type="text" formControlName="code" maxlength="6" autocomplete="off" />
+              </mat-form-field>
+
+              <button type="button" class="generate-code-btn" (click)="generateDiscountCodeForPartnerApproval()" [disabled]="approvingPartnerRequestId !== null">
+                Genera codice
+              </button>
+            </div>
+
+            <div class="discount-scope-group">
+              <label>Applicabile a</label>
+              <mat-radio-group formControlName="applyTo" class="discount-scope-radio">
+                <mat-radio-button value="single">Luogo singolo</mat-radio-button>
+                <mat-radio-button value="bundle">Pacchetto citta</mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Citta applicabili</mat-label>
+              <mat-select formControlName="cityIds" multiple>
+                <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+              </mat-select>
+              <mat-hint>Seleziona una o piu citta</mat-hint>
+            </mat-form-field>
+            <p class="inline-note" *ngIf="!catalogCities.length && !loadingCatalogCities">
+              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.
+            </p>
+            <div class="inline-loader" *ngIf="loadingCatalogCities">
+              <mat-spinner diameter="22"></mat-spinner>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Sconto utente {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo' }} (%)</mat-label>
+              <input matInput type="number" min="0" max="100" step="0.01" formControlName="userDiscountPercent" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Incasso struttura {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo' }} (EUR)</mat-label>
+              <input matInput type="number" min="0" max="10000" step="0.01" formControlName="structureFixedAmount" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Scadenza</mat-label>
+              <input #partnerApprovalExpiresInput matInput type="datetime-local" step="60" formControlName="expiresAt" />
+              <button
+                class="date-picker-suffix-btn"
+                matSuffix
+                type="button"
+                aria-label="Apri calendario e ora"
+                (click)="openNativeDateTimePicker(partnerApprovalExpiresInput)"
+              >
+                <span class="calendar-icon-glyph" aria-hidden="true"></span>
+              </button>
+              <mat-hint>Seleziona data e ora</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div mat-dialog-actions align="end" class="dialog-actions">
+            <button type="button" class="row-save-btn secondary" (click)="closePartnerRequestApprovalDialog()" [disabled]="approvingPartnerRequestId !== null">
+              Annulla
+            </button>
+            <button
+              type="button"
+              class="row-save-btn secondary"
+              (click)="previewSelectedPartnerRequestPdf()"
+              [disabled]="previewingPartnerRequestId === partnerRequestApprovalTarget?.id"
+            >
+              {{ previewingPartnerRequestId === partnerRequestApprovalTarget?.id ? 'Apro anteprima...' : 'Anteprima PDF' }}
+            </button>
+            <button type="submit" class="row-save-btn" [disabled]="approvingPartnerRequestId !== null || partnerRequestApprovalForm.invalid">
+              {{ approvingPartnerRequestId !== null ? 'Invio approvazione...' : 'Approva e invia' }}
+            </button>
+          </div>
+        </form>
+      </ng-template>
+
       <ng-template #editDiscountCodeDialog>
         <h2 mat-dialog-title>Modifica codice sconto</h2>
         <form [formGroup]="discountCodeEditForm" (ngSubmit)="saveDiscountCodeEdit()" class="form-grid dialog-form">
@@ -1901,7 +2454,5 @@
     </main>
   </div>
 </section>
-
-
 
 

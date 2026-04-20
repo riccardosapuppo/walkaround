@@ -1,19 +1,15 @@
 <section class="page-shell poi-detail" *ngIf="poi as currentPoi">
-  <button mat-icon-button class="back-btn" (click)="goBack()" aria-label="Torna indietro">
+  <button mat-icon-button class="back-btn" (click)="goBack()" [attr.aria-label]="'poiDetail.backAria' | t">
     <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
   </button>
 
-  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="currentPoi.name" />
-
-  <button mat-flat-button color="accent" class="big-cta nav-cta nav-top-cta" (click)="startNavigation()">
-    <mat-icon fontSet="material-icons-round">near_me</mat-icon>
-    Avvia navigazione in app
-  </button>
+  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="poiName(currentPoi)" />
 
   <div class="title-row">
     <div>
-      <h1 class="page-title">{{ currentPoi.name }}</h1>
-      <p class="page-subtitle">{{ distanceLabel }} - {{ currentPoi.durationSec | durationLabel }}</p>
+      <h1 class="page-title">{{ poiName(currentPoi) }}</h1>
+      <p class="page-subtitle">{{ poiAddress(currentPoi) }}</p>
+      <p class="poi-distance">{{ distanceLabel }} - {{ currentPoi.durationSec | durationLabel }}</p>
     </div>
 
     <button mat-icon-button color="primary" (click)="toggleFavorite()">
@@ -21,59 +17,59 @@
     </button>
   </div>
 
-  <p class="short teaser-only" *ngIf="!unlocked">{{ currentPoi.descriptionShort }}</p>
-  <p class="long" *ngIf="unlocked">{{ currentPoi.descriptionLong }}</p>
+  <button mat-flat-button color="accent" class="big-cta nav-cta" (click)="startNavigation()">
+    <mat-icon fontSet="material-icons-round">near_me</mat-icon>
+    {{ 'poiDetail.startNavigation' | t }}
+  </button>
+
+  <div class="description-wrap">
+    <p class="description-text">{{ descriptionText(currentPoi) }}</p>
+    <button mat-button type="button" class="expand-inline-btn" *ngIf="canExpandDescription(currentPoi)" (click)="toggleDescription()">
+      {{ descriptionExpanded ? ('common.showLess' | t) : ('common.showMore' | t) }}
+    </button>
+  </div>
+
+  <section class="preview-box card">
+    <p class="preview-title">{{ 'poiDetail.previewTitle' | t }}</p>
+    <ng-container *ngIf="hasPlayableAudio(currentPoi); else previewUnavailable">
+      <audio
+        class="preview-player"
+        controls
+        [src]="poiAudioUrl(currentPoi)"
+        preload="none"
+        (timeupdate)="onPreviewTimeUpdate($event)"
+        [attr.aria-label]="'poiDetail.previewAria' | t:{ name: poiName(currentPoi) }"
+      ></audio>
+      <p class="preview-note" *ngIf="!unlocked">{{ 'poiDetail.previewLimited' | t:{ seconds: previewSeconds } }}</p>
+    </ng-container>
+    <ng-template #previewUnavailable>
+      <p class="preview-note">{{ 'mapSheet.audioUnavailable' | t }}</p>
+    </ng-template>
+  </section>
 
   <section class="actions">
-    <button
-      mat-stroked-button
-      color="primary"
-      class="big-cta"
-      (click)="openPlayer(true)"
-      [disabled]="!hasPlayableAudio(currentPoi)"
-    >
-      Ascolta preview
+    <button mat-flat-button color="primary" class="big-cta" *ngIf="!unlocked" (click)="addPoiToCart()" [disabled]="isInCart()">
+      {{ isInCart() ? ('common.inCart' | t) : ('poiDetail.unlockPlace' | t:{ price: formatPrice(currentPoi.priceSingle) }) }}
     </button>
 
-    <ng-container *ngIf="unlocked; else lockCta">
-      <button
-        mat-flat-button
-        color="primary"
-        class="big-cta"
-        *ngIf="hasPlayableAudio(currentPoi); else unlockedNoAudio"
-        (click)="openPlayer(false)"
-      >
-        Riproduci audio
-      </button>
-    </ng-container>
+    <button mat-stroked-button color="primary" class="big-cta" *ngIf="!unlocked" (click)="purchaseCity()">
+      {{ 'poiDetail.unlockCity' | t:{ city: cityName(currentPoi.cityId), price: i18n.formatCurrency(cityUnlockPrice) } }}
+    </button>
 
-    <ng-template #unlockedNoAudio>
-      <button mat-flat-button color="primary" class="big-cta" disabled>
-        Audio non disponibile
-      </button>
-    </ng-template>
-
-    <ng-template #lockCta>
-      <button mat-flat-button color="primary" class="big-cta" (click)="purchasePoi()">
-        Sblocca questo luogo €{{ formatPrice(currentPoi.priceSingle) }}
-      </button>
-
-      <button mat-stroked-button color="primary" class="big-cta" (click)="purchaseCity()">
-        Sblocca {{ cityName(currentPoi.cityId) }} €{{ cityUnlockPriceLabel }}
-      </button>
-    </ng-template>
+    <button mat-flat-button color="primary" class="big-cta" *ngIf="unlocked" (click)="openFullPlayer()">
+      {{ 'poiDetail.playFullAudio' | t }}
+    </button>
   </section>
 </section>
 
 <section class="page-shell loading-shell" *ngIf="loading">
   <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-  <p>Caricamento dettaglio...</p>
+  <p>{{ 'poiDetail.loading' | t }}</p>
 </section>
 
 <section class="page-shell poi-detail" *ngIf="!loading && !poi">
   <mat-card class="card warning">
-    <p>{{ loadError ? 'Punto di interesse non disponibile o backend non raggiungibile.' : 'Contenuto non trovato.' }}</p>
-    <button mat-stroked-button color="primary" (click)="goBack()">Torna alla home</button>
+    <p>{{ loadError ? ('poiDetail.unavailable' | t) : ('poiDetail.notFound' | t) }}</p>
+    <button mat-stroked-button color="primary" (click)="goBack()">{{ 'poiDetail.backHome' | t }}</button>
   </mat-card>
 </section>
-

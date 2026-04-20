@@ -3,7 +3,16 @@ import { Router } from '@angular/router';
 import { forkJoin, Subject, switchMap, takeUntil } from 'rxjs';
 import { Poi } from '../../core/models/poi.model';
 import { AppStateService } from '../../core/services/app-state.service';
+import { GeoService } from '../../core/services/geo.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { PoiService } from '../../core/services/poi.service';
+import { PurchaseService } from '../../core/services/purchase.service';
+import { formatCityLabel } from '../../core/utils/city-label.util';
+
+interface FavoriteItem extends Poi {
+  distanceMeters: number | null;
+  unlocked: boolean;
+}
 
 @Component({
   standalone: false,
@@ -12,7 +21,7 @@ import { PoiService } from '../../core/services/poi.service';
   styleUrls: ['./favorites.component.scss']
 })
 export class FavoritesComponent implements OnInit, OnDestroy {
-  favorites: Poi[] = [];
+  favorites: FavoriteItem[] = [];
   loading = true;
 
   private allPois: Poi[] = [];
@@ -21,10 +30,16 @@ export class FavoritesComponent implements OnInit, OnDestroy {
   constructor(
     private readonly appState: AppStateService,
     private readonly poiService: PoiService,
-    private readonly router: Router
+    private readonly purchaseService: PurchaseService,
+    private readonly geoService: GeoService,
+    private readonly router: Router,
+    public readonly i18n: I18nService
   ) {}
 
   ngOnInit(): void {
+    this.purchaseService.refresh();
+    void this.geoService.requestPermissionAndTrack();
+
     this.poiService
       .getCities()
       .pipe(
@@ -44,6 +59,8 @@ export class FavoritesComponent implements OnInit, OnDestroy {
       });
 
     this.appState.favorites$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshFavorites());
+    this.purchaseService.purchases$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshFavorites());
+    this.geoService.coordinates$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshFavorites());
   }
 
   ngOnDestroy(): void {
@@ -55,25 +72,61 @@ export class FavoritesComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/poi', poiId]);
   }
 
-  playPreview(poi: Poi): void {
-    if (!this.hasPlayableAudio(poi)) {
+  playAudio(item: FavoriteItem): void {
+    if (!this.hasPlayableAudio(item)) {
       return;
     }
 
-    void this.router.navigate(['/player', poi.id], {
+    if (!item.unlocked) {
+      void this.router.navigate(['/poi', item.id]);
+      return;
+    }
+
+    void this.router.navigate(['/player', item.id], {
       queryParams: {
-        preview: true
+        preview: false
       }
     });
   }
 
-  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
-    return Boolean(String(poi?.audioUrl || '').trim());
+  toggleFavorite(item: FavoriteItem): void {
+    this.appState.toggleFavorite(item.id);
+  }
+
+  hasPlayableAudio(poi: Poi | null | undefined): boolean {
+    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
+  }
+
+  poiName(poi: Poi): string {
+    return this.i18n.resolvePoiField(poi.name, poi.translations, 'name');
+  }
+
+  poiDescription(poi: Poi): string {
+    return this.i18n.resolvePoiField(poi.descriptionShort, poi.translations, 'descriptionShort');
+  }
+
+  poiAddress(poi: Poi): string {
+    return `${formatCityLabel(poi.cityId, [], this.i18n.language)} - ${this.i18n.t('common.coordinates')} ${poi.lat.toFixed(4)}, ${poi.lng.toFixed(4)}`;
+  }
+
+  distanceLabel(distanceMeters: number | null): string {
+    return this.i18n.formatDistance(distanceMeters);
   }
 
   private refreshFavorites(): void {
     const ids = new Set(this.appState.favoriteIds);
-    this.favorites = this.allPois.filter((poi) => ids.has(poi.id));
+    const currentCoordinates = this.geoService.currentCoordinates;
+    this.favorites = this.allPois
+      .filter((poi) => ids.has(poi.id))
+      .map((poi) => {
+        const distanceMeters = currentCoordinates
+          ? this.geoService.distanceInMeters(currentCoordinates, { lat: poi.lat, lng: poi.lng })
+          : null;
+        return {
+          ...poi,
+          distanceMeters,
+          unlocked: this.purchaseService.isPoiUnlocked(poi.id, poi.cityId)
+        } satisfies FavoriteItem;
+      });
   }
 }
-

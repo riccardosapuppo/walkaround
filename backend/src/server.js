@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import fs from 'fs/promises';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
@@ -15,6 +16,124 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicPath = path.resolve(__dirname, '../public');
+const publicImagesPath = path.join(publicPath, 'images');
+
+async function pathExists(absolutePath) {
+  try {
+    await fs.access(absolutePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function stripUploadedPrefix(fileName) {
+  return String(fileName || '').replace(/^\d{10,}-[a-f0-9]{6,}-/i, '');
+}
+
+function tokenizeMediaName(fileName) {
+  return String(path.basename(fileName || '', path.extname(fileName || '')))
+    .toLowerCase()
+    .split(/[^a-z0-9]+/g)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+}
+
+function mediaMatchScore(targetFileName, candidateFileName) {
+  const targetTokens = tokenizeMediaName(targetFileName);
+  const candidateTokens = tokenizeMediaName(candidateFileName);
+  if (!targetTokens.length || !candidateTokens.length) {
+    return 0;
+  }
+
+  const candidateTokenSet = new Set(candidateTokens);
+  let score = 0;
+  targetTokens.forEach((token) => {
+    if (candidateTokenSet.has(token)) {
+      score += token.length >= 6 ? 3 : 2;
+    }
+  });
+
+  const normalizedTarget = stripUploadedPrefix(String(targetFileName || '').toLowerCase());
+  const normalizedCandidate = String(candidateFileName || '').toLowerCase();
+  if (normalizedCandidate.includes(normalizedTarget) || normalizedTarget.includes(normalizedCandidate)) {
+    score += 3;
+  }
+
+  return score;
+}
+
+async function resolveMediaAliasFromDirectory(directoryPath, requestedFileName) {
+  if (!(await pathExists(directoryPath))) {
+    return null;
+  }
+
+  const strippedFileName = stripUploadedPrefix(requestedFileName);
+  const requestedExt = String(path.extname(strippedFileName || '')).toLowerCase();
+
+  const entries = await fs.readdir(directoryPath, { withFileTypes: true });
+  const files = entries.filter((entry) => entry.isFile()).map((entry) => entry.name);
+  if (!files.length) {
+    return null;
+  }
+
+  const exactCaseInsensitive = files.find((fileName) => fileName.toLowerCase() === strippedFileName.toLowerCase());
+  if (exactCaseInsensitive) {
+    return path.join(directoryPath, exactCaseInsensitive);
+  }
+
+  let bestMatch = null;
+  let bestScore = 0;
+  files.forEach((fileName) => {
+    const candidateExt = String(path.extname(fileName || '')).toLowerCase();
+    if (requestedExt && candidateExt && candidateExt !== requestedExt) {
+      return;
+    }
+
+    const score = mediaMatchScore(strippedFileName, fileName);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = fileName;
+    }
+  });
+
+  return bestMatch && bestScore >= 3 ? path.join(directoryPath, bestMatch) : null;
+}
+
+async function resolvePublicAlias(relativeRequestPath) {
+  const normalizedRelativePath = String(relativeRequestPath || '').replace(/^\/+/, '');
+  if (!normalizedRelativePath) {
+    return null;
+  }
+
+  const requestedAbsolutePath = path.resolve(publicPath, normalizedRelativePath);
+  if (!requestedAbsolutePath.startsWith(publicPath)) {
+    return null;
+  }
+  if (await pathExists(requestedAbsolutePath)) {
+    return requestedAbsolutePath;
+  }
+
+  const parsedRequestPath = path.parse(requestedAbsolutePath);
+  const normalizedBaseName = stripUploadedPrefix(parsedRequestPath.base);
+  if (normalizedBaseName === parsedRequestPath.base && !requestedAbsolutePath.startsWith(publicImagesPath)) {
+    return null;
+  }
+
+  const directAlias = await resolveMediaAliasFromDirectory(parsedRequestPath.dir, normalizedBaseName);
+  if (directAlias) {
+    return directAlias;
+  }
+
+  if (requestedAbsolutePath.startsWith(publicImagesPath)) {
+    const oldImagesAlias = await resolveMediaAliasFromDirectory(path.join(publicImagesPath, 'old'), normalizedBaseName);
+    if (oldImagesAlias) {
+      return oldImagesAlias;
+    }
+  }
+
+  return null;
+}
 
 app.use(
   cors({
@@ -28,6 +147,28 @@ app.use(helmet({
 app.use(morgan('dev'));
 app.use(express.json({ limit: '30mb' }));
 
+app.use('/public', async (req, res, next) => {
+  try {
+    const relativeRequestPath = String(req.path || '').replace(/^\/+/, '');
+    if (!relativeRequestPath) {
+      return next();
+    }
+
+    const aliasPath = await resolvePublicAlias(relativeRequestPath);
+    if (!aliasPath) {
+      return next();
+    }
+
+    const normalizedRequestedPath = path.resolve(publicPath, relativeRequestPath);
+    if (aliasPath === normalizedRequestedPath) {
+      return next();
+    }
+
+    return res.sendFile(aliasPath);
+  } catch (error) {
+    return next(error);
+  }
+});
 app.use('/public', express.static(publicPath));
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);

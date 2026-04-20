@@ -1,3 +1,5 @@
+import { CityTranslations } from './localized-content.model';
+
 export interface City {
   id: string;
   name: string;
@@ -6,5 +8,6 @@ export interface City {
   heroImage: string;
   isDefault: boolean;
   poiCount?: number;
+  translations?: CityTranslations;
 }
 

@@ -1,25 +1,50 @@
 <section class="welcome page-shell">
-  <img class="hero" src="/public/images/catania/piazza-duomo-ct.jpg" alt="Catania e Etna" />
+  <div class="welcome-stage">
+    <span class="welcome-ornament welcome-ornament-bottom" aria-hidden="true"></span>
 
-  <h1 class="page-title">Scopri la città intorno a te</h1>
-  <p class="page-subtitle">Audio guide automatiche nei luoghi che visiti</p>
+    <div class="welcome-card card">
+      <span class="welcome-card-ornament" aria-hidden="true"></span>
+      <img class="brand-logo" src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
+      <p class="brand-slogan">{{ 'common.brandTagline' | t }}</p>
 
-  <div class="welcome-actions">
-    <button mat-flat-button color="primary" class="big-cta" (click)="start()">Inizia</button>
+      <mat-form-field appearance="outline" class="language-select">
+        <mat-label>{{ 'common.language' | t }}</mat-label>
+        <mat-select [value]="language" (selectionChange)="setLanguage($event.value)">
+          <mat-option value="it">{{ 'common.italian' | t }}</mat-option>
+          <mat-option value="en">{{ 'common.english' | t }}</mat-option>
+          <mat-option value="fr">{{ 'common.french' | t }}</mat-option>
+          <mat-option value="es">{{ 'common.spanish' | t }}</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-    <button mat-button color="primary" (click)="showCodeInput = !showCodeInput">
-      Inserisci codice invito/sconto
-    </button>
+      <div class="welcome-description-card">
+        <p class="welcome-description">{{ 'welcome.description' | t }}</p>
+      </div>
+
+      <div class="welcome-actions">
+        <button mat-flat-button color="primary" class="big-cta welcome-cta primary-cta" (click)="start()">{{ 'common.enter' | t }}</button>
+        <button mat-stroked-button color="primary" class="big-cta welcome-cta secondary-cta" (click)="goToPartnerRegistration()">
+          {{ 'common.becomePartner' | t }}
+        </button>
+      </div>
+    </div>
+
+    <div class="invite-box">
+      <button mat-button type="button" class="invite-toggle" color="primary" (click)="showCodeInput = !showCodeInput">
+        {{ showCodeInput ? ('welcome.hideInviteQuestion' | t) : ('welcome.inviteQuestion' | t) }}
+      </button>
+
+      <section class="code-box card" *ngIf="showCodeInput">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'welcome.inviteCodeLabel' | t }}</mat-label>
+          <input matInput [(ngModel)]="hotelCode" autocomplete="off" />
+        </mat-form-field>
+
+        <button mat-stroked-button color="primary" [disabled]="isCheckingCode" (click)="validateCode()">
+          {{ isCheckingCode ? ('welcome.checkingCode' | t) : ('welcome.applyAndContinue' | t) }}
+        </button>
+      </section>
+    </div>
   </div>
-
-  <section class="code-box card" *ngIf="showCodeInput">
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Codice invito/sconto</mat-label>
-      <input matInput [(ngModel)]="hotelCode" autocomplete="off" />
-    </mat-form-field>
-
-    <button mat-stroked-button color="primary" [disabled]="isCheckingCode" (click)="validateCode()">
-      {{ isCheckingCode ? 'Controllo in corso...' : 'Applica e continua' }}
-    </button>
-  </section>
 </section>
+

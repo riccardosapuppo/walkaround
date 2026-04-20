@@ -1,11 +1,12 @@
 <section class="splash">
   <div class="logo-wrap">
     <div class="logo-circle">
-      <img src="/assets/logo.png" alt="Logo Walk Around" />
+      <img src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
     </div>
-    <h1>Walk Around</h1>
-    <p>Catania e Sicilia orientale in cuffia</p>
+    <h1>{{ 'common.appName' | t }}</h1>
+    <p>{{ 'splash.tagline' | t }}</p>
   </div>
 
-  <img src="/public/images/catania/piazza-duomo-ct.jpg" alt="Illustrazione Catania" />
+  <img src="/public/images/catania/piazza-duomo-ct.jpg" [attr.alt]="'splash.heroAlt' | t" />
 </section>
+

@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
+import { isAppLanguage } from '../i18n/app-language';
 import * as i0 from "@angular/core";
 const STORAGE_KEYS = {
-    userId: 'tourism.userId',
-    activeCityId: 'tourism.activeCityId',
-    hotelCode: 'tourism.hotelCode',
-    hotelAssociation: 'tourism.hotelAssociation',
-    onboardingSeen: 'tourism.onboardingSeen',
-    favorites: 'tourism.favorites',
-    language: 'tourism.language'
+    userId: 'walkaround.userId',
+    activeCityId: 'walkaround.activeCityId',
+    hotelCode: 'walkaround.hotelCode',
+    hotelAssociation: 'walkaround.hotelAssociation',
+    onboardingSeen: 'walkaround.onboardingSeen',
+    favorites: 'walkaround.favorites',
+    language: 'walkaround.language'
 };
 export class AppStateService {
     constructor() {
@@ -18,7 +19,7 @@ export class AppStateService {
         this.hotelCodeSubject = new BehaviorSubject(localStorage.getItem(STORAGE_KEYS.hotelCode) || '');
         this.hotelAssociationSubject = new BehaviorSubject(this.readObject(STORAGE_KEYS.hotelAssociation));
         this.favoritesSubject = new BehaviorSubject(this.readArray(STORAGE_KEYS.favorites));
-        this.languageSubject = new BehaviorSubject(localStorage.getItem(STORAGE_KEYS.language) || 'it');
+        this.languageSubject = new BehaviorSubject(this.readLanguage());
         this.userId$ = this.userIdSubject.asObservable();
         this.activeCityId$ = this.activeCityIdSubject.asObservable();
         this.hotelCode$ = this.hotelCodeSubject.asObservable();
@@ -40,6 +41,9 @@ export class AppStateService {
     }
     get favoriteIds() {
         return this.favoritesSubject.value;
+    }
+    get language() {
+        return this.languageSubject.value;
     }
     get hasSeenOnboarding() {
         return localStorage.getItem(STORAGE_KEYS.onboardingSeen) === '1';
@@ -146,6 +150,10 @@ export class AppStateService {
         catch {
             return null;
         }
+    }
+    readLanguage() {
+        const stored = localStorage.getItem(STORAGE_KEYS.language);
+        return isAppLanguage(stored) ? stored : 'it';
     }
     static { this.ɵfac = function AppStateService_Factory(__ngFactoryType__) { return new (__ngFactoryType__ || AppStateService)(); }; }
     static { this.ɵprov = /*@__PURE__*/ i0.ɵɵdefineInjectable({ token: AppStateService, factory: AppStateService.ɵfac, providedIn: 'root' }); }

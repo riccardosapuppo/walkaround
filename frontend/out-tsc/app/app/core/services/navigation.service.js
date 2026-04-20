@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
 import * as i0 from "@angular/core";
 import * as i1 from "@angular/common/http";
+import * as i2 from "./i18n.service";
 const OSRM_BASE_URL = 'https://router.project-osrm.org/route/v1/foot/';
 const FALLBACK_WALKING_METERS_PER_SEC = 1.25;
 export class NavigationService {
-    constructor(http) {
+    constructor(http, i18n) {
         this.http = http;
+        this.i18n = i18n;
     }
     getWalkingRoute(from, to) {
         return this.fetchOsrmRoute(from, to).pipe(catchError(() => of(this.buildFallbackRoute(from, to))));
@@ -44,7 +46,7 @@ export class NavigationService {
         if (!mapped.length) {
             return [
                 {
-                    instruction: 'Raggiungi la destinazione',
+                    instruction: this.i18n.t('navigation.arrive'),
                     distanceMeters: route.distance || 0,
                     durationSec: route.duration || 0,
                     location: points[0] || points[points.length - 1]
@@ -71,53 +73,65 @@ export class NavigationService {
         const modifier = this.toItalianModifier(step.maneuver?.modifier);
         const roadName = this.cleanRoadName(step.name);
         if (maneuverType === 'arrive' || index === totalSteps - 1) {
-            return 'Arriva alla destinazione';
+            return this.i18n.t('navigation.arrive');
         }
         if (maneuverType === 'depart') {
-            return roadName ? `Parti e prosegui su ${roadName}` : 'Parti e prosegui dritto';
+            return roadName
+                ? this.i18n.t('navigation.departNamed', { road: roadName })
+                : this.i18n.t('navigation.departStraight');
         }
         if (maneuverType === 'roundabout' || maneuverType === 'rotary') {
             const exit = step.maneuver?.exit;
             if (exit) {
-                return `Alla rotonda prendi la ${exit}a uscita${roadName ? ` verso ${roadName}` : ''}`;
+                return roadName
+                    ? this.i18n.t('navigation.roundaboutExitNamed', { exit, road: roadName })
+                    : this.i18n.t('navigation.roundaboutExit', { exit });
             }
-            return roadName ? `Alla rotonda prosegui verso ${roadName}` : 'Alla rotonda prosegui';
+            return roadName
+                ? this.i18n.t('navigation.roundaboutNamed', { road: roadName })
+                : this.i18n.t('navigation.roundaboutContinue');
         }
         if (maneuverType === 'turn' || maneuverType === 'fork' || maneuverType === 'merge') {
             return roadName
-                ? `Svolta ${modifier} su ${roadName}`
-                : `Svolta ${modifier}`;
+                ? this.i18n.t('navigation.turnNamed', { modifier, road: roadName })
+                : this.i18n.t('navigation.turn', { modifier });
         }
         if (maneuverType === 'continue' || maneuverType === 'new name') {
-            return roadName ? `Continua su ${roadName}` : 'Continua dritto';
+            return roadName
+                ? this.i18n.t('navigation.continueNamed', { road: roadName })
+                : this.i18n.t('navigation.continueStraight');
         }
         if (maneuverType === 'uturn') {
-            return 'Effettua inversione a U';
+            return this.i18n.t('navigation.uturn');
         }
         if (maneuverType === 'end of road') {
-            return roadName ? `Alla fine della strada, svolta ${modifier} su ${roadName}` : `Alla fine della strada, svolta ${modifier}`;
+            return roadName
+                ? this.i18n.t('navigation.endOfRoadNamed', { modifier, road: roadName })
+                : this.i18n.t('navigation.endOfRoad', { modifier });
         }
-        return roadName ? `Prosegui su ${roadName}` : 'Prosegui verso la destinazione';
+        return roadName
+            ? this.i18n.t('navigation.proceedNamed', { road: roadName })
+            : this.i18n.t('navigation.proceedDestination');
     }
     toItalianModifier(modifier) {
         switch ((modifier || '').toLowerCase()) {
             case 'left':
-                return 'a sinistra';
+                return this.i18n.t('navigation.modifier.left');
             case 'right':
-                return 'a destra';
+                return this.i18n.t('navigation.modifier.right');
             case 'slight left':
-                return 'leggermente a sinistra';
+                return this.i18n.t('navigation.modifier.slightLeft');
             case 'slight right':
-                return 'leggermente a destra';
+                return this.i18n.t('navigation.modifier.slightRight');
             case 'sharp left':
-                return 'decisamente a sinistra';
+                return this.i18n.t('navigation.modifier.sharpLeft');
             case 'sharp right':
-                return 'decisamente a destra';
+                return this.i18n.t('navigation.modifier.sharpRight');
             case 'uturn':
-                return 'indietro';
+                return this.i18n.t('navigation.modifier.uturn');
             case 'straight':
             default:
-                return 'dritto';
+                return this.i18n.t('navigation.modifier.straight');
         }
     }
     cleanRoadName(name) {
@@ -134,13 +148,13 @@ export class NavigationService {
             points: [from, to],
             steps: [
                 {
-                    instruction: 'Prosegui verso la destinazione',
+                    instruction: this.i18n.t('navigation.proceedDestination'),
                     distanceMeters,
                     durationSec,
                     location: from
                 },
                 {
-                    instruction: 'Arriva alla destinazione',
+                    instruction: this.i18n.t('navigation.arrive'),
                     distanceMeters: 0,
                     durationSec: 0,
                     location: to
@@ -171,10 +185,10 @@ export class NavigationService {
         const c = 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
         return earthRadius * c;
     }
-    static { this.ɵfac = function NavigationService_Factory(__ngFactoryType__) { return new (__ngFactoryType__ || NavigationService)(i0.ɵɵinject(i1.HttpClient)); }; }
+    static { this.ɵfac = function NavigationService_Factory(__ngFactoryType__) { return new (__ngFactoryType__ || NavigationService)(i0.ɵɵinject(i1.HttpClient), i0.ɵɵinject(i2.I18nService)); }; }
     static { this.ɵprov = /*@__PURE__*/ i0.ɵɵdefineInjectable({ token: NavigationService, factory: NavigationService.ɵfac, providedIn: 'root' }); }
 }
 (() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassMetadata(NavigationService, [{
         type: Injectable,
         args: [{ providedIn: 'root' }]
-    }], () => [{ type: i1.HttpClient }], null); })();
+    }], () => [{ type: i1.HttpClient }, { type: i2.I18nService }], null); })();

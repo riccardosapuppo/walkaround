@@ -18,6 +18,35 @@
   gap: 12px;
 }
 
+.full-span {
+  grid-column: 1 / -1;
+}
+
+.paypal-settings-form {
+  display: grid;
+  gap: 14px;
+}
+
+.paypal-settings-form .form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.paypal-status-strip {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #d8e4f4;
+  background: #f7fbff;
+  color: #2f4764;
+}
+
+.paypal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .dashboard-layout {
   min-height: 100vh;
   display: grid;
@@ -949,6 +978,50 @@
   flex-wrap: wrap;
 }
 
+.translation-panel {
+  border: 1px solid #dbe7fb;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.translation-panel-head {
+  display: grid;
+  gap: 4px;
+}
+
+.translation-panel-head strong {
+  color: #17345b;
+}
+
+.translation-panel-head span {
+  color: #5e7497;
+  font-size: 0.88rem;
+}
+
+.translation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.translation-card {
+  border: 1px solid #d6e2f8;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.translation-card h3 {
+  margin: 0;
+  color: #163a67;
+  font-size: 1rem;
+}
+
 .media-player {
   width: 100%;
 }
@@ -1085,6 +1158,7 @@
 .dialog-body .coords-grid,
 .dialog-body .map-picker-row,
 .dialog-body .media-block,
+.dialog-body .translation-panel,
 .dialog-body .media-upload-row,
 .dialog-body .media-player {
   grid-column: 1 / -1;
@@ -1199,6 +1273,46 @@
 .status-pill.warn {
   color: #915b00;
   background: #fef6dd;
+}
+
+.status-pill.bad {
+  color: #b42318;
+  background: #feeceb;
+}
+
+.partner-requests-table {
+  min-width: 1220px;
+}
+
+.partner-request-main-cell {
+  min-width: 220px;
+}
+
+.partner-request-contact-cell {
+  min-width: 180px;
+}
+
+.partner-request-address-cell {
+  min-width: 240px;
+}
+
+.partner-request-status-cell {
+  min-width: 170px;
+  display: grid;
+  gap: 6px;
+}
+
+.partner-request-message-cell {
+  min-width: 260px;
+}
+
+.partner-request-notes {
+  white-space: pre-line;
+}
+
+.partner-request-empty-note {
+  color: #6b7d98;
+  font-style: italic;
 }
 
 .empty-cell {

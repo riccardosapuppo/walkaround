@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
+import { I18nService } from './i18n.service';
 import { Coordinates } from './geo.service';
 
 type RouteProvider = 'osrm' | 'fallback';
@@ -57,7 +58,10 @@ const FALLBACK_WALKING_METERS_PER_SEC = 1.25;
 
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly i18n: I18nService
+  ) {}
 
   getWalkingRoute(from: Coordinates, to: Coordinates): Observable<NavigationRoute> {
     return this.fetchOsrmRoute(from, to).pipe(catchError(() => of(this.buildFallbackRoute(from, to))));
@@ -104,7 +108,7 @@ export class NavigationService {
     if (!mapped.length) {
       return [
         {
-          instruction: 'Raggiungi la destinazione',
+          instruction: this.i18n.t('navigation.arrive'),
           distanceMeters: route.distance || 0,
           durationSec: route.duration || 0,
           location: points[0] || points[points.length - 1]
@@ -136,61 +140,73 @@ export class NavigationService {
     const roadName = this.cleanRoadName(step.name);
 
     if (maneuverType === 'arrive' || index === totalSteps - 1) {
-      return 'Arriva alla destinazione';
+      return this.i18n.t('navigation.arrive');
     }
 
     if (maneuverType === 'depart') {
-      return roadName ? `Parti e prosegui su ${roadName}` : 'Parti e prosegui dritto';
+      return roadName
+        ? this.i18n.t('navigation.departNamed', { road: roadName })
+        : this.i18n.t('navigation.departStraight');
     }
 
     if (maneuverType === 'roundabout' || maneuverType === 'rotary') {
       const exit = step.maneuver?.exit;
       if (exit) {
-        return `Alla rotonda prendi la ${exit}a uscita${roadName ? ` verso ${roadName}` : ''}`;
+        return roadName
+          ? this.i18n.t('navigation.roundaboutExitNamed', { exit, road: roadName })
+          : this.i18n.t('navigation.roundaboutExit', { exit });
       }
-      return roadName ? `Alla rotonda prosegui verso ${roadName}` : 'Alla rotonda prosegui';
+      return roadName
+        ? this.i18n.t('navigation.roundaboutNamed', { road: roadName })
+        : this.i18n.t('navigation.roundaboutContinue');
     }
 
     if (maneuverType === 'turn' || maneuverType === 'fork' || maneuverType === 'merge') {
       return roadName
-        ? `Svolta ${modifier} su ${roadName}`
-        : `Svolta ${modifier}`;
+        ? this.i18n.t('navigation.turnNamed', { modifier, road: roadName })
+        : this.i18n.t('navigation.turn', { modifier });
     }
 
     if (maneuverType === 'continue' || maneuverType === 'new name') {
-      return roadName ? `Continua su ${roadName}` : 'Continua dritto';
+      return roadName
+        ? this.i18n.t('navigation.continueNamed', { road: roadName })
+        : this.i18n.t('navigation.continueStraight');
     }
 
     if (maneuverType === 'uturn') {
-      return 'Effettua inversione a U';
+      return this.i18n.t('navigation.uturn');
     }
 
     if (maneuverType === 'end of road') {
-      return roadName ? `Alla fine della strada, svolta ${modifier} su ${roadName}` : `Alla fine della strada, svolta ${modifier}`;
+      return roadName
+        ? this.i18n.t('navigation.endOfRoadNamed', { modifier, road: roadName })
+        : this.i18n.t('navigation.endOfRoad', { modifier });
     }
 
-    return roadName ? `Prosegui su ${roadName}` : 'Prosegui verso la destinazione';
+    return roadName
+      ? this.i18n.t('navigation.proceedNamed', { road: roadName })
+      : this.i18n.t('navigation.proceedDestination');
   }
 
   private toItalianModifier(modifier: string | undefined): string {
     switch ((modifier || '').toLowerCase()) {
       case 'left':
-        return 'a sinistra';
+        return this.i18n.t('navigation.modifier.left');
       case 'right':
-        return 'a destra';
+        return this.i18n.t('navigation.modifier.right');
       case 'slight left':
-        return 'leggermente a sinistra';
+        return this.i18n.t('navigation.modifier.slightLeft');
       case 'slight right':
-        return 'leggermente a destra';
+        return this.i18n.t('navigation.modifier.slightRight');
       case 'sharp left':
-        return 'decisamente a sinistra';
+        return this.i18n.t('navigation.modifier.sharpLeft');
       case 'sharp right':
-        return 'decisamente a destra';
+        return this.i18n.t('navigation.modifier.sharpRight');
       case 'uturn':
-        return 'indietro';
+        return this.i18n.t('navigation.modifier.uturn');
       case 'straight':
       default:
-        return 'dritto';
+        return this.i18n.t('navigation.modifier.straight');
     }
   }
 
@@ -210,13 +226,13 @@ export class NavigationService {
       points: [from, to],
       steps: [
         {
-          instruction: 'Prosegui verso la destinazione',
+          instruction: this.i18n.t('navigation.proceedDestination'),
           distanceMeters,
           durationSec,
           location: from
         },
         {
-          instruction: 'Arriva alla destinazione',
+          instruction: this.i18n.t('navigation.arrive'),
           distanceMeters: 0,
           durationSec: 0,
           location: to

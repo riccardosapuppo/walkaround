@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, map, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Poi } from '../../core/models/poi.model';
+import { I18nService } from '../../core/services/i18n.service';
 import { OfflineService } from '../../core/services/offline.service';
 import { PlayerService } from '../../core/services/player.service';
 import { PoiService } from '../../core/services/poi.service';
@@ -37,6 +38,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private readonly purchaseService: PurchaseService,
     private readonly playerService: PlayerService,
     private readonly offlineService: OfflineService,
+    public readonly i18n: I18nService,
     private readonly location: Location,
     private readonly snackBar: MatSnackBar
   ) {}
@@ -80,11 +82,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
           }
 
           if (!this.unlocked && !preview) {
-            this.snackBar.open('Contenuto bloccato. Avvio preview.', 'OK', { duration: 2400 });
+            this.snackBar.open(this.i18n.t('player.blockedPreview'), this.i18n.t('common.ok'), { duration: 2400 });
             this.previewMode = true;
           }
 
-          this.playerService.loadTrack(poi.id, poi.audioUrl, this.previewMode);
+          this.playerService.loadTrack(poi.id, this.poiAudioUrl(poi), this.previewMode);
           this.offlineEnabled = await this.offlineService.isPoiOffline(poi.id);
           this.loading = false;
         },
@@ -155,7 +157,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     if (!this.canToggleOffline) {
       this.offlineEnabled = false;
-      this.snackBar.open('Download offline disponibile solo dopo sblocco completo.', 'OK', { duration: 2400 });
+      this.snackBar.open(this.i18n.t('player.offlineAfterUnlock'), this.i18n.t('common.ok'), { duration: 2400 });
       return;
     }
 
@@ -164,9 +166,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    await this.offlineService.cachePoiAssets(this.poi.id, [this.poi.audioUrl, this.poi.imageUrl]);
+    await this.offlineService.cachePoiAssets(this.poi.id, [this.poiAudioUrl(this.poi), this.poi.imageUrl]);
     this.offlineEnabled = true;
-    this.snackBar.open('Disponibile offline', 'OK', { duration: 2200 });
+    this.snackBar.open(this.i18n.t('player.availableOffline'), this.i18n.t('common.ok'), { duration: 2200 });
   }
 
   get canToggleOffline(): boolean {
@@ -186,8 +188,29 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return `${minutes}:${seconds}`;
   }
 
-  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
-    return Boolean(String(poi?.audioUrl || '').trim());
+  hasPlayableAudio(poi: Poi | null | undefined): boolean {
+    return Boolean(this.poiAudioUrl(poi));
+  }
+
+  poiName(poi: Poi | null | undefined): string {
+    return this.i18n.resolvePoiField(poi?.name, poi?.translations, 'name');
+  }
+
+  poiDescriptionShort(poi: Poi | null | undefined): string {
+    return this.i18n.resolvePoiField(poi?.descriptionShort, poi?.translations, 'descriptionShort');
+  }
+
+  poiDescriptionLong(poi: Poi | null | undefined): string {
+    return this.i18n.resolvePoiField(poi?.descriptionLong, poi?.translations, 'descriptionLong');
+  }
+
+  poiAudioLabel(poi: Poi | null | undefined): string {
+    const label = this.i18n.resolvePoiField(poi?.audioLabel, poi?.translations, 'audioLabel');
+    return label && label !== this.poiName(poi) ? label : '';
+  }
+
+  poiAudioUrl(poi: Poi | null | undefined): string {
+    return this.i18n.resolvePoiAudioUrl(poi);
   }
 }
 

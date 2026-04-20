@@ -1,3 +1,5 @@
+import { PoiTranslations } from './localized-content.model';
+
 export interface Poi {
   id: string;
   cityId: string;
@@ -7,10 +9,12 @@ export interface Poi {
   category: string;
   descriptionShort: string;
   descriptionLong: string;
+  audioLabel?: string;
   imageUrl: string;
   audioUrl: string;
   priceSingle: number;
   durationSec: number;
-  distanceMeters?: number;
+  distanceMeters?: number | null;
+  translations?: PoiTranslations;
 }
 

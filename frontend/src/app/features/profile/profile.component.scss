@@ -1,6 +1,7 @@
 .profile {
   display: grid;
   gap: 12px;
+  align-content: start;
 }
 
 .section {
@@ -32,6 +33,7 @@
 .language-row {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .structure-actions {
@@ -56,6 +58,11 @@
   border-radius: 10px;
   border: 1px solid #d9e3f2;
   background: #f8fbff;
+}
+
+:host-context(body.app-user-theme) .code-history-item {
+  border-color: rgba(182, 164, 129, 0.18);
+  background: linear-gradient(180deg, rgba(247, 250, 253, 0.96) 0%, rgba(250, 246, 239, 0.94) 100%);
 }
 
 .code-history-row {

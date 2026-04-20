@@ -1,6 +1,13 @@
 import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db/pool.js';
+import {
+  PayPalConfigurationError,
+  getPayPalSettings,
+  paypalApiRequest,
+  paypalProviderLabel,
+  requestPayPalAccessToken
+} from '../services/paypal.js';
 
 const router = express.Router();
 
@@ -97,7 +104,8 @@ function mapCity(row) {
     region: sanitizeText(row.region),
     bundlePrice: Number(row.bundle_price),
     heroImage: row.hero_image,
-    isDefault: row.is_default
+    isDefault: row.is_default,
+    translations: sanitizeCityTranslations(row.translations)
   };
 }
 
@@ -114,8 +122,48 @@ function mapPoi(row) {
     imageUrl: row.image_url,
     audioUrl: row.audio_url,
     priceSingle: Number(row.price_single),
-    durationSec: row.duration_sec
+    durationSec: row.duration_sec,
+    translations: sanitizePoiTranslations(row.translations)
   };
+}
+
+function sanitizeCityTranslations(value) {
+  return sanitizeTranslations(value, ['name']);
+}
+
+function sanitizePoiTranslations(value) {
+  return sanitizeTranslations(value, ['name', 'descriptionShort', 'descriptionLong', 'audioLabel', 'audioUrl']);
+}
+
+function sanitizeTranslations(value, allowedFields) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const supportedLanguages = ['it', 'en', 'fr', 'es'];
+  const sanitized = {};
+
+  supportedLanguages.forEach((language) => {
+    const fields = value?.[language];
+    if (!fields || typeof fields !== 'object' || Array.isArray(fields)) {
+      return;
+    }
+
+    const nextFields = {};
+    allowedFields.forEach((field) => {
+      const rawValue = fields?.[field];
+      const normalizedValue = typeof rawValue === 'string' ? sanitizeText(rawValue.trim()) : '';
+      if (normalizedValue) {
+        nextFields[field] = normalizedValue;
+      }
+    });
+
+    if (Object.keys(nextFields).length) {
+      sanitized[language] = nextFields;
+    }
+  });
+
+  return sanitized;
 }
 
 const purchaseSchema = z.discriminatedUnion('type', [
@@ -133,6 +181,32 @@ const purchaseSchema = z.discriminatedUnion('type', [
   })
 ]);
 
+const paypalCheckoutSchema = z.discriminatedUnion('checkoutContext', [
+  z.object({
+    userId: z.string().min(2),
+    checkoutContext: z.literal('bundle'),
+    cityId: z.string().min(2),
+    ignoreDiscountCode: z.boolean().optional()
+  }),
+  z.object({
+    userId: z.string().min(2),
+    checkoutContext: z.literal('single'),
+    poiId: z.string().min(2),
+    ignoreDiscountCode: z.boolean().optional()
+  }),
+  z.object({
+    userId: z.string().min(2),
+    checkoutContext: z.literal('cart'),
+    poiIds: z.array(z.string().min(2)).min(1),
+    ignoreDiscountCode: z.boolean().optional()
+  })
+]);
+
+const paypalCaptureSchema = z.object({
+  orderId: z.string().min(2),
+  userId: z.string().min(2)
+});
+
 const unlockValidateSchema = z.discriminatedUnion('type', [
   z.object({
     code: z.string().min(1),
@@ -147,6 +221,8 @@ const unlockValidateSchema = z.discriminatedUnion('type', [
     poiId: z.string().min(2)
   })
 ]);
+
+const PURCHASE_VALIDITY_MONTHS = 3;
 
 function getDailyUnlockCode(now = new Date()) {
   const parts = new Intl.DateTimeFormat('en-GB', {
@@ -167,6 +243,42 @@ function roundMoney(value) {
     return 0;
   }
   return Math.round(numeric * 100) / 100;
+}
+
+function addMonths(date, months) {
+  const next = new Date(date.getTime());
+  next.setMonth(next.getMonth() + months);
+  return next;
+}
+
+function toIsoDateOrNull(value) {
+  if (!value) {
+    return null;
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
+
+function purchaseExpiresAt(purchasedAt) {
+  if (!purchasedAt) {
+    return null;
+  }
+  const base = purchasedAt instanceof Date ? purchasedAt : new Date(purchasedAt);
+  if (Number.isNaN(base.getTime())) {
+    return null;
+  }
+  return addMonths(base, PURCHASE_VALIDITY_MONTHS);
+}
+
+function isPurchaseStillActive(purchasedAt, now = new Date()) {
+  const expiresAt = purchaseExpiresAt(purchasedAt);
+  if (!expiresAt) {
+    return false;
+  }
+  return expiresAt.getTime() > now.getTime();
 }
 
 function clamp(value, min, max) {
@@ -413,6 +525,479 @@ function buildPurchasePricing(baseAmountRaw, structureContext) {
   };
 }
 
+function createHttpError(status, message, details = null) {
+  const error = new Error(message);
+  error.status = status;
+  error.details = details;
+  return error;
+}
+
+function moneyToString(value) {
+  return roundMoney(value).toFixed(2);
+}
+
+function purchaseRowToResponse(row) {
+  return {
+    purchased: true,
+    alreadyPurchased: false,
+    type: row.type,
+    cityId: row.city_id || null,
+    poiId: row.poi_id || null,
+    amount: Number(row.amount || 0),
+    baseAmount: Number(row.base_amount || row.amount || 0),
+    discountPercent: Number(row.discount_percent || 0),
+    discountAmount: Number(row.discount_amount || 0),
+    finalAmount: Number(row.final_amount || row.amount || 0),
+    structureId: row.structure_id || null,
+    inviteCode: row.invite_code || null,
+    structureFixedAmount: Number(row.structure_fixed_amount || 0),
+    structureEarningAmount: Number(row.structure_earning_amount || 0),
+    purchasedAt: toIsoDateOrNull(row.purchased_at),
+    expiresAt: toIsoDateOrNull(purchaseExpiresAt(row.purchased_at))
+  };
+}
+
+function buildPayerAddressText(payer) {
+  const parts = [];
+  const address = payer?.address;
+  if (address?.address_line_1) {
+    parts.push(String(address.address_line_1).trim());
+  }
+  if (address?.address_line_2) {
+    parts.push(String(address.address_line_2).trim());
+  }
+  const localityParts = [address?.admin_area_2, address?.admin_area_1, address?.postal_code]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean);
+  if (localityParts.length) {
+    parts.push(localityParts.join(' '));
+  }
+  if (address?.country_code) {
+    parts.push(String(address.country_code).trim());
+  }
+  return parts.join(', ') || null;
+}
+
+function extractPayPalPayer(payload) {
+  const payer = payload?.payer || {};
+  const purchaseUnit = Array.isArray(payload?.purchase_units) ? payload.purchase_units[0] : null;
+  const shipping = purchaseUnit?.shipping || {};
+
+  return {
+    payerEmail: String(payer.email_address || '').trim() || null,
+    payerId: String(payer.payer_id || '').trim() || null,
+    payerFirstName:
+      String(payer.name?.given_name || shipping.name?.full_name || '').trim().split(/\s+/).filter(Boolean)[0] || null,
+    payerLastName: String(payer.name?.surname || '').trim() || null,
+    payerCountryCode: String(payer.address?.country_code || '').trim() || null,
+    payerPhone: String(payer.phone?.phone_number?.national_number || '').trim() || null,
+    payerAddress: buildPayerAddressText(payer) || buildPayerAddressText({ address: shipping.address })
+  };
+}
+
+async function markExpiredPayPalOrders(client) {
+  await client.query(
+    `
+      UPDATE paypal_checkout_orders
+      SET status = 'expired',
+          updated_at = NOW()
+      WHERE status IN ('created', 'approved')
+        AND expires_at IS NOT NULL
+        AND expires_at <= NOW()
+    `
+  );
+}
+
+async function buildPayPalCheckoutPreview(payload, client) {
+  const ignoreDiscountCode = Boolean(payload.ignoreDiscountCode);
+
+  if (payload.checkoutContext === 'bundle') {
+    const cityResult = await client.query(
+      `
+        SELECT id, name, bundle_price
+        FROM cities
+        WHERE id = $1
+        LIMIT 1
+      `,
+      [payload.cityId]
+    );
+    if (!cityResult.rowCount) {
+      throw createHttpError(404, 'Citta non trovata.');
+    }
+
+    const city = cityResult.rows[0];
+    const existingBundle = await client.query(
+      `
+        SELECT *
+        FROM purchases
+        WHERE user_id = $1
+          AND type = 'bundle'
+          AND city_id = $2
+          AND (purchased_at + INTERVAL '3 months') > NOW()
+        ORDER BY purchased_at DESC, id DESC
+        LIMIT 1
+      `,
+      [payload.userId, city.id]
+    );
+    if (existingBundle.rowCount) {
+      return {
+        alreadyPurchased: true,
+        checkoutContext: 'bundle',
+        currencyCode: 'EUR',
+        items: [purchaseRowToResponse(existingBundle.rows[0])]
+      };
+    }
+
+    const structureContext = ignoreDiscountCode
+      ? null
+      : await fetchUserStructurePricingContext(payload.userId, 'bundle', city.id, client);
+    const pricing = buildPurchasePricing(city.bundle_price, structureContext);
+
+    return {
+      alreadyPurchased: false,
+      checkoutContext: 'bundle',
+      currencyCode: 'EUR',
+      cityId: city.id,
+      cityName: sanitizeText(city.name),
+      baseAmount: pricing.baseAmount,
+      discountAmount: pricing.discountAmount,
+      finalAmount: pricing.finalAmount,
+      structureId: structureContext?.structureId || null,
+      inviteCode: structureContext?.inviteCode || null,
+      items: [
+        {
+          purchaseType: 'bundle',
+          cityId: city.id,
+          cityName: sanitizeText(city.name),
+          poiId: null,
+          poiName: null,
+          label: `Pacchetto citta - ${sanitizeText(city.name)}`,
+          ...pricing,
+          structureId: structureContext?.structureId || null,
+          inviteCode: structureContext?.inviteCode || null
+        }
+      ]
+    };
+  }
+
+  if (payload.checkoutContext === 'single') {
+    const poiResult = await client.query(
+      `
+        SELECT
+          p.id,
+          p.city_id,
+          p.name,
+          p.price_single,
+          c.name AS city_name
+        FROM pois p
+        JOIN cities c ON c.id = p.city_id
+        WHERE p.id = $1
+        LIMIT 1
+      `,
+      [payload.poiId]
+    );
+    if (!poiResult.rowCount) {
+      throw createHttpError(404, 'Luogo non trovato.');
+    }
+
+    const poi = poiResult.rows[0];
+    const activePurchase = await client.query(
+      `
+        SELECT *
+        FROM purchases
+        WHERE user_id = $1
+          AND (
+            (type = 'bundle' AND city_id = $2)
+            OR (type = 'single' AND poi_id = $3)
+          )
+          AND (purchased_at + INTERVAL '3 months') > NOW()
+        ORDER BY purchased_at DESC, id DESC
+        LIMIT 1
+      `,
+      [payload.userId, poi.city_id, poi.id]
+    );
+    if (activePurchase.rowCount) {
+      return {
+        alreadyPurchased: true,
+        checkoutContext: 'single',
+        currencyCode: 'EUR',
+        items: [purchaseRowToResponse(activePurchase.rows[0])]
+      };
+    }
+
+    const structureContext = ignoreDiscountCode
+      ? null
+      : await fetchUserStructurePricingContext(payload.userId, 'single', poi.city_id, client);
+    const pricing = buildPurchasePricing(poi.price_single, structureContext);
+
+    return {
+      alreadyPurchased: false,
+      checkoutContext: 'single',
+      currencyCode: 'EUR',
+      cityId: poi.city_id,
+      cityName: sanitizeText(poi.city_name),
+      poiId: poi.id,
+      poiName: sanitizeText(poi.name),
+      baseAmount: pricing.baseAmount,
+      discountAmount: pricing.discountAmount,
+      finalAmount: pricing.finalAmount,
+      structureId: structureContext?.structureId || null,
+      inviteCode: structureContext?.inviteCode || null,
+      items: [
+        {
+          purchaseType: 'single',
+          cityId: poi.city_id,
+          cityName: sanitizeText(poi.city_name),
+          poiId: poi.id,
+          poiName: sanitizeText(poi.name),
+          label: sanitizeText(poi.name),
+          ...pricing,
+          structureId: structureContext?.structureId || null,
+          inviteCode: structureContext?.inviteCode || null
+        }
+      ]
+    };
+  }
+
+  const requestedPoiIds = Array.from(
+    new Set(
+      payload.poiIds
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+    )
+  );
+  if (!requestedPoiIds.length) {
+    throw createHttpError(400, 'Carrello PayPal vuoto.');
+  }
+
+  const poisResult = await client.query(
+    `
+      SELECT
+        p.id,
+        p.city_id,
+        p.name,
+        p.price_single,
+        c.name AS city_name
+      FROM pois p
+      JOIN cities c ON c.id = p.city_id
+      WHERE p.id = ANY($1::TEXT[])
+    `,
+    [requestedPoiIds]
+  );
+  if (poisResult.rowCount !== requestedPoiIds.length) {
+    throw createHttpError(404, 'Uno o piu luoghi del carrello non esistono piu.');
+  }
+
+  const poiById = new Map(poisResult.rows.map((row) => [row.id, row]));
+  const orderedPois = requestedPoiIds.map((poiId) => poiById.get(poiId)).filter(Boolean);
+  const cityIds = Array.from(new Set(orderedPois.map((row) => row.city_id)));
+  const activePurchases = await client.query(
+    `
+      SELECT type, city_id, poi_id
+      FROM purchases
+      WHERE user_id = $1
+        AND (
+          (type = 'bundle' AND city_id = ANY($2::TEXT[]))
+          OR (type = 'single' AND poi_id = ANY($3::TEXT[]))
+        )
+        AND (purchased_at + INTERVAL '3 months') > NOW()
+    `,
+    [payload.userId, cityIds, requestedPoiIds]
+  );
+
+  const unlockedCityIds = new Set(activePurchases.rows.filter((row) => row.type === 'bundle').map((row) => row.city_id));
+  const unlockedPoiIds = new Set(activePurchases.rows.filter((row) => row.type === 'single').map((row) => row.poi_id));
+  const blockedPoi = orderedPois.find((poi) => unlockedCityIds.has(poi.city_id) || unlockedPoiIds.has(poi.id));
+  if (blockedPoi) {
+    throw createHttpError(409, `Il luogo ${sanitizeText(blockedPoi.name)} e gia sbloccato e non puo essere pagato di nuovo.`);
+  }
+
+  const items = [];
+  let discountAlreadyAssigned = false;
+  for (const poi of orderedPois) {
+    let structureContext = null;
+    if (!ignoreDiscountCode && !discountAlreadyAssigned) {
+      structureContext = await fetchUserStructurePricingContext(payload.userId, 'single', poi.city_id, client);
+      if (structureContext?.inviteCode) {
+        discountAlreadyAssigned = true;
+      }
+    }
+
+    const pricing = buildPurchasePricing(poi.price_single, structureContext);
+    items.push({
+      purchaseType: 'single',
+      cityId: poi.city_id,
+      cityName: sanitizeText(poi.city_name),
+      poiId: poi.id,
+      poiName: sanitizeText(poi.name),
+      label: sanitizeText(poi.name),
+      ...pricing,
+      structureId: structureContext?.structureId || null,
+      inviteCode: structureContext?.inviteCode || null
+    });
+  }
+
+  return {
+    alreadyPurchased: false,
+    checkoutContext: 'cart',
+    currencyCode: 'EUR',
+    baseAmount: roundMoney(items.reduce((sum, item) => sum + Number(item.baseAmount || 0), 0)),
+    discountAmount: roundMoney(items.reduce((sum, item) => sum + Number(item.discountAmount || 0), 0)),
+    finalAmount: roundMoney(items.reduce((sum, item) => sum + Number(item.finalAmount || 0), 0)),
+    structureId: items.find((item) => item.structureId)?.structureId || null,
+    inviteCode: items.find((item) => item.inviteCode)?.inviteCode || null,
+    items
+  };
+}
+
+function buildPayPalItemName(item) {
+  if (item.purchaseType === 'bundle') {
+    return item.cityName ? `Pacchetto citta ${item.cityName}` : 'Pacchetto citta';
+  }
+  return item.poiName || item.label || 'Luogo';
+}
+
+function buildPayPalOrderBody(checkoutPreview, settings, localReference) {
+  const items = checkoutPreview.items.map((item) => ({
+    name: buildPayPalItemName(item).slice(0, 127),
+    unit_amount: {
+      currency_code: checkoutPreview.currencyCode || 'EUR',
+      value: moneyToString(item.finalAmount)
+    },
+    quantity: '1',
+    category: 'DIGITAL_GOODS'
+  }));
+
+  const description =
+    checkoutPreview.checkoutContext === 'bundle'
+      ? `Sblocco citta ${checkoutPreview.cityName || ''}`.trim()
+      : checkoutPreview.checkoutContext === 'single'
+        ? `Sblocco luogo ${checkoutPreview.poiName || ''}`.trim()
+        : `Carrello audio guide (${checkoutPreview.items.length})`;
+
+  return {
+    intent: 'CAPTURE',
+    purchase_units: [
+      {
+        reference_id: String(localReference),
+        custom_id: String(localReference),
+        description: description.slice(0, 127),
+        amount: {
+          currency_code: checkoutPreview.currencyCode || 'EUR',
+          value: moneyToString(checkoutPreview.finalAmount),
+          breakdown: {
+            item_total: {
+              currency_code: checkoutPreview.currencyCode || 'EUR',
+              value: moneyToString(checkoutPreview.finalAmount)
+            }
+          }
+        },
+        items
+      }
+    ],
+    payment_source: {
+      paypal: {
+        experience_context: {
+          payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
+          landing_page: 'LOGIN',
+          user_action: 'PAY_NOW',
+          shipping_preference: 'NO_SHIPPING',
+          brand_name: settings.brandName || 'Walk Around',
+          locale: 'it-IT'
+        }
+      }
+    }
+  };
+}
+
+const partnerRegistrationSchema = z.object({
+  structureName: z.string().trim().min(2).max(180),
+  structureType: z.string().trim().max(120).optional().default(''),
+  vatNumber: z.string().trim().max(60).optional().default(''),
+  contactFirstName: z.string().trim().min(1).max(120),
+  contactLastName: z.string().trim().min(1).max(120),
+  contactEmail: z.string().trim().email().max(180),
+  contactPhone: z.string().trim().min(6).max(80),
+  website: z.string().trim().max(240).optional().default(''),
+  addressStreet: z.string().trim().min(2).max(180),
+  addressNumber: z.string().trim().max(20).optional().default(''),
+  addressCity: z.string().trim().min(2).max(140),
+  addressPostalCode: z.string().trim().max(20).optional().default(''),
+  addressProvince: z.string().trim().max(80).optional().default(''),
+  addressRegion: z.string().trim().max(120).optional().default(''),
+  addressCountry: z.string().trim().max(120).optional().default('Italia'),
+  roomsCount: z.number().int().min(0).max(10000).nullable().optional().default(null),
+  notes: z.string().trim().max(4000).optional().default('')
+});
+
+router.post('/partner-registration-requests', async (req, res, next) => {
+  const parsed = partnerRegistrationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Invalid payload', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+
+  try {
+    const insert = await pool.query(
+      `
+      INSERT INTO partner_registration_requests (
+        structure_name,
+        structure_type,
+        vat_number,
+        contact_first_name,
+        contact_last_name,
+        contact_email,
+        contact_phone,
+        website,
+        address_street,
+        address_number,
+        address_city,
+        address_postal_code,
+        address_province,
+        address_region,
+        address_country,
+        rooms_count,
+        notes
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, $12, $13, $14, $15, $16, $17
+      )
+      RETURNING id, created_at
+      `,
+      [
+        payload.structureName,
+        payload.structureType || null,
+        payload.vatNumber || null,
+        payload.contactFirstName,
+        payload.contactLastName,
+        payload.contactEmail.toLowerCase(),
+        payload.contactPhone,
+        payload.website || null,
+        payload.addressStreet,
+        payload.addressNumber || null,
+        payload.addressCity,
+        payload.addressPostalCode || null,
+        payload.addressProvince || null,
+        payload.addressRegion || null,
+        payload.addressCountry || 'Italia',
+        payload.roomsCount ?? null,
+        payload.notes || null
+      ]
+    );
+
+    const row = insert.rows[0];
+    return res.status(201).json({
+      submitted: true,
+      requestId: Number(row.id),
+      createdAt: row.created_at
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get('/cities', async (_req, res, next) => {
   try {
     const result = await pool.query(
@@ -525,32 +1110,100 @@ router.post('/unlock/validate', async (req, res, next) => {
   }
 });
 
-router.post('/purchase', async (req, res, next) => {
-  const parsed = purchaseSchema.safeParse(req.body);
+router.get('/paypal/sdk-config', async (_req, res, next) => {
+  try {
+    const settings = await getPayPalSettings();
+    await requestPayPalAccessToken(settings);
+    return res.json({
+      ready: true,
+      clientId: settings.clientId,
+      currencyCode: settings.currencyCode || 'EUR',
+      mode: settings.mode,
+      brandName: settings.brandName || 'Walk Around'
+    });
+  } catch (error) {
+    if (error instanceof PayPalConfigurationError) {
+      return res.status(error.status || 503).json({
+        ready: false,
+        message: error.message
+      });
+    }
+    return next(error);
+  }
+});
+
+router.post('/paypal/checkout/quote', async (req, res, next) => {
+  const parsed = paypalCheckoutSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ message: 'Invalid payload', errors: parsed.error.flatten() });
+    return res.status(400).json({ message: 'Payload PayPal non valido', errors: parsed.error.flatten() });
   }
 
-  const payload = parsed.data;
   const client = await pool.connect();
-
   try {
-    await client.query('BEGIN');
+    await markExpiredPayPalOrders(client);
+    const preview = await buildPayPalCheckoutPreview(parsed.data, client);
+    return res.json(preview);
+  } catch (error) {
+    if (error?.status) {
+      return res.status(error.status).json({ message: error.message, details: error.details || null });
+    }
+    return next(error);
+  } finally {
+    client.release();
+  }
+});
 
-    if (payload.type === 'bundle') {
-      const cityQuery = await client.query('SELECT id, bundle_price FROM cities WHERE id = $1 LIMIT 1', [payload.cityId]);
-      if (!cityQuery.rowCount) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({ message: 'City not found' });
+router.post('/paypal/checkout/create-order', async (req, res, next) => {
+  const parsed = paypalCheckoutSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload PayPal non valido', errors: parsed.error.flatten() });
+  }
+
+  const client = await pool.connect();
+  try {
+    await markExpiredPayPalOrders(client);
+    const settings = await getPayPalSettings(client);
+    const checkoutPreview = await buildPayPalCheckoutPreview(parsed.data, client);
+    if (checkoutPreview.alreadyPurchased) {
+      return res.status(409).json({ message: 'Contenuto gia acquistato.', checkout: checkoutPreview });
+    }
+    if (Number(checkoutPreview.finalAmount || 0) <= 0) {
+      return res.status(409).json({ message: 'Il totale da pagare deve essere maggiore di zero per usare PayPal.' });
+    }
+
+    const accessToken = await requestPayPalAccessToken(settings);
+    const provisionalRef = `${parsed.data.userId}-${Date.now()}`;
+    const paypalOrder = await paypalApiRequest(
+      settings,
+      accessToken,
+      '/v2/checkout/orders',
+      {
+        method: 'POST',
+        body: buildPayPalOrderBody(checkoutPreview, settings, provisionalRef)
       }
+    );
 
-      const city = cityQuery.rows[0];
+    const orderStatus = String(paypalOrder.status || 'CREATED').trim().toLowerCase() || 'created';
+    const storedItems = JSON.stringify(checkoutPreview.items);
+    const firstDiscountedItem = checkoutPreview.items.find((item) => item.inviteCode);
+    const totalStructureFixedAmount = roundMoney(
+      checkoutPreview.items.reduce((sum, item) => sum + Number(item.structureFixedAmount || 0), 0)
+    );
+    const totalStructureEarningAmount = roundMoney(
+      checkoutPreview.items.reduce((sum, item) => sum + Number(item.structureEarningAmount || 0), 0)
+    );
 
-      const alreadyBundle = await client.query(
-        `
-        SELECT
-          id,
-          amount,
+    await client.query(
+      `
+        INSERT INTO paypal_checkout_orders (
+          paypal_order_id,
+          user_id,
+          checkout_context,
+          status,
+          currency_code,
+          mode,
+          city_id,
+          poi_id,
           base_amount,
           discount_percent,
           discount_amount,
@@ -559,219 +1212,391 @@ router.post('/purchase', async (req, res, next) => {
           invite_code,
           structure_fixed_amount,
           structure_earning_amount,
-          purchased_at
-        FROM purchases
-        WHERE user_id = $1 AND type = 'bundle' AND city_id = $2
-        ORDER BY purchased_at DESC, id DESC
+          purchase_items,
+          expires_at,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          $9,
+          $10,
+          $11,
+          $12,
+          $13,
+          $14,
+          $15,
+          $16,
+          $17::jsonb,
+          NOW() + INTERVAL '6 hours',
+          NOW(),
+          NOW()
+        )
+      `,
+      [
+        paypalOrder.id,
+        parsed.data.userId,
+        parsed.data.checkoutContext,
+        orderStatus,
+        checkoutPreview.currencyCode || 'EUR',
+        settings.mode,
+        checkoutPreview.checkoutContext === 'cart' ? null : checkoutPreview.cityId || null,
+        checkoutPreview.checkoutContext === 'single' ? checkoutPreview.poiId || null : null,
+        Number(checkoutPreview.baseAmount || 0),
+        Number(firstDiscountedItem?.discountPercent || 0),
+        Number(checkoutPreview.discountAmount || 0),
+        Number(checkoutPreview.finalAmount || 0),
+        checkoutPreview.structureId || null,
+        checkoutPreview.inviteCode || null,
+        totalStructureFixedAmount,
+        totalStructureEarningAmount,
+        storedItems
+      ]
+    );
+
+    return res.status(201).json({
+      orderId: paypalOrder.id,
+      status: paypalOrder.status || 'CREATED',
+      checkout: checkoutPreview
+    });
+  } catch (error) {
+    if (error instanceof PayPalConfigurationError) {
+      return res.status(error.status || 502).json({ message: error.message });
+    }
+    if (error?.status) {
+      return res.status(error.status).json({ message: error.message, details: error.details || null });
+    }
+    return next(error);
+  } finally {
+    client.release();
+  }
+});
+
+router.post('/paypal/checkout/capture-order', async (req, res, next) => {
+  const parsed = paypalCaptureSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload PayPal non valido', errors: parsed.error.flatten() });
+  }
+
+  const { orderId, userId } = parsed.data;
+  const client = await pool.connect();
+  let pendingOrder = null;
+
+  try {
+    await markExpiredPayPalOrders(client);
+    const pendingQuery = await client.query(
+      `
+        SELECT *
+        FROM paypal_checkout_orders
+        WHERE paypal_order_id = $1
+          AND user_id = $2
         LIMIT 1
+      `,
+      [orderId, userId]
+    );
+    if (!pendingQuery.rowCount) {
+      return res.status(404).json({ message: 'Ordine PayPal non trovato.' });
+    }
+
+    pendingOrder = pendingQuery.rows[0];
+    if (pendingOrder.status === 'completed') {
+      const existingPurchases = await client.query(
+        `
+          SELECT *
+          FROM purchases
+          WHERE payment_order_id = $1
+          ORDER BY id ASC
         `,
-        [payload.userId, city.id]
+        [orderId]
       );
+      return res.json({
+        captured: true,
+        orderId,
+        purchases: existingPurchases.rows.map(purchaseRowToResponse)
+      });
+    }
+    if (pendingOrder.status === 'expired') {
+      return res.status(409).json({ message: 'L ordine PayPal e scaduto. Crea un nuovo checkout.' });
+    }
 
-      if (alreadyBundle.rowCount) {
-        await client.query('ROLLBACK');
-        const existing = alreadyBundle.rows[0];
-        return res.json({
-          purchased: true,
-          alreadyPurchased: true,
-          type: 'bundle',
-          cityId: city.id,
-          amount: Number(existing.final_amount || existing.amount || 0),
-          baseAmount: Number(existing.base_amount || existing.amount || 0),
-          discountPercent: Number(existing.discount_percent || 0),
-          discountAmount: Number(existing.discount_amount || 0),
-          finalAmount: Number(existing.final_amount || existing.amount || 0),
-          structureId: existing.structure_id || null,
-          inviteCode: existing.invite_code || null,
-          structureFixedAmount: Number(existing.structure_fixed_amount || 0),
-          structureEarningAmount: Number(existing.structure_earning_amount || 0)
-        });
+    const settings = await getPayPalSettings(client);
+    const accessToken = await requestPayPalAccessToken(settings);
+    const capturePayload = await paypalApiRequest(
+      settings,
+      accessToken,
+      `/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+      {
+        method: 'POST',
+        body: {}
       }
+    );
 
-      const ignoreDiscountCode = Boolean(payload.ignoreDiscountCode);
-      let structureContext = null;
-      if (!ignoreDiscountCode) {
-        structureContext = await fetchUserStructurePricingContext(payload.userId, 'bundle', city.id, client);
-        structureContext = await reserveDiscountCodeUsage(payload.userId, 'bundle', structureContext, client);
-      }
-      const pricing = buildPurchasePricing(city.bundle_price, structureContext);
+    const captureStatus = String(capturePayload.status || '').trim().toUpperCase() || 'UNKNOWN';
+    const captureUnit = Array.isArray(capturePayload.purchase_units) ? capturePayload.purchase_units[0] : null;
+    const capture = Array.isArray(captureUnit?.payments?.captures) ? captureUnit.payments.captures[0] : null;
+    const captureId = String(capture?.id || '').trim() || null;
+    const payer = extractPayPalPayer(capturePayload);
+    const rawItems = Array.isArray(pendingOrder.purchase_items)
+      ? pendingOrder.purchase_items
+      : JSON.parse(String(pendingOrder.purchase_items || '[]'));
+
+    await client.query('BEGIN');
+
+    const lockedOrder = await client.query(
+      `
+        SELECT *
+        FROM paypal_checkout_orders
+        WHERE paypal_order_id = $1
+          AND user_id = $2
+        LIMIT 1
+        FOR UPDATE
+      `,
+      [orderId, userId]
+    );
+    if (!lockedOrder.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'Ordine PayPal non trovato.' });
+    }
+
+    pendingOrder = lockedOrder.rows[0];
+    if (pendingOrder.status === 'completed') {
+      await client.query('COMMIT');
+      const existingPurchases = await pool.query(
+        `
+          SELECT *
+          FROM purchases
+          WHERE payment_order_id = $1
+          ORDER BY id ASC
+        `,
+        [orderId]
+      );
+      return res.json({
+        captured: true,
+        orderId,
+        purchases: existingPurchases.rows.map(purchaseRowToResponse)
+      });
+    }
+
+    if (captureStatus !== 'COMPLETED') {
       await client.query(
         `
-        INSERT INTO purchases (
-          user_id,
-          type,
-          city_id,
-          amount,
-          base_amount,
-          discount_percent,
-          discount_amount,
-          final_amount,
-          structure_id,
-          invite_code,
-          structure_fixed_amount,
-          structure_earning_amount
-        )
-        VALUES ($1, 'bundle', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          UPDATE paypal_checkout_orders
+          SET status = $2,
+              capture_payload = $3::jsonb,
+              capture_id = $4,
+              error_message = $5,
+              updated_at = NOW()
+          WHERE paypal_order_id = $1
+        `,
+        [orderId, String(captureStatus || 'failed').toLowerCase(), JSON.stringify(capturePayload), captureId, captureStatus]
+      );
+      await client.query('COMMIT');
+      return res.status(409).json({ message: `PayPal ha restituito stato ${captureStatus}.` });
+    }
+
+    const firstDiscountedItem = rawItems.find((item) => item?.inviteCode);
+    if (firstDiscountedItem?.inviteCode) {
+      await client.query(
+        `
+          INSERT INTO app_user_discount_code_uses (
+            user_id,
+            discount_code_id,
+            structure_id,
+            invite_code,
+            purchase_type,
+            used_at
+          )
+          VALUES ($1, NULL, $2, $3, $4, NOW())
+          ON CONFLICT (user_id, invite_code) DO NOTHING
+        `,
+        [userId, firstDiscountedItem.structureId || null, firstDiscountedItem.inviteCode, firstDiscountedItem.purchaseType]
+      );
+    }
+
+    const insertedPurchases = [];
+    for (const item of rawItems) {
+      const purchaseType = item.purchaseType === 'bundle' ? 'bundle' : 'single';
+      const inserted = await client.query(
+        `
+          INSERT INTO purchases (
+            user_id,
+            type,
+            city_id,
+            poi_id,
+            amount,
+            base_amount,
+            discount_percent,
+            discount_amount,
+            final_amount,
+            structure_id,
+            invite_code,
+            structure_fixed_amount,
+            structure_earning_amount,
+            payment_method,
+            payment_provider,
+            payment_status,
+            payment_order_id,
+            payment_capture_id,
+            payment_environment,
+            payer_email,
+            payer_id,
+            payer_first_name,
+            payer_last_name,
+            payer_country_code,
+            payer_phone,
+            payer_address,
+            purchased_at
+          )
+          VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            $7,
+            $8,
+            $9,
+            $10,
+            $11,
+            $12,
+            $13,
+            'PayPal',
+            $14,
+            $15,
+            $16,
+            $17,
+            $18,
+            $19,
+            $20,
+            $21,
+            $22,
+            $23,
+            $24,
+            $25,
+            NOW()
+          )
+          RETURNING *
         `,
         [
-          payload.userId,
-          city.id,
-          pricing.finalAmount,
-          pricing.baseAmount,
-          pricing.discountPercent,
-          pricing.discountAmount,
-          pricing.finalAmount,
-          structureContext?.structureId || null,
-          structureContext?.inviteCode || null,
-          pricing.structureFixedAmount,
-          pricing.structureEarningAmount
+          userId,
+          purchaseType,
+          item.cityId || null,
+          item.poiId || null,
+          Number(item.finalAmount || 0),
+          Number(item.baseAmount || item.finalAmount || 0),
+          Number(item.discountPercent || 0),
+          Number(item.discountAmount || 0),
+          Number(item.finalAmount || 0),
+          item.structureId || null,
+          item.inviteCode || null,
+          Number(item.structureFixedAmount || 0),
+          Number(item.structureEarningAmount || 0),
+          paypalProviderLabel(settings.mode),
+          captureStatus.toLowerCase(),
+          orderId,
+          captureId,
+          settings.mode,
+          payer.payerEmail,
+          payer.payerId || userId,
+          payer.payerFirstName,
+          payer.payerLastName,
+          payer.payerCountryCode,
+          payer.payerPhone,
+          payer.payerAddress
         ]
       );
 
-      await client.query('COMMIT');
-      return res.json({
-        purchased: true,
-        type: 'bundle',
-        cityId: city.id,
-        amount: pricing.finalAmount,
-        baseAmount: pricing.baseAmount,
-        discountPercent: pricing.discountPercent,
-        discountAmount: pricing.discountAmount,
-        finalAmount: pricing.finalAmount,
-        structureId: structureContext?.structureId || null,
-        inviteCode: structureContext?.inviteCode || null,
-        structureFixedAmount: pricing.structureFixedAmount,
-        structureEarningAmount: pricing.structureEarningAmount
-      });
+      insertedPurchases.push(purchaseRowToResponse(inserted.rows[0]));
     }
 
-    const poiQuery = await client.query('SELECT id, city_id, price_single FROM pois WHERE id = $1 LIMIT 1', [payload.poiId]);
-    if (!poiQuery.rowCount) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'POI not found' });
-    }
-
-    const poi = poiQuery.rows[0];
-
-    const [alreadyBundle, alreadySingle] = await Promise.all([
-      client.query(
-        `
-        SELECT id, amount, purchased_at
-        FROM purchases
-        WHERE user_id = $1 AND type = 'bundle' AND city_id = $2
-        ORDER BY purchased_at DESC, id DESC
-        LIMIT 1
-        `,
-        [payload.userId, poi.city_id]
-      ),
-      client.query(
-        `
-        SELECT
-          id,
-          amount,
-          base_amount,
-          discount_percent,
-          discount_amount,
-          final_amount,
-          structure_id,
-          invite_code,
-          structure_fixed_amount,
-          structure_earning_amount,
-          purchased_at
-        FROM purchases
-        WHERE user_id = $1 AND type = 'single' AND poi_id = $2
-        ORDER BY purchased_at DESC, id DESC
-        LIMIT 1
-        `,
-        [payload.userId, poi.id]
-      )
-    ]);
-
-    if (alreadyBundle.rowCount || alreadySingle.rowCount) {
-      await client.query('ROLLBACK');
-      const existing = alreadySingle.rowCount ? alreadySingle.rows[0] : null;
-      return res.json({
-        purchased: true,
-        alreadyPurchased: true,
-        type: 'single',
-        cityId: poi.city_id,
-        poiId: poi.id,
-        amount: Number(existing?.final_amount || existing?.amount || 0),
-        baseAmount: Number(existing?.base_amount || existing?.amount || 0),
-        discountPercent: Number(existing?.discount_percent || 0),
-        discountAmount: Number(existing?.discount_amount || 0),
-        finalAmount: Number(existing?.final_amount || existing?.amount || 0),
-        structureId: existing?.structure_id || null,
-        inviteCode: existing?.invite_code || null,
-        structureFixedAmount: Number(existing?.structure_fixed_amount || 0),
-        structureEarningAmount: Number(existing?.structure_earning_amount || 0)
-      });
-    }
-
-    const ignoreDiscountCode = Boolean(payload.ignoreDiscountCode);
-    let structureContext = null;
-    if (!ignoreDiscountCode) {
-      structureContext = await fetchUserStructurePricingContext(payload.userId, 'single', poi.city_id, client);
-      structureContext = await reserveDiscountCodeUsage(payload.userId, 'single', structureContext, client);
-    }
-    const pricing = buildPurchasePricing(poi.price_single, structureContext);
     await client.query(
       `
-      INSERT INTO purchases (
-        user_id,
-        type,
-        city_id,
-        poi_id,
-        amount,
-        base_amount,
-        discount_percent,
-        discount_amount,
-        final_amount,
-        structure_id,
-        invite_code,
-        structure_fixed_amount,
-        structure_earning_amount
-      )
-      VALUES ($1, 'single', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        UPDATE paypal_checkout_orders
+        SET status = 'completed',
+            capture_payload = $2::jsonb,
+            payer_email = $3,
+            payer_id = $4,
+            payer_first_name = $5,
+            payer_last_name = $6,
+            payer_country_code = $7,
+            payer_phone = $8,
+            payer_address = $9,
+            capture_id = $10,
+            captured_at = NOW(),
+            error_message = NULL,
+            updated_at = NOW()
+        WHERE paypal_order_id = $1
       `,
       [
-        payload.userId,
-        poi.city_id,
-        poi.id,
-        pricing.finalAmount,
-        pricing.baseAmount,
-        pricing.discountPercent,
-        pricing.discountAmount,
-        pricing.finalAmount,
-        structureContext?.structureId || null,
-        structureContext?.inviteCode || null,
-        pricing.structureFixedAmount,
-        pricing.structureEarningAmount
+        orderId,
+        JSON.stringify(capturePayload),
+        payer.payerEmail,
+        payer.payerId || userId,
+        payer.payerFirstName,
+        payer.payerLastName,
+        payer.payerCountryCode,
+        payer.payerPhone,
+        payer.payerAddress,
+        captureId
       ]
     );
 
     await client.query('COMMIT');
     return res.json({
-      purchased: true,
-      type: 'single',
-      cityId: poi.city_id,
-      poiId: poi.id,
-      amount: pricing.finalAmount,
-      baseAmount: pricing.baseAmount,
-      discountPercent: pricing.discountPercent,
-      discountAmount: pricing.discountAmount,
-      finalAmount: pricing.finalAmount,
-      structureId: structureContext?.structureId || null,
-      inviteCode: structureContext?.inviteCode || null,
-      structureFixedAmount: pricing.structureFixedAmount,
-      structureEarningAmount: pricing.structureEarningAmount
+      captured: true,
+      orderId,
+      purchases: insertedPurchases
     });
   } catch (error) {
-    await client.query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      // Ignore rollback errors.
+    }
+
+    if (pendingOrder?.paypal_order_id) {
+      try {
+        await pool.query(
+          `
+            UPDATE paypal_checkout_orders
+            SET status = 'failed',
+                error_message = $2,
+                updated_at = NOW()
+            WHERE paypal_order_id = $1
+          `,
+          [pendingOrder.paypal_order_id, error instanceof Error ? error.message : 'Errore PayPal']
+        );
+      } catch {
+        // Ignore secondary failures while saving PayPal state.
+      }
+    }
+
+    if (error instanceof PayPalConfigurationError) {
+      return res.status(error.status || 502).json({ message: error.message });
+    }
     return next(error);
   } finally {
     client.release();
   }
+});
+
+router.post('/purchase', async (req, res) => {
+  const parsed = purchaseSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Invalid payload', errors: parsed.error.flatten() });
+  }
+
+  return res.status(409).json({
+    message: 'I pagamenti diretti sono disabilitati. Usa il checkout PayPal.'
+  });
 });
 
 router.get('/me/purchases', async (req, res, next) => {
@@ -813,6 +1638,7 @@ router.get('/me/purchases', async (req, res, next) => {
         WHERE user_id = $1
           AND type = 'single'
           AND poi_id IS NOT NULL
+          AND (purchased_at + INTERVAL '3 months') > NOW()
         UNION
         SELECT DISTINCT p.id
         FROM pois p
@@ -820,11 +1646,13 @@ router.get('/me/purchases', async (req, res, next) => {
           ON b.user_id = $1
          AND b.type = 'bundle'
          AND b.city_id = p.city_id
+         AND (b.purchased_at + INTERVAL '3 months') > NOW()
         `,
         [userId]
       )
     ]);
 
+    const now = new Date();
     const raw = purchases.rows.map((row) => ({
       id: Number(row.id),
       userId: row.user_id,
@@ -840,11 +1668,13 @@ router.get('/me/purchases', async (req, res, next) => {
       inviteCode: row.invite_code || null,
       structureFixedAmount: Number(row.structure_fixed_amount || 0),
       structureEarningAmount: Number(row.structure_earning_amount || 0),
-      purchasedAt: row.purchased_at
+      purchasedAt: row.purchased_at,
+      expiresAt: toIsoDateOrNull(purchaseExpiresAt(row.purchased_at)),
+      isActive: isPurchaseStillActive(row.purchased_at, now)
     }));
 
     const unlockedPoiIds = unlockedPois.rows.map((row) => row.id);
-    const unlockedCityIds = Array.from(new Set(raw.filter((item) => item.type === 'bundle').map((item) => item.cityId)));
+    const unlockedCityIds = Array.from(new Set(raw.filter((item) => item.type === 'bundle' && item.isActive).map((item) => item.cityId)));
 
     return res.json({
       items: raw,
@@ -1351,5 +2181,3 @@ router.delete('/hotel/association', async (req, res, next) => {
 });
 
 export { router as apiRouter };
-
-

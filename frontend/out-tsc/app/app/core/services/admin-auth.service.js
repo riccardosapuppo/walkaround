@@ -4,7 +4,7 @@ import { BehaviorSubject, catchError, finalize, map, of, shareReplay, tap, throw
 import { environment } from '../../../environments/environment';
 import * as i0 from "@angular/core";
 import * as i1 from "@angular/common/http";
-const ADMIN_SESSION_KEY = 'tourism.dashboard.session';
+const ADMIN_SESSION_KEY = 'walkaround.dashboard.session';
 export class AdminAuthService {
     constructor(http) {
         this.http = http;
@@ -276,6 +276,66 @@ export class AdminAuthService {
         return this.http.get(`${environment.apiBaseUrl}/admin/payments${query}`, {
             headers: this.authHeaders(token)
         });
+    }
+    getPayPalSettings() {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.get(`${environment.apiBaseUrl}/admin/paypal-settings`, {
+            headers: this.authHeaders(token)
+        });
+    }
+    updatePayPalSettings(payload) {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.put(`${environment.apiBaseUrl}/admin/paypal-settings`, payload, {
+            headers: this.authHeaders(token)
+        });
+    }
+    testPayPalSettings() {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.post(`${environment.apiBaseUrl}/admin/paypal-settings/test`, {}, {
+            headers: this.authHeaders(token)
+        });
+    }
+    listPartnerRequests() {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.get(`${environment.apiBaseUrl}/admin/partner-requests`, {
+            headers: this.authHeaders(token)
+        });
+    }
+    previewPartnerRequestPdf(requestId, payload = {}) {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.post(`${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}/pdf-preview`, payload, {
+            headers: this.authHeaders(token),
+            responseType: 'blob'
+        });
+    }
+    approvePartnerRequest(requestId, payload) {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.post(`${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}/approve`, payload, { headers: this.authHeaders(token) });
+    }
+    rejectPartnerRequest(requestId) {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.post(`${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}/reject`, {}, { headers: this.authHeaders(token) });
     }
     updateUserRole(userId, role) {
         const token = this.sessionSubject.value?.token;

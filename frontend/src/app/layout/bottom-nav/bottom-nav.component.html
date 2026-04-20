@@ -1,4 +1,4 @@
-<nav class="bottom-nav card" aria-label="Navigazione principale">
+<nav class="bottom-nav card" [attr.aria-label]="'bottomNav.aria' | t">
   <a
     *ngFor="let item of items"
     [routerLink]="item.route"
@@ -7,6 +7,6 @@
     class="bottom-nav-item"
   >
     <mat-icon fontSet="material-icons-round">{{ item.icon }}</mat-icon>
-    <span>{{ item.label }}</span>
+    <span>{{ item.labelKey | t }}</span>
   </a>
 </nav>

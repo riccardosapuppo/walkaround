@@ -1,13 +1,11 @@
-<h2 mat-dialog-title>Luoghi di {{ data.cityName }}</h2>
+<h2 mat-dialog-title>{{ 'cityPicker.title' | t:{ city: data.cityName } }}</h2>
 
 <mat-dialog-content class="picker-content">
-  <p class="picker-subtitle">
-    Seleziona i luoghi da acquistare. Con piu luoghi selezionati useremo il pacchetto citta per un checkout unico.
-  </p>
+  <p class="picker-subtitle">{{ 'cityPicker.subtitle' | t }}</p>
 
   <div class="picker-toolbar">
-    <button mat-button type="button" (click)="selectAllLocked()">Seleziona tutti i bloccati</button>
-    <button mat-button type="button" (click)="clearSelection()">Azzera</button>
+    <button mat-button type="button" (click)="selectAllLocked()">{{ 'cityPicker.selectAllLocked' | t }}</button>
+    <button mat-button type="button" (click)="clearSelection()">{{ 'cityPicker.clear' | t }}</button>
   </div>
 
   <div class="picker-list">
@@ -26,11 +24,11 @@
       </div>
 
       <div class="picker-row-meta">
-        <span *ngIf="poi.unlocked" class="status-pill unlocked">Sbloccato</span>
+        <span *ngIf="poi.unlocked" class="status-pill unlocked">{{ 'cityPicker.unlocked' | t }}</span>
         <span *ngIf="!poi.unlocked" class="status-pill locked">
-          {{ isSelected(poi.id) ? 'Selezionato' : 'Seleziona' }}
+          {{ isSelected(poi.id) ? ('cityPicker.selected' | t) : ('cityPicker.select' | t) }}
         </span>
-        <strong *ngIf="!poi.unlocked">&euro;{{ formatPrice(poi.priceSingle) }}</strong>
+        <strong *ngIf="!poi.unlocked">{{ formatPrice(poi.priceSingle) }}</strong>
       </div>
     </button>
   </div>
@@ -38,17 +36,17 @@
 
 <mat-dialog-actions align="end" class="picker-actions">
   <div class="picker-summary" [class.has-selection]="selectedCount > 0">
-    <span class="picker-summary-count">{{ selectedCount }} selezionati</span>
+    <span class="picker-summary-count">{{ 'cityPicker.selectedCount' | t:{ count: selectedCount } }}</span>
     <p class="picker-summary-total">
-      Totale singoli
-      <strong>&euro;{{ formatPrice(selectedTotal) }}</strong>
+      {{ 'cityPicker.singleTotal' | t }}
+      <strong>{{ formatPrice(selectedTotal) }}</strong>
     </p>
   </div>
 
   <div class="picker-action-buttons">
-    <button mat-button mat-dialog-close>Annulla</button>
+    <button mat-button mat-dialog-close>{{ 'common.cancel' | t }}</button>
     <button mat-stroked-button color="primary" type="button" (click)="purchaseCityBundle()">
-      Sblocca citta &euro;{{ data.cityUnlockPriceLabel }}
+      {{ 'cityPicker.unlockCity' | t:{ price: cityBundlePriceLabel() } }}
     </button>
   </div>
 

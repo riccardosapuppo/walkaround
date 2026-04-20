@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, Inject } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -10,6 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from '../../../../environments/environment';
 import { AppStateService, HotelAssociation } from '../../../core/services/app-state.service';
+import { I18nService } from '../../../core/services/i18n.service';
+import { PayPalCheckoutRequest, PayPalCheckoutService } from '../../../core/services/paypal-checkout.service';
 
 export interface UnlockCodeDialogTarget {
   type: 'bundle' | 'single';
@@ -85,16 +87,12 @@ type UnlockDialogStep = 'choice' | 'input' | 'summary';
   templateUrl: './unlock-code-dialog.component.html',
   styleUrls: ['./unlock-code-dialog.component.scss']
 })
-export class UnlockCodeDialogComponent {
+export class UnlockCodeDialogComponent implements AfterViewChecked, OnDestroy {
+  @ViewChild('paypalButtonsContainer') paypalButtonsContainer?: ElementRef<HTMLDivElement>;
+
   readonly codeControl = new FormControl('', {
     nonNullable: true,
     validators: [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern(/^[A-Z0-9]{6}$/)]
-  });
-  readonly amountFormatter = new Intl.NumberFormat('it-IT', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
   });
 
   step: UnlockDialogStep = 'choice';
@@ -104,22 +102,27 @@ export class UnlockCodeDialogComponent {
   processingPayment = false;
   paymentCompleted = false;
   paymentError = '';
+  paypalLoading = false;
   appliedAssociation: HotelAssociation | null = null;
   appliedCode = '';
   completedPurchase: PurchaseCheckoutResponse | null = null;
   storedCode = '';
   hasStoredCode = false;
 
+  private destroyed = false;
+  private lastPayPalRenderSignature = '';
+
   constructor(
     private readonly dialogRef: MatDialogRef<UnlockCodeDialogComponent, UnlockCodeDialogResult | null>,
     private readonly http: HttpClient,
+    private readonly paypalCheckout: PayPalCheckoutService,
     private readonly appState: AppStateService,
+    public readonly i18n: I18nService,
     @Inject(MAT_DIALOG_DATA) readonly data: UnlockCodeDialogData
   ) {
     this.storedCode = this.resolveStoredCode();
     this.hasStoredCode = this.storedCode.length === 6;
 
-    // Keep manual input empty by default to avoid stale prefill.
     this.codeControl.setValue('');
     this.appliedCode = '';
     this.appliedAssociation = null;
@@ -131,8 +134,32 @@ export class UnlockCodeDialogComponent {
     }
   }
 
+  ngAfterViewChecked(): void {
+    if (this.step !== 'summary' || this.paymentCompleted) {
+      return;
+    }
+
+    const container = this.paypalButtonsContainer?.nativeElement;
+    if (!container) {
+      return;
+    }
+
+    const signature = this.buildPayPalRenderSignature();
+    if (!signature || signature === this.lastPayPalRenderSignature) {
+      return;
+    }
+
+    this.lastPayPalRenderSignature = signature;
+    void this.renderPayPalButtons();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.clearPayPalButtons();
+  }
+
   get targetLabel(): string {
-    return this.data?.target?.label || (this.data?.target?.type === 'bundle' ? 'citta' : 'luogo');
+    return this.data?.target?.label || this.applicableToLabel(this.data?.target?.type === 'bundle' ? 'bundle' : 'single');
   }
 
   get baseAmount(): number {
@@ -163,17 +190,6 @@ export class UnlockCodeDialogComponent {
     return this.roundMoney(Math.max(0, this.baseAmount - this.discountAmount));
   }
 
-  get canProceed(): boolean {
-    return (
-      Boolean(this.appliedAssociation?.structureId) &&
-      this.isAssociationValid(this.appliedAssociation) &&
-      this.isAssociationApplicableToTarget(this.appliedAssociation) &&
-      !this.syncingAssociation &&
-      !this.processingPayment &&
-      !this.paymentCompleted
-    );
-  }
-
   associationCitiesLabel(association: HotelAssociation | null | undefined): string {
     if (!association) {
       return '';
@@ -190,11 +206,12 @@ export class UnlockCodeDialogComponent {
 
   chooseHasInviteCode(): void {
     this.validationError = '';
+    this.resetPayPalRenderState();
     this.step = 'input';
   }
 
   chooseNoInviteCode(): void {
-    this.proceedWithoutCode();
+    this.openPayPalSummaryWithoutCode();
   }
 
   useStoredCode(): void {
@@ -206,10 +223,7 @@ export class UnlockCodeDialogComponent {
   }
 
   backToChoice(): void {
-    if (this.appliedAssociation) {
-      this.step = 'summary';
-      return;
-    }
+    this.resetPayPalRenderState();
     this.step = 'choice';
   }
 
@@ -240,71 +254,13 @@ export class UnlockCodeDialogComponent {
   }
 
   useDifferentCode(): void {
+    this.resetPayPalRenderState();
     this.step = 'input';
     this.validationError = '';
   }
 
   proceedWithoutCode(): void {
-    if (this.processingPayment || this.paymentCompleted) {
-      return;
-    }
-    this.appliedAssociation = null;
-    this.appliedCode = '';
-    this.validationError = '';
-    this.proceedWithPayment({ withoutCode: true });
-  }
-
-  proceedWithPayment(options: { withoutCode?: boolean } = {}): void {
-    const withoutCode = Boolean(options.withoutCode);
-    if (!withoutCode && !this.appliedAssociation?.structureId) {
-      return;
-    }
-    if (this.processingPayment || this.paymentCompleted) {
-      return;
-    }
-
-    this.processingPayment = true;
-    this.paymentError = '';
-
-    if (this.data.target.type === 'single' && !this.data.target.poiId) {
-      this.processingPayment = false;
-      this.paymentError = 'Punto di interesse non valido per il pagamento.';
-      return;
-    }
-
-    const payload =
-      this.data.target.type === 'bundle'
-        ? {
-            userId: this.data.userId,
-            type: 'bundle' as const,
-            cityId: this.data.target.cityId,
-            ignoreDiscountCode: withoutCode
-          }
-        : {
-            userId: this.data.userId,
-            type: 'single' as const,
-            poiId: this.data.target.poiId || '',
-            ignoreDiscountCode: withoutCode
-          };
-
-    const startedAt = Date.now();
-    this.http.post<PurchaseCheckoutResponse>(`${environment.apiBaseUrl}/purchase`, payload).subscribe({
-      next: (response) => {
-        const delay = Math.max(0, 900 - (Date.now() - startedAt));
-        setTimeout(() => {
-          this.processingPayment = false;
-          this.paymentCompleted = true;
-          this.completedPurchase = response;
-        }, delay);
-      },
-      error: (error: { error?: { message?: string } }) => {
-        const delay = Math.max(0, 900 - (Date.now() - startedAt));
-        setTimeout(() => {
-          this.processingPayment = false;
-          this.paymentError = error?.error?.message || 'Pagamento non riuscito. Riprova.';
-        }, delay);
-      }
-    });
+    this.openPayPalSummaryWithoutCode();
   }
 
   closeAfterPayment(): void {
@@ -323,16 +279,37 @@ export class UnlockCodeDialogComponent {
 
   get paymentResultMessage(): string {
     if (!this.completedPurchase) {
-      return 'Pagamento completato.';
+      return this.i18n.t('unlock.paymentDone');
     }
     if (this.completedPurchase.alreadyPurchased) {
-      return 'Contenuto già acquistato in precedenza.';
+      return this.i18n.t('unlock.alreadyPurchased');
     }
-    return 'Pagamento completato con successo.';
+    return this.i18n.t('unlock.paymentSuccess');
   }
 
   formatAmount(value: number): string {
-    return this.amountFormatter.format(this.roundMoney(value));
+    return this.i18n.formatCurrency(this.roundMoney(value));
+  }
+
+  formatDateTime(value: string | Date | null | undefined): string {
+    return this.i18n.formatDateTime(value);
+  }
+
+  codeStatusLabel(status: HotelAssociation['codeStatus'] | undefined): string {
+    if (status === 'valid') {
+      return this.i18n.t('common.status.valid');
+    }
+    if (status === 'used') {
+      return this.i18n.t('common.status.used');
+    }
+    if (status === 'expired') {
+      return this.i18n.t('common.status.expired');
+    }
+    return this.i18n.t('common.status.invalid');
+  }
+
+  applicableToLabel(value: 'bundle' | 'single' | null | undefined): string {
+    return value === 'bundle' ? this.i18n.t('unlock.applicableBundle') : this.i18n.t('unlock.applicableSingle');
   }
 
   private roundMoney(value: number): number {
@@ -383,8 +360,9 @@ export class UnlockCodeDialogComponent {
           if (!response.valid || !response.association) {
             this.appliedAssociation = null;
             this.appliedCode = '';
+            this.resetPayPalRenderState();
             this.step = options.preserveStepOnError;
-            this.validationError = response.message || this.fallbackValidationError(options.fromStoredCode);
+            this.validationError = this.fallbackValidationError(options.fromStoredCode);
             return;
           }
 
@@ -392,6 +370,7 @@ export class UnlockCodeDialogComponent {
           if (!this.isAssociationValid(normalizedAssociation)) {
             this.appliedAssociation = null;
             this.appliedCode = '';
+            this.resetPayPalRenderState();
             this.step = options.preserveStepOnError;
             this.validationError = this.getInvalidCodeMessage(normalizedAssociation.codeStatus, options.fromStoredCode);
             return;
@@ -399,9 +378,10 @@ export class UnlockCodeDialogComponent {
           if (!this.isAssociationApplicableToTarget(normalizedAssociation)) {
             this.appliedAssociation = null;
             this.appliedCode = '';
+            this.resetPayPalRenderState();
             this.step = options.preserveStepOnError;
             this.validationError = options.fromStoredCode
-              ? `${this.getInvalidTargetMessage(normalizedAssociation)} Puoi proseguire senza codice oppure inserirne uno nuovo.`
+              ? `${this.getInvalidTargetMessage(normalizedAssociation)} ${this.i18n.t('unlock.proceedWithoutOrChangeCode')}`
               : this.getInvalidTargetMessage(normalizedAssociation);
             return;
           }
@@ -411,54 +391,50 @@ export class UnlockCodeDialogComponent {
           this.appState.setHotelCode(code);
           this.appState.setHotelAssociation(this.appliedAssociation);
           this.step = 'summary';
+          this.paymentError = '';
+          this.resetPayPalRenderState();
         },
         error: (error: { error?: HotelValidationErrorPayload }) => {
           this.validating = false;
           this.syncingAssociation = false;
           this.appliedAssociation = null;
           this.appliedCode = '';
+          this.resetPayPalRenderState();
           this.step = options.preserveStepOnError;
           const status = error?.error?.codeStatus;
           const backendMessage = String(error?.error?.message || '').trim();
           if (options.fromStoredCode && backendMessage === 'Il codice non e applicabile a questo acquisto') {
-            this.validationError = `${this.getStoredCodeApplicabilityMessage()} Puoi proseguire senza codice oppure inserirne uno nuovo.`;
+            this.validationError = `${this.getStoredCodeApplicabilityMessage()} ${this.i18n.t('unlock.proceedWithoutOrChangeCode')}`;
             return;
           }
           if (status === 'expired' || status === 'used' || status === 'invalid') {
             this.validationError = this.getInvalidCodeMessage(status, options.fromStoredCode);
             return;
           }
-          if (options.fromStoredCode && backendMessage) {
-            this.validationError =
-              backendMessage === 'Il codice non e applicabile a questo acquisto'
-                ? 'Il codice salvato non e applicabile a questo acquisto. Puoi proseguire senza codice oppure inserirne uno nuovo.'
-                : backendMessage;
-            return;
-          }
-          this.validationError = backendMessage || this.fallbackValidationError(options.fromStoredCode);
+          this.validationError = this.fallbackValidationError(options.fromStoredCode);
         }
       });
   }
 
   private fallbackValidationError(fromStoredCode: boolean): string {
-    return fromStoredCode ? 'Il codice salvato non e valido per questo acquisto.' : 'Codice invito non valido';
+    return fromStoredCode ? this.i18n.t('unlock.invalidStoredCode') : this.i18n.t('unlock.invalidCode');
   }
 
   private getStoredCodeApplicabilityMessage(): string {
     const appliesTo = this.data?.existingAssociation?.appliesTo;
     if (appliesTo === 'bundle' && this.data.target.type === 'single') {
-      return 'Il codice salvato e applicabile per pacchetto citta, non per luogo singolo.';
+      return this.i18n.t('unlock.savedCodeBundleNotSingle');
     }
     if (appliesTo === 'single' && this.data.target.type === 'bundle') {
-      return 'Il codice salvato e applicabile per luogo singolo, non per pacchetto citta.';
+      return this.i18n.t('unlock.savedCodeSingleNotBundle');
     }
     if (appliesTo === 'bundle') {
-      return 'Il codice salvato e applicabile solo per pacchetto citta.';
+      return this.i18n.t('unlock.savedCodeBundleOnly');
     }
     if (appliesTo === 'single') {
-      return 'Il codice salvato e applicabile solo per luogo singolo.';
+      return this.i18n.t('unlock.savedCodeSingleOnly');
     }
-    return 'Il codice salvato non e applicabile a questo acquisto.';
+    return this.i18n.t('unlock.storedCodeNotApplicable');
   }
 
   private isAssociationValid(association: HotelAssociation | null | undefined): boolean {
@@ -488,23 +464,23 @@ export class UnlockCodeDialogComponent {
   }
 
   private getInvalidTargetMessage(association: HotelAssociation): string {
-    const targetLabel = this.data.target.type === 'bundle' ? 'pacchetto citta' : 'luogo singolo';
+    const targetLabel = this.applicableToLabel(this.data.target.type);
     const appliesTo = association.appliesTo;
     if (appliesTo === 'single' || appliesTo === 'bundle') {
-      const codeLabel = appliesTo === 'bundle' ? 'pacchetto citta' : 'luogo singolo';
+      const codeLabel = this.applicableToLabel(appliesTo);
       if (appliesTo !== this.data.target.type) {
-        return `Questo codice e valido solo per ${codeLabel}, non per ${targetLabel}.`;
+        return this.i18n.t('unlock.codeValidOnlyFor', { codeLabel, targetLabel });
       }
     }
 
     const cityNames = this.associationCityNames(association);
     if (cityNames.length) {
-      return `Questo codice e valido solo per le citta: ${cityNames.join(', ')}.`;
+      return this.i18n.t('unlock.codeValidOnlyForCities', { cities: cityNames.join(', ') });
     }
     if (association.cityName) {
-      return `Questo codice e valido solo per la citta ${association.cityName}.`;
+      return this.i18n.t('unlock.codeValidOnlyForCity', { city: association.cityName });
     }
-    return 'Questo codice non e applicabile a questo acquisto.';
+    return this.i18n.t('unlock.codeNotApplicable');
   }
 
   private associationCityIds(association: HotelAssociation | null | undefined): string[] {
@@ -554,17 +530,116 @@ export class UnlockCodeDialogComponent {
 
   private getInvalidCodeMessage(status: HotelAssociation['codeStatus'] | undefined, fromStoredCode: boolean): string {
     if (status === 'expired') {
-      return fromStoredCode ? 'Il codice salvato e scaduto. Inserisci un nuovo codice.' : 'Il codice inserito e scaduto';
+      return fromStoredCode ? this.i18n.t('unlock.storedCodeExpired') : this.i18n.t('unlock.codeExpired');
     }
     if (status === 'used') {
-      return fromStoredCode
-        ? 'Il codice salvato è già stato utilizzato. Inserisci un nuovo codice.'
-        : 'Il codice inserito è già stato utilizzato per questo utente';
+      return fromStoredCode ? this.i18n.t('unlock.storedCodeUsed') : this.i18n.t('unlock.codeUsed');
     }
-    return fromStoredCode
-      ? 'Il codice salvato non è più valido. Inserisci un nuovo codice.'
-      : 'Il codice inserito non è più valido';
+    return fromStoredCode ? this.i18n.t('unlock.storedCodeInvalid') : this.i18n.t('unlock.codeInvalid');
+  }
+
+  private openPayPalSummaryWithoutCode(): void {
+    if (this.processingPayment || this.paymentCompleted) {
+      return;
+    }
+
+    this.appliedAssociation = null;
+    this.appliedCode = '';
+    this.validationError = '';
+    this.paymentError = '';
+    this.step = 'summary';
+    this.resetPayPalRenderState();
+  }
+
+  private buildPayPalRenderSignature(): string {
+    if (this.step !== 'summary' || this.processingPayment || this.paymentCompleted) {
+      return '';
+    }
+
+    const associationKey = this.appliedAssociation?.inviteCode || this.appliedAssociation?.structureId || 'no-code';
+    return [this.data.target.type, this.data.target.cityId, this.data.target.poiId || '', associationKey].join('|');
+  }
+
+  private buildPayPalPayload(): PayPalCheckoutRequest {
+    if (this.data.target.type === 'bundle') {
+      return {
+        userId: this.data.userId,
+        checkoutContext: 'bundle',
+        cityId: this.data.target.cityId,
+        ignoreDiscountCode: !this.appliedAssociation?.structureId
+      };
+    }
+
+    return {
+      userId: this.data.userId,
+      checkoutContext: 'single',
+      poiId: this.data.target.poiId || '',
+      ignoreDiscountCode: !this.appliedAssociation?.structureId
+    };
+  }
+
+  private async renderPayPalButtons(): Promise<void> {
+    const container = this.paypalButtonsContainer?.nativeElement;
+    if (!container || this.destroyed) {
+      return;
+    }
+
+    this.paypalLoading = true;
+    this.paymentError = '';
+    this.clearPayPalButtons();
+
+    try {
+      await this.paypalCheckout.renderButtons(container, this.buildPayPalPayload(), {
+        onStart: () => {
+          this.processingPayment = true;
+          this.paymentError = '';
+        },
+        onSuccess: (response) => {
+          if (this.destroyed) {
+            return;
+          }
+
+          this.processingPayment = false;
+          this.paypalLoading = false;
+          this.paymentCompleted = true;
+          this.completedPurchase = response.purchases[0] || null;
+          this.clearPayPalButtons();
+        },
+        onCancel: () => {
+          this.processingPayment = false;
+        },
+        onError: (message) => {
+          if (this.destroyed) {
+            return;
+          }
+
+          this.processingPayment = false;
+          this.paypalLoading = false;
+          this.paymentError = message;
+        }
+      });
+
+      this.paypalLoading = false;
+    } catch (error) {
+      if (this.destroyed) {
+        return;
+      }
+
+      this.processingPayment = false;
+      this.paypalLoading = false;
+      this.paymentError = error instanceof Error ? error.message : this.i18n.t('paypal.loadError');
+      this.clearPayPalButtons();
+    }
+  }
+
+  private resetPayPalRenderState(): void {
+    this.lastPayPalRenderSignature = '';
+    this.processingPayment = false;
+    this.paypalLoading = false;
+    this.clearPayPalButtons();
+  }
+
+  private clearPayPalButtons(): void {
+    this.paypalCheckout.clearButtons(this.paypalButtonsContainer?.nativeElement);
   }
 }
-
-

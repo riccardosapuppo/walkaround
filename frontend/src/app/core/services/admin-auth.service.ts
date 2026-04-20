@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CityTranslations, PoiTranslations } from '../models/localized-content.model';
 
 const ADMIN_SESSION_KEY = 'walkaround.dashboard.session';
 
@@ -157,6 +158,7 @@ export interface DashboardCatalogCity {
   bundlePrice: number;
   heroImage: string;
   isDefault: boolean;
+  translations?: CityTranslations;
   poiCount: number;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -176,6 +178,7 @@ export interface DashboardCatalogPoi {
   audioUrl: string;
   priceSingle: number;
   durationSec: number;
+  translations?: PoiTranslations;
 }
 
 export interface CatalogCityInput {
@@ -184,6 +187,7 @@ export interface CatalogCityInput {
   bundlePrice: number;
   heroImage: string;
   isDefault: boolean;
+  translations?: CityTranslations;
 }
 
 export interface CatalogPoiInput {
@@ -198,6 +202,7 @@ export interface CatalogPoiInput {
   audioUrl: string;
   priceSingle: number;
   durationSec: number;
+  translations?: PoiTranslations;
 }
 
 export interface CatalogMediaTarget {
@@ -226,13 +231,16 @@ export interface DashboardPaymentRow {
   customerId: string;
   customerFirstName: string;
   customerLastName: string;
-  customerBirthDate: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerAddress: string;
+  customerBirthDate: string | null;
+  customerEmail: string | null;
+  customerPhone: string | null;
+  customerAddress: string | null;
   paymentMethod: string;
   paymentProvider: string;
   paymentStatus: string;
+  paymentOrderId?: string | null;
+  paymentCaptureId?: string | null;
+  paymentEnvironment?: string | null;
   type: 'single' | 'bundle';
   cityId: string | null;
   cityName: string | null;
@@ -262,6 +270,81 @@ export interface DashboardPaymentsSummary {
 export interface DashboardPaymentsResponse {
   summary: DashboardPaymentsSummary;
   items: DashboardPaymentRow[];
+}
+
+export interface DashboardPayPalSettings {
+  id: number;
+  isEnabled: boolean;
+  mode: 'sandbox' | 'live';
+  clientId: string;
+  clientSecret: string;
+  merchantId: string;
+  merchantEmail: string;
+  brandName: string;
+  webhookId: string;
+  currencyCode: 'EUR';
+  lastVerifiedAt: string | null;
+  lastVerificationStatus: 'valid' | 'invalid' | 'pending' | 'incomplete' | string;
+  lastVerificationError: string | null;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface DashboardPayPalVerificationResponse {
+  valid: boolean;
+  verification?: {
+    tokenType: string;
+    expiresIn: number;
+    scope: string;
+  };
+  settings?: DashboardPayPalSettings;
+  message?: string;
+}
+
+export interface DashboardPartnerRequest {
+  id: number;
+  structureName: string;
+  structureType: string | null;
+  vatNumber: string | null;
+  contactFirstName: string;
+  contactLastName: string;
+  contactEmail: string;
+  contactPhone: string;
+  website: string | null;
+  addressStreet: string;
+  addressNumber: string | null;
+  addressCity: string;
+  addressPostalCode: string | null;
+  addressProvince: string | null;
+  addressRegion: string | null;
+  addressCountry: string | null;
+  roomsCount: number | null;
+  notes: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  pdfReleaseStatus: 'pending' | 'sent';
+  approvedStructureId: string | null;
+  approvedDiscountCodeId: number | null;
+  discountCode: string | null;
+  approvalEmailSentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PartnerRequestApprovalInput {
+  applyTo: DiscountCodeApplyTo;
+  cityIds: string[];
+  code: string;
+  userDiscountPercent: number;
+  structureFixedAmount: number;
+  expiresAt: string;
+}
+
+export interface PartnerRequestPdfPreviewInput {
+  cityIds?: string[];
+  code?: string | null;
+  userDiscountPercent?: number | null;
+  structureFixedAmount?: number | null;
+  expiresAt?: string | null;
 }
 
 interface GenerateStructureInviteCodeResponse {
@@ -763,6 +846,88 @@ export class AdminAuthService {
     return this.http.get<DashboardPaymentsResponse>(`${environment.apiBaseUrl}/admin/payments${query}`, {
       headers: this.authHeaders(token)
     });
+  }
+
+  getPayPalSettings(): Observable<DashboardPayPalSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardPayPalSettings>(`${environment.apiBaseUrl}/admin/paypal-settings`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  updatePayPalSettings(payload: Omit<DashboardPayPalSettings, 'id' | 'lastVerifiedAt' | 'lastVerificationStatus' | 'lastVerificationError' | 'updatedAt' | 'updatedBy'>): Observable<DashboardPayPalSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.put<DashboardPayPalSettings>(`${environment.apiBaseUrl}/admin/paypal-settings`, payload, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  testPayPalSettings(): Observable<DashboardPayPalVerificationResponse> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<DashboardPayPalVerificationResponse>(`${environment.apiBaseUrl}/admin/paypal-settings/test`, {}, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  listPartnerRequests(): Observable<DashboardPartnerRequest[]> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardPartnerRequest[]>(`${environment.apiBaseUrl}/admin/partner-requests`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  previewPartnerRequestPdf(requestId: number, payload: PartnerRequestPdfPreviewInput = {}): Observable<Blob> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post(`${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}/pdf-preview`, payload, {
+      headers: this.authHeaders(token),
+      responseType: 'blob'
+    });
+  }
+
+  approvePartnerRequest(requestId: number, payload: PartnerRequestApprovalInput): Observable<DashboardPartnerRequest> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<DashboardPartnerRequest>(
+      `${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}/approve`,
+      payload,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  rejectPartnerRequest(requestId: number): Observable<DashboardPartnerRequest> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<DashboardPartnerRequest>(
+      `${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}/reject`,
+      {},
+      { headers: this.authHeaders(token) }
+    );
   }
 
   updateUserRole(userId: string, role: UserRole): Observable<DashboardUserRow> {

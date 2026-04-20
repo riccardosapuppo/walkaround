@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, of } from 'rxjs';
+import { BehaviorSubject, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { UnlockCodeDialogComponent } from '../../shared/components/unlock-code-dialog/unlock-code-dialog.component';
 import * as i0 from "@angular/core";
@@ -50,6 +50,30 @@ export class PurchaseService {
             }
         };
         return this.openUnlockDialog(dialogData);
+    }
+    purchasePoiSingleWithoutCode(poiId) {
+        return this.http
+            .post(`${environment.apiBaseUrl}/purchase`, {
+            userId: this.appState.userId,
+            type: 'single',
+            poiId,
+            ignoreDiscountCode: true
+        })
+            .pipe(tap((result) => {
+            this.applyPurchaseResult(result);
+        }));
+    }
+    purchaseCityBundleWithoutCode(cityId) {
+        return this.http
+            .post(`${environment.apiBaseUrl}/purchase`, {
+            userId: this.appState.userId,
+            type: 'bundle',
+            cityId,
+            ignoreDiscountCode: true
+        })
+            .pipe(tap((result) => {
+            this.applyPurchaseResult(result);
+        }));
     }
     validateHotelCode(code) {
         return this.http.post(`${environment.apiBaseUrl}/hotel/validate`, {

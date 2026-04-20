@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { I18nService } from '../../core/services/i18n.service';
 
 export interface CityPoiPickerItem {
   id: string;
@@ -33,7 +34,8 @@ export class CityPoiPickerDialogComponent {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) readonly data: CityPoiPickerDialogData,
-    private readonly dialogRef: MatDialogRef<CityPoiPickerDialogComponent, CityPoiPickerDialogResult>
+    private readonly dialogRef: MatDialogRef<CityPoiPickerDialogComponent, CityPoiPickerDialogResult>,
+    public readonly i18n: I18nService
   ) {}
 
   get selectedCount(): number {
@@ -52,10 +54,10 @@ export class CityPoiPickerDialogComponent {
 
   get selectionCtaLabel(): string {
     if (!this.selectedCount) {
-      return 'Acquista i selezionati';
+      return this.i18n.t('cityPicker.selectionCta');
     }
 
-    return `Acquista i selezionati (\u20ac${this.formatPrice(this.selectedTotal)})`;
+    return this.i18n.t('cityPicker.selectionCtaWithTotal', { price: this.formatPrice(this.selectedTotal) });
   }
 
   isSelected(poiId: string): boolean {
@@ -106,8 +108,10 @@ export class CityPoiPickerDialogComponent {
   }
 
   formatPrice(amount: number): string {
-    return Number(amount || 0)
-      .toFixed(2)
-      .replace('.', ',');
+    return this.i18n.formatCurrency(Number(amount || 0));
+  }
+
+  cityBundlePriceLabel(): string {
+    return this.i18n.formatCurrency(Number(this.data.cityUnlockPriceLabel || 0));
   }
 }

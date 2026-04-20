@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 interface NavItem {
   route: string;
   icon: string;
-  label: string;
+  labelKey: string;
 }
 
 @Component({
@@ -14,11 +14,12 @@ interface NavItem {
 })
 export class BottomNavComponent {
   readonly items: NavItem[] = [
-    { route: '/home', icon: 'home', label: 'Home' },
-    { route: '/map', icon: 'map', label: 'Mappa' },
-    { route: '/my-audio', icon: 'library_music', label: 'I miei audio' },
-    { route: '/favorites', icon: 'favorite', label: 'Preferiti' },
-    { route: '/profile', icon: 'person', label: 'Profilo' }
+    { route: '/home', icon: 'home', labelKey: 'bottomNav.home' },
+    { route: '/map', icon: 'map', labelKey: 'bottomNav.map' },
+    { route: '/my-audio', icon: 'library_music', labelKey: 'bottomNav.audio' },
+    { route: '/favorites', icon: 'favorite', labelKey: 'bottomNav.favorites' },
+    { route: '/cart', icon: 'shopping_cart', labelKey: 'bottomNav.cart' },
+    { route: '/profile', icon: 'person', labelKey: 'bottomNav.profile' }
   ];
 }
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import * as i0 from "@angular/core";
-const STORAGE_KEY = 'tourism.player.progress';
+const STORAGE_KEY = 'walkaround.player.progress';
 export class PlayerService {
     constructor() {
         this.audio = new Audio();

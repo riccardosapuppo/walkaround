@@ -1,29 +1,54 @@
 <section class="page-shell favorites">
-  <header>
-    <h1 class="page-title">Preferiti</h1>
-    <p class="page-subtitle">Accesso rapido ai tuoi punti di interesse salvati</p>
+  <header class="brand-hero">
+    <div class="brand-hero-stage">
+      <img
+        class="brand-hero-logo"
+        src="/assets/logo.png"
+        [attr.alt]="'common.appName' | t"
+        loading="eager"
+        decoding="sync"
+        fetchpriority="high"
+      />
+      <div class="brand-hero-footer">
+        <p class="brand-hero-slogan">{{ 'common.brandTagline' | t }}</p>
+      </div>
+    </div>
   </header>
 
-  <section class="loading-shell" *ngIf="loading">
+  <mat-card class="card section-loading-card" *ngIf="loading">
     <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
-    <p>Caricamento preferiti...</p>
-  </section>
-
-  <mat-card class="card poi-card" *ngFor="let poi of favorites" [class.hidden]="loading">
-    <img [appImgFallback]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
-
-    <div class="meta" (click)="openPoi(poi.id)">
-      <h3>{{ poi.name }}</h3>
-      <p>{{ poi.descriptionShort }}</p>
-    </div>
-
-    <button mat-icon-button color="primary" (click)="playPreview(poi)" [disabled]="!hasPlayableAudio(poi)" aria-label="Preview">
-      <mat-icon fontSet="material-icons-round">play_circle</mat-icon>
-    </button>
+    <p>{{ 'favorites.loading' | t }}</p>
   </mat-card>
+
+  <ng-container *ngIf="!loading">
+    <mat-card class="card poi-card" *ngFor="let poi of favorites">
+      <img [appImgFallback]="poi.imageUrl" [alt]="poiName(poi)" (click)="openPoi(poi.id)" />
+
+      <div class="meta" (click)="openPoi(poi.id)">
+        <h3>{{ poiName(poi) }}</h3>
+        <p class="address">{{ poiAddress(poi) }}</p>
+        <p class="distance">{{ distanceLabel(poi.distanceMeters) }} - {{ poi.durationSec | durationLabel }}</p>
+        <p class="teaser">{{ poiDescription(poi) }}</p>
+      </div>
+
+      <div class="poi-actions">
+        <button
+          mat-icon-button
+          color="primary"
+          (click)="playAudio(poi)"
+          [disabled]="!hasPlayableAudio(poi)"
+          [attr.aria-label]="'favorites.audioAria' | t"
+        >
+          <mat-icon fontSet="material-icons-round">headphones</mat-icon>
+        </button>
+        <button mat-icon-button color="primary" (click)="toggleFavorite(poi)" [attr.aria-label]="'favorites.favoriteAria' | t">
+          <mat-icon fontSet="material-icons-round">favorite</mat-icon>
+        </button>
+      </div>
+    </mat-card>
+  </ng-container>
 
   <mat-card class="card empty" *ngIf="!loading && !favorites.length">
-    <p>Non hai ancora preferiti.</p>
+    <p>{{ 'favorites.empty' | t }}</p>
   </mat-card>
 </section>
-

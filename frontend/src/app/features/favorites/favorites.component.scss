@@ -1,22 +1,19 @@
 .favorites {
   display: grid;
   gap: 12px;
-}
-
-.hidden {
-  display: none;
+  align-content: start;
 }
 
 .poi-card {
   padding: 10px;
   display: grid;
-  grid-template-columns: 92px 1fr auto;
-  align-items: center;
+  grid-template-columns: 86px 1fr auto;
+  align-items: start;
   gap: 10px;
 
   img {
-    width: 92px;
-    height: 74px;
+    width: 86px;
+    height: 80px;
     border-radius: 12px;
     object-fit: cover;
     cursor: pointer;
@@ -25,17 +22,37 @@
 
 .meta {
   cursor: pointer;
+  min-width: 0;
 
   h3 {
     margin: 0 0 4px;
-    font-size: 1.05rem;
+    font-size: 1rem;
+    color: #13314f;
   }
 
   p {
     margin: 0;
     color: #61728b;
-    line-height: 1.35;
+    font-size: 0.84rem;
   }
+}
+
+.distance {
+  margin-top: 2px !important;
+}
+
+.teaser {
+  margin-top: 6px !important;
+  line-height: 1.34 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.poi-actions {
+  display: flex;
+  flex-direction: column;
 }
 
 .empty {
@@ -44,5 +61,11 @@
   p {
     margin: 0;
     color: #65758e;
+  }
+}
+
+@media (max-width: 600px) {
+  .poi-card {
+    grid-template-columns: 84px 1fr auto;
   }
 }

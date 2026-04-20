@@ -1,158 +1,111 @@
 <section class="page-shell home" *ngIf="vm$ | async as vm">
-  <header class="home-brand" [class.city-panel-open]="cityPanelOpen && !citySwitching">
-    <div class="home-brand-main">
-      <div class="home-logo" aria-hidden="true">
-        <img src="/assets/logo.png" alt="" />
-      </div>
-      <div class="home-brand-copy">
-        <h1 class="page-title">Walk Around</h1>
-        <p class="page-subtitle">Punti di interesse vicini</p>
+  <header class="home-brand">
+    <div class="home-brand-stage">
+      <img class="home-logo" src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
+      <div class="home-brand-footer">
+        <p class="home-slogan">{{ 'common.brandTagline' | t }}</p>
+
+        <div class="home-brand-controls">
+          <mat-form-field appearance="fill" class="city-select">
+            <mat-icon matPrefix fontSet="material-icons-round" class="city-select-icon">location_city</mat-icon>
+            <mat-select [value]="activeCityId" (selectionChange)="onCityChanged($event.value)">
+              <mat-option *ngFor="let city of cities" [value]="city.id">{{ cityName(city.id) }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
       </div>
     </div>
-
-    <button mat-stroked-button color="primary" class="city-toggle-btn" type="button" (click)="toggleCityPanel()">
-      <span>{{ currentCityName() }}</span>
-      <mat-icon fontSet="material-icons-round">{{ cityPanelOpen && !citySwitching ? 'expand_less' : 'expand_more' }}</mat-icon>
-    </button>
-
-    <mat-card class="card city-panel" *ngIf="cityPanelOpen && !citySwitching">
-      <div class="city-panel-head">
-        <div>
-          <h3>{{ currentCityName() }}</h3>
-          <p>{{ currentCityDescription() }}</p>
-        </div>
-
-        <button mat-icon-button type="button" (click)="closeCityPanel()" aria-label="Chiudi pannello citta">
-          <mat-icon fontSet="material-icons-round">close</mat-icon>
-        </button>
-      </div>
-
-      <div class="city-panel-stats">
-        <article>
-          <span>Luoghi totali</span>
-          <strong>{{ vm.pois.length }}</strong>
-        </article>
-
-        <button type="button" class="stat-clickable" (click)="openCityPoiPicker(vm)">
-          <span>Sbloccati</span>
-          <strong>{{ unlockedPoiCount(vm) }}/{{ vm.pois.length }}</strong>
-        </button>
-
-        <button type="button" class="stat-clickable" (click)="onCityBundleStatClick()">
-          <span>Pacchetto citta</span>
-          <strong>{{ isCityBundleUnlocked(activeCityId) ? 'Attivo' : 'Non attivo' }}</strong>
-        </button>
-      </div>
-
-      <div class="city-panel-list">
-        <button
-          mat-stroked-button
-          color="primary"
-          type="button"
-          *ngFor="let city of cities"
-          [class.active]="city.id === activeCityId"
-          (click)="selectCity(city.id)"
-        >
-          {{ city.name }}
-        </button>
-      </div>
-    </mat-card>
   </header>
 
   <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
     <p>{{ apiErrorMessage }}</p>
-    <p class="hint">Controlla che backend e proxy siano attivi.</p>
+    <p class="hint">{{ 'home.apiHint' | t }}</p>
+  </mat-card>
+
+  <mat-card class="card city-summary">
+    <p><strong>{{ 'home.region' | t }}:</strong> {{ currentCityRegion() }}</p>
+    <p><strong>{{ 'home.city' | t }}:</strong> {{ currentCityName() }}</p>
+    <p class="summary-description">
+      {{ citySummaryText() }}
+      <button mat-button type="button" class="expand-inline-btn" *ngIf="canExpandCitySummary()" (click)="toggleCitySummary()">
+        {{ citySummaryExpanded ? ('common.showLess' | t) : ('common.showMore' | t) }}
+      </button>
+    </p>
+    <p><strong>{{ 'home.placesOfInterest' | t }}:</strong> {{ vm.pois.length }}</p>
   </mat-card>
 
   <mat-card class="card structure-card" *ngIf="visibleAssociatedStructure as structure">
     <div class="structure-head">
-      <p class="structure-kicker">Struttura associata</p>
-      <span class="status-chip unlocked">Attiva</span>
+      <p class="structure-kicker">{{ 'home.associatedStructure' | t }}</p>
+      <span class="status-chip unlocked">{{ 'home.structureActive' | t }}</span>
     </div>
     <h3>{{ structure.structureName }}</h3>
     <p class="structure-address">{{ structure.structureAddress }}</p>
-    <button mat-stroked-button color="primary" (click)="navigateToAssociatedStructure()">Naviga verso struttura</button>
-  </mat-card>
-
-  <mat-card class="card warning geo-warning" *ngIf="vm.permission === 'denied'">
-    <p>Geolocalizzazione negata. Sto usando il centro citta.</p>
-    <button mat-stroked-button color="primary" (click)="askLocationAgain()">Riprova permesso</button>
+    <button mat-stroked-button color="primary" (click)="navigateToAssociatedStructure()">{{ 'home.navigateToStructure' | t }}</button>
   </mat-card>
 
   <mat-card class="card continue" *ngIf="continuePoi">
-    <p class="section-label">Continua ascolto</p>
-    <h3>{{ continuePoi.name }}</h3>
-    <p>Riprendi da {{ continueTime | durationLabel }}</p>
-    <button mat-stroked-button color="primary" (click)="resumePlayback()">Riprendi</button>
+    <p class="section-label">{{ 'home.continueListening' | t }}</p>
+    <h3>{{ poiName(continuePoi) }}</h3>
+    <p>{{ 'home.resumeFrom' | t:{ time: (continueTime | durationLabel) } }}</p>
+    <button mat-stroked-button color="primary" (click)="resumePlayback()">{{ 'home.resume' | t }}</button>
   </mat-card>
 
+  <div class="city-unlock-wrap" *ngIf="!isCityBundleUnlocked(activeCityId)">
+    <button mat-flat-button color="primary" class="big-cta city-unlock-btn" (click)="purchaseCity(activeCityId)">
+      {{ 'home.unlockCity' | t:{ city: currentCityName(), price: i18n.formatCurrency(cityUnlockPrice) } }}
+    </button>
+  </div>
+
   <section class="nearby-section">
-    <h3>Vicino a te</h3>
+    <h3>{{ 'home.nearYou' | t }}</h3>
 
     <mat-card class="card city-switch-loader" *ngIf="citySwitching">
       <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
       <div class="city-switch-loader-copy">
-        <p class="city-switch-loader-title">Aggiorno {{ currentCityName() }}</p>
-        <p class="city-switch-loader-subtitle">Caricamento punti di interesse...</p>
+        <p class="city-switch-loader-title">{{ 'home.updatingCity' | t:{ city: currentCityName() } }}</p>
+        <p class="city-switch-loader-subtitle">{{ 'home.loadingPoi' | t }}</p>
       </div>
     </mat-card>
 
     <ng-container *ngIf="!citySwitching">
-      <mat-card class="card poi-card" *ngFor="let poi of vm.pois; let index = index" [class.poi-card-highlight]="index === 0">
-        <div class="nearest-head" *ngIf="index === 0">
-          <p class="overline">
-            <mat-icon fontSet="material-icons-round">near_me</mat-icon>
-            Sei vicino a
-          </p>
-          <span class="distance-pill">{{ poi.distanceLabel }}</span>
-        </div>
-
+      <mat-card class="card poi-card" *ngFor="let poi of vm.pois">
         <div class="poi-card-main">
-          <img [appImgFallback]="poi.imageUrl" [alt]="poi.name" (click)="openPoi(poi.id)" />
+          <img [appImgFallback]="poi.imageUrl" [alt]="poiName(poi)" (click)="openPoi(poi.id)" />
 
           <div class="poi-meta" (click)="openPoi(poi.id)">
-            <h4>{{ poi.name }}</h4>
-            <p>{{ poi.distanceLabel }} - {{ poi.durationSec | durationLabel }}</p>
-            <p class="poi-teaser">{{ poi.descriptionShort }}</p>
-            <span class="status-chip" [ngClass]="poi.unlocked ? 'unlocked' : (poi.near ? 'near' : 'locked')">
-              {{ poi.unlocked ? 'Sbloccato' : (poi.near ? 'Vicino' : 'Bloccato') }}
-            </span>
+            <h4>{{ poiName(poi) }}</h4>
+            <p class="poi-address">{{ poiAddress(poi) }}</p>
+            <p class="poi-distance">{{ poi.distanceLabel }} - {{ poi.durationSec | durationLabel }}</p>
+            <p class="poi-teaser" [class.expanded]="isPoiDescriptionExpanded(poi.id)">{{ poiDescription(poi) }}</p>
+            <button
+              mat-button
+              type="button"
+              class="expand-inline-btn"
+              *ngIf="canExpandPoiDescription(poi)"
+              (click)="togglePoiDescription(poi.id); $event.stopPropagation()"
+            >
+              {{ isPoiDescriptionExpanded(poi.id) ? ('common.showLess' | t) : ('common.showMore' | t) }}
+            </button>
           </div>
 
           <div class="poi-quick-actions">
             <button mat-icon-button color="primary" (click)="onPoiAudioAction(poi)" [disabled]="!hasPlayableAudio(poi)">
               <mat-icon fontSet="material-icons-round">headphones</mat-icon>
             </button>
+            <button mat-icon-button color="primary" (click)="toggleFavorite(poi.id)">
+              <mat-icon fontSet="material-icons-round">{{ isFavorite(poi.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
+            </button>
           </div>
         </div>
 
-        <div class="poi-main-actions" *ngIf="index === 0">
-          <button mat-flat-button color="primary" class="big-cta" (click)="onMainCta(poi)" [disabled]="poi.unlocked && !hasPlayableAudio(poi)">
+        <div class="poi-unlock-actions" *ngIf="!poi.unlocked">
+          <button mat-flat-button color="primary" class="unlock-poi-btn" (click)="addPoiToCart(poi)" [disabled]="isPoiInCart(poi.id)">
             {{
-              poi.unlocked
-                ? (hasPlayableAudio(poi) ? 'Riproduci audio guida' : 'Audio non disponibile')
-                : ('Sblocca questo luogo €' + formatPrice(poi.priceSingle))
+              isPoiInCart(poi.id)
+                ? ('home.placeAlreadyInCart' | t)
+                : ('mapSheet.unlockPlace' | t:{ price: i18n.formatCurrency(poi.priceSingle) })
             }}
-          </button>
-
-          <button
-            mat-stroked-button
-            color="primary"
-            class="nearest-secondary-cta"
-            *ngIf="!poi.unlocked"
-            (click)="purchaseCity(poi.cityId)"
-          >
-            Oppure sblocca {{ cityName(poi.cityId) }} €{{ cityUnlockPriceLabel }}
-          </button>
-        </div>
-
-        <div class="poi-unlock-actions" *ngIf="!poi.unlocked && index !== 0">
-          <button mat-flat-button color="primary" class="unlock-poi-btn" (click)="purchasePoi(poi)">
-            Sblocca luogo €{{ formatPrice(poi.priceSingle) }}
-          </button>
-
-          <button mat-stroked-button color="primary" class="unlock-city-btn" (click)="purchaseCity(poi.cityId)">
-            Sblocca {{ cityName(poi.cityId) }} €{{ cityUnlockPriceLabel }}
           </button>
         </div>
       </mat-card>
@@ -162,5 +115,5 @@
 
 <section class="page-shell home loading-state" *ngIf="loading">
   <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-  <p>Caricamento punti di interesse...</p>
+  <p>{{ 'home.loadingPoi' | t }}</p>
 </section>

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { BehaviorSubject, Observable, map, of } from 'rxjs';
+import { BehaviorSubject, Observable, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PurchaseItem, PurchasesResponse } from '../models/purchase.model';
 import {
@@ -50,7 +50,7 @@ interface ClearPurchasesResponse {
   deletedCount: number;
 }
 
-interface CheckoutPurchaseResponse {
+export interface CheckoutPurchaseResponse {
   purchased: boolean;
   alreadyPurchased?: boolean;
   type: 'single' | 'bundle';
@@ -65,6 +65,8 @@ interface CheckoutPurchaseResponse {
   inviteCode?: string | null;
   structureFixedAmount?: number;
   structureEarningAmount?: number;
+  purchasedAt?: string;
+  expiresAt?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -119,6 +121,36 @@ export class PurchaseService {
     };
 
     return this.openUnlockDialog(dialogData);
+  }
+
+  purchasePoiSingleWithoutCode(poiId: string): Observable<CheckoutPurchaseResponse> {
+    return this.http
+      .post<CheckoutPurchaseResponse>(`${environment.apiBaseUrl}/purchase`, {
+        userId: this.appState.userId,
+        type: 'single',
+        poiId,
+        ignoreDiscountCode: true
+      })
+      .pipe(
+        tap((result) => {
+          this.applyPurchaseResult(result);
+        })
+      );
+  }
+
+  purchaseCityBundleWithoutCode(cityId: string): Observable<CheckoutPurchaseResponse> {
+    return this.http
+      .post<CheckoutPurchaseResponse>(`${environment.apiBaseUrl}/purchase`, {
+        userId: this.appState.userId,
+        type: 'bundle',
+        cityId,
+        ignoreDiscountCode: true
+      })
+      .pipe(
+        tap((result) => {
+          this.applyPurchaseResult(result);
+        })
+      );
   }
 
   validateHotelCode(code: string): Observable<HotelValidationResponse> {

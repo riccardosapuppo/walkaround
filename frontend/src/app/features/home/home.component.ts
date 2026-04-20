@@ -1,24 +1,20 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { catchError, combineLatest, map, of, shareReplay, startWith, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
+import { catchError, combineLatest, map, of, shareReplay, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { City } from '../../core/models/city.model';
 import { Poi } from '../../core/models/poi.model';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
-import { Coordinates, GeoPermissionState, GeoService } from '../../core/services/geo.service';
+import { CartService } from '../../core/services/cart.service';
+import { Coordinates, GeoService } from '../../core/services/geo.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { PlayerService } from '../../core/services/player.service';
 import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
 import { StructureLocationService } from '../../core/services/structure-location.service';
 import { formatCityLabel } from '../../core/utils/city-label.util';
-import {
-  CityPoiPickerDialogComponent,
-  CityPoiPickerDialogData,
-  CityPoiPickerDialogResult
-} from './city-poi-picker-dialog.component';
 
 interface PoiHomeView extends Poi {
   distanceMeters: number;
@@ -31,7 +27,6 @@ interface HomeViewModel {
   cityId: string;
   nearestPoi: PoiHomeView | null;
   pois: PoiHomeView[];
-  permission: GeoPermissionState;
 }
 
 const cityFallbackMap: Record<string, Coordinates> = {
@@ -41,14 +36,8 @@ const cityFallbackMap: Record<string, Coordinates> = {
   ragusa: { lat: 36.9269, lng: 14.7305 }
 };
 
-const cityDescriptionMap: Record<string, string> = {
-  catania: 'Citta di pietra lavica e barocco, perfetta per iniziare un tour tra storia e mercati locali.',
-  siracusa: "Tra Ortigia e area archeologica, un mix unico di mare, mito e architettura classica.",
-  taormina: "Panorami sullo Ionio, vicoli eleganti e siti iconici come il Teatro Antico e Isola Bella.",
-  ragusa: 'Un itinerario tra scorci barocchi, salite panoramiche e piazze storiche del Val di Noto.'
-};
-
 const homeScrollStorageKey = 'walkaround.home.scrollY';
+const citySummaryMaxLength = 160;
 
 @Component({
   standalone: false,
@@ -59,13 +48,12 @@ const homeScrollStorageKey = 'walkaround.home.scrollY';
 export class HomeComponent implements OnInit, OnDestroy {
   apiErrorMessage: string | null = null;
   loading = true;
-  readonly cityUnlockPrice = 14.99;
-  readonly cityUnlockPriceLabel = '14,99';
+  readonly cityUnlockPrice = 15;
   activeCityId = 'catania';
   associatedStructure: HotelAssociation | null = null;
-  cityPanelOpen = false;
   citySwitching = false;
   cities: City[] = [];
+  citySummaryExpanded = false;
 
   readonly vm$ = combineLatest([
     this.appState.activeCityId$.pipe(
@@ -83,10 +71,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       )
     ),
     this.geoService.coordinates$.pipe(startWith(null)),
-    this.geoService.permission$.pipe(startWith('prompt' as GeoPermissionState)),
     this.purchaseService.purchases$.pipe(startWith({ items: [], unlockedPoiIds: [], unlockedCityIds: [] }))
   ]).pipe(
-    map(([cityData, coordinates, permission]) => {
+    map(([cityData, coordinates]) => {
       const fallback = cityFallbackMap[cityData.cityId] || cityFallbackMap['catania'];
       const center = coordinates || fallback;
 
@@ -101,7 +88,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           return {
             ...poi,
             distanceMeters,
-            distanceLabel: this.formatDistance(distanceMeters),
+            distanceLabel: this.i18n.formatDistance(distanceMeters),
             unlocked,
             near: distanceMeters <= environment.geofenceRadiusMeters
           } satisfies PoiHomeView;
@@ -111,8 +98,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       return {
         cityId: cityData.cityId,
         nearestPoi: pois[0] || null,
-        pois,
-        permission
+        pois
       } satisfies HomeViewModel;
     }),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -122,10 +108,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   continueTime = 0;
 
   private readonly geofenceShown = new Set<string>();
+  private readonly expandedPoiDescriptions = new Set<string>();
   private readonly destroy$ = new Subject<void>();
   private readonly shouldRestoreScroll: boolean;
   private restoredScroll = false;
-  private latestVm: HomeViewModel | null = null;
   private lastActiveCityId: string | null = null;
 
   constructor(
@@ -135,9 +121,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     private readonly purchaseService: PurchaseService,
     private readonly playerService: PlayerService,
     private readonly structureLocationService: StructureLocationService,
-    private readonly dialog: MatDialog,
+    private readonly cartService: CartService,
     private readonly snackBar: MatSnackBar,
-    private readonly router: Router
+    private readonly router: Router,
+    public readonly i18n: I18nService
   ) {
     this.shouldRestoreScroll = this.router.getCurrentNavigation()?.trigger === 'popstate';
   }
@@ -175,7 +162,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       .subscribe(([cityId, association]) => {
         if (this.lastActiveCityId && this.lastActiveCityId !== cityId) {
           this.citySwitching = true;
-          this.cityPanelOpen = false;
+          this.citySummaryExpanded = false;
+          this.expandedPoiDescriptions.clear();
         }
 
         this.lastActiveCityId = cityId;
@@ -184,7 +172,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
 
     this.vm$.pipe(takeUntil(this.destroy$)).subscribe((vm) => {
-      this.latestVm = vm;
       this.loading = false;
       this.restoreScrollPosition();
       if (vm.cityId === this.activeCityId) {
@@ -192,16 +179,19 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
 
       if (vm.nearestPoi && vm.nearestPoi.near && !this.geofenceShown.has(vm.nearestPoi.id) && this.hasPlayableAudio(vm.nearestPoi)) {
-        const nearestPoi = vm.nearestPoi;
-        this.geofenceShown.add(nearestPoi.id);
-        const ref = this.snackBar.open(`Sei davanti a ${nearestPoi.name}. Avvia audio?`, 'Avvia', {
-          duration: 4500,
-          verticalPosition: 'top'
-        });
+        this.geofenceShown.add(vm.nearestPoi.id);
+        const ref = this.snackBar.open(
+          this.i18n.t('home.geofencePrompt', { name: this.poiName(vm.nearestPoi) }),
+          this.i18n.t('home.geofenceAction'),
+          {
+            duration: 4500,
+            verticalPosition: 'top'
+          }
+        );
 
         ref.onAction().subscribe(() => {
           this.saveScrollPosition();
-          void this.router.navigate(['/player', nearestPoi.id], { queryParams: { preview: false } });
+          void this.router.navigate(['/player', vm.nearestPoi!.id], { queryParams: { preview: false } });
         });
       }
     });
@@ -225,149 +215,149 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  askLocationAgain(): void {
-    void this.geoService.requestPermissionAndTrack();
-  }
-
-  onMainCta(poi: PoiHomeView): void {
-    if (poi.unlocked) {
-      if (!this.hasPlayableAudio(poi)) {
-        this.toast('Audio non disponibile per questo luogo.');
-        return;
-      }
-      this.playPoi(poi, false);
-      return;
-    }
-
-    this.purchasePoi(poi);
-  }
-
-  onPoiAudioAction(poi: PoiHomeView): void {
-    this.playPoi(poi, !poi.unlocked);
-  }
-
-  toggleCityPanel(): void {
-    if (this.citySwitching) {
-      return;
-    }
-
-    this.cityPanelOpen = !this.cityPanelOpen;
-  }
-
-  closeCityPanel(): void {
-    this.cityPanelOpen = false;
-  }
-
-  selectCity(cityId: string): void {
+  onCityChanged(cityId: string): void {
     if (!cityId || cityId === this.activeCityId) {
-      this.cityPanelOpen = false;
       return;
     }
-
-    this.cityPanelOpen = false;
     this.citySwitching = true;
+    this.citySummaryExpanded = false;
+    this.expandedPoiDescriptions.clear();
     this.appState.setActiveCity(cityId);
   }
 
   currentCityName(): string {
     const city = this.cities.find((item) => item.id === this.activeCityId);
-    return city?.name || this.cityName(this.activeCityId);
+    return this.i18n.resolveCityField(city?.name, city?.translations, 'name') || this.cityName(this.activeCityId);
+  }
+
+  currentCityRegion(): string {
+    const city = this.cities.find((item) => item.id === this.activeCityId);
+    return this.i18n.translateRegion(String(city?.region || '').trim() || 'Sicilia');
   }
 
   currentCityDescription(): string {
-    const city = this.cities.find((item) => item.id === this.activeCityId);
-    const region = String(city?.region || '').trim();
-    const curated = cityDescriptionMap[this.activeCityId];
-    if (curated) {
-      return region ? `${curated} Regione: ${region}.` : curated;
-    }
-
-    return region ? `Scopri i punti di interesse di ${this.currentCityName()} in ${region}.` : `Scopri ${this.currentCityName()}.`;
+    const key = `home.cityDescription.${this.activeCityId}`;
+    const description = this.i18n.t(key);
+    return description === key ? '' : description;
   }
 
-  unlockedPoiCount(vm: HomeViewModel): number {
-    return vm.pois.filter((poi) => poi.unlocked).length;
+  citySummaryText(): string {
+    const full = this.currentCityDescription();
+    if (this.citySummaryExpanded || full.length <= citySummaryMaxLength) {
+      return full;
+    }
+    return `${full.slice(0, citySummaryMaxLength).trimEnd()}...`;
+  }
+
+  canExpandCitySummary(): boolean {
+    return this.currentCityDescription().length > citySummaryMaxLength;
+  }
+
+  toggleCitySummary(): void {
+    this.citySummaryExpanded = !this.citySummaryExpanded;
   }
 
   isCityBundleUnlocked(cityId: string): boolean {
     return this.purchaseService.isCityUnlocked(cityId);
   }
 
-  onCityBundleStatClick(): void {
-    if (this.isCityBundleUnlocked(this.activeCityId)) {
-      this.toast(`Pacchetto ${this.currentCityName()} gia attivo`, 'OK', 2200);
-      return;
-    }
-
-    this.purchaseCity(this.activeCityId);
+  purchaseCity(cityId: string): void {
+    this.purchaseService.purchaseCityBundle(cityId, this.cityName(cityId), this.cityUnlockPrice).subscribe({
+      next: (result) => {
+        if (result?.action === 'paid') {
+          this.toast(this.i18n.t('map.cityUnlocked', { city: this.cityName(cityId) }));
+        }
+      },
+      error: () => {
+        this.toast(this.i18n.t('home.operationFailed'), this.i18n.t('common.close'), 2600);
+      }
+    });
   }
 
-  openCityPoiPicker(vm: HomeViewModel): void {
-    if (this.isCityBundleUnlocked(this.activeCityId)) {
-      this.toast(`Hai gia sbloccato tutti i ${vm.pois.length} luoghi di ${this.currentCityName()}.`, 'OK', 2800);
+  addPoiToCart(poi: Poi): void {
+    if (this.purchaseService.isPoiUnlocked(poi.id, poi.cityId)) {
+      this.toast(this.i18n.t('home.placeAlreadyUnlocked'), this.i18n.t('common.ok'), 2000);
+      return;
+    }
+    if (this.cartService.isPoiInCart(poi.id)) {
+      this.toast(this.i18n.t('home.placeAlreadyInCart'), this.i18n.t('common.ok'), 2200);
       return;
     }
 
-    const dialogData: CityPoiPickerDialogData = {
-      cityId: this.activeCityId,
-      cityName: this.currentCityName(),
-      cityUnlockPriceLabel: this.cityUnlockPriceLabel,
-      pois: vm.pois.map((poi) => ({
-        id: poi.id,
-        name: poi.name,
-        distanceLabel: poi.distanceLabel,
-        durationSec: poi.durationSec,
-        priceSingle: poi.priceSingle,
-        descriptionShort: poi.descriptionShort,
-        unlocked: poi.unlocked
-      }))
-    };
+    const added = this.cartService.addPoi({
+      poiId: poi.id,
+      cityId: poi.cityId,
+      cityName: this.cityName(poi.cityId),
+      label: this.poiName(poi),
+      amount: poi.priceSingle
+    });
+    if (added) {
+      this.toast(this.i18n.t('home.placeAdded', { name: this.poiName(poi) }));
+    }
+  }
 
-    this.dialog
-      .open(CityPoiPickerDialogComponent, {
-        autoFocus: false,
-        restoreFocus: true,
-        width: 'min(92vw, 760px)',
-        maxWidth: '760px',
-        maxHeight: '94dvh',
-        data: dialogData
-      })
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((result: CityPoiPickerDialogResult | undefined) => {
-        if (!result) {
-          return;
-        }
+  isPoiInCart(poiId: string): boolean {
+    return this.cartService.isPoiInCart(poiId);
+  }
 
-        if (result.action === 'purchase-city-bundle') {
-          this.purchaseCity(this.activeCityId);
-          return;
-        }
+  onPoiAudioAction(poi: PoiHomeView): void {
+    if (!this.hasPlayableAudio(poi)) {
+      this.toast(this.i18n.t('home.noAudio'));
+      return;
+    }
 
-        const selectedPoiIds = Array.isArray(result.selectedPoiIds) ? result.selectedPoiIds : [];
-        if (!selectedPoiIds.length) {
-          return;
-        }
+    if (poi.unlocked) {
+      this.playPoi(poi, false);
+      return;
+    }
 
-        if (selectedPoiIds.length > 1) {
-          this.toast('Per acquisto multiplo viene usato il pacchetto citta.', 'OK', 2600);
-          this.purchaseCity(this.activeCityId);
-          return;
-        }
+    this.openPoi(poi.id);
+  }
 
-        const latestVm = this.latestVm;
-        const target = latestVm?.pois.find((poi) => poi.id === selectedPoiIds[0]);
-        if (!target) {
-          return;
-        }
+  toggleFavorite(poiId: string): void {
+    this.appState.toggleFavorite(poiId);
+  }
 
-        this.purchasePoi(target);
-      });
+  isFavorite(poiId: string): boolean {
+    return this.appState.isFavorite(poiId);
+  }
+
+  togglePoiDescription(poiId: string): void {
+    if (!poiId) {
+      return;
+    }
+
+    if (this.expandedPoiDescriptions.has(poiId)) {
+      this.expandedPoiDescriptions.delete(poiId);
+      return;
+    }
+
+    this.expandedPoiDescriptions.add(poiId);
+  }
+
+  isPoiDescriptionExpanded(poiId: string): boolean {
+    return this.expandedPoiDescriptions.has(poiId);
+  }
+
+  canExpandPoiDescription(poi: Poi): boolean {
+    return String(this.poiDescription(poi) || '').trim().length > 120;
+  }
+
+  poiAddress(poi: Poi): string {
+    return `${this.cityName(poi.cityId)} - ${this.i18n.t('common.coordinates')} ${poi.lat.toFixed(4)}, ${poi.lng.toFixed(4)}`;
+  }
+
+  poiName(poi: Poi | null | undefined): string {
+    return this.i18n.resolvePoiField(poi?.name, poi?.translations, 'name');
+  }
+
+  poiDescription(poi: Poi | null | undefined): string {
+    return this.i18n.resolvePoiField(poi?.descriptionShort, poi?.translations, 'descriptionShort');
   }
 
   playPoi(poi: Poi, preview: boolean): void {
     if (!this.hasPlayableAudio(poi)) {
-      this.toast('Audio non disponibile per questo luogo.');
+      this.toast(this.i18n.t('home.noAudio'));
       return;
     }
 
@@ -382,32 +372,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/poi', poiId]);
   }
 
-  purchaseCity(cityId: string): void {
-    this.purchaseService.purchaseCityBundle(cityId, this.cityName(cityId), this.cityUnlockPrice).subscribe({
-      next: (result) => {
-        if (result?.action === 'paid') {
-          this.toast(`Citta sbloccata: ${this.cityName(cityId)}`);
-        }
-      },
-      error: () => {
-        this.toast('Operazione non riuscita', 'Chiudi', 2600);
-      }
-    });
-  }
-
-  purchasePoi(poi: Poi): void {
-    this.purchaseService.purchasePoiSingle(poi.id, poi.cityId, poi.name, poi.priceSingle).subscribe({
-      next: (result) => {
-        if (result?.action === 'paid') {
-          this.toast(`Luogo sbloccato: ${poi.name}`);
-        }
-      },
-      error: () => {
-        this.toast('Operazione non riuscita', 'Chiudi', 2600);
-      }
-    });
-  }
-
   navigateToAssociatedStructure(): void {
     const association = this.visibleAssociatedStructure;
     if (!association?.structureId) {
@@ -416,7 +380,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     const url = this.structureLocationService.buildExternalDirectionsUrl(association, null);
     if (!url) {
-      this.toast('Dati struttura non disponibili per la navigazione', 'Chiudi');
+      this.toast(this.i18n.t('home.structureNavigationUnavailable'), this.i18n.t('common.close'));
       return;
     }
 
@@ -424,11 +388,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   cityName(cityId: string): string {
-    return formatCityLabel(cityId, this.cities);
-  }
-
-  formatPrice(amount: number): string {
-    return amount.toFixed(2).replace('.', ',');
+    return formatCityLabel(cityId, this.cities, this.i18n.language);
   }
 
   resumePlayback(): void {
@@ -439,11 +399,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.playPoi(this.continuePoi, false);
   }
 
-  hasPlayableAudio(poi: { audioUrl?: string | null } | null | undefined): boolean {
-    return Boolean(String(poi?.audioUrl || '').trim());
+  hasPlayableAudio(poi: Poi | null | undefined): boolean {
+    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
   }
 
-  private toast(message: string, action = 'OK', duration = 2400): void {
+  private toast(message: string, action = this.i18n.t('common.ok'), duration = 2400): void {
     this.snackBar.open(message, action, {
       duration,
       verticalPosition: 'top'
@@ -482,28 +442,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  private formatDistance(distanceMeters: number): string {
-    if (distanceMeters < 1000) {
-      return `${Math.round(distanceMeters)} m`;
-    }
-
-    return `${(distanceMeters / 1000).toFixed(1)} km`;
-  }
-
   private describeApiError(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 0) {
-        return 'Backend non raggiungibile. Avvia API su http://localhost:3000.';
+        return this.i18n.t('home.backendUnavailable');
       }
 
       if (error.status === 200) {
-        return 'Risposta API non valida (atteso JSON). Controlla proxy Angular e backend.';
+        return this.i18n.t('home.apiInvalid');
       }
 
-      return `Errore API ${error.status}: ${error.statusText || 'risposta non valida'}.`;
+      return this.i18n.t('home.apiError');
     }
 
-    return 'Errore caricamento dati Home.';
+    return this.i18n.t('home.apiError');
   }
 
   private associationCityIds(association: HotelAssociation): string[] {

@@ -11,7 +11,8 @@ async function createSchema(client) {
       region TEXT NOT NULL,
       bundle_price NUMERIC(10,2) NOT NULL,
       hero_image TEXT NOT NULL,
-      is_default BOOLEAN NOT NULL DEFAULT FALSE
+      is_default BOOLEAN NOT NULL DEFAULT FALSE,
+      translations JSONB NOT NULL DEFAULT '{}'::jsonb
     );
   `);
 
@@ -28,8 +29,45 @@ async function createSchema(client) {
       image_url TEXT NOT NULL,
       audio_url TEXT NOT NULL,
       price_single NUMERIC(10,2) NOT NULL,
-      duration_sec INTEGER NOT NULL
+      duration_sec INTEGER NOT NULL,
+      translations JSONB NOT NULL DEFAULT '{}'::jsonb
     );
+  `);
+
+  await client.query(`
+    ALTER TABLE cities
+    ADD COLUMN IF NOT EXISTS translations JSONB;
+  `);
+  await client.query(`
+    UPDATE cities
+    SET translations = '{}'::jsonb
+    WHERE translations IS NULL;
+  `);
+  await client.query(`
+    ALTER TABLE cities
+    ALTER COLUMN translations SET DEFAULT '{}'::jsonb;
+  `);
+  await client.query(`
+    ALTER TABLE cities
+    ALTER COLUMN translations SET NOT NULL;
+  `);
+
+  await client.query(`
+    ALTER TABLE pois
+    ADD COLUMN IF NOT EXISTS translations JSONB;
+  `);
+  await client.query(`
+    UPDATE pois
+    SET translations = '{}'::jsonb
+    WHERE translations IS NULL;
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ALTER COLUMN translations SET DEFAULT '{}'::jsonb;
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ALTER COLUMN translations SET NOT NULL;
   `);
 
   await client.query(`
@@ -49,6 +87,33 @@ async function createSchema(client) {
       structure_fixed_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
       structure_earning_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
       purchased_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS partner_registration_requests (
+      id BIGSERIAL PRIMARY KEY,
+      structure_name TEXT NOT NULL,
+      structure_type TEXT,
+      vat_number TEXT,
+      contact_first_name TEXT NOT NULL,
+      contact_last_name TEXT NOT NULL,
+      contact_email TEXT NOT NULL,
+      contact_phone TEXT NOT NULL,
+      website TEXT,
+      address_street TEXT NOT NULL,
+      address_number TEXT,
+      address_city TEXT NOT NULL,
+      address_postal_code TEXT,
+      address_province TEXT,
+      address_region TEXT,
+      address_country TEXT NOT NULL DEFAULT 'Italia',
+      rooms_count INTEGER,
+      notes TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      pdf_release_status TEXT NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
 
@@ -372,6 +437,18 @@ async function createSchema(client) {
   `);
   await client.query(`CREATE UNIQUE INDEX IF NOT EXISTS uq_dashboard_discount_codes_upper ON dashboard_structure_discount_codes(UPPER(code));`);
   await client.query(`
+    ALTER TABLE partner_registration_requests
+    ADD COLUMN IF NOT EXISTS approved_structure_id TEXT REFERENCES dashboard_structures(id) ON DELETE SET NULL;
+  `);
+  await client.query(`
+    ALTER TABLE partner_registration_requests
+    ADD COLUMN IF NOT EXISTS approved_discount_code_id BIGINT REFERENCES dashboard_structure_discount_codes(id) ON DELETE SET NULL;
+  `);
+  await client.query(`
+    ALTER TABLE partner_registration_requests
+    ADD COLUMN IF NOT EXISTS approval_email_sent_at TIMESTAMPTZ;
+  `);
+  await client.query(`
     INSERT INTO dashboard_structure_discount_codes (
       structure_id,
       code,
@@ -439,12 +516,69 @@ async function createSchema(client) {
     ALTER TABLE purchases
     ADD COLUMN IF NOT EXISTS structure_earning_amount NUMERIC(10,2);
   `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payment_method TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payment_provider TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payment_status TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payment_order_id TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payment_capture_id TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payment_environment TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payer_email TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payer_id TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payer_first_name TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payer_last_name TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payer_country_code TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payer_phone TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS payer_address TEXT;
+  `);
   await client.query(`UPDATE purchases SET base_amount = amount WHERE base_amount IS NULL;`);
   await client.query(`UPDATE purchases SET discount_percent = 0 WHERE discount_percent IS NULL;`);
   await client.query(`UPDATE purchases SET discount_amount = 0 WHERE discount_amount IS NULL;`);
   await client.query(`UPDATE purchases SET final_amount = amount WHERE final_amount IS NULL;`);
   await client.query(`UPDATE purchases SET structure_fixed_amount = 0 WHERE structure_fixed_amount IS NULL;`);
   await client.query(`UPDATE purchases SET structure_earning_amount = 0 WHERE structure_earning_amount IS NULL;`);
+  await client.query(`UPDATE purchases SET payment_method = 'Legacy' WHERE payment_method IS NULL OR TRIM(payment_method) = '';`);
+  await client.query(
+    `UPDATE purchases SET payment_provider = 'Non disponibile' WHERE payment_provider IS NULL OR TRIM(payment_provider) = '';`
+  );
+  await client.query(`UPDATE purchases SET payment_status = 'completed' WHERE payment_status IS NULL OR TRIM(payment_status) = '';`);
   await client.query(`
     UPDATE purchases
     SET structure_earning_amount = structure_fixed_amount
@@ -456,12 +590,18 @@ async function createSchema(client) {
   await client.query(`ALTER TABLE purchases ALTER COLUMN final_amount SET DEFAULT 0;`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN structure_fixed_amount SET DEFAULT 0;`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN structure_earning_amount SET DEFAULT 0;`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN payment_method SET DEFAULT 'PayPal';`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN payment_provider SET DEFAULT 'PayPal';`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN payment_status SET DEFAULT 'completed';`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN base_amount SET NOT NULL;`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN discount_percent SET NOT NULL;`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN discount_amount SET NOT NULL;`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN final_amount SET NOT NULL;`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN structure_fixed_amount SET NOT NULL;`);
   await client.query(`ALTER TABLE purchases ALTER COLUMN structure_earning_amount SET NOT NULL;`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN payment_method SET NOT NULL;`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN payment_provider SET NOT NULL;`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN payment_status SET NOT NULL;`);
   await client.query(`ALTER TABLE purchases DROP CONSTRAINT IF EXISTS purchases_structure_id_fkey;`);
   await client.query(`
     ALTER TABLE purchases
@@ -531,6 +671,47 @@ async function createSchema(client) {
     ALTER TABLE dashboard_users
     ADD CONSTRAINT dashboard_users_structure_id_fkey
     FOREIGN KEY (structure_id) REFERENCES dashboard_structures(id) ON DELETE SET NULL;
+  `);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_paypal_settings (
+      id SMALLINT PRIMARY KEY,
+      is_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+      mode TEXT NOT NULL DEFAULT 'sandbox',
+      client_id TEXT,
+      client_secret TEXT,
+      merchant_id TEXT,
+      merchant_email TEXT,
+      brand_name TEXT NOT NULL DEFAULT 'Walk Around',
+      webhook_id TEXT,
+      currency_code TEXT NOT NULL DEFAULT 'EUR',
+      last_verified_at TIMESTAMPTZ,
+      last_verification_status TEXT NOT NULL DEFAULT 'incomplete',
+      last_verification_error TEXT,
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_paypal_settings
+    DROP CONSTRAINT IF EXISTS dashboard_paypal_settings_mode_check;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_paypal_settings
+    ADD CONSTRAINT dashboard_paypal_settings_mode_check CHECK (mode IN ('sandbox', 'live'));
+  `);
+  await client.query(`
+    INSERT INTO dashboard_paypal_settings (
+      id,
+      is_enabled,
+      mode,
+      brand_name,
+      currency_code,
+      last_verification_status
+    )
+    VALUES (1, FALSE, 'sandbox', 'Walk Around', 'EUR', 'incomplete')
+    ON CONFLICT (id) DO NOTHING;
   `);
 
   await client.query(`
@@ -709,6 +890,51 @@ async function createSchema(client) {
   `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS paypal_checkout_orders (
+      id BIGSERIAL PRIMARY KEY,
+      paypal_order_id TEXT NOT NULL UNIQUE,
+      user_id TEXT NOT NULL,
+      checkout_context TEXT NOT NULL CHECK (checkout_context IN ('single', 'bundle', 'cart')),
+      status TEXT NOT NULL DEFAULT 'created',
+      currency_code TEXT NOT NULL DEFAULT 'EUR',
+      mode TEXT NOT NULL DEFAULT 'sandbox',
+      city_id TEXT REFERENCES cities(id) ON DELETE SET NULL,
+      poi_id TEXT REFERENCES pois(id) ON DELETE SET NULL,
+      base_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+      discount_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
+      discount_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+      final_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+      structure_id TEXT REFERENCES dashboard_structures(id) ON DELETE SET NULL,
+      invite_code TEXT,
+      structure_fixed_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+      structure_earning_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+      purchase_items JSONB NOT NULL DEFAULT '[]'::jsonb,
+      capture_payload JSONB,
+      payer_email TEXT,
+      payer_id TEXT,
+      payer_first_name TEXT,
+      payer_last_name TEXT,
+      payer_country_code TEXT,
+      payer_phone TEXT,
+      payer_address TEXT,
+      capture_id TEXT,
+      error_message TEXT,
+      captured_at TIMESTAMPTZ,
+      expires_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`
+    ALTER TABLE paypal_checkout_orders
+    DROP CONSTRAINT IF EXISTS paypal_checkout_orders_mode_check;
+  `);
+  await client.query(`
+    ALTER TABLE paypal_checkout_orders
+    ADD CONSTRAINT paypal_checkout_orders_mode_check CHECK (mode IN ('sandbox', 'live'));
+  `);
+
+  await client.query(`
     ALTER TABLE dashboard_sessions
     ADD COLUMN IF NOT EXISTS impersonated_by_user_id TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL;
   `);
@@ -717,6 +943,7 @@ async function createSchema(client) {
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_city_id ON purchases(city_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_poi_id ON purchases(poi_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_structure_id ON purchases(structure_id);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_payment_order_id ON purchases(payment_order_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_invites_user_id ON dashboard_invites(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_invites_expires_at ON dashboard_invites(expires_at);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_password_resets_user_id ON dashboard_password_resets(user_id);`);
@@ -735,6 +962,10 @@ async function createSchema(client) {
   await client.query(
     `CREATE INDEX IF NOT EXISTS idx_dashboard_sessions_impersonated_by ON dashboard_sessions(impersonated_by_user_id);`
   );
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_paypal_settings_updated_by ON dashboard_paypal_settings(updated_by);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_user_id ON paypal_checkout_orders(user_id);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_status ON paypal_checkout_orders(status);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_invite_code ON paypal_checkout_orders(invite_code);`);
 }
 
 async function seedCities(client) {

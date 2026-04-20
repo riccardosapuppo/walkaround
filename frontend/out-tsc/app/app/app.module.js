@@ -9,6 +9,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BottomNavComponent } from './layout/bottom-nav/bottom-nav.component';
 import { MaterialModule } from './shared/material.module';
+import { TranslatePipe } from './shared/pipes/translate.pipe';
 import { environment } from '../environments/environment';
 import * as i0 from "@angular/core";
 import * as i1 from "@angular/service-worker";
@@ -36,6 +37,7 @@ export class AppModule {
                     HttpClientModule,
                     AppRoutingModule,
                     MaterialModule,
+                    TranslatePipe,
                     ServiceWorkerModule.register('ngsw-worker.js', {
                         enabled: environment.production,
                         registrationStrategy: 'registerWhenStable:30000'
@@ -49,4 +51,5 @@ export class AppModule {
         BrowserAnimationsModule,
         HttpClientModule,
         AppRoutingModule,
-        MaterialModule, i1.ServiceWorkerModule] }); })();
+        MaterialModule,
+        TranslatePipe, i1.ServiceWorkerModule] }); })();

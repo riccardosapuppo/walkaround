@@ -1,11 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { combineLatest, Subject, takeUntil } from 'rxjs';
+import { AppLanguage } from '../../core/i18n/app-language';
 import { City } from '../../core/models/city.model';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { PoiService } from '../../core/services/poi.service';
 import { HotelCodeStatusEntry, PurchaseService } from '../../core/services/purchase.service';
 import { StructureLocationService } from '../../core/services/structure-location.service';
+import { formatCityLabel } from '../../core/utils/city-label.util';
 
 @Component({
   standalone: false,
@@ -20,7 +23,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   hotelAssociation: HotelAssociation | null = null;
   hotelCodeEntries: HotelCodeStatusEntry[] = [];
   unlockedCityIds: string[] = [];
-  language: 'it' | 'en' = 'it';
+  language: AppLanguage = 'it';
   loading = true;
   removingInviteCode = false;
   resettingUserSession = false;
@@ -32,7 +35,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private readonly appState: AppStateService,
     private readonly purchaseService: PurchaseService,
     private readonly structureLocationService: StructureLocationService,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    public readonly i18n: I18nService
   ) {}
 
   ngOnInit(): void {
@@ -79,9 +83,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.appState.setActiveCity(cityId);
   }
 
-  setLanguage(language: 'it' | 'en'): void {
+  setLanguage(language: AppLanguage): void {
     this.appState.setLanguage(language);
-    this.snackBar.open(`Lingua impostata: ${language.toUpperCase()}`, 'OK', { duration: 1800 });
+    this.snackBar.open(
+      this.i18n.t('profile.languageSet', { language: this.i18n.languageLabel(language) }),
+      this.i18n.t('common.ok'),
+      { duration: 1800 }
+    );
   }
 
   get hasStoredInviteCode(): boolean {
@@ -91,38 +99,22 @@ export class ProfileComponent implements OnInit, OnDestroy {
   get inviteCodeStatusText(): string {
     const status = this.hotelAssociation?.codeStatus || (this.hasStoredInviteCode ? 'invalid' : null);
     if (status === 'valid') {
-      return 'Attivato (non usato)';
+      return this.i18n.t('profile.inviteStatus.valid');
     }
     if (status === 'used') {
-      return 'Usato';
+      return this.i18n.t('profile.inviteStatus.used');
     }
     if (status === 'expired') {
-      return 'Scaduto';
+      return this.i18n.t('profile.inviteStatus.expired');
     }
     if (status === 'invalid') {
-      return 'Non valido';
+      return this.i18n.t('profile.inviteStatus.invalid');
     }
-    return 'Nessun codice';
+    return this.i18n.t('profile.inviteStatus.none');
   }
 
   get inviteCodeExpiresAt(): string {
-    const value = this.hotelAssociation?.expiresAt || '';
-    if (!value) {
-      return '-';
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return '-';
-    }
-
-    return new Intl.DateTimeFormat('it-IT', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+    return this.i18n.formatDateTime(this.hotelAssociation?.expiresAt);
   }
 
   removeInviteCodeAssociation(entry?: HotelCodeStatusEntry): void {
@@ -130,7 +122,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       return;
     }
     if (entry && !this.canRemoveCodeEntry(entry)) {
-      this.snackBar.open('Questo codice e gia usato e non puo essere rimosso', 'Chiudi', { duration: 2500 });
+      this.snackBar.open(this.i18n.t('profile.removeUsedError'), this.i18n.t('common.close'), { duration: 2500 });
       return;
     }
     if (!entry && !this.hasStoredInviteCode) {
@@ -138,7 +130,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     const codeLabel = entry?.inviteCode || this.hotelAssociation?.inviteCode || this.hotelCode;
-    const confirmed = window.confirm(`Rimuovere il codice ${codeLabel || 'selezionato'}?`);
+    const confirmed = window.confirm(this.i18n.t('profile.removeCodeConfirm', { code: codeLabel || this.hotelCode }));
     if (!confirmed) {
       return;
     }
@@ -150,32 +142,31 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.appState.setHotelAssociation(null);
         this.syncHotelAssociationDetails();
         this.removingInviteCode = false;
-        this.snackBar.open('Codice invito/sconto rimosso', 'OK', { duration: 2200 });
+        this.snackBar.open(this.i18n.t('profile.removeCodeDone'), this.i18n.t('common.ok'), { duration: 2200 });
       },
-      error: (error: { error?: { message?: string } }) => {
+      error: () => {
         this.removingInviteCode = false;
-        const message = error?.error?.message || 'Impossibile rimuovere il codice in questo momento';
-        this.snackBar.open(message, 'Chiudi', { duration: 3200 });
+        this.snackBar.open(this.i18n.t('profile.removeCodeError'), this.i18n.t('common.close'), { duration: 3200 });
       }
     });
   }
 
   restorePurchases(): void {
     this.purchaseService.refresh();
-    this.snackBar.open('Acquisti ripristinati (simulato)', 'OK', { duration: 2200 });
+    this.snackBar.open(this.i18n.t('profile.restoreDone'), this.i18n.t('common.ok'), { duration: 2200 });
   }
 
   codeEntryStatusLabel(entry: HotelCodeStatusEntry): string {
     if (entry.status === 'activated') {
-      return 'Attivato';
+      return this.i18n.t('profile.codeStatus.activated');
     }
     if (entry.status === 'used') {
-      return 'Usato';
+      return this.i18n.t('profile.codeStatus.used');
     }
     if (entry.status === 'expired') {
-      return 'Scaduto';
+      return this.i18n.t('profile.codeStatus.expired');
     }
-    return 'Non valido';
+    return this.i18n.t('profile.codeStatus.invalid');
   }
 
   codeEntryStatusClass(entry: HotelCodeStatusEntry): string {
@@ -190,25 +181,26 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   codeEntryScopeLabel(entry: HotelCodeStatusEntry): string {
     if (entry.appliesTo === 'bundle') {
-      return 'Pacchetto citta';
+      return this.i18n.t('profile.scopeBundle');
     }
     if (entry.appliesTo === 'single') {
-      return 'Luogo singolo';
+      return this.i18n.t('profile.scopeSingle');
     }
     return '-';
   }
 
   codeEntryCitiesLabel(entry: HotelCodeStatusEntry): string {
+    const ids = Array.isArray(entry.cityIds) ? entry.cityIds.map((id) => String(id || '').trim()).filter(Boolean) : [];
+    if (ids.length) {
+      return ids.map((cityId) => this.cityName(cityId)).join(', ');
+    }
+
     const names = Array.isArray(entry.cityNames) ? entry.cityNames.map((name) => String(name || '').trim()).filter(Boolean) : [];
     if (names.length) {
       return names.join(', ');
     }
     if (entry.cityName) {
       return entry.cityName;
-    }
-    const ids = Array.isArray(entry.cityIds) ? entry.cityIds.map((id) => String(id || '').trim()).filter(Boolean) : [];
-    if (ids.length) {
-      return ids.join(', ');
     }
     return entry.cityId || '-';
   }
@@ -234,9 +226,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const confirmed = window.confirm(
-      'Vuoi avviare una nuova sessione utente? Verranno rimossi codice invito/sconto e dati locali del profilo.'
-    );
+    const confirmed = window.confirm(this.i18n.t('profile.resetConfirm'));
     if (!confirmed) {
       return;
     }
@@ -249,7 +239,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.hotelCodeEntries = [];
       this.purchaseService.refresh();
       this.resettingUserSession = false;
-      this.snackBar.open('Sessione utente resettata', 'OK', { duration: 2400 });
+      this.snackBar.open(this.i18n.t('profile.resetDone'), this.i18n.t('common.ok'), { duration: 2400 });
     };
     finalizeReset();
   }
@@ -263,11 +253,23 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const coordinates = this.coerceCoordinates(association.lat, association.lng);
     const url = this.structureLocationService.buildExternalDirectionsUrl(association, coordinates);
     if (!url) {
-      this.snackBar.open('Dati struttura non disponibili per la navigazione', 'Chiudi', { duration: 2400 });
+      this.snackBar.open(this.i18n.t('profile.structureDataUnavailable'), this.i18n.t('common.close'), { duration: 2400 });
       return;
     }
 
     window.open(url, '_blank', 'noopener');
+  }
+
+  cityName(cityId: string): string {
+    return formatCityLabel(cityId, this.cities, this.i18n.language);
+  }
+
+  entryExpiryLabel(entry: HotelCodeStatusEntry): string {
+    return this.i18n.formatDateTime(entry.expiresAt);
+  }
+
+  entryUsedAtLabel(entry: HotelCodeStatusEntry): string {
+    return this.i18n.formatDateTime(entry.usedAt);
   }
 
   private syncHotelAssociationDetails(): void {
@@ -302,4 +304,3 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return { lat, lng };
   }
 }
-

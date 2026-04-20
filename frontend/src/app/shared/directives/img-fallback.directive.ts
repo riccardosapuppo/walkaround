@@ -10,7 +10,7 @@ export class ImgFallbackDirective implements AfterViewInit {
     this.hasLoadError = false;
     this.applyCurrentSource();
   }
-  @Input() imgFallbackSrc = '/assets/images/poi-placeholder.svg';
+  @Input() imgFallbackSrc = 'assets/images/poi-placeholder.svg';
 
   private requestedSrc = '';
   private hasLoadError = false;
@@ -50,3 +50,4 @@ export class ImgFallbackDirective implements AfterViewInit {
     this.renderer.setAttribute(image, 'src', nextSource);
   }
 }
+

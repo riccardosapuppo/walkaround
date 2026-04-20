@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,11 +18,13 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import * as i0 from "@angular/core";
 const modules = [
     MatBottomSheetModule,
     MatButtonModule,
     MatCardModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -36,7 +39,8 @@ const modules = [
     MatSlideToggleModule,
     MatSliderModule,
     MatSnackBarModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatTooltipModule
 ];
 export class MaterialModule {
     static { this.ɵfac = function MaterialModule_Factory(__ngFactoryType__) { return new (__ngFactoryType__ || MaterialModule)(); }; }
@@ -44,6 +48,7 @@ export class MaterialModule {
     static { this.ɵinj = /*@__PURE__*/ i0.ɵɵdefineInjector({ imports: [modules, MatBottomSheetModule,
             MatButtonModule,
             MatCardModule,
+            MatCheckboxModule,
             MatDividerModule,
             MatDialogModule,
             MatFormFieldModule,
@@ -58,7 +63,8 @@ export class MaterialModule {
             MatSlideToggleModule,
             MatSliderModule,
             MatSnackBarModule,
-            MatToolbarModule] }); }
+            MatToolbarModule,
+            MatTooltipModule] }); }
 }
 (() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassMetadata(MaterialModule, [{
         type: NgModule,
@@ -70,6 +76,7 @@ export class MaterialModule {
 (function () { (typeof ngJitMode === "undefined" || ngJitMode) && i0.ɵɵsetNgModuleScope(MaterialModule, { imports: [MatBottomSheetModule,
         MatButtonModule,
         MatCardModule,
+        MatCheckboxModule,
         MatDividerModule,
         MatDialogModule,
         MatFormFieldModule,
@@ -84,9 +91,11 @@ export class MaterialModule {
         MatSlideToggleModule,
         MatSliderModule,
         MatSnackBarModule,
-        MatToolbarModule], exports: [MatBottomSheetModule,
+        MatToolbarModule,
+        MatTooltipModule], exports: [MatBottomSheetModule,
         MatButtonModule,
         MatCardModule,
+        MatCheckboxModule,
         MatDividerModule,
         MatDialogModule,
         MatFormFieldModule,
@@ -101,4 +110,5 @@ export class MaterialModule {
         MatSlideToggleModule,
         MatSliderModule,
         MatSnackBarModule,
-        MatToolbarModule] }); })();
+        MatToolbarModule,
+        MatTooltipModule] }); })();

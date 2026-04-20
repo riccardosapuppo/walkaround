@@ -1,0 +1,128 @@
+<section class="page-shell partner-registration">
+  <header class="brand-head card">
+    <img class="brand-logo" src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
+    <div>
+      <h1 class="page-title">{{ 'partner.title' | t }}</h1>
+      <p class="page-subtitle">{{ 'common.brandTagline' | t }}</p>
+    </div>
+  </header>
+
+  <mat-card class="card intro" *ngIf="!completed">
+    <p>{{ 'partner.intro' | t }}</p>
+  </mat-card>
+
+  <mat-card class="card success-box" *ngIf="completed">
+    <h2>{{ 'partner.requestSent' | t }}</h2>
+    <p>{{ 'partner.requestReceived' | t }}</p>
+    <p *ngIf="requestId !== null">{{ 'partner.requestNumber' | t }}: <strong>#{{ requestId }}</strong></p>
+    <p>{{ 'partner.pendingApproval' | t }}</p>
+    <button mat-stroked-button color="primary" (click)="backToWelcome()">{{ 'partner.backToWelcome' | t }}</button>
+  </mat-card>
+
+  <form *ngIf="!completed" [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+    <mat-card class="card section">
+      <h3>{{ 'partner.structureData' | t }}</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.structureName' | t }}</mat-label>
+        <input matInput formControlName="structureName" />
+        <mat-error *ngIf="hasControlError('structureName', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.structureType' | t }}</mat-label>
+        <input matInput formControlName="structureType" [placeholder]="'partner.structureTypePlaceholder' | t" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.vatNumber' | t }}</mat-label>
+        <input matInput formControlName="vatNumber" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.website' | t }}</mat-label>
+        <input matInput formControlName="website" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.roomsCount' | t }}</mat-label>
+        <input matInput type="number" formControlName="roomsCount" min="0" />
+        <mat-error *ngIf="hasControlError('roomsCount', 'min') || hasControlError('roomsCount', 'max')">
+          {{ 'partner.invalidNumber' | t }}
+        </mat-error>
+      </mat-form-field>
+    </mat-card>
+
+    <mat-card class="card section">
+      <h3>{{ 'partner.contactPerson' | t }}</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.name' | t }}</mat-label>
+        <input matInput formControlName="contactFirstName" />
+        <mat-error *ngIf="hasControlError('contactFirstName', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.surname' | t }}</mat-label>
+        <input matInput formControlName="contactLastName" />
+        <mat-error *ngIf="hasControlError('contactLastName', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.email' | t }}</mat-label>
+        <input matInput type="email" formControlName="contactEmail" />
+        <mat-error *ngIf="hasControlError('contactEmail', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+        <mat-error *ngIf="hasControlError('contactEmail', 'email')">{{ 'partner.invalidEmail' | t }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.phone' | t }}</mat-label>
+        <input matInput formControlName="contactPhone" />
+        <mat-error *ngIf="hasControlError('contactPhone', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+      </mat-form-field>
+    </mat-card>
+
+    <mat-card class="card section">
+      <h3>{{ 'partner.address' | t }}</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.street' | t }}</mat-label>
+        <input matInput formControlName="addressStreet" />
+        <mat-error *ngIf="hasControlError('addressStreet', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.streetNumber' | t }}</mat-label>
+        <input matInput formControlName="addressNumber" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.city' | t }}</mat-label>
+        <input matInput formControlName="addressCity" />
+        <mat-error *ngIf="hasControlError('addressCity', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.postalCode' | t }}</mat-label>
+        <input matInput formControlName="addressPostalCode" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.province' | t }}</mat-label>
+        <input matInput formControlName="addressProvince" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.region' | t }}</mat-label>
+        <input matInput formControlName="addressRegion" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.country' | t }}</mat-label>
+        <input matInput formControlName="addressCountry" />
+        <mat-error *ngIf="hasControlError('addressCountry', 'required')">{{ 'partner.requiredField' | t }}</mat-error>
+      </mat-form-field>
+    </mat-card>
+
+    <mat-card class="card section">
+      <h3>{{ 'partner.notes' | t }}</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'partner.message' | t }}</mat-label>
+        <textarea matInput rows="5" formControlName="notes"></textarea>
+      </mat-form-field>
+      <mat-checkbox class="privacy-check" formControlName="privacyAccepted">{{ 'partner.privacy' | t }}</mat-checkbox>
+      <p class="form-error" *ngIf="hasControlError('privacyAccepted', 'required')">{{ 'partner.privacyRequired' | t }}</p>
+    </mat-card>
+
+    <div class="submit-row">
+      <button mat-flat-button color="primary" class="big-cta" type="submit" [disabled]="sending">
+        {{ sending ? ('partner.submitting' | t) : ('partner.submit' | t) }}
+      </button>
+      <button mat-stroked-button color="primary" type="button" (click)="backToWelcome()">{{ 'partner.cancel' | t }}</button>
+    </div>
+  </form>
+</section>

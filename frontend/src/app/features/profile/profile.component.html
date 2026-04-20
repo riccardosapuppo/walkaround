@@ -1,57 +1,68 @@
 <section class="page-shell profile">
-  <header>
-    <h1 class="page-title">Profilo e impostazioni</h1>
-    <p class="page-subtitle">Gestione città, lingua e supporto</p>
+  <header class="brand-hero">
+    <div class="brand-hero-stage">
+      <img
+        class="brand-hero-logo"
+        src="/assets/logo.png"
+        [attr.alt]="'common.appName' | t"
+        loading="eager"
+        decoding="sync"
+        fetchpriority="high"
+      />
+      <div class="brand-hero-footer">
+        <p class="brand-hero-slogan">{{ 'common.brandTagline' | t }}</p>
+      </div>
+    </div>
   </header>
 
-  <section class="loading-shell" *ngIf="loading">
+  <mat-card class="card section-loading-card" *ngIf="loading">
     <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
-    <p>Caricamento profilo...</p>
-  </section>
+    <p>{{ 'profile.loading' | t }}</p>
+  </mat-card>
 
   <ng-container *ngIf="!loading">
     <mat-card class="card section">
-      <h3>Città attiva</h3>
+      <h3>{{ 'profile.activeCity' | t }}</h3>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Città</mat-label>
+        <mat-label>{{ 'profile.city' | t }}</mat-label>
         <mat-select [value]="activeCityId" (selectionChange)="setCity($event.value)">
-          <mat-option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</mat-option>
+          <mat-option *ngFor="let city of cities" [value]="city.id">{{ cityName(city.id) }}</mat-option>
         </mat-select>
       </mat-form-field>
     </mat-card>
 
     <mat-card class="card section">
-      <h3>Codici invito/sconto</h3>
-      <p>Gestisci i codici associati al tuo profilo.</p>
-      <p>Codice attivo: <strong>{{ hotelCode }}</strong></p>
-      <p>Stato codice attivo: <strong>{{ inviteCodeStatusText }}</strong></p>
-      <p *ngIf="hotelAssociation">Scadenza codice attivo: <strong>{{ inviteCodeExpiresAt }}</strong></p>
+      <h3>{{ 'profile.inviteCodes' | t }}</h3>
+      <p>{{ 'profile.manageCodes' | t }}</p>
+      <p>{{ 'profile.activeCode' | t }}: <strong>{{ hotelCode }}</strong></p>
+      <p>{{ 'profile.activeCodeStatus' | t }}: <strong>{{ inviteCodeStatusText }}</strong></p>
+      <p *ngIf="hotelAssociation">{{ 'profile.activeCodeExpiry' | t }}: <strong>{{ inviteCodeExpiresAt }}</strong></p>
       <p *ngIf="hotelAssociation; else noAssociation">
-        Struttura associata: <strong>{{ hotelAssociation.structureName }}</strong>
+        {{ 'profile.associatedStructure' | t }}: <strong>{{ hotelAssociation.structureName }}</strong>
         ({{ hotelAssociation.structureAddress }})
       </p>
       <div class="structure-actions" *ngIf="hotelAssociation">
         <button mat-stroked-button color="primary" type="button" (click)="navigateToAssociatedStructure()">
-          Naviga verso struttura
+          {{ 'profile.navigateToStructure' | t }}
         </button>
       </div>
       <ng-template #noAssociation>
-        <p>Nessuna struttura associata al codice attivo.</p>
+        <p>{{ 'profile.noAssociatedStructure' | t }}</p>
       </ng-template>
 
       <div class="code-history" *ngIf="hotelCodeEntries.length; else noCodeHistory">
-        <p><strong>Lista codici:</strong></p>
+        <p><strong>{{ 'profile.codeList' | t }}:</strong></p>
         <div class="code-history-list">
           <div class="code-history-item" *ngFor="let entry of hotelCodeEntries">
             <div class="code-history-row">
               <code>{{ entry.inviteCode }}</code>
               <span [class]="codeEntryStatusClass(entry)">{{ codeEntryStatusLabel(entry) }}</span>
             </div>
-            <small>Struttura: {{ entry.structureName || 'Struttura non disponibile' }}</small>
-            <small>Ambito: {{ codeEntryScopeLabel(entry) }}</small>
-            <small>Città: {{ codeEntryCitiesLabel(entry) }}</small>
-            <small *ngIf="entry.expiresAt">Scadenza: {{ entry.expiresAt | date: 'dd/MM/yyyy HH:mm':'':'it-IT' }}</small>
-            <small *ngIf="entry.usedAt">Usato il: {{ entry.usedAt | date: 'dd/MM/yyyy HH:mm':'':'it-IT' }}</small>
+            <small>{{ 'profile.associatedStructure' | t }}: {{ entry.structureName || ('profile.structureUnavailable' | t) }}</small>
+            <small>{{ 'profile.scope' | t }}: {{ codeEntryScopeLabel(entry) }}</small>
+            <small>{{ 'profile.city' | t }}: {{ codeEntryCitiesLabel(entry) }}</small>
+            <small *ngIf="entry.expiresAt">{{ 'profile.expiry' | t }}: {{ entryExpiryLabel(entry) }}</small>
+            <small *ngIf="entry.usedAt">{{ 'profile.usedAt' | t }}: {{ entryUsedAtLabel(entry) }}</small>
             <div class="code-entry-actions">
               <button
                 mat-stroked-button
@@ -60,29 +71,29 @@
                 *ngIf="canRemoveCodeEntry(entry); else codeNotRemovable"
                 (click)="removeInviteCodeAssociation(entry)"
               >
-                {{ removingInviteCode ? 'Rimozione...' : 'Rimuovi codice' }}
+                {{ removingInviteCode ? ('profile.removingCode' | t) : ('profile.removeCode' | t) }}
               </button>
               <ng-template #codeNotRemovable>
-                <small class="code-entry-locked">Codice usato o non attivo: non rimovibile</small>
+                <small class="code-entry-locked">{{ 'profile.codeLocked' | t }}</small>
               </ng-template>
             </div>
           </div>
         </div>
       </div>
       <ng-template #noCodeHistory>
-        <p>Nessun codice attivato o usato.</p>
+        <p>{{ 'profile.noCodeHistory' | t }}</p>
       </ng-template>
     </mat-card>
 
     <mat-card class="card section">
-      <h3>Città sbloccate</h3>
+      <h3>{{ 'profile.unlockedCities' | t }}</h3>
       <div class="chips">
-        <span class="status-chip unlocked" *ngFor="let cityId of unlockedCityIds">{{ cityId | titlecase }}</span>
-        <span class="status-chip locked" *ngIf="!unlockedCityIds.length">Nessuna città sbloccata</span>
+        <span class="status-chip unlocked" *ngFor="let cityId of unlockedCityIds">{{ cityName(cityId) }}</span>
+        <span class="status-chip locked" *ngIf="!unlockedCityIds.length">{{ 'profile.noUnlockedCities' | t }}</span>
       </div>
 
       <div class="language-row">
-        <button mat-stroked-button color="primary" (click)="restorePurchases()">Ripristina acquisti</button>
+        <button mat-stroked-button color="primary" (click)="restorePurchases()">{{ 'profile.restorePurchases' | t }}</button>
         <button
           mat-stroked-button
           color="warn"
@@ -90,26 +101,32 @@
           [disabled]="resettingUserSession"
           (click)="resetUserSession()"
         >
-          {{ resettingUserSession ? 'Reset in corso...' : 'Reset utente' }}
+          {{ resettingUserSession ? ('profile.resettingUser' | t) : ('profile.resetUser' | t) }}
         </button>
       </div>
     </mat-card>
 
     <mat-card class="card section">
-      <h3>Lingua</h3>
+      <h3>{{ 'profile.language' | t }}</h3>
       <div class="language-row">
         <button mat-stroked-button [color]="language === 'it' ? 'primary' : undefined" (click)="setLanguage('it')">
-          IT
+          {{ 'common.italian' | t }}
         </button>
         <button mat-stroked-button [color]="language === 'en' ? 'primary' : undefined" (click)="setLanguage('en')">
-          EN
+          {{ 'common.english' | t }}
+        </button>
+        <button mat-stroked-button [color]="language === 'fr' ? 'primary' : undefined" (click)="setLanguage('fr')">
+          {{ 'common.french' | t }}
+        </button>
+        <button mat-stroked-button [color]="language === 'es' ? 'primary' : undefined" (click)="setLanguage('es')">
+          {{ 'common.spanish' | t }}
         </button>
       </div>
     </mat-card>
 
     <mat-card class="card section links">
-      <a href="mailto:info@walkaround.cloud">Supporto</a>
-      <a href="https://example.com/privacy" target="_blank" rel="noopener">Privacy</a>
+      <a href="mailto:info@walkaround.cloud">{{ 'common.support' | t }}</a>
+      <a href="#" target="_blank" rel="noopener">{{ 'common.privacy' | t }}</a>
     </mat-card>
   </ng-container>
 </section>

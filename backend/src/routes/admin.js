@@ -8,7 +8,16 @@ import { env } from '../config/env.js';
 import { requireAdmin, requireAuth } from '../auth/middleware.js';
 import { createOpaqueToken, hashPassword, hashToken } from '../auth/security.js';
 import { pool } from '../db/pool.js';
-import { sendInvitationEmail, sendPasswordResetEmail } from '../services/mailer.js';
+import { sendInvitationEmail, sendPartnerApprovalEmail, sendPasswordResetEmail } from '../services/mailer.js';
+import { buildPartnerPromotionFileName, buildPartnerPromotionPdf } from '../services/partner-pdf.js';
+import {
+  PayPalConfigurationError,
+  getPayPalSettings,
+  mapPayPalSettingsRow,
+  normalizePayPalMode,
+  paypalProviderLabel,
+  verifyPayPalConnection
+} from '../services/paypal.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -82,6 +91,28 @@ const discountCodeUpdateSchema = z.object({
   expiresAt: discountCodeExpiresAtSchema
 });
 
+const partnerRequestStatusSchema = z.enum(['pending', 'approved', 'rejected']);
+const partnerRequestPdfReleaseStatusSchema = z.enum(['pending', 'sent']);
+const partnerRequestApprovalSchema = z.object({
+  applyTo: discountCodeApplyToSchema,
+  cityIds: z.array(z.string().trim().min(1, 'Citta non valida')).min(1, 'Seleziona almeno una citta'),
+  code: structureInviteCodeSchema,
+  userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido'),
+  structureFixedAmount: z.coerce.number().min(0, 'Importo struttura non valido').max(10000, 'Importo struttura non valido'),
+  expiresAt: discountCodeExpiresAtSchema
+});
+const partnerRequestPdfPreviewSchema = z.object({
+  cityIds: z.array(z.string().trim().min(1, 'Citta non valida')).optional().default([]),
+  code: z.string().trim().max(32, 'Codice non valido').optional().default(''),
+  userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido').optional(),
+  structureFixedAmount: z.coerce
+    .number()
+    .min(0, 'Importo struttura non valido')
+    .max(10000, 'Importo struttura non valido')
+    .optional(),
+  expiresAt: discountCodeExpiresAtSchema.optional()
+});
+
 const userStructureUpdateSchema = z
   .object({
     structureId: z.string().trim().min(1).nullable().optional(),
@@ -113,16 +144,43 @@ const paymentsQuerySchema = z.object({
   structureId: z.string().trim().min(1).optional()
 });
 
+const paypalSettingsSchema = z.object({
+  isEnabled: z.boolean().optional().default(false),
+  mode: z.enum(['sandbox', 'live']).optional().default('sandbox'),
+  clientId: z.string().trim().max(400).optional().default(''),
+  clientSecret: z.string().trim().max(400).optional().default(''),
+  merchantId: z.string().trim().max(180).optional().default(''),
+  merchantEmail: z.string().trim().email().max(180).or(z.literal('')).optional().default(''),
+  brandName: z.string().trim().max(127).optional().default('Walk Around'),
+  webhookId: z.string().trim().max(180).optional().default(''),
+  currencyCode: z.literal('EUR').optional().default('EUR')
+});
+
 const discountCodesQuerySchema = z.object({
   structureId: z.string().trim().min(1).optional()
 });
+
+const contentLanguageSchema = z.enum(['it', 'en', 'fr', 'es']);
+const cityTranslationFieldsSchema = z.object({
+  name: z.string().trim().max(120, 'Nome tradotto troppo lungo').optional()
+}).partial();
+const poiTranslationFieldsSchema = z.object({
+  name: z.string().trim().max(180, 'Nome tradotto troppo lungo').optional(),
+  descriptionShort: z.string().trim().max(1000, 'Descrizione breve tradotta troppo lunga').optional(),
+  descriptionLong: z.string().trim().max(10000, 'Descrizione lunga tradotta troppo lunga').optional(),
+  audioLabel: z.string().trim().max(180, 'Etichetta audio troppo lunga').optional(),
+  audioUrl: z.string().trim().max(500, 'URL audio tradotto troppo lungo').optional()
+}).partial();
+const cityTranslationsSchema = z.record(contentLanguageSchema, cityTranslationFieldsSchema).default({});
+const poiTranslationsSchema = z.record(contentLanguageSchema, poiTranslationFieldsSchema).default({});
 
 const catalogCitySchema = z.object({
   name: z.string().trim().min(1, 'Nome citta obbligatorio').max(120, 'Nome citta troppo lungo'),
   region: z.string().trim().min(1, 'Regione obbligatoria').max(120, 'Regione troppo lunga'),
   bundlePrice: z.coerce.number().min(0, 'Prezzo bundle non valido').max(10000, 'Prezzo bundle troppo alto'),
   heroImage: z.string().trim().min(1, 'Hero image obbligatoria').max(500, 'Hero image troppo lunga'),
-  isDefault: z.boolean().optional().default(false)
+  isDefault: z.boolean().optional().default(false),
+  translations: cityTranslationsSchema.optional().default({})
 });
 
 const catalogPoiSchema = z.object({
@@ -136,7 +194,8 @@ const catalogPoiSchema = z.object({
   imageUrl: z.string().trim().min(1, 'Immagine obbligatoria').max(500, 'URL immagine troppo lunga'),
   audioUrl: z.string().trim().max(500, 'URL audio troppo lungo').default(''),
   priceSingle: z.coerce.number().min(0, 'Prezzo singolo non valido').max(10000, 'Prezzo singolo troppo alto'),
-  durationSec: z.coerce.number().int().min(1, 'Durata non valida').max(7200, 'Durata troppo lunga')
+  durationSec: z.coerce.number().int().min(1, 'Durata non valida').max(7200, 'Durata troppo lunga'),
+  translations: poiTranslationsSchema.optional().default({})
 });
 
 const catalogAudioUploadSchema = z.object({
@@ -482,6 +541,7 @@ function mapCatalogCityRow(row) {
     bundlePrice: Number(row.bundle_price),
     heroImage: row.hero_image,
     isDefault: row.is_default,
+    translations: sanitizeCatalogCityTranslations(row.translations),
     poiCount: Number(row.poi_count || 0),
     createdAt: row.created_at || null,
     updatedAt: row.updated_at || null
@@ -502,8 +562,48 @@ function mapCatalogPoiRow(row) {
     imageUrl: row.image_url,
     audioUrl: row.audio_url,
     priceSingle: Number(row.price_single),
-    durationSec: Number(row.duration_sec)
+    durationSec: Number(row.duration_sec),
+    translations: sanitizeCatalogPoiTranslations(row.translations)
   };
+}
+
+function sanitizeCatalogCityTranslations(value) {
+  return sanitizeCatalogTranslations(value, ['name']);
+}
+
+function sanitizeCatalogPoiTranslations(value) {
+  return sanitizeCatalogTranslations(value, ['name', 'descriptionShort', 'descriptionLong', 'audioLabel', 'audioUrl']);
+}
+
+function sanitizeCatalogTranslations(value, allowedFields) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const supportedLanguages = ['it', 'en', 'fr', 'es'];
+  const sanitized = {};
+
+  supportedLanguages.forEach((language) => {
+    const fields = value?.[language];
+    if (!fields || typeof fields !== 'object' || Array.isArray(fields)) {
+      return;
+    }
+
+    const nextFields = {};
+    allowedFields.forEach((field) => {
+      const rawValue = fields?.[field];
+      const normalizedValue = typeof rawValue === 'string' ? sanitizeCatalogText(rawValue.trim()) : '';
+      if (normalizedValue) {
+        nextFields[field] = normalizedValue;
+      }
+    });
+
+    if (Object.keys(nextFields).length) {
+      sanitized[language] = nextFields;
+    }
+  });
+
+  return sanitized;
 }
 
 function sanitizeCatalogText(value) {
@@ -651,18 +751,147 @@ function safeNumber(value, fallback = 0) {
   return numericValue;
 }
 
-function debugPaymentUserProfile(userId) {
+function normalizePaymentStatusLabel(value) {
+  const normalized = String(value || '').trim().toUpperCase();
+  if (!normalized) {
+    return 'Non disponibile';
+  }
+  if (normalized === 'COMPLETED') {
+    return 'Completato';
+  }
+  if (normalized === 'CREATED') {
+    return 'Creato';
+  }
+  if (normalized === 'APPROVED') {
+    return 'Approvato';
+  }
+  if (normalized === 'PAYER_ACTION_REQUIRED') {
+    return 'Azione utente richiesta';
+  }
+  if (normalized === 'VOIDED') {
+    return 'Annullato';
+  }
+  if (normalized === 'FAILED') {
+    return 'Fallito';
+  }
+  if (normalized === 'LEGACY') {
+    return 'Storico legacy';
+  }
+  return normalized;
+}
+
+function buildPaymentCustomerProfile(row) {
+  const firstName = String(row.payer_first_name || '').trim();
+  const lastName = String(row.payer_last_name || '').trim();
+  const payerEmail = String(row.payer_email || '').trim();
+  const payerPhone = String(row.payer_phone || '').trim();
+  const payerAddress = String(row.payer_address || '').trim();
+  const payerId = String(row.payer_id || '').trim();
+
   return {
-    customerId: userId,
-    customerFirstName: 'Prova',
-    customerLastName: 'Prova',
-    customerBirthDate: '1900-01-01',
-    customerEmail: 'prova.prova@example.com',
-    customerPhone: '+39 000 000 0000',
-    customerAddress: 'Via Prova 1, Citta Prova',
-    paymentMethod: 'Carta di credito (simulato)',
-    paymentProvider: 'Gateway test',
-    paymentStatus: 'Completato (simulato)'
+    customerId: payerId || row.user_id,
+    customerFirstName: firstName || 'PayPal',
+    customerLastName: lastName || 'Acquirente',
+    customerBirthDate: null,
+    customerEmail: payerEmail || null,
+    customerPhone: payerPhone || null,
+    customerAddress: payerAddress || null
+  };
+}
+
+function mapPayPalSettingsForResponse(row) {
+  const settings = mapPayPalSettingsRow(row);
+  return {
+    id: settings.id,
+    isEnabled: settings.isEnabled,
+    mode: settings.mode,
+    clientId: settings.clientId || '',
+    clientSecret: settings.clientSecret || '',
+    merchantId: settings.merchantId || '',
+    merchantEmail: settings.merchantEmail || '',
+    brandName: settings.brandName || 'Walk Around',
+    webhookId: settings.webhookId || '',
+    currencyCode: settings.currencyCode || 'EUR',
+    lastVerifiedAt: settings.lastVerifiedAt,
+    lastVerificationStatus: settings.lastVerificationStatus || 'incomplete',
+    lastVerificationError: settings.lastVerificationError || null,
+    updatedAt: settings.updatedAt,
+    updatedBy: settings.updatedBy
+  };
+}
+
+function normalizePartnerRequestStatus(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'approved' || normalized === 'rejected') {
+    return normalized;
+  }
+  return 'pending';
+}
+
+function normalizePartnerRequestPdfReleaseStatus(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  return normalized === 'sent' ? 'sent' : 'pending';
+}
+
+function normalizePartnerPreviewCode(value) {
+  const normalized = String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+  return normalized.slice(0, 16) || 'SCONTO';
+}
+
+function buildPartnerRequestPdfPayload(requestRow, options = {}) {
+  return {
+    structureName: requestRow.structure_name,
+    structureType: requestRow.structure_type,
+    contactName: [requestRow.contact_first_name, requestRow.contact_last_name].filter(Boolean).join(' '),
+    addressStreet: requestRow.address_street,
+    addressNumber: requestRow.address_number,
+    addressCity: requestRow.address_city,
+    addressPostalCode: requestRow.address_postal_code,
+    addressProvince: requestRow.address_province,
+    addressRegion: requestRow.address_region,
+    addressCountry: requestRow.address_country,
+    website: requestRow.website,
+    contactPhone: requestRow.contact_phone,
+    contactEmail: requestRow.contact_email,
+    cityNames: Array.isArray(options.cityNames) ? options.cityNames : [],
+    discountCode: normalizePartnerPreviewCode(options.discountCode || requestRow.discount_code || ''),
+    expiresAt: options.expiresAt || null,
+    userDiscountPercent: safeNumber(options.userDiscountPercent, 0),
+    structureFixedAmount: safeNumber(options.structureFixedAmount, 0)
+  };
+}
+
+function mapPartnerRequestRow(row) {
+  return {
+    id: Number(row.id),
+    structureName: sanitizeCatalogText(row.structure_name),
+    structureType: row.structure_type ? sanitizeCatalogText(row.structure_type) : null,
+    vatNumber: row.vat_number ? sanitizeCatalogText(row.vat_number) : null,
+    contactFirstName: sanitizeCatalogText(row.contact_first_name),
+    contactLastName: sanitizeCatalogText(row.contact_last_name),
+    contactEmail: sanitizeCatalogText(row.contact_email),
+    contactPhone: sanitizeCatalogText(row.contact_phone),
+    website: row.website ? sanitizeCatalogText(row.website) : null,
+    addressStreet: sanitizeCatalogText(row.address_street),
+    addressNumber: row.address_number ? sanitizeCatalogText(row.address_number) : null,
+    addressCity: sanitizeCatalogText(row.address_city),
+    addressPostalCode: row.address_postal_code ? sanitizeCatalogText(row.address_postal_code) : null,
+    addressProvince: row.address_province ? sanitizeCatalogText(row.address_province) : null,
+    addressRegion: row.address_region ? sanitizeCatalogText(row.address_region) : null,
+    addressCountry: row.address_country ? sanitizeCatalogText(row.address_country) : null,
+    roomsCount: row.rooms_count == null ? null : Number(row.rooms_count),
+    notes: row.notes ? sanitizeCatalogText(row.notes) : null,
+    status: normalizePartnerRequestStatus(row.status),
+    pdfReleaseStatus: normalizePartnerRequestPdfReleaseStatus(row.pdf_release_status),
+    approvedStructureId: row.approved_structure_id || null,
+    approvedDiscountCodeId: row.approved_discount_code_id == null ? null : Number(row.approved_discount_code_id),
+    discountCode: row.discount_code ? sanitizeCatalogText(row.discount_code) : null,
+    approvalEmailSentAt: row.approval_email_sent_at || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
   };
 }
 
@@ -806,6 +1035,66 @@ async function fetchStructureById(structureId, client = pool) {
   return result.rowCount ? result.rows[0] : null;
 }
 
+async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
+  const lockSql = options.forUpdate ? 'FOR UPDATE' : '';
+  const result = await client.query(
+    `
+      SELECT
+        pr.id,
+        pr.structure_name,
+        pr.structure_type,
+        pr.vat_number,
+        pr.contact_first_name,
+        pr.contact_last_name,
+        pr.contact_email,
+        pr.contact_phone,
+        pr.website,
+        pr.address_street,
+        pr.address_number,
+        pr.address_city,
+        pr.address_postal_code,
+        pr.address_province,
+        pr.address_region,
+        pr.address_country,
+        pr.rooms_count,
+        pr.notes,
+        pr.status,
+        pr.pdf_release_status,
+        pr.approved_structure_id,
+        pr.approved_discount_code_id,
+        pr.approval_email_sent_at,
+        dc.code AS discount_code,
+        pr.created_at,
+        pr.updated_at
+      FROM partner_registration_requests pr
+      LEFT JOIN dashboard_structure_discount_codes dc ON dc.id = pr.approved_discount_code_id
+      WHERE pr.id = $1
+      LIMIT 1
+      ${lockSql}
+    `,
+    [requestId]
+  );
+
+  return result.rowCount ? result.rows[0] : null;
+}
+
+async function fetchCitiesByIds(cityIds, client = pool) {
+  if (!Array.isArray(cityIds) || !cityIds.length) {
+    return [];
+  }
+
+  const result = await client.query(
+    `
+      SELECT id, name
+      FROM cities
+      WHERE id = ANY($1::TEXT[])
+    `,
+    [cityIds]
+  );
+
+  return result.rows;
+}
+
 async function fetchStructureByInviteCode(inviteCode, client = pool) {
   const result = await client.query(
     `
@@ -844,7 +1133,7 @@ async function fetchStructureByInviteCode(inviteCode, client = pool) {
 async function fetchCityById(cityId, client = pool) {
   const result = await client.query(
     `
-      SELECT id, name, region, bundle_price, hero_image, is_default
+      SELECT id, name, region, bundle_price, hero_image, is_default, translations
       FROM cities
       WHERE id = $1
       LIMIT 1
@@ -870,7 +1159,8 @@ async function fetchPoiById(poiId, client = pool) {
         p.image_url,
         p.audio_url,
         p.price_single,
-        p.duration_sec
+        p.duration_sec,
+        p.translations
       FROM pois p
       JOIN cities c ON c.id = p.city_id
       WHERE p.id = $1
@@ -2386,6 +2676,190 @@ router.get('/associated-users', requireAuth, async (req, res, next) => {
   }
 });
 
+router.get('/paypal-settings', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getPayPalSettings();
+    return res.json(mapPayPalSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/paypal-settings', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = paypalSettingsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+  const mode = normalizePayPalMode(payload.mode);
+  const clientId = String(payload.clientId || '').trim() || null;
+  const clientSecret = String(payload.clientSecret || '').trim() || null;
+  const merchantId = String(payload.merchantId || '').trim() || null;
+  const merchantEmail = String(payload.merchantEmail || '').trim().toLowerCase() || null;
+  const brandName = String(payload.brandName || '').trim() || 'Walk Around';
+  const webhookId = String(payload.webhookId || '').trim() || null;
+  const isEnabled = Boolean(payload.isEnabled);
+  const lastVerificationStatus = isEnabled && clientId && clientSecret ? 'pending' : 'incomplete';
+  const lastVerificationError =
+    lastVerificationStatus === 'incomplete' ? 'Configurazione incompleta o PayPal non attivo.' : null;
+
+  try {
+    const saved = await pool.query(
+      `
+        INSERT INTO dashboard_paypal_settings (
+          id,
+          is_enabled,
+          mode,
+          client_id,
+          client_secret,
+          merchant_id,
+          merchant_email,
+          brand_name,
+          webhook_id,
+          currency_code,
+          last_verified_at,
+          last_verification_status,
+          last_verification_error,
+          updated_by,
+          updated_at
+        )
+        VALUES (
+          1,
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          'EUR',
+          NULL,
+          $9,
+          $10,
+          $11,
+          NOW()
+        )
+        ON CONFLICT (id) DO UPDATE SET
+          is_enabled = EXCLUDED.is_enabled,
+          mode = EXCLUDED.mode,
+          client_id = EXCLUDED.client_id,
+          client_secret = EXCLUDED.client_secret,
+          merchant_id = EXCLUDED.merchant_id,
+          merchant_email = EXCLUDED.merchant_email,
+          brand_name = EXCLUDED.brand_name,
+          webhook_id = EXCLUDED.webhook_id,
+          currency_code = EXCLUDED.currency_code,
+          last_verified_at = NULL,
+          last_verification_status = EXCLUDED.last_verification_status,
+          last_verification_error = EXCLUDED.last_verification_error,
+          updated_by = EXCLUDED.updated_by,
+          updated_at = NOW()
+        RETURNING
+          id,
+          is_enabled,
+          mode,
+          client_id,
+          client_secret,
+          merchant_id,
+          merchant_email,
+          brand_name,
+          webhook_id,
+          currency_code,
+          last_verified_at,
+          last_verification_status,
+          last_verification_error,
+          updated_at,
+          updated_by
+      `,
+      [
+        isEnabled,
+        mode,
+        clientId,
+        clientSecret,
+        merchantId,
+        merchantEmail,
+        brandName,
+        webhookId,
+        lastVerificationStatus,
+        lastVerificationError,
+        req.authSession.user.id
+      ]
+    );
+
+    return res.json(mapPayPalSettingsForResponse(saved.rows[0]));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/paypal-settings/test', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getPayPalSettings();
+    const verification = await verifyPayPalConnection(settings);
+    const updated = await pool.query(
+      `
+        UPDATE dashboard_paypal_settings
+        SET last_verified_at = NOW(),
+            last_verification_status = 'valid',
+            last_verification_error = NULL,
+            updated_at = NOW()
+        WHERE id = 1
+        RETURNING
+          id,
+          is_enabled,
+          mode,
+          client_id,
+          client_secret,
+          merchant_id,
+          merchant_email,
+          brand_name,
+          webhook_id,
+          currency_code,
+          last_verified_at,
+          last_verification_status,
+          last_verification_error,
+          updated_at,
+          updated_by
+      `
+    );
+
+    return res.json({
+      valid: true,
+      verification,
+      settings: mapPayPalSettingsForResponse(updated.rows[0] || settings)
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Connessione PayPal non valida.';
+
+    try {
+      await pool.query(
+        `
+          UPDATE dashboard_paypal_settings
+          SET last_verified_at = NOW(),
+              last_verification_status = 'invalid',
+              last_verification_error = $1,
+              updated_at = NOW()
+          WHERE id = 1
+        `,
+        [message]
+      );
+    } catch {
+      // Ignore secondary update failures.
+    }
+
+    if (error instanceof PayPalConfigurationError) {
+      return res.status(error.status || 502).json({
+        valid: false,
+        message
+      });
+    }
+
+    return next(error);
+  }
+});
+
 router.get('/payments', requireAuth, async (req, res, next) => {
   const role = req.authSession?.user?.role;
   if (!canViewPayments(role)) {
@@ -2441,6 +2915,19 @@ router.get('/payments', requireAuth, async (req, res, next) => {
           p.invite_code,
           p.structure_fixed_amount,
           p.structure_earning_amount,
+          p.payment_method,
+          p.payment_provider,
+          p.payment_status,
+          p.payment_order_id,
+          p.payment_capture_id,
+          p.payment_environment,
+          p.payer_email,
+          p.payer_id,
+          p.payer_first_name,
+          p.payer_last_name,
+          p.payer_country_code,
+          p.payer_phone,
+          p.payer_address,
           p.purchased_at
         FROM purchases p
         LEFT JOIN cities c ON c.id = p.city_id
@@ -2459,12 +2946,17 @@ router.get('/payments', requireAuth, async (req, res, next) => {
       const finalAmount = safeNumber(row.final_amount, safeNumber(row.amount, 0));
       const structureFixedAmount = safeNumber(row.structure_fixed_amount, 0);
       const structureEarningAmount = safeNumber(row.structure_earning_amount, 0);
-      const debugUser = debugPaymentUserProfile(row.user_id);
+      const customerProfile = buildPaymentCustomerProfile(row);
+      const paymentMethod = String(row.payment_method || '').trim() || 'Non disponibile';
+      const paymentProvider =
+        String(row.payment_provider || '').trim() ||
+        paypalProviderLabel(row.payment_environment || 'sandbox');
+      const paymentStatus = normalizePaymentStatusLabel(row.payment_status);
 
       return {
         id: Number(row.id),
         userId: row.user_id,
-        ...debugUser,
+        ...customerProfile,
         type: row.type,
         cityId: row.city_id || null,
         cityName: row.city_name || null,
@@ -2481,6 +2973,12 @@ router.get('/payments', requireAuth, async (req, res, next) => {
         inviteCode: row.invite_code || null,
         structureFixedAmount,
         structureEarningAmount,
+        paymentMethod,
+        paymentProvider,
+        paymentStatus,
+        paymentOrderId: row.payment_order_id || null,
+        paymentCaptureId: row.payment_capture_id || null,
+        paymentEnvironment: row.payment_environment || null,
         purchasedAt: row.purchased_at
       };
     });
@@ -2514,6 +3012,401 @@ router.get('/payments', requireAuth, async (req, res, next) => {
   }
 });
 
+router.get('/partner-requests', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const result = await pool.query(
+      `
+        SELECT
+          pr.id,
+          pr.structure_name,
+          pr.structure_type,
+          pr.vat_number,
+          pr.contact_first_name,
+          pr.contact_last_name,
+          pr.contact_email,
+          pr.contact_phone,
+          pr.website,
+          pr.address_street,
+          pr.address_number,
+          pr.address_city,
+          pr.address_postal_code,
+          pr.address_province,
+          pr.address_region,
+          pr.address_country,
+          pr.rooms_count,
+          pr.notes,
+          pr.status,
+          pr.pdf_release_status,
+          pr.approved_structure_id,
+          pr.approved_discount_code_id,
+          pr.approval_email_sent_at,
+          dc.code AS discount_code,
+          pr.created_at,
+          pr.updated_at
+        FROM partner_registration_requests pr
+        LEFT JOIN dashboard_structure_discount_codes dc ON dc.id = pr.approved_discount_code_id
+        ORDER BY
+          CASE
+            WHEN pr.status = 'pending' THEN 0
+            WHEN pr.status = 'approved' THEN 1
+            WHEN pr.status = 'rejected' THEN 2
+            ELSE 3
+          END,
+          pr.created_at DESC,
+          pr.id DESC
+      `
+    );
+
+    return res.json(result.rows.map(mapPartnerRequestRow));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/partner-requests/:requestId/pdf-preview', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = partnerRequestPdfPreviewSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const requestId = Number(req.params.requestId);
+  if (!Number.isInteger(requestId) || requestId <= 0) {
+    return res.status(400).json({ message: 'Richiesta partner non valida' });
+  }
+
+  try {
+    const requestRow = await fetchPartnerRequestById(requestId);
+    if (!requestRow) {
+      return res.status(404).json({ message: 'Richiesta partner non trovata' });
+    }
+
+    const selectedCityIds = normalizeCityIdsSelection(parsed.data.cityIds);
+    const cityRows = await fetchCitiesByIds(selectedCityIds);
+    if (selectedCityIds.length && cityRows.length !== selectedCityIds.length) {
+      return res.status(404).json({ message: 'Una o piu citta selezionate non esistono' });
+    }
+    const cityNames = cityRows.map((row) => sanitizeCatalogText(row.name)).filter(Boolean);
+    const discountCode = normalizePartnerPreviewCode(parsed.data.code || requestRow.discount_code || '');
+    const pdfPayload = buildPartnerRequestPdfPayload(requestRow, {
+      cityNames,
+      discountCode,
+      expiresAt: parsed.data.expiresAt ? parsed.data.expiresAt.toISOString() : null,
+      userDiscountPercent: parsed.data.userDiscountPercent,
+      structureFixedAmount: parsed.data.structureFixedAmount
+    });
+    const pdfBuffer = buildPartnerPromotionPdf(pdfPayload);
+    const fileName = buildPartnerPromotionFileName(requestRow.structure_name, discountCode);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    return res.send(pdfBuffer);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/partner-requests/:requestId/reject', requireAuth, requireAdmin, async (req, res, next) => {
+  const requestId = Number(req.params.requestId);
+  if (!Number.isInteger(requestId) || requestId <= 0) {
+    return res.status(400).json({ message: 'Richiesta partner non valida' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const current = await fetchPartnerRequestById(requestId, client, { forUpdate: true });
+    if (!current) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'Richiesta partner non trovata' });
+    }
+
+    if (normalizePartnerRequestStatus(current.status) === 'approved') {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'La richiesta e gia approvata e non puo essere negata' });
+    }
+
+    const updated = await client.query(
+      `
+        UPDATE partner_registration_requests
+        SET status = $1,
+            pdf_release_status = $2,
+            updated_at = NOW()
+        WHERE id = $3
+        RETURNING
+          id,
+          structure_name,
+          structure_type,
+          vat_number,
+          contact_first_name,
+          contact_last_name,
+          contact_email,
+          contact_phone,
+          website,
+          address_street,
+          address_number,
+          address_city,
+          address_postal_code,
+          address_province,
+          address_region,
+          address_country,
+          rooms_count,
+          notes,
+          status,
+          pdf_release_status,
+          approved_structure_id,
+          approved_discount_code_id,
+          approval_email_sent_at,
+          created_at,
+          updated_at
+      `,
+      ['rejected', 'pending', requestId]
+    );
+
+    await client.query('COMMIT');
+
+    return res.json(
+      mapPartnerRequestRow({
+        ...updated.rows[0],
+        discount_code: current.discount_code || null
+      })
+    );
+  } catch (error) {
+    await client.query('ROLLBACK');
+    return next(error);
+  } finally {
+    client.release();
+  }
+});
+
+router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = partnerRequestApprovalSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const requestId = Number(req.params.requestId);
+  if (!Number.isInteger(requestId) || requestId <= 0) {
+    return res.status(400).json({ message: 'Richiesta partner non valida' });
+  }
+
+  const payload = parsed.data;
+  const selectedCityIds = normalizeCityIdsSelection(payload.cityIds);
+  if (!selectedCityIds.length) {
+    return res.status(400).json({ message: 'Seleziona almeno una citta' });
+  }
+  if (payload.expiresAt.getTime() <= Date.now()) {
+    return res.status(400).json({ message: 'La scadenza deve essere futura' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const requestRow = await fetchPartnerRequestById(requestId, client, { forUpdate: true });
+    if (!requestRow) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'Richiesta partner non trovata' });
+    }
+
+    if (normalizePartnerRequestStatus(requestRow.status) === 'approved') {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'La richiesta partner e gia stata approvata' });
+    }
+
+    const cityRows = await fetchCitiesByIds(selectedCityIds, client);
+    if (cityRows.length !== selectedCityIds.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'Una o piu citta selezionate non esistono' });
+    }
+
+    const normalizedCode = String(payload.code || '')
+      .trim()
+      .toUpperCase();
+    const alreadyUsed = await structureInviteCodeExists(normalizedCode, client);
+    if (alreadyUsed) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'Codice gia in uso' });
+    }
+
+    const normalizedStreet = String(requestRow.address_street || '').trim();
+    const normalizedStreetNumber = String(requestRow.address_number || '').trim();
+    const normalizedCity = String(requestRow.address_city || '').trim();
+    const normalizedPostalCode = String(requestRow.address_postal_code || '').trim();
+    const normalizedProvince = String(requestRow.address_province || '').trim().toUpperCase() || null;
+    const normalizedCountry = String(requestRow.address_country || '').trim() || 'Italia';
+    const normalizedAddress = buildStructureAddress({
+      street: normalizedStreet,
+      streetNumber: normalizedStreetNumber,
+      city: normalizedCity,
+      postalCode: normalizedPostalCode,
+      province: normalizedProvince,
+      country: normalizedCountry
+    });
+    const structureId = `str_${crypto.randomUUID()}`;
+
+    await client.query(
+      `
+        INSERT INTO dashboard_structures (
+          id,
+          name,
+          address,
+          address_street,
+          address_number,
+          address_city,
+          address_postal_code,
+          address_province,
+          address_country
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `,
+      [
+        structureId,
+        String(requestRow.structure_name || '').trim(),
+        normalizedAddress,
+        normalizedStreet,
+        normalizedStreetNumber || null,
+        normalizedCity,
+        normalizedPostalCode || null,
+        normalizedProvince,
+        normalizedCountry
+      ]
+    );
+
+    const applyTo = payload.applyTo === 'single' ? 'single' : 'bundle';
+    const userDiscountPercentSingle = applyTo === 'single' ? payload.userDiscountPercent : 0;
+    const userDiscountPercentBundle = applyTo === 'bundle' ? payload.userDiscountPercent : 0;
+    const structureFixedAmountSingle = applyTo === 'single' ? payload.structureFixedAmount : 0;
+    const structureFixedAmountBundle = applyTo === 'bundle' ? payload.structureFixedAmount : 0;
+
+    const createdDiscountCode = await client.query(
+      `
+        INSERT INTO dashboard_structure_discount_codes (
+          structure_id,
+          code,
+          apply_to,
+          city_id,
+          user_discount_percent,
+          user_discount_percent_single,
+          user_discount_percent_bundle,
+          structure_fixed_amount,
+          structure_fixed_amount_single,
+          structure_fixed_amount_bundle,
+          expires_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING id
+      `,
+      [
+        structureId,
+        normalizedCode,
+        applyTo,
+        selectedCityIds[0],
+        payload.userDiscountPercent,
+        userDiscountPercentSingle,
+        userDiscountPercentBundle,
+        payload.structureFixedAmount,
+        structureFixedAmountSingle,
+        structureFixedAmountBundle,
+        payload.expiresAt.toISOString()
+      ]
+    );
+    const discountCodeId = Number(createdDiscountCode.rows[0].id);
+
+    await client.query(
+      `
+        INSERT INTO dashboard_structure_discount_code_cities (discount_code_id, city_id)
+        SELECT $1::BIGINT, city_id
+        FROM UNNEST($2::TEXT[]) AS selected(city_id)
+        ON CONFLICT (discount_code_id, city_id) DO NOTHING
+      `,
+      [discountCodeId, selectedCityIds]
+    );
+
+    const cityNameById = new Map(cityRows.map((row) => [String(row.id), sanitizeCatalogText(row.name)]));
+    const orderedCityNames = selectedCityIds.map((cityId) => cityNameById.get(cityId)).filter(Boolean);
+    const pdfPayload = buildPartnerRequestPdfPayload(requestRow, {
+      cityNames: orderedCityNames,
+      discountCode: normalizedCode,
+      expiresAt: payload.expiresAt.toISOString(),
+      userDiscountPercent: payload.userDiscountPercent,
+      structureFixedAmount: payload.structureFixedAmount
+    });
+    const pdfBuffer = buildPartnerPromotionPdf(pdfPayload);
+    const pdfFileName = buildPartnerPromotionFileName(requestRow.structure_name, normalizedCode);
+
+    await sendPartnerApprovalEmail({
+      to: requestRow.contact_email,
+      contactName: [requestRow.contact_first_name, requestRow.contact_last_name].filter(Boolean).join(' '),
+      structureName: requestRow.structure_name,
+      discountCode: normalizedCode,
+      cityNames: orderedCityNames,
+      expiresAt: payload.expiresAt.toISOString(),
+      pdfBuffer,
+      pdfFileName
+    });
+
+    const updated = await client.query(
+      `
+        UPDATE partner_registration_requests
+        SET status = $1,
+            pdf_release_status = $2,
+            approved_structure_id = $3,
+            approved_discount_code_id = $4,
+            approval_email_sent_at = NOW(),
+            updated_at = NOW()
+        WHERE id = $5
+        RETURNING
+          id,
+          structure_name,
+          structure_type,
+          vat_number,
+          contact_first_name,
+          contact_last_name,
+          contact_email,
+          contact_phone,
+          website,
+          address_street,
+          address_number,
+          address_city,
+          address_postal_code,
+          address_province,
+          address_region,
+          address_country,
+          rooms_count,
+          notes,
+          status,
+          pdf_release_status,
+          approved_structure_id,
+          approved_discount_code_id,
+          approval_email_sent_at,
+          created_at,
+          updated_at
+      `,
+      ['approved', 'sent', structureId, discountCodeId, requestId]
+    );
+
+    await client.query('COMMIT');
+
+    return res.json(
+      mapPartnerRequestRow({
+        ...updated.rows[0],
+        discount_code: normalizedCode
+      })
+    );
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_MODULE_NOT_FOUND') {
+      return res.status(500).json({ message: 'Nodemailer non installato. Esegui npm install nel backend.' });
+    }
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
+      return res.status(409).json({ message: 'Codice gia in uso' });
+    }
+    return next(error);
+  } finally {
+    client.release();
+  }
+});
+
 router.get('/catalog/cities', requireAuth, requireAdmin, async (_req, res, next) => {
   try {
     const result = await pool.query(
@@ -2525,6 +3418,7 @@ router.get('/catalog/cities', requireAuth, requireAdmin, async (_req, res, next)
           c.bundle_price,
           c.hero_image,
           c.is_default,
+          c.translations,
           COUNT(p.id)::INT AS poi_count
         FROM cities c
         LEFT JOIN pois p ON p.city_id = c.id
@@ -2566,11 +3460,11 @@ router.post('/catalog/cities', requireAuth, requireAdmin, async (req, res, next)
 
     const created = await client.query(
       `
-        INSERT INTO cities (id, name, region, bundle_price, hero_image, is_default)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING id, name, region, bundle_price, hero_image, is_default
+        INSERT INTO cities (id, name, region, bundle_price, hero_image, is_default, translations)
+        VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+        RETURNING id, name, region, bundle_price, hero_image, is_default, translations
       `,
-      [cityId, payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault]
+      [cityId, payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify(payload.translations || {})]
     );
 
     await client.query('COMMIT');
@@ -2615,11 +3509,12 @@ router.patch('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, r
             region = $2,
             bundle_price = $3,
             hero_image = $4,
-            is_default = $5
-        WHERE id = $6
-        RETURNING id, name, region, bundle_price, hero_image, is_default
+            is_default = $5,
+            translations = $6::jsonb
+        WHERE id = $7
+        RETURNING id, name, region, bundle_price, hero_image, is_default, translations
       `,
-      [payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, cityId]
+      [payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify(payload.translations || {}), cityId]
     );
 
     await client.query('COMMIT');
@@ -2710,7 +3605,8 @@ router.get('/catalog/cities/:cityId/pois', requireAuth, requireAdmin, async (req
           p.image_url,
           p.audio_url,
           p.price_single,
-          p.duration_sec
+          p.duration_sec,
+          p.translations
         FROM pois p
         JOIN cities c ON c.id = p.city_id
         WHERE p.city_id = $1
@@ -2757,9 +3653,10 @@ router.post('/catalog/pois', requireAuth, requireAdmin, async (req, res, next) =
           image_url,
           audio_url,
           price_single,
-          duration_sec
+          duration_sec,
+          translations
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)
         RETURNING id
       `,
       [
@@ -2774,7 +3671,8 @@ router.post('/catalog/pois', requireAuth, requireAdmin, async (req, res, next) =
         payload.imageUrl,
         payload.audioUrl,
         payload.priceSingle,
-        payload.durationSec
+        payload.durationSec,
+        JSON.stringify(payload.translations || {})
       ]
     );
 
@@ -2816,8 +3714,9 @@ router.patch('/catalog/pois/:poiId', requireAuth, requireAdmin, async (req, res,
             image_url = $8,
             audio_url = $9,
             price_single = $10,
-            duration_sec = $11
-        WHERE id = $12
+            duration_sec = $11,
+            translations = $12::jsonb
+        WHERE id = $13
         RETURNING id
       `,
       [
@@ -2832,6 +3731,7 @@ router.patch('/catalog/pois/:poiId', requireAuth, requireAdmin, async (req, res,
         payload.audioUrl,
         payload.priceSingle,
         payload.durationSec,
+        JSON.stringify(payload.translations || {}),
         poiId
       ]
     );

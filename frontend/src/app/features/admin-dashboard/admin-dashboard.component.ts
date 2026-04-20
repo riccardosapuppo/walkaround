@@ -9,12 +9,16 @@ import {
   CatalogMediaTarget,
   CatalogCityInput,
   CatalogPoiInput,
+  DashboardPartnerRequest,
   DiscountCodeApplyTo,
   DashboardCatalogCity,
   DashboardCatalogPoi,
   DashboardDiscountCode,
+  DashboardPayPalSettings,
   DashboardPaymentRow,
   DashboardPaymentsSummary,
+  PartnerRequestApprovalInput,
+  PartnerRequestPdfPreviewInput,
   DashboardStructure,
   DashboardUserAssociation,
   StructureAssociatedUserRow,
@@ -22,16 +26,29 @@ import {
   InviteResponse,
   UserRole
 } from '../../core/services/admin-auth.service';
+import { CityTranslations, PoiTranslations } from '../../core/models/localized-content.model';
 
-type DashboardSection = 'users' | 'structures' | 'discounts' | 'payments' | 'catalog';
+type DashboardSection = 'users' | 'structures' | 'discounts' | 'partnerRequests' | 'payments' | 'paypal' | 'catalog';
 type CatalogTab = 'cities' | 'pois';
 type PoiMapPickerTarget = 'create' | 'edit';
+type ContentEditorLanguage = 'en' | 'fr' | 'es';
 type PoiMapSearchResult = {
   displayName: string;
   lat: number;
   lng: number;
   osmUrl: string;
 };
+type CatalogCityTranslationsFormValue = Record<ContentEditorLanguage, { name: string }>;
+type CatalogPoiTranslationsFormValue = Record<
+  ContentEditorLanguage,
+  {
+    name: string;
+    descriptionShort: string;
+    descriptionLong: string;
+    audioLabel: string;
+    audioUrl: string;
+  }
+>;
 type DiscountCodesByStructureGroup = {
   structureId: string;
   structureName: string | null;
@@ -48,6 +65,11 @@ type DiscountCodesByStructureGroup = {
 export class AdminDashboardComponent implements OnInit {
   readonly noStructureValue = '__none__';
   readonly fixedCreateCityRegion = 'Sicilia';
+  readonly contentLanguages: ReadonlyArray<{ code: ContentEditorLanguage; label: string }> = [
+    { code: 'en', label: 'Inglese' },
+    { code: 'fr', label: 'Francese' },
+    { code: 'es', label: 'Spagnolo' }
+  ];
   readonly poiCategoryOptions: string[] = [
     'Monumento',
     'Museo',
@@ -71,7 +93,9 @@ export class AdminDashboardComponent implements OnInit {
     { id: 'users', label: 'Utenti' },
     { id: 'structures', label: 'Strutture' },
     { id: 'discounts', label: 'Codici invito/sconto' },
+    { id: 'partnerRequests', label: 'Richieste partner' },
     { id: 'payments', label: 'Pagamenti' },
+    { id: 'paypal', label: 'PayPal' },
     { id: 'catalog', label: 'Citta e Punti interesse' }
   ];
   readonly managerSections: Array<{ id: DashboardSection; label: string }> = [
@@ -98,11 +122,15 @@ export class AdminDashboardComponent implements OnInit {
   loadingStructures = false;
   loadingAssociatedUsers = false;
   loadingPayments = false;
+  loadingPartnerRequests = false;
+  loadingPayPalSettings = false;
   creatingStructure = false;
   updatingStructure = false;
   loadingDiscountCodes = false;
   creatingDiscountCode = false;
   updatingDiscountCode = false;
+  savingPayPalSettings = false;
+  testingPayPalSettings = false;
   loadingCatalogCities = false;
   loadingCatalogPois = false;
   savingCatalogCity = false;
@@ -110,9 +138,11 @@ export class AdminDashboardComponent implements OnInit {
   uploadingCatalogAudio = false;
   uploadingCatalogCityImage = false;
   uploadingCatalogImage = false;
+  uploadingCatalogPoiTranslationAudio: Record<ContentEditorLanguage, boolean> = { en: false, fr: false, es: false };
   uploadingCatalogCityEditImage = false;
   uploadingCatalogPoiEditImage = false;
   uploadingCatalogPoiEditAudio = false;
+  uploadingCatalogPoiEditTranslationAudio: Record<ContentEditorLanguage, boolean> = { en: false, fr: false, es: false };
   deletingCatalogCityId: string | null = null;
   deletingCatalogPoiId: string | null = null;
   savingUserId: string | null = null;
@@ -130,6 +160,8 @@ export class AdminDashboardComponent implements OnInit {
   discountCodeGroups: DiscountCodesByStructureGroup[] = [];
   associatedUsers: StructureAssociatedUserRow[] = [];
   payments: DashboardPaymentRow[] = [];
+  partnerRequests: DashboardPartnerRequest[] = [];
+  payPalSettings: DashboardPayPalSettings | null = null;
   paymentsSummary: DashboardPaymentsSummary = {
     totalPayments: 0,
     totalCollected: 0,
@@ -141,6 +173,10 @@ export class AdminDashboardComponent implements OnInit {
   selectedCatalogCityId = '';
   editingCatalogCityId: string | null = null;
   editingCatalogPoiId: string | null = null;
+  partnerRequestApprovalTarget: DashboardPartnerRequest | null = null;
+  approvingPartnerRequestId: number | null = null;
+  rejectingPartnerRequestId: number | null = null;
+  previewingPartnerRequestId: number | null = null;
   private lastLoadedCatalogPoisCityId = '';
   private catalogPoisRequestToken = 0;
   private hasLoadedCatalogCitiesOnce = false;
@@ -158,6 +194,7 @@ export class AdminDashboardComponent implements OnInit {
   private editCatalogPoiDialogRef?: MatDialogRef<unknown>;
   private createDiscountCodeDialogRef?: MatDialogRef<unknown>;
   private editDiscountCodeDialogRef?: MatDialogRef<unknown>;
+  private partnerRequestApprovalDialogRef?: MatDialogRef<unknown>;
   private catalogPoiAudioPlayerDialogRef?: MatDialogRef<unknown>;
   private poiMapPickerDialogRef?: MatDialogRef<unknown>;
   private poiMapInstance: any = null;
@@ -178,6 +215,7 @@ export class AdminDashboardComponent implements OnInit {
   @ViewChild('editCatalogPoiDialog') editCatalogPoiDialog?: TemplateRef<unknown>;
   @ViewChild('createDiscountCodeDialog') createDiscountCodeDialog?: TemplateRef<unknown>;
   @ViewChild('editDiscountCodeDialog') editDiscountCodeDialog?: TemplateRef<unknown>;
+  @ViewChild('partnerRequestApprovalDialog') partnerRequestApprovalDialog?: TemplateRef<unknown>;
   @ViewChild('catalogPoiAudioPlayerDialog') catalogPoiAudioPlayerDialog?: TemplateRef<unknown>;
   @ViewChild('poiMapPickerDialog') poiMapPickerDialog?: TemplateRef<unknown>;
   @ViewChild('poiMapCanvas') poiMapCanvas?: ElementRef<HTMLDivElement>;
@@ -258,11 +296,42 @@ export class AdminDashboardComponent implements OnInit {
     expiresAt: ['', [Validators.required]]
   });
 
+  readonly partnerRequestApprovalForm = this.formBuilder.nonNullable.group({
+    applyTo: ['bundle' as DiscountCodeApplyTo, [Validators.required]],
+    cityIds: [[] as string[], [Validators.required]],
+    code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern(/^[A-Z0-9]{6}$/)]],
+    userDiscountPercent: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+    structureFixedAmount: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
+    expiresAt: ['', [Validators.required]]
+  });
+
+  readonly payPalForm = this.formBuilder.nonNullable.group({
+    isEnabled: [false],
+    mode: ['sandbox' as 'sandbox' | 'live', [Validators.required]],
+    clientId: ['', [Validators.maxLength(400)]],
+    clientSecret: ['', [Validators.maxLength(400)]],
+    merchantId: ['', [Validators.maxLength(180)]],
+    merchantEmail: ['', [Validators.email, Validators.maxLength(180)]],
+    brandName: ['Walk Around', [Validators.maxLength(127)]],
+    webhookId: ['', [Validators.maxLength(180)]]
+  });
+
   readonly catalogCityForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     region: [{ value: this.fixedCreateCityRegion, disabled: true }, [Validators.required, Validators.maxLength(120)]],
     bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-    heroImage: ['', [Validators.required, Validators.maxLength(500)]]
+    heroImage: ['', [Validators.required, Validators.maxLength(500)]],
+    translations: this.formBuilder.nonNullable.group({
+      en: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(120)]]
+      }),
+      fr: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(120)]]
+      }),
+      es: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(120)]]
+      })
+    })
   });
 
   readonly catalogPoiForm = this.formBuilder.nonNullable.group({
@@ -276,14 +345,48 @@ export class AdminDashboardComponent implements OnInit {
     imageUrl: ['', [Validators.required, Validators.maxLength(500)]],
     audioUrl: ['', [Validators.maxLength(500)]],
     priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-    durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]]
+    durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
+    translations: this.formBuilder.nonNullable.group({
+      en: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(180)]],
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioLabel: ['', [Validators.maxLength(180)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      fr: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(180)]],
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioLabel: ['', [Validators.maxLength(180)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      es: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(180)]],
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioLabel: ['', [Validators.maxLength(180)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      })
+    })
   });
 
   readonly catalogCityEditForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     region: ['', [Validators.required, Validators.maxLength(120)]],
     bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-    heroImage: ['', [Validators.required, Validators.maxLength(500)]]
+    heroImage: ['', [Validators.required, Validators.maxLength(500)]],
+    translations: this.formBuilder.nonNullable.group({
+      en: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(120)]]
+      }),
+      fr: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(120)]]
+      }),
+      es: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(120)]]
+      })
+    })
   });
 
   readonly catalogPoiEditForm = this.formBuilder.nonNullable.group({
@@ -297,7 +400,30 @@ export class AdminDashboardComponent implements OnInit {
     imageUrl: ['', [Validators.required, Validators.maxLength(500)]],
     audioUrl: ['', [Validators.maxLength(500)]],
     priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
-    durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]]
+    durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
+    translations: this.formBuilder.nonNullable.group({
+      en: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(180)]],
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioLabel: ['', [Validators.maxLength(180)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      fr: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(180)]],
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioLabel: ['', [Validators.maxLength(180)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      es: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.maxLength(180)]],
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioLabel: ['', [Validators.maxLength(180)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      })
+    })
   });
 
   readonly poiMapSearchForm = this.formBuilder.nonNullable.group({
@@ -340,6 +466,12 @@ export class AdminDashboardComponent implements OnInit {
         this.discountCodeCreateForm.controls.code.setValue(normalized, { emitEvent: false });
       }
     });
+    this.partnerRequestApprovalForm.controls.code.valueChanges.subscribe((value) => {
+      const normalized = this.normalizeStructureInviteCode(value || '');
+      if (normalized !== value) {
+        this.partnerRequestApprovalForm.controls.code.setValue(normalized, { emitEvent: false });
+      }
+    });
 
     this.startCreateCatalogCity();
     this.startCreateCatalogPoi();
@@ -375,6 +507,10 @@ export class AdminDashboardComponent implements OnInit {
     return this.canManageUsers || this.isFacilityManager;
   }
 
+  get canManagePayPal(): boolean {
+    return this.canManageUsers;
+  }
+
   get visibleSections(): Array<{ id: DashboardSection; label: string }> {
     if (this.canManageUsers) {
       return this.sections;
@@ -387,6 +523,24 @@ export class AdminDashboardComponent implements OnInit {
 
   get isFacilityManager(): boolean {
     return this.isAuthenticated && this.currentRole === 'facility_manager';
+  }
+
+  get canSavePayPalSettings(): boolean {
+    return this.canManagePayPal && !this.savingPayPalSettings && this.payPalForm.valid;
+  }
+
+  get payPalStatusLabel(): string {
+    const status = this.payPalSettings?.lastVerificationStatus || 'incomplete';
+    if (status === 'valid') {
+      return 'Connessione valida';
+    }
+    if (status === 'invalid') {
+      return 'Connessione non valida';
+    }
+    if (status === 'pending') {
+      return 'Da verificare';
+    }
+    return 'Configurazione incompleta';
   }
 
   get isImpersonating(): boolean {
@@ -430,6 +584,22 @@ export class AdminDashboardComponent implements OnInit {
 
   get totalPayments(): number {
     return this.paymentsSummary.totalPayments;
+  }
+
+  get totalPartnerRequests(): number {
+    return this.partnerRequests.length;
+  }
+
+  get pendingPartnerRequests(): number {
+    return this.partnerRequests.filter((request) => request.status === 'pending').length;
+  }
+
+  get approvedPartnerRequests(): number {
+    return this.partnerRequests.filter((request) => request.status === 'approved').length;
+  }
+
+  get sentPartnerRequestPdfs(): number {
+    return this.partnerRequests.filter((request) => request.pdfReleaseStatus === 'sent').length;
   }
 
   get totalStructureEarnings(): number {
@@ -529,6 +699,7 @@ export class AdminDashboardComponent implements OnInit {
       !this.savingCatalogPoi &&
       !this.uploadingCatalogAudio &&
       !this.uploadingCatalogImage &&
+      !this.hasCatalogPoiTranslationAudioUploadInProgress('create') &&
       this.catalogPoiForm.valid
     );
   }
@@ -540,6 +711,7 @@ export class AdminDashboardComponent implements OnInit {
       !this.savingCatalogPoi &&
       !this.uploadingCatalogPoiEditImage &&
       !this.uploadingCatalogPoiEditAudio &&
+      !this.hasCatalogPoiTranslationAudioUploadInProgress('edit') &&
       this.catalogPoiEditForm.valid
     );
   }
@@ -571,12 +743,21 @@ export class AdminDashboardComponent implements OnInit {
       this.closeCreateDiscountCodeDialog();
       this.closeEditDiscountCodeDialog();
     }
+    if (section !== 'partnerRequests') {
+      this.closePartnerRequestApprovalDialog();
+      this.rejectingPartnerRequestId = null;
+      this.previewingPartnerRequestId = null;
+    }
     if (section !== 'catalog') {
       this.closeCreateCatalogCityDialog();
       this.closeCreateCatalogPoiDialog();
     }
     if (section === 'payments' && this.canAccessDashboard) {
       this.loadPayments();
+    } else if (section === 'partnerRequests' && this.canManageUsers) {
+      this.loadPartnerRequests();
+    } else if (section === 'paypal' && this.canManagePayPal) {
+      this.loadPayPalSettings();
     } else if (section === 'discounts' && this.canViewDiscountCodes) {
       this.loadDiscountCodes();
     } else if (section === 'structures' && this.canManageUsers) {
@@ -1083,6 +1264,361 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  loadPartnerRequests(): void {
+    if (!this.canManageUsers || this.loadingPartnerRequests) {
+      return;
+    }
+
+    this.loadingPartnerRequests = true;
+    this.auth.listPartnerRequests().subscribe({
+      next: (rows) => {
+        this.loadingPartnerRequests = false;
+        this.partnerRequests = this.sortPartnerRequests(rows || []);
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingPartnerRequests = false;
+        const message = error?.error?.message || 'Errore caricamento richieste partner';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  openPartnerRequestApproval(request: DashboardPartnerRequest): void {
+    if (!this.canManageUsers || !this.partnerRequestApprovalDialog) {
+      return;
+    }
+    if (request.status === 'approved') {
+      return;
+    }
+    if (!this.catalogCities.length && !this.loadingCatalogCities) {
+      this.loadCatalogCities();
+    }
+
+    this.partnerRequestApprovalTarget = request;
+    this.startPartnerRequestApproval(request);
+    this.partnerRequestApprovalDialogRef?.close();
+    this.partnerRequestApprovalDialogRef = this.dialog.open(this.partnerRequestApprovalDialog, {
+      width: '760px',
+      maxWidth: '95vw'
+    });
+    this.partnerRequestApprovalDialogRef.afterClosed().subscribe(() => {
+      this.partnerRequestApprovalDialogRef = undefined;
+      this.approvingPartnerRequestId = null;
+      this.previewingPartnerRequestId = null;
+      this.startPartnerRequestApproval();
+    });
+  }
+
+  closePartnerRequestApprovalDialog(): void {
+    this.partnerRequestApprovalDialogRef?.close();
+    this.partnerRequestApprovalDialogRef = undefined;
+    this.approvingPartnerRequestId = null;
+    this.previewingPartnerRequestId = null;
+    this.startPartnerRequestApproval();
+  }
+
+  startPartnerRequestApproval(request: DashboardPartnerRequest | null = null): void {
+    this.partnerRequestApprovalTarget = request;
+    this.partnerRequestApprovalForm.reset({
+      applyTo: 'bundle',
+      cityIds: this.catalogCities[0]?.id ? [this.catalogCities[0].id] : [],
+      code: '',
+      userDiscountPercent: 0,
+      structureFixedAmount: 0,
+      expiresAt: this.defaultDiscountCodeExpiryInput()
+    });
+  }
+
+  generateDiscountCodeForPartnerApproval(): void {
+    if (!this.canManageUsers || this.approvingPartnerRequestId !== null) {
+      return;
+    }
+
+    this.auth.generateStructureInviteCode().subscribe({
+      next: (inviteCode) => {
+        this.partnerRequestApprovalForm.controls.code.setValue(inviteCode);
+        this.partnerRequestApprovalForm.controls.code.markAsDirty();
+      },
+      error: (error: { error?: { message?: string } }) => {
+        const message = error?.error?.message || 'Errore generazione codice';
+        this.snackBar.open(message, 'Chiudi', { duration: 3200 });
+      }
+    });
+  }
+
+  previewPartnerRequestPdf(request: DashboardPartnerRequest, payload?: PartnerRequestPdfPreviewInput): void {
+    if (!this.canManageUsers || this.previewingPartnerRequestId !== null) {
+      return;
+    }
+
+    this.previewingPartnerRequestId = request.id;
+    this.auth
+      .previewPartnerRequestPdf(request.id, payload || { code: request.discountCode || 'SCONTO' })
+      .subscribe({
+        next: (blob) => {
+          this.previewingPartnerRequestId = null;
+          const objectUrl = URL.createObjectURL(blob);
+          const previewLink = document.createElement('a');
+          previewLink.href = objectUrl;
+          previewLink.target = '_blank';
+          previewLink.rel = 'noopener';
+          previewLink.click();
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+        },
+        error: (error: { error?: { message?: string } }) => {
+          this.previewingPartnerRequestId = null;
+          const message = error?.error?.message || 'Errore anteprima PDF';
+          this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+        }
+      });
+  }
+
+  previewSelectedPartnerRequestPdf(): void {
+    const request = this.partnerRequestApprovalTarget;
+    if (!request) {
+      return;
+    }
+
+    const { cityIds, code, userDiscountPercent, structureFixedAmount, expiresAt } = this.partnerRequestApprovalForm.getRawValue();
+    const expiresAtIso = this.toIsoDateTime(expiresAt);
+    this.previewPartnerRequestPdf(request, {
+      cityIds: this.normalizeSelectedCityIds(cityIds),
+      code: this.normalizeStructureInviteCode(code || '') || 'SCONTO',
+      userDiscountPercent: this.normalizePercent(userDiscountPercent),
+      structureFixedAmount: this.normalizeEuroAmount(structureFixedAmount),
+      expiresAt: expiresAtIso
+    });
+  }
+
+  approvePartnerRequest(): void {
+    const request = this.partnerRequestApprovalTarget;
+    if (!request || !this.canManageUsers || this.approvingPartnerRequestId !== null) {
+      return;
+    }
+
+    if (this.partnerRequestApprovalForm.invalid) {
+      this.partnerRequestApprovalForm.markAllAsTouched();
+      return;
+    }
+
+    const { applyTo, cityIds, code, userDiscountPercent, structureFixedAmount, expiresAt } = this.partnerRequestApprovalForm.getRawValue();
+    const normalizedCode = this.normalizeStructureInviteCode(code || '');
+    if (!normalizedCode) {
+      this.partnerRequestApprovalForm.controls.code.markAsTouched();
+      this.snackBar.open('Codice obbligatorio', 'Chiudi', { duration: 2800 });
+      return;
+    }
+    const expiresAtIso = this.toIsoDateTime(expiresAt);
+    if (!expiresAtIso) {
+      this.partnerRequestApprovalForm.controls.expiresAt.markAsTouched();
+      this.snackBar.open('Scadenza non valida', 'Chiudi', { duration: 2800 });
+      return;
+    }
+
+    const normalizedCityIds = this.normalizeSelectedCityIds(cityIds);
+    if (!normalizedCityIds.length) {
+      this.partnerRequestApprovalForm.controls.cityIds.markAsTouched();
+      this.snackBar.open('Seleziona almeno una citta', 'Chiudi', { duration: 2800 });
+      return;
+    }
+
+    const payload: PartnerRequestApprovalInput = {
+      applyTo,
+      cityIds: normalizedCityIds,
+      code: normalizedCode,
+      userDiscountPercent: this.normalizePercent(userDiscountPercent),
+      structureFixedAmount: this.normalizeEuroAmount(structureFixedAmount),
+      expiresAt: expiresAtIso
+    };
+
+    this.approvingPartnerRequestId = request.id;
+    this.auth.approvePartnerRequest(request.id, payload).subscribe({
+      next: (updated) => {
+        this.approvingPartnerRequestId = null;
+        this.partnerRequests = this.sortPartnerRequests(
+          this.partnerRequests.map((item) => (item.id === updated.id ? updated : item))
+        );
+        this.closePartnerRequestApprovalDialog();
+        this.loadStructures();
+        this.loadDiscountCodes();
+        this.snackBar.open(`Richiesta ${updated.structureName} approvata e inviata via email`, 'OK', {
+          duration: 3200
+        });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.approvingPartnerRequestId = null;
+        const message = error?.error?.message || 'Errore approvazione richiesta partner';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  rejectPartnerRequest(request: DashboardPartnerRequest): void {
+    if (!this.canManageUsers || this.rejectingPartnerRequestId !== null || request.status === 'approved') {
+      return;
+    }
+
+    const confirmed = window.confirm(`Negare la richiesta partner per "${request.structureName}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.rejectingPartnerRequestId = request.id;
+    this.auth.rejectPartnerRequest(request.id).subscribe({
+      next: (updated) => {
+        this.rejectingPartnerRequestId = null;
+        this.partnerRequests = this.sortPartnerRequests(
+          this.partnerRequests.map((item) => (item.id === updated.id ? updated : item))
+        );
+        this.snackBar.open(`Richiesta ${updated.structureName} negata`, 'OK', { duration: 2600 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.rejectingPartnerRequestId = null;
+        const message = error?.error?.message || 'Errore aggiornamento richiesta partner';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  isPartnerRequestBusy(request: DashboardPartnerRequest): boolean {
+    return (
+      this.approvingPartnerRequestId === request.id ||
+      this.rejectingPartnerRequestId === request.id ||
+      this.previewingPartnerRequestId === request.id
+    );
+  }
+
+  partnerRequestStatusLabel(status: DashboardPartnerRequest['status']): string {
+    if (status === 'approved') {
+      return 'Approvata';
+    }
+    if (status === 'rejected') {
+      return 'Negata';
+    }
+    return 'In attesa';
+  }
+
+  partnerRequestStatusClass(status: DashboardPartnerRequest['status']): string {
+    if (status === 'approved') {
+      return 'ok';
+    }
+    if (status === 'rejected') {
+      return 'bad';
+    }
+    return 'warn';
+  }
+
+  partnerRequestPdfStatusLabel(status: DashboardPartnerRequest['pdfReleaseStatus']): string {
+    return status === 'sent' ? 'Inviato' : 'Da inviare';
+  }
+
+  partnerRequestPdfStatusClass(status: DashboardPartnerRequest['pdfReleaseStatus']): string {
+    return status === 'sent' ? 'ok' : 'warn';
+  }
+
+  loadPayPalSettings(): void {
+    if (!this.canManagePayPal || this.loadingPayPalSettings) {
+      return;
+    }
+
+    this.loadingPayPalSettings = true;
+    this.auth.getPayPalSettings().subscribe({
+      next: (settings) => {
+        this.loadingPayPalSettings = false;
+        this.payPalSettings = settings;
+        this.payPalForm.reset({
+          isEnabled: settings.isEnabled,
+          mode: settings.mode,
+          clientId: settings.clientId || '',
+          clientSecret: settings.clientSecret || '',
+          merchantId: settings.merchantId || '',
+          merchantEmail: settings.merchantEmail || '',
+          brandName: settings.brandName || 'Walk Around',
+          webhookId: settings.webhookId || ''
+        });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingPayPalSettings = false;
+        const message = error?.error?.message || 'Errore caricamento configurazione PayPal';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  savePayPalSettings(): void {
+    if (!this.canSavePayPalSettings) {
+      this.payPalForm.markAllAsTouched();
+      return;
+    }
+
+    this.savingPayPalSettings = true;
+    const payload = this.payPalForm.getRawValue();
+    this.auth
+      .updatePayPalSettings({
+        isEnabled: payload.isEnabled,
+        mode: payload.mode,
+        clientId: payload.clientId.trim(),
+        clientSecret: payload.clientSecret.trim(),
+        merchantId: payload.merchantId.trim(),
+        merchantEmail: payload.merchantEmail.trim(),
+        brandName: payload.brandName.trim() || 'Walk Around',
+        webhookId: payload.webhookId.trim(),
+        currencyCode: 'EUR'
+      })
+      .subscribe({
+        next: (settings) => {
+          this.savingPayPalSettings = false;
+          this.payPalSettings = settings;
+          this.snackBar.open('Configurazione PayPal salvata', 'OK', { duration: 2400 });
+        },
+        error: (error: { error?: { message?: string } }) => {
+          this.savingPayPalSettings = false;
+          const message = error?.error?.message || 'Errore salvataggio configurazione PayPal';
+          this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+        }
+      });
+  }
+
+  testPayPalSettings(): void {
+    if (!this.canManagePayPal || this.testingPayPalSettings) {
+      return;
+    }
+
+    this.testingPayPalSettings = true;
+    this.auth.testPayPalSettings().subscribe({
+      next: (response) => {
+        this.testingPayPalSettings = false;
+        if (response.settings) {
+          this.payPalSettings = response.settings;
+        }
+        this.snackBar.open('Connessione PayPal verificata', 'OK', { duration: 2600 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.testingPayPalSettings = false;
+        const message = error?.error?.message || 'Verifica PayPal non riuscita';
+        if (this.payPalSettings) {
+          this.payPalSettings = {
+            ...this.payPalSettings,
+            lastVerificationStatus: 'invalid',
+            lastVerificationError: message
+          };
+        }
+        this.snackBar.open(message, 'Chiudi', { duration: 3600 });
+      }
+    });
+  }
+
+  partnerRequestContactName(request: DashboardPartnerRequest): string {
+    return `${request.contactFirstName || ''} ${request.contactLastName || ''}`.trim() || request.contactEmail;
+  }
+
+  partnerRequestAddress(request: DashboardPartnerRequest): string {
+    const line1 = [request.addressStreet, request.addressNumber].filter(Boolean).join(' ');
+    const cityLine = [request.addressPostalCode, request.addressCity, request.addressProvince].filter(Boolean).join(' ');
+    const areaLine = [request.addressRegion, request.addressCountry].filter(Boolean).join(', ');
+    return [line1, cityLine, areaLine].filter(Boolean).join(' - ');
+  }
+
   onPaymentsStructureFilterChange(structureId: string): void {
     if (!this.canManageUsers) {
       return;
@@ -1511,6 +2047,13 @@ export class AdminDashboardComponent implements OnInit {
         } else if (nextEditCityIds.length !== editCityIds.length) {
           this.discountCodeEditForm.controls.cityIds.setValue(nextEditCityIds);
         }
+        const partnerCityIds = this.normalizeSelectedCityIds(this.partnerRequestApprovalForm.controls.cityIds.value);
+        const nextPartnerCityIds = partnerCityIds.filter((cityId) => this.catalogCities.some((city) => city.id === cityId));
+        if (!nextPartnerCityIds.length && firstCityId) {
+          this.partnerRequestApprovalForm.controls.cityIds.setValue([firstCityId]);
+        } else if (nextPartnerCityIds.length !== partnerCityIds.length) {
+          this.partnerRequestApprovalForm.controls.cityIds.setValue(nextPartnerCityIds);
+        }
 
         const hasSelection = this.ensureCatalogSelectedCity();
         if (hasSelection) {
@@ -1587,7 +2130,8 @@ export class AdminDashboardComponent implements OnInit {
       name: '',
       region: this.fixedCreateCityRegion,
       bundlePrice: 0,
-      heroImage: ''
+      heroImage: '',
+      translations: this.emptyCatalogCityTranslationsFormValue()
     });
     this.catalogCityForm.controls.region.disable({ emitEvent: false });
   }
@@ -1599,7 +2143,8 @@ export class AdminDashboardComponent implements OnInit {
       name: city.name,
       region: city.region,
       bundlePrice: city.bundlePrice,
-      heroImage: city.heroImage
+      heroImage: city.heroImage,
+      translations: this.catalogCityTranslationsFormValue(city.translations)
     });
 
     if (!this.editCatalogCityDialog) {
@@ -1645,7 +2190,8 @@ export class AdminDashboardComponent implements OnInit {
       name: '',
       region: '',
       bundlePrice: 0,
-      heroImage: ''
+      heroImage: '',
+      translations: this.emptyCatalogCityTranslationsFormValue()
     });
   }
 
@@ -1711,6 +2257,7 @@ export class AdminDashboardComponent implements OnInit {
 
   startCreateCatalogPoi(): void {
     this.editingCatalogPoiId = null;
+    this.resetCatalogPoiTranslationAudioUploadState('create');
     this.catalogPoiForm.reset({
       cityId: this.selectedCatalogCityId || '',
       name: '',
@@ -1722,12 +2269,14 @@ export class AdminDashboardComponent implements OnInit {
       imageUrl: '',
       audioUrl: '',
       priceSingle: 0,
-      durationSec: 60
+      durationSec: 60,
+      translations: this.emptyCatalogPoiTranslationsFormValue()
     });
   }
 
   editCatalogPoi(poi: DashboardCatalogPoi): void {
     this.editingCatalogPoiId = poi.id;
+    this.resetCatalogPoiTranslationAudioUploadState('edit');
     if (this.selectedCatalogCityId !== poi.cityId) {
       this.selectedCatalogCityId = poi.cityId;
       this.loadCatalogPois(poi.cityId);
@@ -1743,7 +2292,8 @@ export class AdminDashboardComponent implements OnInit {
       imageUrl: poi.imageUrl,
       audioUrl: poi.audioUrl || '',
       priceSingle: poi.priceSingle,
-      durationSec: poi.durationSec
+      durationSec: poi.durationSec,
+      translations: this.catalogPoiTranslationsFormValue(poi.translations)
     });
 
     if (!this.editCatalogPoiDialog) {
@@ -1787,6 +2337,7 @@ export class AdminDashboardComponent implements OnInit {
     this.editingCatalogPoiId = null;
     this.uploadingCatalogPoiEditImage = false;
     this.uploadingCatalogPoiEditAudio = false;
+    this.resetCatalogPoiTranslationAudioUploadState('edit');
     this.catalogPoiEditForm.reset({
       cityId: this.selectedCatalogCityId || '',
       name: '',
@@ -1798,7 +2349,8 @@ export class AdminDashboardComponent implements OnInit {
       imageUrl: '',
       audioUrl: '',
       priceSingle: 0,
-      durationSec: 60
+      durationSec: 60,
+      translations: this.emptyCatalogPoiTranslationsFormValue()
     });
   }
 
@@ -2045,6 +2597,39 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  onCatalogPoiTranslationAudioFileSelected(event: Event, language: ContentEditorLanguage, target: 'create' | 'edit'): void {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+    if (this.isFileLargerThan(file, this.maxCatalogAudioUploadBytes, 'audio')) {
+      input.value = '';
+      return;
+    }
+
+    const form = this.catalogPoiFormForTarget(target);
+    const fileDurationPromise = this.readAudioDurationFromFile(file);
+    const mediaTarget = this.resolvePoiMediaTarget(form.controls.cityId.value);
+    if (!mediaTarget) {
+      this.snackBar.open('Seleziona prima una citta per caricare l audio', 'Chiudi', { duration: 3200 });
+      input.value = '';
+      return;
+    }
+
+    this.uploadCatalogPoiAudio(file, mediaTarget, (audioUrl) => {
+      const audioControl = this.catalogPoiTranslationAudioControl(target, language);
+      audioControl.setValue(audioUrl);
+      audioControl.markAsDirty();
+      this.applyDetectedDurationToControl(fileDurationPromise, form.controls.durationSec, audioUrl);
+    }, () => {
+      this.setCatalogPoiTranslationAudioUploading(target, language, true);
+    }, () => {
+      this.setCatalogPoiTranslationAudioUploading(target, language, false);
+      input.value = '';
+    });
+  }
+
   clearCatalogCityImage(): void {
     this.catalogCityForm.controls.heroImage.setValue('');
     this.catalogCityForm.controls.heroImage.markAsDirty();
@@ -2073,6 +2658,22 @@ export class AdminDashboardComponent implements OnInit {
   clearCatalogPoiEditAudio(): void {
     this.catalogPoiEditForm.controls.audioUrl.setValue('');
     this.catalogPoiEditForm.controls.audioUrl.markAsDirty();
+  }
+
+  clearCatalogPoiTranslationAudio(language: ContentEditorLanguage, target: 'create' | 'edit'): void {
+    const audioControl = this.catalogPoiTranslationAudioControl(target, language);
+    audioControl.setValue('');
+    audioControl.markAsDirty();
+  }
+
+  catalogPoiTranslationAudioUrl(language: ContentEditorLanguage, target: 'create' | 'edit'): string {
+    return this.catalogPoiTranslationAudioControl(target, language).value;
+  }
+
+  isCatalogPoiTranslationAudioUploading(language: ContentEditorLanguage, target: 'create' | 'edit'): boolean {
+    return target === 'edit'
+      ? this.uploadingCatalogPoiEditTranslationAudio[language]
+      : this.uploadingCatalogPoiTranslationAudio[language];
   }
 
   hasUserDraftChanges(user: DashboardUserRow): boolean {
@@ -2263,6 +2864,8 @@ export class AdminDashboardComponent implements OnInit {
       this.discountCodeGroups = [];
       this.associatedUsers = [];
       this.payments = [];
+      this.partnerRequests = [];
+      this.payPalSettings = null;
       this.paymentsSummary = {
         totalPayments: 0,
         totalCollected: 0,
@@ -2285,6 +2888,7 @@ export class AdminDashboardComponent implements OnInit {
       this.editCatalogPoiDialogRef?.close();
       this.createDiscountCodeDialogRef?.close();
       this.editDiscountCodeDialogRef?.close();
+      this.partnerRequestApprovalDialogRef?.close();
       this.catalogPoiAudioPlayerDialogRef?.close();
       this.poiMapPickerDialogRef?.close();
       this.createCatalogCityDialogRef = undefined;
@@ -2293,6 +2897,7 @@ export class AdminDashboardComponent implements OnInit {
       this.editCatalogPoiDialogRef = undefined;
       this.createDiscountCodeDialogRef = undefined;
       this.editDiscountCodeDialogRef = undefined;
+      this.partnerRequestApprovalDialogRef = undefined;
       this.catalogPoiAudioPlayerDialogRef = undefined;
       this.poiMapPickerDialogRef = undefined;
       this.audioPlayerPoiName = '';
@@ -2314,11 +2919,15 @@ export class AdminDashboardComponent implements OnInit {
       this.loadingStructures = false;
       this.loadingAssociatedUsers = false;
       this.loadingPayments = false;
+      this.loadingPartnerRequests = false;
+      this.loadingPayPalSettings = false;
       this.creatingStructure = false;
       this.updatingStructure = false;
       this.loadingDiscountCodes = false;
       this.creatingDiscountCode = false;
       this.updatingDiscountCode = false;
+      this.savingPayPalSettings = false;
+      this.testingPayPalSettings = false;
       this.loadingCatalogCities = false;
       this.loadingCatalogPois = false;
       this.savingCatalogCity = false;
@@ -2326,11 +2935,17 @@ export class AdminDashboardComponent implements OnInit {
       this.uploadingCatalogAudio = false;
       this.uploadingCatalogCityImage = false;
       this.uploadingCatalogImage = false;
+      this.resetCatalogPoiTranslationAudioUploadState('create');
       this.uploadingCatalogCityEditImage = false;
       this.uploadingCatalogPoiEditImage = false;
       this.uploadingCatalogPoiEditAudio = false;
+      this.resetCatalogPoiTranslationAudioUploadState('edit');
       this.deletingCatalogCityId = null;
       this.deletingCatalogPoiId = null;
+      this.partnerRequestApprovalTarget = null;
+      this.approvingPartnerRequestId = null;
+      this.rejectingPartnerRequestId = null;
+      this.previewingPartnerRequestId = null;
       this.savingUserId = null;
       this.savingDiscountCodeId = null;
       this.deletingDiscountCodeId = null;
@@ -2389,7 +3004,8 @@ export class AdminDashboardComponent implements OnInit {
         name: '',
         region: this.fixedCreateCityRegion,
         bundlePrice: 0,
-        heroImage: ''
+        heroImage: '',
+        translations: this.emptyCatalogCityTranslationsFormValue()
       });
       this.catalogCityForm.controls.region.disable({ emitEvent: false });
       this.discountCodeCreateForm.reset({
@@ -2408,11 +3024,22 @@ export class AdminDashboardComponent implements OnInit {
         structureFixedAmount: 0,
         expiresAt: ''
       });
+      this.payPalForm.reset({
+        isEnabled: false,
+        mode: 'sandbox',
+        clientId: '',
+        clientSecret: '',
+        merchantId: '',
+        merchantEmail: '',
+        brandName: 'Walk Around',
+        webhookId: ''
+      });
       this.catalogCityEditForm.reset({
         name: '',
         region: '',
         bundlePrice: 0,
-        heroImage: ''
+        heroImage: '',
+        translations: this.emptyCatalogCityTranslationsFormValue()
       });
       this.catalogPoiForm.reset({
         cityId: '',
@@ -2425,7 +3052,8 @@ export class AdminDashboardComponent implements OnInit {
         imageUrl: '',
         audioUrl: '',
         priceSingle: 0,
-        durationSec: 60
+        durationSec: 60,
+        translations: this.emptyCatalogPoiTranslationsFormValue()
       });
       this.catalogPoiEditForm.reset({
         cityId: '',
@@ -2438,7 +3066,8 @@ export class AdminDashboardComponent implements OnInit {
         imageUrl: '',
         audioUrl: '',
         priceSingle: 0,
-        durationSec: 60
+        durationSec: 60,
+        translations: this.emptyCatalogPoiTranslationsFormValue()
       });
       this.poiMapSearchForm.reset({
         query: ''
@@ -2710,6 +3339,10 @@ export class AdminDashboardComponent implements OnInit {
     return poi.id;
   }
 
+  trackByPartnerRequestId(_index: number, request: DashboardPartnerRequest): number {
+    return request.id;
+  }
+
   structureCodes(structureId: string): DashboardDiscountCode[] {
     return this.discountCodesByStructureId[structureId] || [];
   }
@@ -2742,8 +3375,14 @@ export class AdminDashboardComponent implements OnInit {
     if (this.activeSection === 'discounts' || this.activeSection === 'structures') {
       this.loadDiscountCodes();
     }
+    if (this.activeSection === 'partnerRequests' && this.canManageUsers) {
+      this.loadPartnerRequests();
+    }
     if (this.activeSection === 'payments') {
       this.loadPayments();
+    }
+    if (this.activeSection === 'paypal') {
+      this.loadPayPalSettings();
     }
     if (this.activeSection === 'catalog') {
       this.loadCatalogCities();
@@ -2774,7 +3413,13 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private toCatalogCityPayload(
-    value: { name: string; region: string; bundlePrice: number; heroImage: string },
+    value: {
+      name: string;
+      region: string;
+      bundlePrice: number;
+      heroImage: string;
+      translations: CatalogCityTranslationsFormValue;
+    },
     isDefault: boolean
   ): CatalogCityInput {
     return {
@@ -2782,7 +3427,8 @@ export class AdminDashboardComponent implements OnInit {
       region: value.region.trim(),
       bundlePrice: Number(value.bundlePrice),
       heroImage: value.heroImage.trim(),
-      isDefault: Boolean(isDefault)
+      isDefault: Boolean(isDefault),
+      translations: this.buildCatalogCityTranslationsPayload(value.translations)
     };
   }
 
@@ -2798,6 +3444,7 @@ export class AdminDashboardComponent implements OnInit {
     audioUrl: string;
     priceSingle: number;
     durationSec: number;
+    translations: CatalogPoiTranslationsFormValue;
   }): CatalogPoiInput {
     const normalizedAudioUrl = value.audioUrl.trim();
     const cachedDuration = this.audioDurationByUrl[normalizedAudioUrl];
@@ -2816,8 +3463,176 @@ export class AdminDashboardComponent implements OnInit {
       imageUrl: value.imageUrl.trim(),
       audioUrl: normalizedAudioUrl,
       priceSingle: Number(value.priceSingle),
-      durationSec: Math.max(1, Math.round(resolvedDuration))
+      durationSec: Math.max(1, Math.round(resolvedDuration)),
+      translations: this.buildCatalogPoiTranslationsPayload(value.translations)
     };
+  }
+
+  private emptyCatalogCityTranslationsFormValue(): CatalogCityTranslationsFormValue {
+    return {
+      en: { name: '' },
+      fr: { name: '' },
+      es: { name: '' }
+    };
+  }
+
+  private emptyCatalogPoiTranslationsFormValue(): CatalogPoiTranslationsFormValue {
+    return {
+      en: {
+        name: '',
+        descriptionShort: '',
+        descriptionLong: '',
+        audioLabel: '',
+        audioUrl: ''
+      },
+      fr: {
+        name: '',
+        descriptionShort: '',
+        descriptionLong: '',
+        audioLabel: '',
+        audioUrl: ''
+      },
+      es: {
+        name: '',
+        descriptionShort: '',
+        descriptionLong: '',
+        audioLabel: '',
+        audioUrl: ''
+      }
+    };
+  }
+
+  private catalogCityTranslationsFormValue(translations: CityTranslations | null | undefined): CatalogCityTranslationsFormValue {
+    return {
+      en: { name: String(translations?.en?.name || '') },
+      fr: { name: String(translations?.fr?.name || '') },
+      es: { name: String(translations?.es?.name || '') }
+    };
+  }
+
+  private catalogPoiTranslationsFormValue(translations: PoiTranslations | null | undefined): CatalogPoiTranslationsFormValue {
+    return {
+      en: {
+        name: String(translations?.en?.name || ''),
+        descriptionShort: String(translations?.en?.descriptionShort || ''),
+        descriptionLong: String(translations?.en?.descriptionLong || ''),
+        audioLabel: String(translations?.en?.audioLabel || ''),
+        audioUrl: String(translations?.en?.audioUrl || '')
+      },
+      fr: {
+        name: String(translations?.fr?.name || ''),
+        descriptionShort: String(translations?.fr?.descriptionShort || ''),
+        descriptionLong: String(translations?.fr?.descriptionLong || ''),
+        audioLabel: String(translations?.fr?.audioLabel || ''),
+        audioUrl: String(translations?.fr?.audioUrl || '')
+      },
+      es: {
+        name: String(translations?.es?.name || ''),
+        descriptionShort: String(translations?.es?.descriptionShort || ''),
+        descriptionLong: String(translations?.es?.descriptionLong || ''),
+        audioLabel: String(translations?.es?.audioLabel || ''),
+        audioUrl: String(translations?.es?.audioUrl || '')
+      }
+    };
+  }
+
+  private buildCatalogCityTranslationsPayload(value: CatalogCityTranslationsFormValue): CityTranslations | undefined {
+    const translations: CityTranslations = {};
+
+    this.contentLanguages.forEach(({ code }) => {
+      const name = this.normalizeTranslationValue(value?.[code]?.name);
+      if (name) {
+        translations[code] = { name };
+      }
+    });
+
+    return Object.keys(translations).length ? translations : undefined;
+  }
+
+  private buildCatalogPoiTranslationsPayload(value: CatalogPoiTranslationsFormValue): PoiTranslations | undefined {
+    const translations: PoiTranslations = {};
+
+    this.contentLanguages.forEach(({ code }) => {
+      const name = this.normalizeTranslationValue(value?.[code]?.name);
+      const descriptionShort = this.normalizeTranslationValue(value?.[code]?.descriptionShort);
+      const descriptionLong = this.normalizeTranslationValue(value?.[code]?.descriptionLong);
+      const audioLabel = this.normalizeTranslationValue(value?.[code]?.audioLabel);
+      const audioUrl = this.normalizeTranslationValue(value?.[code]?.audioUrl);
+
+      if (name || descriptionShort || descriptionLong || audioLabel || audioUrl) {
+        translations[code] = {
+          ...(name ? { name } : {}),
+          ...(descriptionShort ? { descriptionShort } : {}),
+          ...(descriptionLong ? { descriptionLong } : {}),
+          ...(audioLabel ? { audioLabel } : {}),
+          ...(audioUrl ? { audioUrl } : {})
+        };
+      }
+    });
+
+    return Object.keys(translations).length ? translations : undefined;
+  }
+
+  private normalizeTranslationValue(value: string | null | undefined): string | undefined {
+    const normalized = String(value || '').trim();
+    return normalized || undefined;
+  }
+
+  private sortPartnerRequests(rows: DashboardPartnerRequest[]): DashboardPartnerRequest[] {
+    return [...rows].sort((left, right) => {
+      const priority = (status: DashboardPartnerRequest['status']): number => {
+        if (status === 'pending') {
+          return 0;
+        }
+        if (status === 'approved') {
+          return 1;
+        }
+        if (status === 'rejected') {
+          return 2;
+        }
+        return 3;
+      };
+
+      const byStatus = priority(left.status) - priority(right.status);
+      if (byStatus !== 0) {
+        return byStatus;
+      }
+
+      const rightDate = Date.parse(right.createdAt || '');
+      const leftDate = Date.parse(left.createdAt || '');
+      if (Number.isFinite(rightDate) && Number.isFinite(leftDate) && rightDate !== leftDate) {
+        return rightDate - leftDate;
+      }
+
+      return right.id - left.id;
+    });
+  }
+
+  private catalogPoiFormForTarget(target: 'create' | 'edit') {
+    return target === 'edit' ? this.catalogPoiEditForm : this.catalogPoiForm;
+  }
+
+  private catalogPoiTranslationAudioControl(target: 'create' | 'edit', language: ContentEditorLanguage) {
+    return this.catalogPoiFormForTarget(target).controls.translations.controls[language].controls.audioUrl;
+  }
+
+  private hasCatalogPoiTranslationAudioUploadInProgress(target: 'create' | 'edit'): boolean {
+    return this.contentLanguages.some(({ code }) => this.isCatalogPoiTranslationAudioUploading(code, target));
+  }
+
+  private resetCatalogPoiTranslationAudioUploadState(target: 'create' | 'edit'): void {
+    this.contentLanguages.forEach(({ code }) => {
+      this.setCatalogPoiTranslationAudioUploading(target, code, false);
+    });
+  }
+
+  private setCatalogPoiTranslationAudioUploading(target: 'create' | 'edit', language: ContentEditorLanguage, value: boolean): void {
+    if (target === 'edit') {
+      this.uploadingCatalogPoiEditTranslationAudio[language] = value;
+      return;
+    }
+
+    this.uploadingCatalogPoiTranslationAudio[language] = value;
   }
 
   private async initializePoiMap(): Promise<void> {

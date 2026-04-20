@@ -9,6 +9,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BottomNavComponent } from './layout/bottom-nav/bottom-nav.component';
 import { MaterialModule } from './shared/material.module';
+import { TranslatePipe } from './shared/pipes/translate.pipe';
 import { environment } from '../environments/environment';
 
 registerLocaleData(localeIt);
@@ -21,6 +22,7 @@ registerLocaleData(localeIt);
     HttpClientModule,
     AppRoutingModule,
     MaterialModule,
+    TranslatePipe,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       registrationStrategy: 'registerWhenStable:30000'

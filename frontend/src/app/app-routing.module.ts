@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
@@ -16,6 +16,12 @@ const routes: Routes = [
     path: 'welcome',
     data: { hideBottomNav: true },
     loadChildren: () => import('./features/welcome/welcome.module').then((m) => m.WelcomeModule)
+  },
+  {
+    path: 'partner-registration',
+    data: { hideBottomNav: true },
+    loadChildren: () =>
+      import('./features/partner-registration/partner-registration.module').then((m) => m.PartnerRegistrationModule)
   },
   {
     path: 'dashboard',
@@ -55,6 +61,10 @@ const routes: Routes = [
     loadChildren: () => import('./features/favorites/favorites.module').then((m) => m.FavoritesModule)
   },
   {
+    path: 'cart',
+    loadChildren: () => import('./features/cart/cart.module').then((m) => m.CartModule)
+  },
+  {
     path: 'profile',
     loadChildren: () => import('./features/profile/profile.module').then((m) => m.ProfileModule)
   },
@@ -74,7 +84,12 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' })],
+  imports: [
+    RouterModule.forRoot(routes, {
+      scrollPositionRestoration: 'enabled',
+      preloadingStrategy: PreloadAllModules
+    })
+  ],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}
