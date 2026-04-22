@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -225,9 +225,13 @@ export class AdminDashboardComponent implements OnInit {
   private partnerRequestApprovalDialogRef?: MatDialogRef<unknown>;
   private catalogPoiAudioPlayerDialogRef?: MatDialogRef<unknown>;
   private poiMapPickerDialogRef?: MatDialogRef<unknown>;
+  private gptTranslationInterruptDialogRef?: MatDialogRef<unknown, boolean>;
   private poiMapInstance: any = null;
   private poiMapMarker: any = null;
   private leafletLoaderPromise?: Promise<void>;
+  private gptTranslationRunToken = 0;
+  private confirmedGptTranslationLanguage: ContentEditorLanguage = 'en';
+  private confirmedGptTranslationOverwrite = false;
   private readonly audioDurationByUrl: Record<string, number> = {};
   private readonly pendingAudioDurationUrls = new Set<string>();
   private readonly invalidAudioDurationUrls = new Set<string>();
@@ -246,6 +250,7 @@ export class AdminDashboardComponent implements OnInit {
   @ViewChild('partnerRequestApprovalDialog') partnerRequestApprovalDialog?: TemplateRef<unknown>;
   @ViewChild('catalogPoiAudioPlayerDialog') catalogPoiAudioPlayerDialog?: TemplateRef<unknown>;
   @ViewChild('poiMapPickerDialog') poiMapPickerDialog?: TemplateRef<unknown>;
+  @ViewChild('gptTranslationInterruptDialog') gptTranslationInterruptDialog?: TemplateRef<unknown>;
   @ViewChild('poiMapCanvas') poiMapCanvas?: ElementRef<HTMLDivElement>;
 
   readonly structureInviteCodeDraftByUserId: Record<string, string> = {};
@@ -613,6 +618,10 @@ export class AdminDashboardComponent implements OnInit {
     );
   }
 
+  get hasActiveGptTranslation(): boolean {
+    return this.bulkTranslatingPois || Boolean(this.translatingPoiId);
+  }
+
   get canTranslateMissingGptPois(): boolean {
     return (
       this.canManageGptTranslations &&
@@ -821,10 +830,27 @@ export class AdminDashboardComponent implements OnInit {
     return this.mapPickerSelectedLat !== null && this.mapPickerSelectedLng !== null;
   }
 
-  selectSection(section: DashboardSection): void {
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.hasActiveGptTranslation) {
+      return;
+    }
+
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  async selectSection(section: DashboardSection): Promise<void> {
     if (!this.visibleSections.some((item) => item.id === section)) {
       return;
     }
+    if (section !== this.activeSection && !(await this.confirmGptTranslationContextChange())) {
+      return;
+    }
+    if (section !== this.activeSection) {
+      this.cancelActiveGptTranslationForContextChange();
+    }
+
     this.activeSection = section;
     if (section !== 'users') {
       this.showInviteSection = false;
@@ -1785,7 +1811,14 @@ export class AdminDashboardComponent implements OnInit {
       });
   }
 
-  onGptTranslationCityChanged(cityId: string): void {
+  async onGptTranslationCityChanged(cityId: string): Promise<void> {
+    const previousCityId = this.selectedCatalogCityId || this.gptTranslationForm.controls.cityId.value;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptTranslationForm.controls.cityId.setValue(previousCityId, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
     this.gptTranslationForm.controls.cityId.setValue(cityId, { emitEvent: false });
     this.gptTranslationForm.controls.poiId.setValue('', { emitEvent: false });
     this.selectedGptTranslationPoiId = '';
@@ -1801,15 +1834,42 @@ export class AdminDashboardComponent implements OnInit {
     this.loadOpenAiTranslationStatus();
   }
 
-  onGptTranslationLanguageChanged(language: ContentEditorLanguage): void {
+  async onGptTranslationLanguageChanged(language: ContentEditorLanguage): Promise<void> {
+    const previousLanguage = this.confirmedGptTranslationLanguage;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptTranslationForm.controls.targetLanguage.setValue(previousLanguage, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
+    this.confirmedGptTranslationLanguage = language;
     this.gptTranslationForm.controls.targetLanguage.setValue(language, { emitEvent: false });
     this.resetGptTranslationProgress();
     this.loadOpenAiTranslationStatus();
   }
 
-  onGptTranslationPoiChanged(poiId: string): void {
+  async onGptTranslationPoiChanged(poiId: string): Promise<void> {
+    const previousPoiId = this.selectedGptTranslationPoiId || this.gptTranslationForm.controls.poiId.value;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptTranslationForm.controls.poiId.setValue(previousPoiId, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
     this.selectedGptTranslationPoiId = poiId;
     this.gptTranslationForm.controls.poiId.setValue(poiId, { emitEvent: false });
+  }
+
+  async onGptTranslationOverwriteChanged(overwrite: boolean): Promise<void> {
+    const previousOverwrite = this.confirmedGptTranslationOverwrite;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptTranslationForm.controls.overwrite.setValue(previousOverwrite, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
+    this.confirmedGptTranslationOverwrite = overwrite;
+    this.gptTranslationForm.controls.overwrite.setValue(overwrite, { emitEvent: false });
   }
 
   loadOpenAiTranslationStatus(): void {
@@ -1853,6 +1913,7 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.resetGptTranslationProgress(1);
+    const runToken = ++this.gptTranslationRunToken;
     this.translatingPoiId = poi.id;
     this.auth
       .translateCatalogPoiWithOpenAi(poi.id, {
@@ -1862,6 +1923,9 @@ export class AdminDashboardComponent implements OnInit {
       })
       .subscribe({
         next: (response) => {
+          if (runToken !== this.gptTranslationRunToken) {
+            return;
+          }
           this.translatingPoiId = null;
           this.gptTranslationProgressDone = 1;
           this.applyOpenAiTranslationResponse(response);
@@ -1870,6 +1934,9 @@ export class AdminDashboardComponent implements OnInit {
           this.snackBar.open(response.skipped ? 'POI gia tradotto' : 'Traduzione completata', 'OK', { duration: 2600 });
         },
         error: (error: { error?: { message?: string } }) => {
+          if (runToken !== this.gptTranslationRunToken) {
+            return;
+          }
           this.translatingPoiId = null;
           const message = error?.error?.message || 'Traduzione non riuscita';
           this.snackBar.open(message, 'Chiudi', { duration: 4200 });
@@ -1891,10 +1958,14 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.bulkTranslatingPois = true;
+    const runToken = ++this.gptTranslationRunToken;
     this.resetGptTranslationProgress(rowsToTranslate.length);
     this.gptTranslationLog = [];
 
     for (const row of rowsToTranslate) {
+      if (runToken !== this.gptTranslationRunToken) {
+        break;
+      }
       this.translatingPoiId = row.poiId;
       try {
         const response = await firstValueFrom(
@@ -1904,11 +1975,17 @@ export class AdminDashboardComponent implements OnInit {
             overwrite
           })
         );
+        if (runToken !== this.gptTranslationRunToken) {
+          break;
+        }
         this.applyOpenAiTranslationResponse(response);
         this.addGptTranslationUsage(response.usage);
         this.gptTranslationProgressDone += 1;
         this.gptTranslationLog = [`${row.name}: ${response.skipped ? 'gia completo' : 'tradotto'}`, ...this.gptTranslationLog].slice(0, 8);
       } catch (error) {
+        if (runToken !== this.gptTranslationRunToken) {
+          break;
+        }
         const message = this.dashboardErrorMessage(error, 'Traduzione interrotta');
         this.gptTranslationLog = [`${row.name}: ${message}`, ...this.gptTranslationLog].slice(0, 8);
         this.snackBar.open(message, 'Chiudi', { duration: 4500 });
@@ -1916,6 +1993,9 @@ export class AdminDashboardComponent implements OnInit {
       }
     }
 
+    if (runToken !== this.gptTranslationRunToken) {
+      return;
+    }
     this.bulkTranslatingPois = false;
     this.translatingPoiId = null;
     this.loadOpenAiTranslationStatus();
@@ -3187,7 +3267,12 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    if (!(await this.confirmGptTranslationContextChange())) {
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
     this.auth.logout().subscribe(() => {
       this.isAuthenticated = false;
       this.users = [];
@@ -3970,6 +4055,42 @@ export class AdminDashboardComponent implements OnInit {
       totalTokens: 0
     };
     this.gptTranslationLog = [];
+  }
+
+  private async confirmGptTranslationContextChange(): Promise<boolean> {
+    if (!this.hasActiveGptTranslation) {
+      return true;
+    }
+
+    if (!this.gptTranslationInterruptDialog) {
+      return window.confirm("C'e una traduzione GPT in corso. Vuoi continuare e interrompere l'avanzamento?");
+    }
+
+    if (this.gptTranslationInterruptDialogRef) {
+      return (await firstValueFrom(this.gptTranslationInterruptDialogRef.afterClosed())) === true;
+    }
+
+    this.gptTranslationInterruptDialogRef = this.dialog.open(this.gptTranslationInterruptDialog, {
+      width: 'min(430px, calc(100vw - 32px))',
+      disableClose: true,
+      autoFocus: false,
+      restoreFocus: false
+    });
+
+    const confirmed = (await firstValueFrom(this.gptTranslationInterruptDialogRef.afterClosed())) === true;
+    this.gptTranslationInterruptDialogRef = undefined;
+    return confirmed;
+  }
+
+  private cancelActiveGptTranslationForContextChange(): void {
+    if (!this.hasActiveGptTranslation) {
+      return;
+    }
+
+    this.gptTranslationRunToken += 1;
+    this.bulkTranslatingPois = false;
+    this.translatingPoiId = null;
+    this.gptTranslationLog = ['Traduzione GPT interrotta dal cambio contesto', ...this.gptTranslationLog].slice(0, 8);
   }
 
   private applyOpenAiTranslationResponse(response: OpenAiTranslatePoiResponse): void {

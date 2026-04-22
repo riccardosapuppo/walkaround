@@ -30,13 +30,9 @@
   <div class="dashboard-layout" *ngIf="authChecked && isAuthenticated">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">
-          <img src="/assets/logo.png" alt="Logo Walk Around" loading="eager" decoding="sync" fetchpriority="high" />
-        </div>
-        <div>
-          <strong>Walk Around</strong>
-          <p>Dashboard</p>
-        </div>
+        <img class="brand-logo" src="/assets/logo.png" alt="Logo Walk Around" loading="eager" decoding="sync" fetchpriority="high" />
+        <p class="brand-slogan">Cammina.Ascolta.Esplora.</p>
+        <span class="brand-dashboard-label">Dashboard</span>
       </div>
 
       <nav class="sidebar-nav" *ngIf="canAccessDashboard && visibleSections.length">
@@ -1055,10 +1051,6 @@
               </div>
             </ng-template>
           </mat-card>
-          <mat-card class="stat-card">
-            <span>Token usati</span>
-            <strong>{{ gptTranslationUsage.totalTokens }}</strong>
-          </mat-card>
         </div>
 
         <mat-card class="card table-card">
@@ -1151,7 +1143,9 @@
               </mat-select>
             </mat-form-field>
 
-            <mat-slide-toggle formControlName="overwrite">Sovrascrivi traduzioni esistenti</mat-slide-toggle>
+            <mat-slide-toggle formControlName="overwrite" (change)="onGptTranslationOverwriteChanged($event.checked)">
+              Sovrascrivi traduzioni esistenti
+            </mat-slide-toggle>
           </form>
 
           <div class="gpt-progress-panel" *ngIf="gptTranslationProgressTotal">
@@ -1231,6 +1225,19 @@
           </div>
         </mat-card>
       </ng-container>
+
+      <ng-template #gptTranslationInterruptDialog>
+        <h2 mat-dialog-title>Traduzione GPT in corso</h2>
+        <div mat-dialog-content class="confirm-dialog-body">
+          <p>La traduzione dei luoghi &egrave; ancora in corso.</p>
+          <p>Cambiando sezione, lingua, citt&agrave; o ricaricando la pagina potresti perdere l'avanzamento visualizzato.</p>
+          <p class="inline-note">La richiesta gi&agrave; inviata potrebbe completarsi, ma il processo massivo verr&agrave; interrotto.</p>
+        </div>
+        <div mat-dialog-actions align="end" class="dialog-actions">
+          <button type="button" class="row-save-btn secondary" [mat-dialog-close]="false">Resta qui</button>
+          <button type="button" class="row-save-btn danger" [mat-dialog-close]="true">Continua</button>
+        </div>
+      </ng-template>
 
       <ng-container *ngIf="canManageCatalog && activeSection === 'catalog'">
         <div class="stats-grid">
