@@ -159,6 +159,37 @@ export class AdminAuthService {
         }
         return this.http.delete(`${environment.apiBaseUrl}/admin/catalog/pois/${encodeURIComponent(poiId)}`, { headers: this.authHeaders(token) });
     }
+    getOpenAiTranslationSettings() {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.get(`${environment.apiBaseUrl}/admin/openai-translations/settings`, {
+            headers: this.authHeaders(token)
+        });
+    }
+    saveOpenAiTranslationSettings(payload) {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.put(`${environment.apiBaseUrl}/admin/openai-translations/settings`, payload, { headers: this.authHeaders(token) });
+    }
+    listOpenAiPoiTranslationStatus(cityId, targetLanguage) {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        const query = `?targetLanguage=${encodeURIComponent(targetLanguage)}`;
+        return this.http.get(`${environment.apiBaseUrl}/admin/openai-translations/cities/${encodeURIComponent(cityId)}/status${query}`, { headers: this.authHeaders(token) });
+    }
+    translateCatalogPoiWithOpenAi(poiId, payload) {
+        const token = this.sessionSubject.value?.token;
+        if (!token) {
+            return throwError(() => new Error('Sessione dashboard non valida'));
+        }
+        return this.http.post(`${environment.apiBaseUrl}/admin/openai-translations/pois/${encodeURIComponent(poiId)}/translate`, payload, { headers: this.authHeaders(token) });
+    }
     uploadCatalogPoiAudio(fileName, mimeType, base64Data, target) {
         const token = this.sessionSubject.value?.token;
         if (!token) {

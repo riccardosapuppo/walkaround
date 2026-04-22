@@ -107,7 +107,7 @@ export async function sendPartnerApprovalEmail({
 }) {
   const transporter = await getTransporter();
   const recipientName = String(contactName || '').trim() || 'partner';
-  const cityLabel = Array.isArray(cityNames) && cityNames.length ? cityNames.join(', ') : 'le citta configurate in dashboard';
+  const cityLabel = Array.isArray(cityNames) && cityNames.length ? cityNames.join(', ') : 'le città configurate in dashboard';
   const expiresLabel = expiresAt
     ? new Date(expiresAt).toLocaleString('it-IT', {
         dateStyle: 'medium',
@@ -124,7 +124,7 @@ export async function sendPartnerApprovalEmail({
       ``,
       `la richiesta partner per ${structureName} e stata approvata.`,
       `Il codice sconto associato alla struttura e: ${discountCode}.`,
-      `Citta abilitate: ${cityLabel}.`,
+      `Città abilitate: ${cityLabel}.`,
       expiresLabel ? `Scadenza del codice: ${expiresLabel}.` : null,
       `In allegato trovi il PDF pronto da esporre ai turisti.`,
       ``,
@@ -136,7 +136,7 @@ export async function sendPartnerApprovalEmail({
       `<p>Ciao ${escapeHtml(recipientName)},</p>`,
       `<p>la richiesta partner per <strong>${escapeHtml(structureName)}</strong> e stata approvata.</p>`,
       `<p>Il codice sconto associato alla struttura e <strong>${escapeHtml(discountCode)}</strong>.</p>`,
-      `<p>Citta abilitate: <strong>${escapeHtml(cityLabel)}</strong>.</p>`,
+      `<p>Città abilitate: <strong>${escapeHtml(cityLabel)}</strong>.</p>`,
       expiresLabel ? `<p>Scadenza del codice: <strong>${escapeHtml(expiresLabel)}</strong>.</p>` : '',
       `<p>In allegato trovi il PDF pronto da esporre ai turisti.</p>`,
       `<p>Per qualsiasi dubbio puoi rispondere a questa email.</p>`

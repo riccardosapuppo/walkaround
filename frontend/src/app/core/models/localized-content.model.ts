@@ -10,7 +10,6 @@ export interface PoiTranslationFields {
   name?: string;
   descriptionShort?: string;
   descriptionLong?: string;
-  audioLabel?: string;
   audioUrl?: string;
 }
 

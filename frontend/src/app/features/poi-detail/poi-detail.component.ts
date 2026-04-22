@@ -203,7 +203,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   }
 
   poiAddress(poi: Poi): string {
-    return `${this.cityName(poi.cityId)} - ${this.i18n.t('common.coordinates')} ${poi.lat.toFixed(4)}, ${poi.lng.toFixed(4)}`;
+    return String(poi.address || '').trim() || `${this.poiName(poi)}, ${this.cityName(poi.cityId)}`;
   }
 
   descriptionText(poi: Poi): string {

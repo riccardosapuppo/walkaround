@@ -1,16 +1,22 @@
-import { NgModule } from '@angular/core';
+import { inject, NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { AppStateService } from './core/services/app-state.service';
+
+function launchRedirect(): string {
+  const appState = inject(AppStateService);
+  if (appState.shouldShowWelcomeOnLaunch()) {
+    appState.markOnboardingSeen();
+    return 'welcome';
+  }
+
+  return 'home';
+}
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'splash',
+    redirectTo: launchRedirect,
     pathMatch: 'full'
-  },
-  {
-    path: 'splash',
-    data: { hideBottomNav: true },
-    loadChildren: () => import('./features/splash/splash.module').then((m) => m.SplashModule)
   },
   {
     path: 'welcome',

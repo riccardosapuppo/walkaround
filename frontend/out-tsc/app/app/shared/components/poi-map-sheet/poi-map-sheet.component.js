@@ -107,7 +107,7 @@ export class PoiMapSheetComponent {
         return formatCityLabel(cityId, [], this.i18n.language);
     }
     poiAddress() {
-        return `${this.cityName(this.data.poi.cityId)} - ${this.i18n.t('common.coordinates')} ${this.data.poi.lat.toFixed(4)}, ${this.data.poi.lng.toFixed(4)}`;
+        return String(this.data.poi.address || '').trim() || `${this.poiName()}, ${this.cityName(this.data.poi.cityId)}`;
     }
     hasPlayableAudio(poi) {
         return Boolean(this.i18n.resolvePoiAudioUrl(poi));
@@ -200,4 +200,4 @@ export class PoiMapSheetComponent {
                 type: Inject,
                 args: [MAT_BOTTOM_SHEET_DATA]
             }] }, { type: i1.MatBottomSheetRef }, { type: i2.I18nService }], null); })();
-(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(PoiMapSheetComponent, { className: "PoiMapSheetComponent", filePath: "frontend/src/app/shared/components/poi-map-sheet/poi-map-sheet.component.ts", lineNumber: 29 }); })();
+(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(PoiMapSheetComponent, { className: "PoiMapSheetComponent", filePath: "src/app/shared/components/poi-map-sheet/poi-map-sheet.component.ts", lineNumber: 29 }); })();

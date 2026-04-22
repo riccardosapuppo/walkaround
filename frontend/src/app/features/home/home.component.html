@@ -77,7 +77,14 @@
             <h4>{{ poiName(poi) }}</h4>
             <p class="poi-address">{{ poiAddress(poi) }}</p>
             <p class="poi-distance">{{ poi.distanceLabel }} - {{ poi.durationSec | durationLabel }}</p>
-            <p class="poi-teaser" [class.expanded]="isPoiDescriptionExpanded(poi.id)">{{ poiDescription(poi) }}</p>
+            <p
+              #poiTeaser
+              class="poi-teaser"
+              [attr.data-poi-id]="poi.id"
+              [class.expanded]="isPoiDescriptionExpanded(poi.id)"
+            >
+              {{ poiDescription(poi) }}
+            </p>
             <button
               mat-button
               type="button"

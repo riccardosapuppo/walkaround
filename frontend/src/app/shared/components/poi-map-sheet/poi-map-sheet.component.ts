@@ -81,7 +81,7 @@ export class PoiMapSheetComponent {
   }
 
   poiAddress(): string {
-    return `${this.cityName(this.data.poi.cityId)} - ${this.i18n.t('common.coordinates')} ${this.data.poi.lat.toFixed(4)}, ${this.data.poi.lng.toFixed(4)}`;
+    return String(this.data.poi.address || '').trim() || `${this.poiName()}, ${this.cityName(this.data.poi.cityId)}`;
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {

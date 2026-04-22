@@ -16,7 +16,9 @@
     <p>{{ 'partner.requestReceived' | t }}</p>
     <p *ngIf="requestId !== null">{{ 'partner.requestNumber' | t }}: <strong>#{{ requestId }}</strong></p>
     <p>{{ 'partner.pendingApproval' | t }}</p>
-    <button mat-stroked-button color="primary" (click)="backToWelcome()">{{ 'partner.backToWelcome' | t }}</button>
+    <button mat-stroked-button color="primary" class="big-cta partner-secondary-cta" (click)="backToWelcome()">
+      {{ 'partner.backToWelcome' | t }}
+    </button>
   </mat-card>
 
   <form *ngIf="!completed" [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
@@ -119,10 +121,12 @@
     </mat-card>
 
     <div class="submit-row">
-      <button mat-flat-button color="primary" class="big-cta" type="submit" [disabled]="sending">
+      <button mat-flat-button color="primary" class="big-cta partner-primary-cta" type="submit" [disabled]="sending">
         {{ sending ? ('partner.submitting' | t) : ('partner.submit' | t) }}
       </button>
-      <button mat-stroked-button color="primary" type="button" (click)="backToWelcome()">{{ 'partner.cancel' | t }}</button>
+      <button mat-stroked-button color="primary" class="big-cta partner-secondary-cta" type="button" (click)="backToWelcome()">
+        {{ 'partner.cancel' | t }}
+      </button>
     </div>
   </form>
 </section>

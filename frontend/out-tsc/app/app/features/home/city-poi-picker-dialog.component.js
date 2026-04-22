@@ -226,4 +226,4 @@ export class CityPoiPickerDialogComponent {
                 type: Inject,
                 args: [MAT_DIALOG_DATA]
             }] }, { type: i1.MatDialogRef }, { type: i2.I18nService }], null); })();
-(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(CityPoiPickerDialogComponent, { className: "CityPoiPickerDialogComponent", filePath: "frontend/src/app/features/home/city-poi-picker-dialog.component.ts", lineNumber: 32 }); })();
+(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(CityPoiPickerDialogComponent, { className: "CityPoiPickerDialogComponent", filePath: "src/app/features/home/city-poi-picker-dialog.component.ts", lineNumber: 32 }); })();

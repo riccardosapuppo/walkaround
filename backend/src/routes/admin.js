@@ -18,6 +18,12 @@ import {
   paypalProviderLabel,
   verifyPayPalConnection
 } from '../services/paypal.js';
+import {
+  DEFAULT_OPENAI_TRANSLATION_MODEL,
+  OpenAITranslationError,
+  normalizeOpenAITranslationModel,
+  translatePoiWithOpenAI
+} from '../services/openai-translations.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -47,7 +53,7 @@ const structureCreateSchema = z.object({
   name: z.string().trim().min(1, 'Nome struttura obbligatorio').max(160, 'Nome struttura troppo lungo'),
   street: z.string().trim().min(1, 'Via obbligatoria').max(160, 'Via troppo lunga'),
   streetNumber: z.string().trim().min(1, 'Civico obbligatorio').max(20, 'Civico troppo lungo'),
-  city: z.string().trim().min(1, 'Citta obbligatoria').max(120, 'Citta troppo lunga'),
+  city: z.string().trim().min(1, 'Città obbligatoria').max(120, 'Città troppo lunga'),
   postalCode: z.string().trim().regex(/^\d{5}$/, 'CAP non valido (5 cifre)'),
   province: z.string().trim().max(80, 'Provincia troppo lunga').nullish(),
   country: z.string().trim().max(80, 'Nazione troppo lunga').nullish()
@@ -57,7 +63,7 @@ const structureUpdateSchema = z.object({
   name: z.string().trim().min(1, 'Nome struttura obbligatorio').max(160, 'Nome struttura troppo lungo'),
   street: z.string().trim().min(1, 'Via obbligatoria').max(160, 'Via troppo lunga'),
   streetNumber: z.string().trim().min(1, 'Civico obbligatorio').max(20, 'Civico troppo lungo'),
-  city: z.string().trim().min(1, 'Citta obbligatoria').max(120, 'Citta troppo lunga'),
+  city: z.string().trim().min(1, 'Città obbligatoria').max(120, 'Città troppo lunga'),
   postalCode: z.string().trim().regex(/^\d{5}$/, 'CAP non valido (5 cifre)'),
   province: z.string().trim().max(80, 'Provincia troppo lunga').nullish(),
   country: z.string().trim().max(80, 'Nazione troppo lunga').nullish()
@@ -76,7 +82,7 @@ const discountCodeApplyToSchema = z.enum(['single', 'bundle']);
 const discountCodeCreateSchema = z.object({
   structureId: z.string().trim().min(1, 'Struttura obbligatoria'),
   applyTo: discountCodeApplyToSchema,
-  cityIds: z.array(z.string().trim().min(1, 'Citta non valida')).min(1, 'Seleziona almeno una citta'),
+  cityIds: z.array(z.string().trim().min(1, 'Città non valida')).min(1, 'Seleziona almeno una città'),
   code: structureInviteCodeSchema,
   userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido'),
   structureFixedAmount: z.coerce.number().min(0, 'Importo struttura non valido').max(10000, 'Importo struttura non valido'),
@@ -85,7 +91,7 @@ const discountCodeCreateSchema = z.object({
 
 const discountCodeUpdateSchema = z.object({
   applyTo: discountCodeApplyToSchema,
-  cityIds: z.array(z.string().trim().min(1, 'Citta non valida')).min(1, 'Seleziona almeno una citta'),
+  cityIds: z.array(z.string().trim().min(1, 'Città non valida')).min(1, 'Seleziona almeno una città'),
   userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido'),
   structureFixedAmount: z.coerce.number().min(0, 'Importo struttura non valido').max(10000, 'Importo struttura non valido'),
   expiresAt: discountCodeExpiresAtSchema
@@ -95,14 +101,14 @@ const partnerRequestStatusSchema = z.enum(['pending', 'approved', 'rejected']);
 const partnerRequestPdfReleaseStatusSchema = z.enum(['pending', 'sent']);
 const partnerRequestApprovalSchema = z.object({
   applyTo: discountCodeApplyToSchema,
-  cityIds: z.array(z.string().trim().min(1, 'Citta non valida')).min(1, 'Seleziona almeno una citta'),
+  cityIds: z.array(z.string().trim().min(1, 'Città non valida')).min(1, 'Seleziona almeno una città'),
   code: structureInviteCodeSchema,
   userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido'),
   structureFixedAmount: z.coerce.number().min(0, 'Importo struttura non valido').max(10000, 'Importo struttura non valido'),
   expiresAt: discountCodeExpiresAtSchema
 });
 const partnerRequestPdfPreviewSchema = z.object({
-  cityIds: z.array(z.string().trim().min(1, 'Citta non valida')).optional().default([]),
+  cityIds: z.array(z.string().trim().min(1, 'Città non valida')).optional().default([]),
   code: z.string().trim().max(32, 'Codice non valido').optional().default(''),
   userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido').optional(),
   structureFixedAmount: z.coerce
@@ -156,6 +162,21 @@ const paypalSettingsSchema = z.object({
   currencyCode: z.literal('EUR').optional().default('EUR')
 });
 
+const openAiTranslationTargetLanguageSchema = z.enum(['en', 'fr', 'es']);
+const openAiTranslationSettingsSchema = z.object({
+  apiKey: z.string().trim().max(500).optional().default(''),
+  model: z.string().trim().min(1, 'Modello obbligatorio').max(120, 'Modello troppo lungo').optional().default(DEFAULT_OPENAI_TRANSLATION_MODEL),
+  clearApiKey: z.boolean().optional().default(false)
+});
+const openAiTranslationStatusQuerySchema = z.object({
+  targetLanguage: openAiTranslationTargetLanguageSchema
+});
+const openAiPoiTranslationSchema = z.object({
+  cityId: z.string().trim().min(1, 'Città obbligatoria').optional(),
+  targetLanguage: openAiTranslationTargetLanguageSchema,
+  overwrite: z.boolean().optional().default(false)
+});
+
 const discountCodesQuerySchema = z.object({
   structureId: z.string().trim().min(1).optional()
 });
@@ -165,17 +186,15 @@ const cityTranslationFieldsSchema = z.object({
   name: z.string().trim().max(120, 'Nome tradotto troppo lungo').optional()
 }).partial();
 const poiTranslationFieldsSchema = z.object({
-  name: z.string().trim().max(180, 'Nome tradotto troppo lungo').optional(),
   descriptionShort: z.string().trim().max(1000, 'Descrizione breve tradotta troppo lunga').optional(),
   descriptionLong: z.string().trim().max(10000, 'Descrizione lunga tradotta troppo lunga').optional(),
-  audioLabel: z.string().trim().max(180, 'Etichetta audio troppo lunga').optional(),
   audioUrl: z.string().trim().max(500, 'URL audio tradotto troppo lungo').optional()
 }).partial();
 const cityTranslationsSchema = z.record(contentLanguageSchema, cityTranslationFieldsSchema).default({});
 const poiTranslationsSchema = z.record(contentLanguageSchema, poiTranslationFieldsSchema).default({});
 
 const catalogCitySchema = z.object({
-  name: z.string().trim().min(1, 'Nome citta obbligatorio').max(120, 'Nome citta troppo lungo'),
+  name: z.string().trim().min(1, 'Nome città obbligatorio').max(120, 'Nome città troppo lungo'),
   region: z.string().trim().min(1, 'Regione obbligatoria').max(120, 'Regione troppo lunga'),
   bundlePrice: z.coerce.number().min(0, 'Prezzo bundle non valido').max(10000, 'Prezzo bundle troppo alto'),
   heroImage: z.string().trim().min(1, 'Hero image obbligatoria').max(500, 'Hero image troppo lunga'),
@@ -184,8 +203,9 @@ const catalogCitySchema = z.object({
 });
 
 const catalogPoiSchema = z.object({
-  cityId: z.string().trim().min(1, 'Citta obbligatoria'),
+  cityId: z.string().trim().min(1, 'Città obbligatoria'),
   name: z.string().trim().min(1, 'Nome POI obbligatorio').max(180, 'Nome POI troppo lungo'),
+  address: z.string().trim().max(240, 'Indirizzo troppo lungo').default(''),
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-180).max(180),
   category: z.string().trim().min(1, 'Categoria obbligatoria').max(120, 'Categoria troppo lunga'),
@@ -554,6 +574,7 @@ function mapCatalogPoiRow(row) {
     cityId: row.city_id,
     cityName: row.city_name ? sanitizeCatalogText(row.city_name) : null,
     name: sanitizeCatalogText(row.name),
+    address: sanitizeCatalogText(row.address),
     lat: Number(row.lat),
     lng: Number(row.lng),
     category: sanitizeCatalogText(row.category),
@@ -572,7 +593,7 @@ function sanitizeCatalogCityTranslations(value) {
 }
 
 function sanitizeCatalogPoiTranslations(value) {
-  return sanitizeCatalogTranslations(value, ['name', 'descriptionShort', 'descriptionLong', 'audioLabel', 'audioUrl']);
+  return sanitizeCatalogTranslations(value, ['descriptionShort', 'descriptionLong', 'audioUrl']);
 }
 
 function sanitizeCatalogTranslations(value, allowedFields) {
@@ -818,6 +839,66 @@ function mapPayPalSettingsForResponse(row) {
     updatedAt: settings.updatedAt,
     updatedBy: settings.updatedBy
   };
+}
+
+function mapOpenAiTranslationSettingsForResponse(row) {
+  return {
+    hasApiKey: Boolean(row?.api_key),
+    maskedApiKey: maskOpenAiApiKey(row?.api_key),
+    model: normalizeOpenAITranslationModel(row?.model),
+    updatedAt: row?.updated_at || null,
+    updatedBy: row?.updated_by || null
+  };
+}
+
+function maskOpenAiApiKey(value) {
+  const key = String(value || '').trim();
+  if (!key) {
+    return null;
+  }
+  if (key.length <= 12) {
+    return `${key.slice(0, 4)}...`;
+  }
+  return `${key.slice(0, 7)}...${key.slice(-4)}`;
+}
+
+function buildPoiTranslationStatus(row, targetLanguage) {
+  const translations = sanitizeCatalogPoiTranslations(row?.translations);
+  const translation = translations[targetLanguage] || {};
+  const missingFields = ['descriptionShort', 'descriptionLong'].filter((field) => {
+    return !String(translation?.[field] || '').trim();
+  });
+
+  return {
+    poiId: row.id,
+    cityId: row.city_id,
+    cityName: row.city_name ? sanitizeCatalogText(row.city_name) : null,
+    name: sanitizeCatalogText(row.name),
+    targetLanguage,
+    isComplete: missingFields.length === 0,
+    missingFields,
+    translation
+  };
+}
+
+function mergePoiTranslationFields(existingTranslations, targetLanguage, translatedFields, options = {}) {
+  const overwrite = Boolean(options.overwrite);
+  const translations = sanitizeCatalogPoiTranslations(existingTranslations);
+  const currentFields = translations[targetLanguage] || {};
+  const nextFields = { ...currentFields };
+
+  ['descriptionShort', 'descriptionLong'].forEach((field) => {
+    const value = String(translatedFields?.[field] || '').trim();
+    if (!value) {
+      return;
+    }
+    if (overwrite || !String(nextFields[field] || '').trim()) {
+      nextFields[field] = value;
+    }
+  });
+
+  translations[targetLanguage] = nextFields;
+  return translations;
 }
 
 function normalizePartnerRequestStatus(value) {
@@ -1151,6 +1232,7 @@ async function fetchPoiById(poiId, client = pool) {
         p.city_id,
         c.name AS city_name,
         p.name,
+        p.address,
         p.lat,
         p.lng,
         p.category,
@@ -1169,6 +1251,33 @@ async function fetchPoiById(poiId, client = pool) {
     [poiId]
   );
   return result.rowCount ? result.rows[0] : null;
+}
+
+async function getOpenAiTranslationSettings(client = pool) {
+  const result = await client.query(
+    `
+      SELECT id, api_key, model, updated_at, updated_by
+      FROM dashboard_openai_translation_settings
+      WHERE id = 1
+      LIMIT 1
+    `
+  );
+
+  if (result.rowCount) {
+    return result.rows[0];
+  }
+
+  const inserted = await client.query(
+    `
+      INSERT INTO dashboard_openai_translation_settings (id, model)
+      VALUES (1, $1)
+      ON CONFLICT (id) DO UPDATE SET model = COALESCE(dashboard_openai_translation_settings.model, EXCLUDED.model)
+      RETURNING id, api_key, model, updated_at, updated_by
+    `,
+    [DEFAULT_OPENAI_TRANSLATION_MODEL]
+  );
+
+  return inserted.rows[0];
 }
 
 async function fetchUserRow(userId, client = pool) {
@@ -1717,7 +1826,7 @@ router.post('/discount-codes', requireAuth, requireAdmin, async (req, res, next)
   }
   const selectedCityIds = normalizeCityIdsSelection(payload.cityIds);
   if (!selectedCityIds.length) {
-    return res.status(400).json({ message: 'Seleziona almeno una citta' });
+    return res.status(400).json({ message: 'Seleziona almeno una città' });
   }
 
   const expiresAtDate = payload.expiresAt;
@@ -1743,7 +1852,7 @@ router.post('/discount-codes', requireAuth, requireAdmin, async (req, res, next)
     );
     if (citiesResult.rowCount !== selectedCityIds.length) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Una o piu citta selezionate non esistono' });
+      return res.status(404).json({ message: 'Una o piu città selezionate non esistono' });
     }
 
     const alreadyUsed = await structureInviteCodeExists(normalizedCode, client);
@@ -1854,7 +1963,7 @@ router.patch('/discount-codes/:discountCodeId', requireAuth, requireAdmin, async
 
   const selectedCityIds = normalizeCityIdsSelection(parsed.data.cityIds);
   if (!selectedCityIds.length) {
-    return res.status(400).json({ message: 'Seleziona almeno una citta' });
+    return res.status(400).json({ message: 'Seleziona almeno una città' });
   }
 
   const client = await pool.connect();
@@ -1871,7 +1980,7 @@ router.patch('/discount-codes/:discountCodeId', requireAuth, requireAdmin, async
     );
     if (citiesResult.rowCount !== selectedCityIds.length) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Una o piu citta selezionate non esistono' });
+      return res.status(404).json({ message: 'Una o piu città selezionate non esistono' });
     }
 
     const applyTo = parsed.data.applyTo === 'single' ? 'single' : 'bundle';
@@ -2860,6 +2969,167 @@ router.post('/paypal-settings/test', requireAuth, requireAdmin, async (_req, res
   }
 });
 
+router.get('/openai-translations/settings', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getOpenAiTranslationSettings();
+    return res.json(mapOpenAiTranslationSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/openai-translations/settings', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = openAiTranslationSettingsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+  const apiKey = String(payload.apiKey || '').trim();
+  const model = normalizeOpenAITranslationModel(payload.model);
+
+  try {
+    const current = await getOpenAiTranslationSettings();
+    const nextApiKey = payload.clearApiKey ? null : apiKey || current?.api_key || null;
+    const saved = await pool.query(
+      `
+        INSERT INTO dashboard_openai_translation_settings (
+          id,
+          api_key,
+          model,
+          updated_by,
+          updated_at
+        )
+        VALUES (1, $1, $2, $3, NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          api_key = EXCLUDED.api_key,
+          model = EXCLUDED.model,
+          updated_by = EXCLUDED.updated_by,
+          updated_at = NOW()
+        RETURNING id, api_key, model, updated_at, updated_by
+      `,
+      [nextApiKey, model, req.authSession.user.id]
+    );
+
+    return res.json(mapOpenAiTranslationSettingsForResponse(saved.rows[0]));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/openai-translations/cities/:cityId/status', requireAuth, requireAdmin, async (req, res, next) => {
+  const cityId = String(req.params.cityId || '').trim();
+  if (!cityId) {
+    return res.status(400).json({ message: 'Città non valida' });
+  }
+
+  const parsed = openAiTranslationStatusQuerySchema.safeParse(req.query || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Query non valida', errors: parsed.error.flatten() });
+  }
+
+  try {
+    const city = await fetchCityById(cityId);
+    if (!city) {
+      return res.status(404).json({ message: 'Città non trovata' });
+    }
+
+    const result = await pool.query(
+      `
+        SELECT
+          p.id,
+          p.city_id,
+          c.name AS city_name,
+          p.name,
+          p.translations
+        FROM pois p
+        JOIN cities c ON c.id = p.city_id
+        WHERE p.city_id = $1
+        ORDER BY p.name ASC
+      `,
+      [cityId]
+    );
+
+    return res.json(result.rows.map((row) => buildPoiTranslationStatus(row, parsed.data.targetLanguage)));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/openai-translations/pois/:poiId/translate', requireAuth, requireAdmin, async (req, res, next) => {
+  const poiId = String(req.params.poiId || '').trim();
+  if (!poiId) {
+    return res.status(400).json({ message: 'POI non valido' });
+  }
+
+  const parsed = openAiPoiTranslationSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+
+  try {
+    const poi = await fetchPoiById(poiId);
+    if (!poi) {
+      return res.status(404).json({ message: 'POI non trovato' });
+    }
+    if (payload.cityId && payload.cityId !== poi.city_id) {
+      return res.status(400).json({ message: 'Il POI non appartiene alla città selezionata' });
+    }
+
+    const currentStatus = buildPoiTranslationStatus(poi, payload.targetLanguage);
+    if (currentStatus.isComplete && !payload.overwrite) {
+      return res.json({
+        poi: mapCatalogPoiRow(poi),
+        translation: currentStatus.translation,
+        usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+        skipped: true
+      });
+    }
+
+    const settings = await getOpenAiTranslationSettings();
+    const { translation, usage } = await translatePoiWithOpenAI({
+      apiKey: settings.api_key,
+      model: settings.model,
+      targetLanguage: payload.targetLanguage,
+      poi
+    });
+
+    const latestPoi = (await fetchPoiById(poiId)) || poi;
+    const mergedTranslations = mergePoiTranslationFields(latestPoi.translations, payload.targetLanguage, translation, {
+      overwrite: payload.overwrite
+    });
+
+    const updated = await pool.query(
+      `
+        UPDATE pois
+        SET translations = $1::jsonb
+        WHERE id = $2
+        RETURNING id
+      `,
+      [JSON.stringify(mergedTranslations), poiId]
+    );
+    if (!updated.rowCount) {
+      return res.status(404).json({ message: 'POI non trovato' });
+    }
+
+    const updatedPoi = await fetchPoiById(poiId);
+    return res.json({
+      poi: mapCatalogPoiRow(updatedPoi),
+      translation,
+      usage,
+      skipped: false
+    });
+  } catch (error) {
+    if (error instanceof OpenAITranslationError) {
+      const status = error.status === 429 ? 429 : error.status === 400 ? 400 : 502;
+      return res.status(status).json({ message: error.message });
+    }
+    return next(error);
+  }
+});
+
 router.get('/payments', requireAuth, async (req, res, next) => {
   const role = req.authSession?.user?.role;
   if (!canViewPayments(role)) {
@@ -3083,7 +3353,7 @@ router.post('/partner-requests/:requestId/pdf-preview', requireAuth, requireAdmi
     const selectedCityIds = normalizeCityIdsSelection(parsed.data.cityIds);
     const cityRows = await fetchCitiesByIds(selectedCityIds);
     if (selectedCityIds.length && cityRows.length !== selectedCityIds.length) {
-      return res.status(404).json({ message: 'Una o piu citta selezionate non esistono' });
+      return res.status(404).json({ message: 'Una o piu città selezionate non esistono' });
     }
     const cityNames = cityRows.map((row) => sanitizeCatalogText(row.name)).filter(Boolean);
     const discountCode = normalizePartnerPreviewCode(parsed.data.code || requestRow.discount_code || '');
@@ -3192,7 +3462,7 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
   const payload = parsed.data;
   const selectedCityIds = normalizeCityIdsSelection(payload.cityIds);
   if (!selectedCityIds.length) {
-    return res.status(400).json({ message: 'Seleziona almeno una citta' });
+    return res.status(400).json({ message: 'Seleziona almeno una città' });
   }
   if (payload.expiresAt.getTime() <= Date.now()) {
     return res.status(400).json({ message: 'La scadenza deve essere futura' });
@@ -3216,7 +3486,7 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
     const cityRows = await fetchCitiesByIds(selectedCityIds, client);
     if (cityRows.length !== selectedCityIds.length) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Una o piu citta selezionate non esistono' });
+      return res.status(404).json({ message: 'Una o piu città selezionate non esistono' });
     }
 
     const normalizedCode = String(payload.code || '')
@@ -3485,7 +3755,7 @@ router.patch('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, r
 
   const cityId = String(req.params.cityId || '').trim();
   if (!cityId) {
-    return res.status(400).json({ message: 'Citta non valida' });
+    return res.status(400).json({ message: 'Città non valida' });
   }
 
   const payload = parsed.data;
@@ -3495,7 +3765,7 @@ router.patch('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, r
     const existing = await fetchCityById(cityId, client);
     if (!existing) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Citta non trovata' });
+      return res.status(404).json({ message: 'Città non trovata' });
     }
 
     if (payload.isDefault) {
@@ -3530,7 +3800,7 @@ router.patch('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, r
 router.delete('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, res, next) => {
   const cityId = String(req.params.cityId || '').trim();
   if (!cityId) {
-    return res.status(400).json({ message: 'Citta non valida' });
+    return res.status(400).json({ message: 'Città non valida' });
   }
 
   const client = await pool.connect();
@@ -3548,7 +3818,7 @@ router.delete('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, 
     );
     if (!cityResult.rowCount) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Citta non trovata' });
+      return res.status(404).json({ message: 'Città non trovata' });
     }
 
     const wasDefault = Boolean(cityResult.rows[0].is_default);
@@ -3581,13 +3851,13 @@ router.delete('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, 
 router.get('/catalog/cities/:cityId/pois', requireAuth, requireAdmin, async (req, res, next) => {
   const cityId = String(req.params.cityId || '').trim();
   if (!cityId) {
-    return res.status(400).json({ message: 'Citta non valida' });
+    return res.status(400).json({ message: 'Città non valida' });
   }
 
   try {
     const city = await fetchCityById(cityId);
     if (!city) {
-      return res.status(404).json({ message: 'Citta non trovata' });
+      return res.status(404).json({ message: 'Città non trovata' });
     }
 
     const result = await pool.query(
@@ -3597,6 +3867,7 @@ router.get('/catalog/cities/:cityId/pois', requireAuth, requireAdmin, async (req
           p.city_id,
           c.name AS city_name,
           p.name,
+          p.address,
           p.lat,
           p.lng,
           p.category,
@@ -3635,7 +3906,7 @@ router.post('/catalog/pois', requireAuth, requireAdmin, async (req, res, next) =
   try {
     const city = await fetchCityById(payload.cityId);
     if (!city) {
-      return res.status(404).json({ message: 'Citta non trovata' });
+      return res.status(404).json({ message: 'Città non trovata' });
     }
 
     const poiId = `poi_${crypto.randomUUID()}`;
@@ -3645,6 +3916,7 @@ router.post('/catalog/pois', requireAuth, requireAdmin, async (req, res, next) =
           id,
           city_id,
           name,
+          address,
           lat,
           lng,
           category,
@@ -3656,13 +3928,14 @@ router.post('/catalog/pois', requireAuth, requireAdmin, async (req, res, next) =
           duration_sec,
           translations
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb)
         RETURNING id
       `,
       [
         poiId,
         payload.cityId,
         payload.name,
+        payload.address,
         payload.lat,
         payload.lng,
         payload.category,
@@ -3698,7 +3971,7 @@ router.patch('/catalog/pois/:poiId', requireAuth, requireAdmin, async (req, res,
   try {
     const city = await fetchCityById(payload.cityId);
     if (!city) {
-      return res.status(404).json({ message: 'Citta non trovata' });
+      return res.status(404).json({ message: 'Città non trovata' });
     }
 
     const updated = await pool.query(
@@ -3706,22 +3979,24 @@ router.patch('/catalog/pois/:poiId', requireAuth, requireAdmin, async (req, res,
         UPDATE pois
         SET city_id = $1,
             name = $2,
-            lat = $3,
-            lng = $4,
-            category = $5,
-            description_short = $6,
-            description_long = $7,
-            image_url = $8,
-            audio_url = $9,
-            price_single = $10,
-            duration_sec = $11,
-            translations = $12::jsonb
-        WHERE id = $13
+            address = $3,
+            lat = $4,
+            lng = $5,
+            category = $6,
+            description_short = $7,
+            description_long = $8,
+            image_url = $9,
+            audio_url = $10,
+            price_single = $11,
+            duration_sec = $12,
+            translations = $13::jsonb
+        WHERE id = $14
         RETURNING id
       `,
       [
         payload.cityId,
         payload.name,
+        payload.address,
         payload.lat,
         payload.lng,
         payload.category,
@@ -3774,7 +4049,7 @@ router.post('/catalog/upload-image', requireAuth, requireAdmin, async (req, res,
   try {
     const cityFolder = await resolveCityFolder(payload);
     if (!cityFolder) {
-      return res.status(404).json({ message: 'Citta non trovata' });
+      return res.status(404).json({ message: 'Città non trovata' });
     }
 
     let normalizedBase64 = payload.base64Data.trim();
@@ -3826,7 +4101,7 @@ router.post('/catalog/upload-audio', requireAuth, requireAdmin, async (req, res,
   try {
     const cityFolder = await resolveCityFolder(payload);
     if (!cityFolder) {
-      return res.status(404).json({ message: 'Citta non trovata' });
+      return res.status(404).json({ message: 'Città non trovata' });
     }
 
     let normalizedBase64 = payload.base64Data.trim();

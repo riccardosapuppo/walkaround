@@ -27,8 +27,14 @@
   gap: 14px;
 }
 
-.paypal-settings-form .form-grid {
+.paypal-settings-form .form-grid,
+.gpt-settings-form .form-grid {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.gpt-settings-form {
+  display: grid;
+  gap: 14px;
 }
 
 .paypal-status-strip {
@@ -45,6 +51,73 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.gpt-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.gpt-progress-panel {
+  display: grid;
+  gap: 9px;
+  border: 1px solid #dbe7fb;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.gpt-progress-head,
+.gpt-token-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  color: #2f4764;
+}
+
+.gpt-progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #dfe9f8;
+  overflow: hidden;
+}
+
+.gpt-progress-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #1b75d0, #1fa463);
+  transition: width 0.2s ease;
+}
+
+.gpt-token-strip {
+  justify-content: flex-start;
+  font-size: 0.88rem;
+}
+
+.gpt-log {
+  display: grid;
+  gap: 4px;
+  color: #526b8d;
+  font-size: 0.84rem;
+}
+
+.gpt-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.gpt-preview-grid .translation-card p {
+  margin: 0;
+  color: #435f84;
+  line-height: 1.45;
 }
 
 .dashboard-layout {

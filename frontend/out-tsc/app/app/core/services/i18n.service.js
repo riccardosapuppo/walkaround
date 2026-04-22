@@ -89,6 +89,9 @@ export class I18nService {
         return this.resolveTranslatedField(fallback, translationsMap, field);
     }
     resolvePoiField(fallback, translationsMap, field) {
+        if (field === 'name') {
+            return String(fallback || '').trim();
+        }
         return this.resolveTranslatedField(fallback, translationsMap, field);
     }
     resolvePoiAudioUrl(poi) {

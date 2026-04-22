@@ -3,7 +3,7 @@
 Webapp PWA completa per audio guide turistiche in stile Material Android:
 - Frontend Angular + Angular Material + Leaflet + Service Worker
 - Backend Node.js/Express + PostgreSQL
-- Flusso mobile-first: splash, welcome, home conversion-first, mappa interattiva, player, acquisti simulati, offline
+- Flusso mobile-first: welcome, home conversion-first, mappa interattiva, player, acquisti simulati, offline
 
 ## Struttura
 
@@ -13,7 +13,7 @@ Webapp PWA completa per audio guide turistiche in stile Material Android:
 
 ## Funzioni implementate
 
-- 9 schermate richieste: Splash, Welcome, Home, Mappa, Dettaglio POI, Player, I miei audio, Preferiti, Profilo
+- Schermate principali: Welcome, Home, Mappa, Dettaglio POI, Player, I miei audio, Preferiti, Profilo
 - Bottom navigation fissa a 5 tab
 - Geolocalizzazione + fallback se denied
 - Geofencing soft (snackbar "Sei davanti a... Avvia?")

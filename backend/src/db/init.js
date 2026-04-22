@@ -1,7 +1,19 @@
 import { env } from '../config/env.js';
 import { hashPassword } from '../auth/security.js';
 import { pool } from './pool.js';
+import { getPoiAddress, poiAddressesById } from './poi-addresses.js';
 import { citiesSeed, hotelCodesSeed, poisSeed } from './seed-data.js';
+
+const DB_INIT_LOCK_NAMESPACE = 7518401;
+const DB_INIT_LOCK_KEY = 1;
+const DB_INIT_MAX_ATTEMPTS = 3;
+const DEADLOCK_DETECTED_CODE = '40P01';
+
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 async function createSchema(client) {
   await client.query(`
@@ -21,6 +33,7 @@ async function createSchema(client) {
       id TEXT PRIMARY KEY,
       city_id TEXT NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
+      address TEXT NOT NULL DEFAULT '',
       lat DOUBLE PRECISION NOT NULL,
       lng DOUBLE PRECISION NOT NULL,
       category TEXT NOT NULL,
@@ -50,6 +63,24 @@ async function createSchema(client) {
   await client.query(`
     ALTER TABLE cities
     ALTER COLUMN translations SET NOT NULL;
+  `);
+
+  await client.query(`
+    ALTER TABLE pois
+    ADD COLUMN IF NOT EXISTS address TEXT;
+  `);
+  await client.query(`
+    UPDATE pois
+    SET address = ''
+    WHERE address IS NULL;
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ALTER COLUMN address SET DEFAULT '';
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ALTER COLUMN address SET NOT NULL;
   `);
 
   await client.query(`
@@ -715,6 +746,30 @@ async function createSchema(client) {
   `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_openai_translation_settings (
+      id SMALLINT PRIMARY KEY,
+      api_key TEXT,
+      model TEXT NOT NULL DEFAULT 'gpt-4o-mini',
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_openai_translation_settings
+    DROP CONSTRAINT IF EXISTS dashboard_openai_translation_settings_singleton;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_openai_translation_settings
+    ADD CONSTRAINT dashboard_openai_translation_settings_singleton CHECK (id = 1);
+  `);
+  await client.query(`
+    INSERT INTO dashboard_openai_translation_settings (id, model)
+    VALUES (1, 'gpt-4o-mini')
+    ON CONFLICT (id) DO NOTHING;
+  `);
+
+  await client.query(`
     CREATE TABLE IF NOT EXISTS dashboard_invites (
       id BIGSERIAL PRIMARY KEY,
       email TEXT NOT NULL,
@@ -963,6 +1018,9 @@ async function createSchema(client) {
     `CREATE INDEX IF NOT EXISTS idx_dashboard_sessions_impersonated_by ON dashboard_sessions(impersonated_by_user_id);`
   );
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_paypal_settings_updated_by ON dashboard_paypal_settings(updated_by);`);
+  await client.query(
+    `CREATE INDEX IF NOT EXISTS idx_dashboard_openai_translation_settings_updated_by ON dashboard_openai_translation_settings(updated_by);`
+  );
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_user_id ON paypal_checkout_orders(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_status ON paypal_checkout_orders(status);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_invite_code ON paypal_checkout_orders(invite_code);`);
@@ -994,6 +1052,7 @@ async function seedPois(client) {
           id,
           city_id,
           name,
+          address,
           lat,
           lng,
           category,
@@ -1015,11 +1074,13 @@ async function seedPois(client) {
           $9,
           $10,
           $11,
-          $12
+          $12,
+          $13
         )
         ON CONFLICT (id) DO UPDATE SET
           city_id = EXCLUDED.city_id,
           name = EXCLUDED.name,
+          address = EXCLUDED.address,
           lat = EXCLUDED.lat,
           lng = EXCLUDED.lng,
           category = EXCLUDED.category,
@@ -1034,6 +1095,7 @@ async function seedPois(client) {
         poi.id,
         poi.cityId,
         poi.name,
+        getPoiAddress(poi),
         poi.lat,
         poi.lng,
         poi.category,
@@ -1044,6 +1106,30 @@ async function seedPois(client) {
         poi.priceSingle,
         poi.durationSec
       ]
+    );
+  }
+}
+
+async function syncPoiAddresses(client) {
+  const poisResult = await client.query(`
+    SELECT id, city_id, name, address
+    FROM pois
+  `);
+
+  for (const poi of poisResult.rows) {
+    const address = getPoiAddress(poi);
+    if (!address) {
+      continue;
+    }
+
+    await client.query(
+      `
+        UPDATE pois
+        SET address = $2
+        WHERE id = $1
+          AND address IS DISTINCT FROM $2
+      `,
+      [poi.id, address]
     );
   }
 }
@@ -1138,20 +1224,52 @@ async function shouldSeedCatalogData(client) {
 
 export async function initDatabase() {
   const client = await pool.connect();
+  let lockAcquired = false;
   try {
-    await client.query('BEGIN');
-    await createSchema(client);
-    await seedAdminUser(client);
-    if (await shouldSeedCatalogData(client)) {
-      await seedCities(client);
-      await seedPois(client);
-      await seedHotelCodes(client);
+    await client.query('SELECT pg_advisory_lock($1, $2)', [DB_INIT_LOCK_NAMESPACE, DB_INIT_LOCK_KEY]);
+    lockAcquired = true;
+
+    for (let attempt = 1; attempt <= DB_INIT_MAX_ATTEMPTS; attempt += 1) {
+      let shouldRollback = false;
+      try {
+        await client.query('BEGIN');
+        shouldRollback = true;
+        await createSchema(client);
+        await seedAdminUser(client);
+        if (await shouldSeedCatalogData(client)) {
+          await seedCities(client);
+          await seedPois(client);
+          await seedHotelCodes(client);
+        }
+        await syncPoiAddresses(client);
+        await client.query('COMMIT');
+        shouldRollback = false;
+        return;
+      } catch (error) {
+        if (shouldRollback) {
+          try {
+            await client.query('ROLLBACK');
+          } catch (rollbackError) {
+            console.error('Failed to roll back database initialization', rollbackError);
+          }
+        }
+
+        if (error?.code !== DEADLOCK_DETECTED_CODE || attempt === DB_INIT_MAX_ATTEMPTS) {
+          throw error;
+        }
+
+        console.warn(`Database initialization deadlock detected; retrying (${attempt}/${DB_INIT_MAX_ATTEMPTS})`);
+        await wait(250 * attempt);
+      }
     }
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
   } finally {
+    if (lockAcquired) {
+      try {
+        await client.query('SELECT pg_advisory_unlock($1, $2)', [DB_INIT_LOCK_NAMESPACE, DB_INIT_LOCK_KEY]);
+      } catch (unlockError) {
+        console.error('Failed to release database initialization lock', unlockError);
+      }
+    }
     client.release();
   }
 }

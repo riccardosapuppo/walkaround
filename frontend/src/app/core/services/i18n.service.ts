@@ -106,6 +106,10 @@ export class I18nService {
   }
 
   resolvePoiField(fallback: string | null | undefined, translationsMap: PoiTranslations | null | undefined, field: keyof PoiTranslationFields): string {
+    if (field === 'name') {
+      return String(fallback || '').trim();
+    }
+
     return this.resolveTranslatedField(fallback, translationsMap, field);
   }
 

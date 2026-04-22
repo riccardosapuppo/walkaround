@@ -1,19 +1,25 @@
 <section class="welcome page-shell">
   <div class="welcome-stage">
-    <span class="welcome-ornament welcome-ornament-bottom" aria-hidden="true"></span>
-
     <div class="welcome-card card">
-      <span class="welcome-card-ornament" aria-hidden="true"></span>
       <img class="brand-logo" src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
       <p class="brand-slogan">{{ 'common.brandTagline' | t }}</p>
 
-      <mat-form-field appearance="outline" class="language-select">
+      <mat-form-field appearance="fill" class="welcome-select">
+        <mat-icon matPrefix fontSet="material-icons-round" class="welcome-select-icon">language</mat-icon>
         <mat-label>{{ 'common.language' | t }}</mat-label>
         <mat-select [value]="language" (selectionChange)="setLanguage($event.value)">
           <mat-option value="it">{{ 'common.italian' | t }}</mat-option>
           <mat-option value="en">{{ 'common.english' | t }}</mat-option>
           <mat-option value="fr">{{ 'common.french' | t }}</mat-option>
           <mat-option value="es">{{ 'common.spanish' | t }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="welcome-select">
+        <mat-icon matPrefix fontSet="material-icons-round" class="welcome-select-icon">location_city</mat-icon>
+        <mat-label>{{ 'home.city' | t }}</mat-label>
+        <mat-select [value]="selectedCityId" (selectionChange)="setCity($event.value)" [disabled]="loadingCities || !cities.length">
+          <mat-option *ngFor="let city of cities" [value]="city.id">{{ cityName(city) }}</mat-option>
         </mat-select>
       </mat-form-field>
 

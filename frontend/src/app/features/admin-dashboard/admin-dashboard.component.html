@@ -227,7 +227,7 @@
                     <td class="payment-content-cell">
                       <small>{{ paymentTargetLabel(payment) }}</small>
                       <span class="payment-type-badge" [class.bundle]="payment.type === 'bundle'" [class.single]="payment.type === 'single'">
-                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}
+                        {{ payment.type === 'bundle' ? 'Pacchetto città' : 'Luogo singolo' }}
                       </span>
                     </td>
                     <td>{{ formatCurrency(payment.baseAmount) }}</td>
@@ -470,7 +470,7 @@
                     <td>
                       <div class="unlocked-cell" *ngIf="user.role !== 'admin'; else adminUnlockedAll">
                         <div class="unlocked-counts" *ngIf="user.unlockedCitiesCount || user.unlockedPoisCount; else noUnlockedItems">
-                          <small><strong>Citta:</strong> {{ user.unlockedCitiesCount }}</small>
+                          <small><strong>Città:</strong> {{ user.unlockedCitiesCount }}</small>
                           <small><strong>Luoghi:</strong> {{ user.unlockedPoisCount }}</small>
                         </div>
                         <div class="unlocked-tags" *ngIf="userUnlockedCities(user).length">
@@ -600,7 +600,7 @@
                               <strong>{{ discountCodeApplyToLabel(discountCode.applyTo) }}</strong>
                             </span>
                             <span class="discount-group-meta">
-                              Citta:
+                              Città:
                               <strong>{{ discountCodeCitiesLabel(discountCode) }}</strong>
                             </span>
                             <span class="discount-group-meta">
@@ -919,7 +919,7 @@
                     <td class="payment-content-cell">
                       <small>{{ paymentTargetLabel(payment) }}</small>
                       <span class="payment-type-badge" [class.bundle]="payment.type === 'bundle'" [class.single]="payment.type === 'single'">
-                        {{ payment.type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo' }}
+                        {{ payment.type === 'bundle' ? 'Pacchetto città' : 'Luogo singolo' }}
                       </span>
                     </td>
                     <td>{{ formatCurrency(payment.baseAmount) }}</td>
@@ -1035,10 +1035,204 @@
         </mat-card>
       </ng-container>
 
+      <ng-container *ngIf="canManageGptTranslations && activeSection === 'gptTranslations'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Da tradurre</span>
+            <strong *ngIf="!loadingOpenAiTranslationStatus; else gptMissingLoading">{{ gptTranslationMissingCount }}</strong>
+            <ng-template #gptMissingLoading>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Completi</span>
+            <strong *ngIf="!loadingOpenAiTranslationStatus; else gptCompleteLoading">{{ gptTranslationCompleteCount }}</strong>
+            <ng-template #gptCompleteLoading>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Token usati</span>
+            <strong>{{ gptTranslationUsage.totalTokens }}</strong>
+          </mat-card>
+        </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Configurazione OpenAI</h2>
+              <p class="table-subtitle">API key e modello usati solo dalle rotte admin per tradurre i luoghi di interesse.</p>
+            </div>
+          </div>
+
+          <form class="gpt-settings-form" [formGroup]="openAiTranslationSettingsForm" (ngSubmit)="saveOpenAiTranslationSettings()">
+            <div class="paypal-status-strip" *ngIf="openAiTranslationSettings">
+              <strong>{{ openAiTranslationSettings.hasApiKey ? 'API key configurata' : 'API key non configurata' }}</strong>
+              <span *ngIf="openAiTranslationSettings.maskedApiKey">{{ openAiTranslationSettings.maskedApiKey }}</span>
+              <span *ngIf="openAiTranslationSettings.updatedAt">Ultimo aggiornamento: {{ formatDateTime(openAiTranslationSettings.updatedAt) }}</span>
+            </div>
+
+            <div class="form-grid">
+              <mat-form-field appearance="outline" class="full-span">
+                <mat-label>API key OpenAI</mat-label>
+                <input
+                  matInput
+                  type="password"
+                  formControlName="apiKey"
+                  autocomplete="off"
+                  [placeholder]="openAiTranslationSettings?.maskedApiKey || 'sk-...'"
+                />
+                <mat-hint>Lascia vuoto per mantenere quella salvata.</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Modello</mat-label>
+                <input matInput type="text" formControlName="model" autocomplete="off" />
+              </mat-form-field>
+            </div>
+
+            <div class="paypal-actions">
+              <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveOpenAiTranslationSettings">
+                {{ savingOpenAiTranslationSettings ? 'Salvo...' : 'Salva configurazione' }}
+              </button>
+            </div>
+          </form>
+        </mat-card>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Traduzioni luoghi di interesse</h2>
+              <p class="table-subtitle">Seleziona una città e traduci un singolo punto oppure tutti quelli incompleti.</p>
+            </div>
+            <div class="table-actions">
+              <button
+                mat-flat-button
+                color="primary"
+              >
+                {{ bulkTranslatingPois ? 'Traduco...' : 'Traduci i luoghi mancanti della città' }}
+              </button>
+            </div>
+          </div>
+
+          <p class="inline-note" *ngIf="openAiTranslationSettings && !openAiTranslationSettings.hasApiKey">
+            Salva una API key OpenAI prima di avviare le traduzioni.
+          </p>
+
+          <form class="gpt-controls-grid" [formGroup]="gptTranslationForm">
+            <mat-form-field appearance="outline">
+              <mat-label>Città</mat-label>
+              <mat-select formControlName="cityId" (selectionChange)="onGptTranslationCityChanged($event.value)">
+                <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Lingua destinazione</mat-label>
+              <mat-select formControlName="targetLanguage" (selectionChange)="onGptTranslationLanguageChanged($event.value)">
+                <mat-option *ngFor="let language of contentLanguages" [value]="language.code">{{ language.label }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Luogo singolo</mat-label>
+              <mat-select formControlName="poiId" (selectionChange)="onGptTranslationPoiChanged($event.value)">
+                <mat-option value="">Seleziona un luogo</mat-option>
+                <mat-option *ngFor="let poi of catalogPois; trackBy: trackByCatalogPoiId" [value]="poi.id">
+                  {{ poi.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-slide-toggle formControlName="overwrite">Sovrascrivi traduzioni esistenti</mat-slide-toggle>
+          </form>
+
+          <div class="gpt-progress-panel" *ngIf="gptTranslationProgressTotal">
+            <div class="gpt-progress-head">
+              <strong>{{ gptTranslationProgressDone }} / {{ gptTranslationProgressTotal }}</strong>
+              <span>{{ gptTranslationProgressPercent }}%</span>
+            </div>
+            <div class="gpt-progress-track" aria-hidden="true">
+              <span class="gpt-progress-bar" [style.width.%]="gptTranslationProgressPercent"></span>
+            </div>
+            <div class="gpt-token-strip">
+              <span>Input: {{ gptTranslationUsage.inputTokens }}</span>
+              <span>Output: {{ gptTranslationUsage.outputTokens }}</span>
+              <span>Totale: {{ gptTranslationUsage.totalTokens }}</span>
+            </div>
+            <div class="gpt-log" *ngIf="gptTranslationLog.length">
+              <span *ngFor="let item of gptTranslationLog">{{ item }}</span>
+            </div>
+          </div>
+
+          <div class="inline-loader" *ngIf="loadingCatalogCities || loadingCatalogPois || loadingOpenAiTranslationStatus">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+
+          <div class="gpt-preview-grid" *ngIf="selectedGptTranslationPoi as poi">
+            <section class="translation-card">
+              <h3>Italiano</h3>
+              <strong>{{ poi.name }}</strong>
+              <p>{{ poi.descriptionShort }}</p>
+              <p>{{ poi.descriptionLong }}</p>
+            </section>
+
+            <section class="translation-card">
+              <h3>{{ selectedGptTranslationLanguageLabel }}</h3>
+              <strong>{{ poi.name }}</strong>
+              <p>{{ selectedGptTranslationPoiTargetFields.descriptionShort || 'Descrizione breve mancante' }}</p>
+              <p>{{ selectedGptTranslationPoiTargetFields.descriptionLong || 'Descrizione lunga mancante' }}</p>
+              <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                (click)="translateSelectedGptPoi()"
+                [disabled]="!canTranslateSelectedGptPoi"
+              >
+                {{ translatingPoiId === poi.id ? 'Traduco...' : 'Traduci luogo selezionato' }}
+              </button>
+            </section>
+          </div>
+
+          <div class="table-wrap compact-wrap">
+            <table class="modern-table compact-table">
+              <thead>
+                <tr>
+                  <th>Luogo</th>
+                  <th>Stato</th>
+                  <th>Campi mancanti</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="!loadingOpenAiTranslationStatus && !openAiTranslationStatusRows.length">
+                  <td colspan="3" class="empty-cell">Nessun luogo disponibile per la città selezionata.</td>
+                </tr>
+                <tr *ngFor="let row of openAiTranslationStatusRows">
+                  <td>
+                    <strong>{{ row.name }}</strong>
+                    <small>{{ row.cityName }}</small>
+                  </td>
+                  <td>
+                    <span class="association-status" [class.association-status-active]="row.isComplete" [class.association-status-used]="!row.isComplete">
+                      {{ row.isComplete ? 'Completa' : 'Incompleta' }}
+                    </span>
+                  </td>
+                  <td>{{ gptMissingFieldsLabel(row.missingFields) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </mat-card>
+      </ng-container>
+
       <ng-container *ngIf="canManageCatalog && activeSection === 'catalog'">
         <div class="stats-grid">
           <mat-card class="stat-card">
-            <span>Citta totali</span>
+            <span>Città totali</span>
             <strong *ngIf="!loadingCatalogCities; else catalogCitiesLoadingStat">{{ catalogCities.length }}</strong>
             <ng-template #catalogCitiesLoadingStat>
               <div class="stat-spinner">
@@ -1047,7 +1241,7 @@
             </ng-template>
           </mat-card>
           <mat-card class="stat-card">
-            <span>Luoghi nella citta selezionata</span>
+            <span>Luoghi nella città selezionata</span>
             <strong *ngIf="!loadingCatalogPois; else catalogPoisLoadingStat">{{ catalogPois.length }}</strong>
             <ng-template #catalogPoisLoadingStat>
               <div class="stat-spinner">
@@ -1060,7 +1254,7 @@
         <mat-card class="card table-card">
           <div class="table-head">
             <div>
-              <h2>Gestione Citta e Luoghi di interesse</h2>
+              <h2>Gestione Città e Luoghi di interesse</h2>
               <p class="table-subtitle">Catalogo admin con tab dedicati e modifica tramite modali.</p>
             </div>
           </div>
@@ -1072,7 +1266,7 @@
               [class.active]="catalogTab === 'cities'"
               (click)="selectCatalogTab('cities')"
             >
-              Citta
+              Città
             </button>
             <button
               type="button"
@@ -1087,10 +1281,10 @@
           <div class="catalog-stack" *ngIf="catalogTab === 'cities'">
             <section class="inline-panel">
               <div class="catalog-panel-head">
-                <h3>Nuova citta</h3>
+                <h3>Nuova città</h3>
                 <button type="button" class="toggle-panel-btn" (click)="toggleCatalogCityCreateSection()">
                   <span class="toggle-panel-icon">+</span>
-                  <span>Nuova citta</span>
+                  <span>Nuova città</span>
                 </button>
               </div>
             </section>
@@ -1098,7 +1292,7 @@
             <section class="inline-panel">
               <div class="catalog-list-head">
                 <div>
-                  <h3>Lista citta</h3>
+                  <h3>Lista città</h3>
                   <p class="table-subtitle">Modifica da modale e gestisci i luoghi dalla tab dedicata.</p>
                 </div>
               </div>
@@ -1107,7 +1301,7 @@
                 <table class="modern-table compact-table">
                   <thead>
                     <tr>
-                      <th>Citta</th>
+                      <th>Città</th>
                       <th>Regione</th>
                       <th>Luoghi</th>
                       <th>Azioni</th>
@@ -1120,7 +1314,7 @@
                       </td>
                     </tr>
                     <tr *ngIf="!loadingCatalogCities && !catalogCities.length">
-                      <td colspan="4" class="empty-cell">Nessuna citta disponibile.</td>
+                      <td colspan="4" class="empty-cell">Nessuna città disponibile.</td>
                     </tr>
                     <ng-container *ngIf="!loadingCatalogCities">
                       <tr *ngFor="let city of catalogCities">
@@ -1170,19 +1364,19 @@
                   <p class="table-subtitle">Sezione in colonna unica per mantenere la lettura pulita.</p>
                 </div>
                 <mat-form-field appearance="outline" class="catalog-city-filter compact-filter">
-                  <mat-label>Filtro citta</mat-label>
+                  <mat-label>Filtro città</mat-label>
                   <mat-select [value]="selectedCatalogCityId" (selectionChange)="onCatalogCityFilterChange($event.value)">
                     <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
                   </mat-select>
                 </mat-form-field>
               </div>
 
-              <p class="inline-note" *ngIf="!loadingCatalogCities && !catalogCities.length">Crea una citta per iniziare a gestire i POI.</p>
+              <p class="inline-note" *ngIf="!loadingCatalogCities && !catalogCities.length">Crea una città per iniziare a gestire i POI.</p>
               <div class="inline-loader" *ngIf="loadingCatalogCities">
                 <mat-spinner diameter="24"></mat-spinner>
               </div>
               <p class="inline-note" *ngIf="!loadingCatalogCities && catalogCities.length && !selectedCatalogCityId">
-                Seleziona una citta per vedere la lista dei punti di interesse.
+                Seleziona una città per vedere la lista dei punti di interesse.
               </p>
 
               <div class="table-wrap" *ngIf="selectedCatalogCityId">
@@ -1204,7 +1398,7 @@
                       </td>
                     </tr>
                     <tr *ngIf="!loadingCatalogPois && !catalogPois.length">
-                      <td colspan="6" class="empty-cell">Nessun luogo nella citta selezionata.</td>
+                      <td colspan="6" class="empty-cell">Nessun luogo nella città selezionata.</td>
                     </tr>
                     <ng-container *ngIf="!loadingCatalogPois">
                       <tr *ngFor="let poi of catalogPois; trackBy: trackByCatalogPoiId">
@@ -1247,11 +1441,11 @@
       </ng-container>
 
       <ng-template #createCatalogCityDialog>
-        <h2 mat-dialog-title>Nuova citta</h2>
+        <h2 mat-dialog-title>Nuova città</h2>
         <form [formGroup]="catalogCityForm" (ngSubmit)="saveCatalogCity()" class="form-grid dialog-form">
           <div mat-dialog-content class="dialog-body">
             <mat-form-field appearance="outline">
-              <mat-label>Nome citta</mat-label>
+              <mat-label>Nome città</mat-label>
               <input matInput type="text" formControlName="name" />
             </mat-form-field>
 
@@ -1276,7 +1470,7 @@
                   <h3>{{ language.label }}</h3>
 
                   <mat-form-field appearance="outline">
-                    <mat-label>Nome citta {{ language.label }}</mat-label>
+                    <mat-label>Nome città {{ language.label }}</mat-label>
                     <input matInput type="text" formControlName="name" />
                   </mat-form-field>
                 </section>
@@ -1286,15 +1480,15 @@
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
               <div class="media-block-head">
-                <strong>Immagine citta</strong>
+                <strong>Immagine città</strong>
                 <span>{{ catalogCityForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>
               </div>
 
               <div class="media-preview" *ngIf="catalogCityForm.controls.heroImage.value; else createCityImageEmpty">
-                <img [src]="catalogCityForm.controls.heroImage.value" alt="Anteprima immagine citta" />
+                <img [src]="catalogCityForm.controls.heroImage.value" alt="Anteprima immagine città" />
               </div>
               <ng-template #createCityImageEmpty>
-                <div class="media-preview placeholder">Carica un'immagine per la citta.</div>
+                <div class="media-preview placeholder">Carica un'immagine per la città.</div>
               </ng-template>
 
               <div class="media-upload-actions">
@@ -1337,7 +1531,7 @@
               Annulla
             </button>
             <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveCatalogCity">
-              {{ savingCatalogCity ? 'Salvataggio...' : 'Crea citta' }}
+              {{ savingCatalogCity ? 'Salvataggio...' : 'Crea città' }}
             </button>
           </div>
         </form>
@@ -1348,13 +1542,13 @@
         <form [formGroup]="catalogPoiForm" (ngSubmit)="saveCatalogPoi()" class="form-grid dialog-form">
           <div mat-dialog-content class="dialog-body">
             <mat-form-field appearance="outline">
-              <mat-label>Citta</mat-label>
+              <mat-label>Città</mat-label>
               <mat-select [value]="selectedCatalogCityId" (selectionChange)="onCatalogCityFilterChange($event.value)">
                 <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
               </mat-select>
             </mat-form-field>
 
-            <p class="inline-note" *ngIf="!loadingCatalogCities && !catalogCities.length">Crea prima almeno una citta.</p>
+            <p class="inline-note" *ngIf="!loadingCatalogCities && !catalogCities.length">Crea prima almeno una città.</p>
             <div class="inline-loader" *ngIf="loadingCatalogCities">
               <mat-spinner diameter="24"></mat-spinner>
             </div>
@@ -1363,6 +1557,11 @@
               <mat-form-field appearance="outline">
                 <mat-label>Nome luogo</mat-label>
                 <input matInput type="text" formControlName="name" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Indirizzo</mat-label>
+                <input matInput type="text" formControlName="address" />
               </mat-form-field>
 
               <mat-form-field appearance="outline">
@@ -1414,11 +1613,6 @@
                     <h3>{{ language.label }}</h3>
 
                     <mat-form-field appearance="outline">
-                      <mat-label>Nome luogo {{ language.label }}</mat-label>
-                      <input matInput type="text" formControlName="name" />
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
                       <mat-label>Descrizione breve {{ language.label }}</mat-label>
                       <textarea matInput rows="2" formControlName="descriptionShort"></textarea>
                     </mat-form-field>
@@ -1426,11 +1620,6 @@
                     <mat-form-field appearance="outline">
                       <mat-label>Descrizione lunga {{ language.label }}</mat-label>
                       <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
-                      <mat-label>Nome audio {{ language.label }}</mat-label>
-                      <input matInput type="text" formControlName="audioLabel" />
                     </mat-form-field>
 
                     <input type="hidden" formControlName="audioUrl" />
@@ -1607,11 +1796,11 @@
       </ng-template>
 
       <ng-template #editCatalogCityDialog>
-        <h2 mat-dialog-title>Modifica citta</h2>
+        <h2 mat-dialog-title>Modifica città</h2>
         <form [formGroup]="catalogCityEditForm" (ngSubmit)="saveCatalogCityEdit()" class="form-grid dialog-form">
           <div mat-dialog-content class="dialog-body">
             <mat-form-field appearance="outline">
-              <mat-label>Nome citta</mat-label>
+              <mat-label>Nome città</mat-label>
               <input matInput type="text" formControlName="name" />
             </mat-form-field>
 
@@ -1636,7 +1825,7 @@
                   <h3>{{ language.label }}</h3>
 
                   <mat-form-field appearance="outline">
-                    <mat-label>Nome citta {{ language.label }}</mat-label>
+                    <mat-label>Nome città {{ language.label }}</mat-label>
                     <input matInput type="text" formControlName="name" />
                   </mat-form-field>
                 </section>
@@ -1646,15 +1835,15 @@
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
               <div class="media-block-head">
-                <strong>Immagine citta</strong>
+                <strong>Immagine città</strong>
                 <span>{{ catalogCityEditForm.controls.heroImage.value ? 'Pronta' : 'Nessuna immagine' }}</span>
               </div>
 
               <div class="media-preview" *ngIf="catalogCityEditForm.controls.heroImage.value; else cityEditImageEmpty">
-                <img [src]="catalogCityEditForm.controls.heroImage.value" alt="Anteprima immagine citta" />
+                <img [src]="catalogCityEditForm.controls.heroImage.value" alt="Anteprima immagine città" />
               </div>
               <ng-template #cityEditImageEmpty>
-                <div class="media-preview placeholder">Carica un'immagine per la citta.</div>
+                <div class="media-preview placeholder">Carica un'immagine per la città.</div>
               </ng-template>
 
               <div class="media-upload-actions">
@@ -1697,7 +1886,7 @@
               Annulla
             </button>
             <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveCatalogCityEdit">
-              {{ savingCatalogCity ? 'Salvataggio...' : 'Salva citta' }}
+              {{ savingCatalogCity ? 'Salvataggio...' : 'Salva città' }}
             </button>
           </div>
         </form>
@@ -1708,7 +1897,7 @@
         <form [formGroup]="catalogPoiEditForm" (ngSubmit)="saveCatalogPoiEdit()" class="form-grid dialog-form">
           <div mat-dialog-content class="dialog-body">
             <mat-form-field appearance="outline">
-              <mat-label>Citta</mat-label>
+              <mat-label>Città</mat-label>
               <mat-select formControlName="cityId">
                 <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
               </mat-select>
@@ -1717,6 +1906,11 @@
             <mat-form-field appearance="outline">
               <mat-label>Nome luogo</mat-label>
               <input matInput type="text" formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Indirizzo</mat-label>
+              <input matInput type="text" formControlName="address" />
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -1768,11 +1962,6 @@
                   <h3>{{ language.label }}</h3>
 
                   <mat-form-field appearance="outline">
-                    <mat-label>Nome luogo {{ language.label }}</mat-label>
-                    <input matInput type="text" formControlName="name" />
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline">
                     <mat-label>Descrizione breve {{ language.label }}</mat-label>
                     <textarea matInput rows="2" formControlName="descriptionShort"></textarea>
                   </mat-form-field>
@@ -1780,11 +1969,6 @@
                   <mat-form-field appearance="outline">
                     <mat-label>Descrizione lunga {{ language.label }}</mat-label>
                     <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Nome audio {{ language.label }}</mat-label>
-                    <input matInput type="text" formControlName="audioLabel" />
                   </mat-form-field>
 
                   <input type="hidden" formControlName="audioUrl" />
@@ -2064,19 +2248,19 @@
               <label>Applicabile a</label>
               <mat-radio-group formControlName="applyTo" class="discount-scope-radio">
                 <mat-radio-button value="single">Luogo singolo</mat-radio-button>
-                <mat-radio-button value="bundle">Pacchetto citta</mat-radio-button>
+                <mat-radio-button value="bundle">Pacchetto città</mat-radio-button>
               </mat-radio-group>
             </div>
 
             <mat-form-field appearance="outline">
-              <mat-label>Citta applicabili</mat-label>
+              <mat-label>Città applicabili</mat-label>
               <mat-select formControlName="cityIds" multiple>
                 <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
               </mat-select>
-              <mat-hint>Seleziona una o piu citta</mat-hint>
+              <mat-hint>Seleziona una o piu città</mat-hint>
             </mat-form-field>
             <p class="inline-note" *ngIf="!catalogCities.length && !loadingCatalogCities">
-              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.
+              Nessuna città disponibile. Crea prima una città nella sezione catalogo.
             </p>
             <div class="inline-loader" *ngIf="loadingCatalogCities">
               <mat-spinner diameter="22"></mat-spinner>
@@ -2143,31 +2327,31 @@
               <label>Applicabile a</label>
               <mat-radio-group formControlName="applyTo" class="discount-scope-radio">
                 <mat-radio-button value="single">Luogo singolo</mat-radio-button>
-                <mat-radio-button value="bundle">Pacchetto citta</mat-radio-button>
+                <mat-radio-button value="bundle">Pacchetto città</mat-radio-button>
               </mat-radio-group>
             </div>
 
             <mat-form-field appearance="outline">
-              <mat-label>Citta applicabili</mat-label>
+              <mat-label>Città applicabili</mat-label>
               <mat-select formControlName="cityIds" multiple>
                 <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
               </mat-select>
-              <mat-hint>Seleziona una o piu citta</mat-hint>
+              <mat-hint>Seleziona una o piu città</mat-hint>
             </mat-form-field>
             <p class="inline-note" *ngIf="!catalogCities.length && !loadingCatalogCities">
-              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.
+              Nessuna città disponibile. Crea prima una città nella sezione catalogo.
             </p>
             <div class="inline-loader" *ngIf="loadingCatalogCities">
               <mat-spinner diameter="22"></mat-spinner>
             </div>
 
             <mat-form-field appearance="outline">
-              <mat-label>Sconto utente {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo' }} (%)</mat-label>
+              <mat-label>Sconto utente {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'città' : 'luogo' }} (%)</mat-label>
               <input matInput type="number" min="0" max="100" step="0.01" formControlName="userDiscountPercent" />
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Incasso struttura {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo' }} (EUR)</mat-label>
+              <mat-label>Incasso struttura {{ partnerRequestApprovalForm.controls.applyTo.value === 'bundle' ? 'città' : 'luogo' }} (EUR)</mat-label>
               <input matInput type="number" min="0" max="10000" step="0.01" formControlName="structureFixedAmount" />
             </mat-form-field>
 
@@ -2218,19 +2402,19 @@
               <label>Applicabile a</label>
               <mat-radio-group formControlName="applyTo" class="discount-scope-radio">
                 <mat-radio-button value="single">Luogo singolo</mat-radio-button>
-                <mat-radio-button value="bundle">Pacchetto citta</mat-radio-button>
+                <mat-radio-button value="bundle">Pacchetto città</mat-radio-button>
               </mat-radio-group>
             </div>
 
             <mat-form-field appearance="outline">
-              <mat-label>Citta applicabili</mat-label>
+              <mat-label>Città applicabili</mat-label>
               <mat-select formControlName="cityIds" multiple>
                 <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
               </mat-select>
-              <mat-hint>Seleziona una o piu citta</mat-hint>
+              <mat-hint>Seleziona una o piu città</mat-hint>
             </mat-form-field>
             <p class="inline-note" *ngIf="!catalogCities.length && !loadingCatalogCities">
-              Nessuna citta disponibile. Crea prima una citta nella sezione catalogo.
+              Nessuna città disponibile. Crea prima una città nella sezione catalogo.
             </p>
             <div class="inline-loader" *ngIf="loadingCatalogCities">
               <mat-spinner diameter="22"></mat-spinner>
@@ -2289,7 +2473,7 @@
 
           <section class="inline-panel" *ngIf="showStructureSection">
             <h3>Nuova struttura</h3>
-            <p>Inserisci nome struttura, via, civico, citta e CAP. I codici sconto si gestiscono nella sezione dedicata.</p>
+            <p>Inserisci nome struttura, via, civico, città e CAP. I codici sconto si gestiscono nella sezione dedicata.</p>
 
             <form [formGroup]="structureForm" (ngSubmit)="registerStructure()" class="form-grid">
               <mat-form-field appearance="outline">
@@ -2315,7 +2499,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
-                  <mat-label>Citta</mat-label>
+                  <mat-label>Città</mat-label>
                   <input matInput type="text" formControlName="city" autocomplete="address-level2" />
                 </mat-form-field>
 
@@ -2366,7 +2550,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
-                  <mat-label>Citta</mat-label>
+                  <mat-label>Città</mat-label>
                   <input matInput type="text" formControlName="city" autocomplete="address-level2" />
                 </mat-form-field>
 
@@ -2454,5 +2638,3 @@
     </main>
   </div>
 </section>
-
-

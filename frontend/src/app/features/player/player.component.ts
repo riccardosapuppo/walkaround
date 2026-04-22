@@ -204,11 +204,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return this.i18n.resolvePoiField(poi?.descriptionLong, poi?.translations, 'descriptionLong');
   }
 
-  poiAudioLabel(poi: Poi | null | undefined): string {
-    const label = this.i18n.resolvePoiField(poi?.audioLabel, poi?.translations, 'audioLabel');
-    return label && label !== this.poiName(poi) ? label : '';
-  }
-
   poiAudioUrl(poi: Poi | null | undefined): string {
     return this.i18n.resolvePoiAudioUrl(poi);
   }

@@ -6,7 +6,6 @@
   <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="poiName(currentPoi)" />
 
   <h1 class="page-title">{{ poiName(currentPoi) }}</h1>
-  <p class="page-subtitle" *ngIf="poiAudioLabel(currentPoi)">{{ poiAudioLabel(currentPoi) }}</p>
   <p class="page-subtitle">
     {{ audioUnavailable ? ('player.audioUnavailable' | t) : (previewMode ? ('player.previewLabel' | t:{ seconds: previewSeconds }) : ('player.fullAudio' | t)) }}
     - {{ currentPoi.durationSec | durationLabel }}

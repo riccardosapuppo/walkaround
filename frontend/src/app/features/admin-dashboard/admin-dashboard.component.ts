@@ -24,11 +24,23 @@ import {
   StructureAssociatedUserRow,
   DashboardUserRow,
   InviteResponse,
+  OpenAiPoiTranslationStatus,
+  OpenAiTranslatePoiResponse,
+  OpenAiTranslationSettings,
+  OpenAiTranslationUsage,
   UserRole
 } from '../../core/services/admin-auth.service';
-import { CityTranslations, PoiTranslations } from '../../core/models/localized-content.model';
+import { CityTranslations, PoiTranslationFields, PoiTranslations } from '../../core/models/localized-content.model';
 
-type DashboardSection = 'users' | 'structures' | 'discounts' | 'partnerRequests' | 'payments' | 'paypal' | 'catalog';
+type DashboardSection =
+  | 'users'
+  | 'structures'
+  | 'discounts'
+  | 'partnerRequests'
+  | 'payments'
+  | 'paypal'
+  | 'gptTranslations'
+  | 'catalog';
 type CatalogTab = 'cities' | 'pois';
 type PoiMapPickerTarget = 'create' | 'edit';
 type ContentEditorLanguage = 'en' | 'fr' | 'es';
@@ -42,10 +54,8 @@ type CatalogCityTranslationsFormValue = Record<ContentEditorLanguage, { name: st
 type CatalogPoiTranslationsFormValue = Record<
   ContentEditorLanguage,
   {
-    name: string;
     descriptionShort: string;
     descriptionLong: string;
-    audioLabel: string;
     audioUrl: string;
   }
 >;
@@ -96,7 +106,8 @@ export class AdminDashboardComponent implements OnInit {
     { id: 'partnerRequests', label: 'Richieste partner' },
     { id: 'payments', label: 'Pagamenti' },
     { id: 'paypal', label: 'PayPal' },
-    { id: 'catalog', label: 'Citta e Punti interesse' }
+    { id: 'gptTranslations', label: 'Traduzioni GPT' },
+    { id: 'catalog', label: 'Città e Punti interesse' }
   ];
   readonly managerSections: Array<{ id: DashboardSection; label: string }> = [
     { id: 'users', label: 'Utenti associati' },
@@ -124,12 +135,16 @@ export class AdminDashboardComponent implements OnInit {
   loadingPayments = false;
   loadingPartnerRequests = false;
   loadingPayPalSettings = false;
+  loadingOpenAiTranslationSettings = false;
+  loadingOpenAiTranslationStatus = false;
   creatingStructure = false;
   updatingStructure = false;
   loadingDiscountCodes = false;
   creatingDiscountCode = false;
   updatingDiscountCode = false;
   savingPayPalSettings = false;
+  savingOpenAiTranslationSettings = false;
+  bulkTranslatingPois = false;
   testingPayPalSettings = false;
   loadingCatalogCities = false;
   loadingCatalogPois = false;
@@ -151,6 +166,7 @@ export class AdminDashboardComponent implements OnInit {
   resettingPasswordUserId: string | null = null;
   deletingUserId: string | null = null;
   impersonatingUserId: string | null = null;
+  translatingPoiId: string | null = null;
 
   lastInvite: InviteResponse | null = null;
   users: DashboardUserRow[] = [];
@@ -162,6 +178,17 @@ export class AdminDashboardComponent implements OnInit {
   payments: DashboardPaymentRow[] = [];
   partnerRequests: DashboardPartnerRequest[] = [];
   payPalSettings: DashboardPayPalSettings | null = null;
+  openAiTranslationSettings: OpenAiTranslationSettings | null = null;
+  openAiTranslationStatusRows: OpenAiPoiTranslationStatus[] = [];
+  selectedGptTranslationPoiId = '';
+  gptTranslationProgressTotal = 0;
+  gptTranslationProgressDone = 0;
+  gptTranslationUsage: OpenAiTranslationUsage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0
+  };
+  gptTranslationLog: string[] = [];
   paymentsSummary: DashboardPaymentsSummary = {
     totalPayments: 0,
     totalCollected: 0,
@@ -179,6 +206,7 @@ export class AdminDashboardComponent implements OnInit {
   previewingPartnerRequestId: number | null = null;
   private lastLoadedCatalogPoisCityId = '';
   private catalogPoisRequestToken = 0;
+  private openAiTranslationStatusRequestToken = 0;
   private hasLoadedCatalogCitiesOnce = false;
   mapPickerLoading = false;
   mapPickerResults: PoiMapSearchResult[] = [];
@@ -316,6 +344,18 @@ export class AdminDashboardComponent implements OnInit {
     webhookId: ['', [Validators.maxLength(180)]]
   });
 
+  readonly openAiTranslationSettingsForm = this.formBuilder.nonNullable.group({
+    apiKey: ['', [Validators.maxLength(500)]],
+    model: ['gpt-4o-mini', [Validators.required, Validators.maxLength(120)]]
+  });
+
+  readonly gptTranslationForm = this.formBuilder.nonNullable.group({
+    cityId: ['', [Validators.required]],
+    targetLanguage: ['en' as ContentEditorLanguage, [Validators.required]],
+    poiId: [''],
+    overwrite: [false]
+  });
+
   readonly catalogCityForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     region: [{ value: this.fixedCreateCityRegion, disabled: true }, [Validators.required, Validators.maxLength(120)]],
@@ -337,6 +377,7 @@ export class AdminDashboardComponent implements OnInit {
   readonly catalogPoiForm = this.formBuilder.nonNullable.group({
     cityId: ['', [Validators.required]],
     name: ['', [Validators.required, Validators.maxLength(180)]],
+    address: ['', [Validators.maxLength(240)]],
     lat: [0, [Validators.required, Validators.min(-90), Validators.max(90)]],
     lng: [0, [Validators.required, Validators.min(-180), Validators.max(180)]],
     category: [this.poiCategoryOptions[0], [Validators.required]],
@@ -348,24 +389,18 @@ export class AdminDashboardComponent implements OnInit {
     durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
     translations: this.formBuilder.nonNullable.group({
       en: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(180)]],
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
-        audioLabel: ['', [Validators.maxLength(180)]],
         audioUrl: ['', [Validators.maxLength(500)]]
       }),
       fr: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(180)]],
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
-        audioLabel: ['', [Validators.maxLength(180)]],
         audioUrl: ['', [Validators.maxLength(500)]]
       }),
       es: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(180)]],
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
-        audioLabel: ['', [Validators.maxLength(180)]],
         audioUrl: ['', [Validators.maxLength(500)]]
       })
     })
@@ -392,6 +427,7 @@ export class AdminDashboardComponent implements OnInit {
   readonly catalogPoiEditForm = this.formBuilder.nonNullable.group({
     cityId: ['', [Validators.required]],
     name: ['', [Validators.required, Validators.maxLength(180)]],
+    address: ['', [Validators.maxLength(240)]],
     lat: [0, [Validators.required, Validators.min(-90), Validators.max(90)]],
     lng: [0, [Validators.required, Validators.min(-180), Validators.max(180)]],
     category: [this.poiCategoryOptions[0], [Validators.required]],
@@ -403,24 +439,18 @@ export class AdminDashboardComponent implements OnInit {
     durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
     translations: this.formBuilder.nonNullable.group({
       en: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(180)]],
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
-        audioLabel: ['', [Validators.maxLength(180)]],
         audioUrl: ['', [Validators.maxLength(500)]]
       }),
       fr: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(180)]],
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
-        audioLabel: ['', [Validators.maxLength(180)]],
         audioUrl: ['', [Validators.maxLength(500)]]
       }),
       es: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(180)]],
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
-        audioLabel: ['', [Validators.maxLength(180)]],
         audioUrl: ['', [Validators.maxLength(500)]]
       })
     })
@@ -511,6 +541,10 @@ export class AdminDashboardComponent implements OnInit {
     return this.canManageUsers;
   }
 
+  get canManageGptTranslations(): boolean {
+    return this.canManageUsers;
+  }
+
   get visibleSections(): Array<{ id: DashboardSection; label: string }> {
     if (this.canManageUsers) {
       return this.sections;
@@ -527,6 +561,69 @@ export class AdminDashboardComponent implements OnInit {
 
   get canSavePayPalSettings(): boolean {
     return this.canManagePayPal && !this.savingPayPalSettings && this.payPalForm.valid;
+  }
+
+  get canSaveOpenAiTranslationSettings(): boolean {
+    return this.canManageGptTranslations && !this.savingOpenAiTranslationSettings && this.openAiTranslationSettingsForm.valid;
+  }
+
+  get selectedGptTranslationLanguageLabel(): string {
+    const selected = this.gptTranslationForm.controls.targetLanguage.value;
+    return this.contentLanguages.find((language) => language.code === selected)?.label || selected.toUpperCase();
+  }
+
+  get gptTranslationProgressPercent(): number {
+    if (!this.gptTranslationProgressTotal) {
+      return 0;
+    }
+    return Math.min(100, Math.round((this.gptTranslationProgressDone / this.gptTranslationProgressTotal) * 100));
+  }
+
+  get gptTranslationMissingCount(): number {
+    return this.openAiTranslationStatusRows.filter((row) => !row.isComplete).length;
+  }
+
+  get gptTranslationCompleteCount(): number {
+    return this.openAiTranslationStatusRows.filter((row) => row.isComplete).length;
+  }
+
+  get selectedGptTranslationPoi(): DashboardCatalogPoi | null {
+    const selectedPoiId = this.gptTranslationForm.controls.poiId.value || this.selectedGptTranslationPoiId;
+    if (!selectedPoiId) {
+      return null;
+    }
+    return this.catalogPois.find((poi) => poi.id === selectedPoiId) || null;
+  }
+
+  get selectedGptTranslationPoiTargetFields(): PoiTranslationFields {
+    const poi = this.selectedGptTranslationPoi;
+    const language = this.gptTranslationForm.controls.targetLanguage.value;
+    return poi?.translations?.[language] || {};
+  }
+
+  get canTranslateSelectedGptPoi(): boolean {
+    return (
+      this.canManageGptTranslations &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      Boolean(this.selectedGptTranslationPoi) &&
+      !this.loadingCatalogPois &&
+      !this.loadingOpenAiTranslationStatus &&
+      !this.bulkTranslatingPois &&
+      !this.translatingPoiId
+    );
+  }
+
+  get canTranslateMissingGptPois(): boolean {
+    return (
+      this.canManageGptTranslations &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      Boolean(this.gptTranslationForm.controls.cityId.value) &&
+      this.gptTranslationMissingCount > 0 &&
+      !this.loadingOpenAiTranslationStatus &&
+      !this.loadingCatalogPois &&
+      !this.bulkTranslatingPois &&
+      !this.translatingPoiId
+    );
   }
 
   get payPalStatusLabel(): string {
@@ -622,11 +719,11 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   get discountCodeCreateScopeLabel(): string {
-    return this.discountCodeCreateForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo';
+    return this.discountCodeCreateForm.controls.applyTo.value === 'bundle' ? 'città' : 'luogo';
   }
 
   get discountCodeEditScopeLabel(): string {
-    return this.discountCodeEditForm.controls.applyTo.value === 'bundle' ? 'citta' : 'luogo';
+    return this.discountCodeEditForm.controls.applyTo.value === 'bundle' ? 'città' : 'luogo';
   }
 
   get isInviteStructureRequired(): boolean {
@@ -752,12 +849,17 @@ export class AdminDashboardComponent implements OnInit {
       this.closeCreateCatalogCityDialog();
       this.closeCreateCatalogPoiDialog();
     }
+    if (section !== 'gptTranslations') {
+      this.translatingPoiId = null;
+    }
     if (section === 'payments' && this.canAccessDashboard) {
       this.loadPayments();
     } else if (section === 'partnerRequests' && this.canManageUsers) {
       this.loadPartnerRequests();
     } else if (section === 'paypal' && this.canManagePayPal) {
       this.loadPayPalSettings();
+    } else if (section === 'gptTranslations' && this.canManageGptTranslations) {
+      this.ensureGptTranslationsLoaded();
     } else if (section === 'discounts' && this.canViewDiscountCodes) {
       this.loadDiscountCodes();
     } else if (section === 'structures' && this.canManageUsers) {
@@ -1418,7 +1520,7 @@ export class AdminDashboardComponent implements OnInit {
     const normalizedCityIds = this.normalizeSelectedCityIds(cityIds);
     if (!normalizedCityIds.length) {
       this.partnerRequestApprovalForm.controls.cityIds.markAsTouched();
-      this.snackBar.open('Seleziona almeno una citta', 'Chiudi', { duration: 2800 });
+      this.snackBar.open('Seleziona almeno una città', 'Chiudi', { duration: 2800 });
       return;
     }
 
@@ -1606,6 +1708,230 @@ export class AdminDashboardComponent implements OnInit {
         this.snackBar.open(message, 'Chiudi', { duration: 3600 });
       }
     });
+  }
+
+  ensureGptTranslationsLoaded(): void {
+    if (!this.canManageGptTranslations) {
+      return;
+    }
+
+    this.loadOpenAiTranslationSettings();
+    if (!this.catalogCities.length && !this.loadingCatalogCities) {
+      this.loadCatalogCities();
+      return;
+    }
+
+    const cityId = this.ensureGptTranslationCitySelection();
+    if (cityId) {
+      this.loadCatalogPois(cityId);
+      this.loadOpenAiTranslationStatus();
+    }
+  }
+
+  loadOpenAiTranslationSettings(force = false): void {
+    if (!this.canManageGptTranslations || this.loadingOpenAiTranslationSettings) {
+      return;
+    }
+    if (this.openAiTranslationSettings && !force) {
+      return;
+    }
+
+    this.loadingOpenAiTranslationSettings = true;
+    this.auth.getOpenAiTranslationSettings().subscribe({
+      next: (settings) => {
+        this.loadingOpenAiTranslationSettings = false;
+        this.openAiTranslationSettings = settings;
+        this.openAiTranslationSettingsForm.reset({
+          apiKey: '',
+          model: settings.model || 'gpt-4o-mini'
+        });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingOpenAiTranslationSettings = false;
+        const message = error?.error?.message || 'Errore caricamento configurazione OpenAI';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  saveOpenAiTranslationSettings(): void {
+    if (!this.canSaveOpenAiTranslationSettings) {
+      this.openAiTranslationSettingsForm.markAllAsTouched();
+      return;
+    }
+
+    const payload = this.openAiTranslationSettingsForm.getRawValue();
+    this.savingOpenAiTranslationSettings = true;
+    this.auth
+      .saveOpenAiTranslationSettings({
+        apiKey: payload.apiKey.trim(),
+        model: payload.model.trim() || 'gpt-4o-mini'
+      })
+      .subscribe({
+        next: (settings) => {
+          this.savingOpenAiTranslationSettings = false;
+          this.openAiTranslationSettings = settings;
+          this.openAiTranslationSettingsForm.reset({
+            apiKey: '',
+            model: settings.model || 'gpt-4o-mini'
+          });
+          this.snackBar.open('Configurazione OpenAI salvata', 'OK', { duration: 2400 });
+        },
+        error: (error: { error?: { message?: string } }) => {
+          this.savingOpenAiTranslationSettings = false;
+          const message = error?.error?.message || 'Errore salvataggio configurazione OpenAI';
+          this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+        }
+      });
+  }
+
+  onGptTranslationCityChanged(cityId: string): void {
+    this.gptTranslationForm.controls.cityId.setValue(cityId, { emitEvent: false });
+    this.gptTranslationForm.controls.poiId.setValue('', { emitEvent: false });
+    this.selectedGptTranslationPoiId = '';
+    this.resetGptTranslationProgress();
+
+    if (!cityId) {
+      this.openAiTranslationStatusRows = [];
+      this.catalogPois = [];
+      return;
+    }
+
+    this.onCatalogCityFilterChange(cityId, { force: true });
+    this.loadOpenAiTranslationStatus();
+  }
+
+  onGptTranslationLanguageChanged(language: ContentEditorLanguage): void {
+    this.gptTranslationForm.controls.targetLanguage.setValue(language, { emitEvent: false });
+    this.resetGptTranslationProgress();
+    this.loadOpenAiTranslationStatus();
+  }
+
+  onGptTranslationPoiChanged(poiId: string): void {
+    this.selectedGptTranslationPoiId = poiId;
+    this.gptTranslationForm.controls.poiId.setValue(poiId, { emitEvent: false });
+  }
+
+  loadOpenAiTranslationStatus(): void {
+    if (!this.canManageGptTranslations) {
+      return;
+    }
+
+    const cityId = this.gptTranslationForm.controls.cityId.value || this.ensureGptTranslationCitySelection();
+    const targetLanguage = this.gptTranslationForm.controls.targetLanguage.value;
+    if (!cityId || !targetLanguage) {
+      this.openAiTranslationStatusRows = [];
+      return;
+    }
+
+    const requestToken = ++this.openAiTranslationStatusRequestToken;
+    this.loadingOpenAiTranslationStatus = true;
+    this.auth.listOpenAiPoiTranslationStatus(cityId, targetLanguage).subscribe({
+      next: (rows) => {
+        if (requestToken !== this.openAiTranslationStatusRequestToken) {
+          return;
+        }
+        this.loadingOpenAiTranslationStatus = false;
+        this.openAiTranslationStatusRows = rows;
+        this.ensureSelectedGptTranslationPoi();
+      },
+      error: (error: { error?: { message?: string } }) => {
+        if (requestToken !== this.openAiTranslationStatusRequestToken) {
+          return;
+        }
+        this.loadingOpenAiTranslationStatus = false;
+        const message = error?.error?.message || 'Errore caricamento stato traduzioni';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  translateSelectedGptPoi(): void {
+    const poi = this.selectedGptTranslationPoi;
+    if (!this.canTranslateSelectedGptPoi || !poi) {
+      return;
+    }
+
+    this.resetGptTranslationProgress(1);
+    this.translatingPoiId = poi.id;
+    this.auth
+      .translateCatalogPoiWithOpenAi(poi.id, {
+        cityId: this.gptTranslationForm.controls.cityId.value,
+        targetLanguage: this.gptTranslationForm.controls.targetLanguage.value,
+        overwrite: this.gptTranslationForm.controls.overwrite.value
+      })
+      .subscribe({
+        next: (response) => {
+          this.translatingPoiId = null;
+          this.gptTranslationProgressDone = 1;
+          this.applyOpenAiTranslationResponse(response);
+          this.addGptTranslationUsage(response.usage);
+          this.loadOpenAiTranslationStatus();
+          this.snackBar.open(response.skipped ? 'POI gia tradotto' : 'Traduzione completata', 'OK', { duration: 2600 });
+        },
+        error: (error: { error?: { message?: string } }) => {
+          this.translatingPoiId = null;
+          const message = error?.error?.message || 'Traduzione non riuscita';
+          this.snackBar.open(message, 'Chiudi', { duration: 4200 });
+        }
+      });
+  }
+
+  async translateMissingGptPoisForCity(): Promise<void> {
+    if (!this.canTranslateMissingGptPois) {
+      return;
+    }
+
+    const cityId = this.gptTranslationForm.controls.cityId.value;
+    const targetLanguage = this.gptTranslationForm.controls.targetLanguage.value;
+    const overwrite = this.gptTranslationForm.controls.overwrite.value;
+    const rowsToTranslate = this.openAiTranslationStatusRows.filter((row) => !row.isComplete);
+    if (!cityId || !rowsToTranslate.length) {
+      return;
+    }
+
+    this.bulkTranslatingPois = true;
+    this.resetGptTranslationProgress(rowsToTranslate.length);
+    this.gptTranslationLog = [];
+
+    for (const row of rowsToTranslate) {
+      this.translatingPoiId = row.poiId;
+      try {
+        const response = await firstValueFrom(
+          this.auth.translateCatalogPoiWithOpenAi(row.poiId, {
+            cityId,
+            targetLanguage,
+            overwrite
+          })
+        );
+        this.applyOpenAiTranslationResponse(response);
+        this.addGptTranslationUsage(response.usage);
+        this.gptTranslationProgressDone += 1;
+        this.gptTranslationLog = [`${row.name}: ${response.skipped ? 'gia completo' : 'tradotto'}`, ...this.gptTranslationLog].slice(0, 8);
+      } catch (error) {
+        const message = this.dashboardErrorMessage(error, 'Traduzione interrotta');
+        this.gptTranslationLog = [`${row.name}: ${message}`, ...this.gptTranslationLog].slice(0, 8);
+        this.snackBar.open(message, 'Chiudi', { duration: 4500 });
+        break;
+      }
+    }
+
+    this.bulkTranslatingPois = false;
+    this.translatingPoiId = null;
+    this.loadOpenAiTranslationStatus();
+    this.snackBar.open('Traduzione massiva terminata', 'OK', { duration: 2600 });
+  }
+
+  gptMissingFieldsLabel(fields: string[] | null | undefined): string {
+    if (!fields?.length) {
+      return 'Completa';
+    }
+
+    const labels: Record<string, string> = {
+      descriptionShort: 'descrizione breve',
+      descriptionLong: 'descrizione lunga'
+    };
+    return fields.map((field) => labels[field] || field).join(', ');
   }
 
   partnerRequestContactName(request: DashboardPartnerRequest): string {
@@ -1854,7 +2180,7 @@ export class AdminDashboardComponent implements OnInit {
     const normalizedCityIds = this.normalizeSelectedCityIds(cityIds);
     if (!normalizedCityIds.length) {
       this.discountCodeCreateForm.controls.cityIds.markAsTouched();
-      this.snackBar.open('Seleziona almeno una citta', 'Chiudi', { duration: 2800 });
+      this.snackBar.open('Seleziona almeno una città', 'Chiudi', { duration: 2800 });
       return;
     }
 
@@ -1941,7 +2267,7 @@ export class AdminDashboardComponent implements OnInit {
     const normalizedCityIds = this.normalizeSelectedCityIds(cityIds);
     if (!normalizedCityIds.length) {
       this.discountCodeEditForm.controls.cityIds.markAsTouched();
-      this.snackBar.open('Seleziona almeno una citta', 'Chiudi', { duration: 2800 });
+      this.snackBar.open('Seleziona almeno una città', 'Chiudi', { duration: 2800 });
       return;
     }
 
@@ -2059,10 +2385,14 @@ export class AdminDashboardComponent implements OnInit {
         if (hasSelection) {
           this.loadCatalogPois(this.selectedCatalogCityId, { force: true });
         }
+        if (this.activeSection === 'gptTranslations') {
+          this.ensureGptTranslationCitySelection();
+          this.loadOpenAiTranslationStatus();
+        }
       },
       error: (error: { error?: { message?: string } }) => {
         this.loadingCatalogCities = false;
-        const message = error?.error?.message || 'Errore caricamento citta';
+        const message = error?.error?.message || 'Errore caricamento città';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -2169,13 +2499,13 @@ export class AdminDashboardComponent implements OnInit {
       next: (city) => {
         this.savingCatalogCity = false;
         this.selectedCatalogCityId = city.id;
-        this.snackBar.open('Citta creata', 'OK', { duration: 2400 });
+        this.snackBar.open('Città creata', 'OK', { duration: 2400 });
         this.closeCreateCatalogCityDialog();
         this.loadCatalogCities();
       },
       error: (error: { error?: { message?: string } }) => {
         this.savingCatalogCity = false;
-        const message = error?.error?.message || 'Errore salvataggio citta';
+        const message = error?.error?.message || 'Errore salvataggio città';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -2206,13 +2536,13 @@ export class AdminDashboardComponent implements OnInit {
     this.auth.updateCatalogCity(this.editingCatalogCityId, payload).subscribe({
       next: () => {
         this.savingCatalogCity = false;
-        this.snackBar.open('Citta aggiornata', 'OK', { duration: 2400 });
+        this.snackBar.open('Città aggiornata', 'OK', { duration: 2400 });
         this.closeCatalogCityEditDialog();
         this.loadCatalogCities();
       },
       error: (error: { error?: { message?: string } }) => {
         this.savingCatalogCity = false;
-        const message = error?.error?.message || 'Errore aggiornamento citta';
+        const message = error?.error?.message || 'Errore aggiornamento città';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -2224,7 +2554,7 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     const confirmed = window.confirm(
-      `Eliminare la citta "${city.name}"? Verranno eliminati anche i luoghi di interesse collegati.`
+      `Eliminare la città "${city.name}"? Verranno eliminati anche i luoghi di interesse collegati.`
     );
     if (!confirmed) {
       return;
@@ -2244,12 +2574,12 @@ export class AdminDashboardComponent implements OnInit {
           this.catalogPoisRequestToken += 1;
           this.loadingCatalogPois = false;
         }
-        this.snackBar.open('Citta eliminata', 'OK', { duration: 2400 });
+        this.snackBar.open('Città eliminata', 'OK', { duration: 2400 });
         this.loadCatalogCities();
       },
       error: (error: { error?: { message?: string } }) => {
         this.deletingCatalogCityId = null;
-        const message = error?.error?.message || 'Errore eliminazione citta';
+        const message = error?.error?.message || 'Errore eliminazione città';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -2261,6 +2591,7 @@ export class AdminDashboardComponent implements OnInit {
     this.catalogPoiForm.reset({
       cityId: this.selectedCatalogCityId || '',
       name: '',
+      address: '',
       lat: 0,
       lng: 0,
       category: this.poiCategoryOptions[0],
@@ -2284,6 +2615,7 @@ export class AdminDashboardComponent implements OnInit {
     this.catalogPoiEditForm.reset({
       cityId: poi.cityId,
       name: poi.name,
+      address: poi.address || '',
       lat: poi.lat,
       lng: poi.lng,
       category: poi.category,
@@ -2341,6 +2673,7 @@ export class AdminDashboardComponent implements OnInit {
     this.catalogPoiEditForm.reset({
       cityId: this.selectedCatalogCityId || '',
       name: '',
+      address: '',
       lat: 0,
       lng: 0,
       category: this.poiCategoryOptions[0],
@@ -2422,7 +2755,7 @@ export class AdminDashboardComponent implements OnInit {
     const fileDurationPromise = this.readAudioDurationFromFile(file);
     const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiForm.controls.cityId.value);
     if (!mediaTarget) {
-      this.snackBar.open('Seleziona prima una citta per caricare l audio', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('Seleziona prima una città per caricare l audio', 'Chiudi', { duration: 3200 });
       target.value = '';
       return;
     }
@@ -2456,7 +2789,7 @@ export class AdminDashboardComponent implements OnInit {
 
     const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiForm.controls.cityId.value);
     if (!mediaTarget) {
-      this.snackBar.open('Seleziona prima una citta per caricare l immagine', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('Seleziona prima una città per caricare l immagine', 'Chiudi', { duration: 3200 });
       target.value = '';
       return;
     }
@@ -2485,7 +2818,7 @@ export class AdminDashboardComponent implements OnInit {
 
     const cityName = this.catalogCityForm.controls.name.value.trim();
     if (!cityName) {
-      this.snackBar.open('Inserisci prima il nome citta', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('Inserisci prima il nome città', 'Chiudi', { duration: 3200 });
       target.value = '';
       return;
     }
@@ -2517,7 +2850,7 @@ export class AdminDashboardComponent implements OnInit {
       ? { cityId: this.editingCatalogCityId }
       : { cityName };
     if (!mediaTarget.cityId && !mediaTarget.cityName) {
-      this.snackBar.open('Nome citta non valido per upload immagine', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('Nome città non valido per upload immagine', 'Chiudi', { duration: 3200 });
       target.value = '';
       return;
     }
@@ -2546,7 +2879,7 @@ export class AdminDashboardComponent implements OnInit {
 
     const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiEditForm.controls.cityId.value);
     if (!mediaTarget) {
-      this.snackBar.open('Seleziona prima una citta per caricare l immagine', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('Seleziona prima una città per caricare l immagine', 'Chiudi', { duration: 3200 });
       target.value = '';
       return;
     }
@@ -2576,7 +2909,7 @@ export class AdminDashboardComponent implements OnInit {
     const fileDurationPromise = this.readAudioDurationFromFile(file);
     const mediaTarget = this.resolvePoiMediaTarget(this.catalogPoiEditForm.controls.cityId.value);
     if (!mediaTarget) {
-      this.snackBar.open('Seleziona prima una citta per caricare l audio', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('Seleziona prima una città per caricare l audio', 'Chiudi', { duration: 3200 });
       target.value = '';
       return;
     }
@@ -2612,7 +2945,7 @@ export class AdminDashboardComponent implements OnInit {
     const fileDurationPromise = this.readAudioDurationFromFile(file);
     const mediaTarget = this.resolvePoiMediaTarget(form.controls.cityId.value);
     if (!mediaTarget) {
-      this.snackBar.open('Seleziona prima una citta per caricare l audio', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('Seleziona prima una città per caricare l audio', 'Chiudi', { duration: 3200 });
       input.value = '';
       return;
     }
@@ -2866,6 +3199,10 @@ export class AdminDashboardComponent implements OnInit {
       this.payments = [];
       this.partnerRequests = [];
       this.payPalSettings = null;
+      this.openAiTranslationSettings = null;
+      this.openAiTranslationStatusRows = [];
+      this.selectedGptTranslationPoiId = '';
+      this.resetGptTranslationProgress();
       this.paymentsSummary = {
         totalPayments: 0,
         totalCollected: 0,
@@ -2878,6 +3215,7 @@ export class AdminDashboardComponent implements OnInit {
       this.selectedCatalogCityId = '';
       this.lastLoadedCatalogPoisCityId = '';
       this.catalogPoisRequestToken = 0;
+      this.openAiTranslationStatusRequestToken = 0;
       this.catalogTab = 'cities';
       this.editingCatalogCityId = null;
       this.editingCatalogPoiId = null;
@@ -2921,12 +3259,16 @@ export class AdminDashboardComponent implements OnInit {
       this.loadingPayments = false;
       this.loadingPartnerRequests = false;
       this.loadingPayPalSettings = false;
+      this.loadingOpenAiTranslationSettings = false;
+      this.loadingOpenAiTranslationStatus = false;
       this.creatingStructure = false;
       this.updatingStructure = false;
       this.loadingDiscountCodes = false;
       this.creatingDiscountCode = false;
       this.updatingDiscountCode = false;
       this.savingPayPalSettings = false;
+      this.savingOpenAiTranslationSettings = false;
+      this.bulkTranslatingPois = false;
       this.testingPayPalSettings = false;
       this.loadingCatalogCities = false;
       this.loadingCatalogPois = false;
@@ -2952,6 +3294,7 @@ export class AdminDashboardComponent implements OnInit {
       this.resettingPasswordUserId = null;
       this.deletingUserId = null;
       this.impersonatingUserId = null;
+      this.translatingPoiId = null;
       this.activeSection = 'users';
       this.showInviteSection = false;
       this.showCreateUserSection = false;
@@ -3033,6 +3376,16 @@ export class AdminDashboardComponent implements OnInit {
         merchantEmail: '',
         brandName: 'Walk Around',
         webhookId: ''
+      });
+      this.openAiTranslationSettingsForm.reset({
+        apiKey: '',
+        model: 'gpt-4o-mini'
+      });
+      this.gptTranslationForm.reset({
+        cityId: '',
+        targetLanguage: 'en',
+        poiId: '',
+        overwrite: false
       });
       this.catalogCityEditForm.reset({
         name: '',
@@ -3326,7 +3679,7 @@ export class AdminDashboardComponent implements OnInit {
       return payment.targetName;
     }
     if (payment.type === 'bundle') {
-      return payment.cityName || payment.cityId || 'Citta';
+      return payment.cityName || payment.cityId || 'Città';
     }
     return payment.poiName || payment.poiId || 'Luogo';
   }
@@ -3348,7 +3701,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   discountCodeApplyToLabel(applyTo: DiscountCodeApplyTo): string {
-    return applyTo === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo';
+    return applyTo === 'bundle' ? 'Pacchetto città' : 'Luogo singolo';
   }
 
   discountCodeCitiesLabel(discountCode: DashboardDiscountCode): string {
@@ -3383,6 +3736,9 @@ export class AdminDashboardComponent implements OnInit {
     }
     if (this.activeSection === 'paypal') {
       this.loadPayPalSettings();
+    }
+    if (this.activeSection === 'gptTranslations') {
+      this.ensureGptTranslationsLoaded();
     }
     if (this.activeSection === 'catalog') {
       this.loadCatalogCities();
@@ -3435,6 +3791,7 @@ export class AdminDashboardComponent implements OnInit {
   private toCatalogPoiPayload(value: {
     cityId: string;
     name: string;
+    address: string;
     lat: number;
     lng: number;
     category: string;
@@ -3455,6 +3812,7 @@ export class AdminDashboardComponent implements OnInit {
     return {
       cityId: value.cityId,
       name: value.name.trim(),
+      address: value.address.trim(),
       lat: Number(value.lat),
       lng: Number(value.lng),
       category: value.category.trim(),
@@ -3479,24 +3837,18 @@ export class AdminDashboardComponent implements OnInit {
   private emptyCatalogPoiTranslationsFormValue(): CatalogPoiTranslationsFormValue {
     return {
       en: {
-        name: '',
         descriptionShort: '',
         descriptionLong: '',
-        audioLabel: '',
         audioUrl: ''
       },
       fr: {
-        name: '',
         descriptionShort: '',
         descriptionLong: '',
-        audioLabel: '',
         audioUrl: ''
       },
       es: {
-        name: '',
         descriptionShort: '',
         descriptionLong: '',
-        audioLabel: '',
         audioUrl: ''
       }
     };
@@ -3513,24 +3865,18 @@ export class AdminDashboardComponent implements OnInit {
   private catalogPoiTranslationsFormValue(translations: PoiTranslations | null | undefined): CatalogPoiTranslationsFormValue {
     return {
       en: {
-        name: String(translations?.en?.name || ''),
         descriptionShort: String(translations?.en?.descriptionShort || ''),
         descriptionLong: String(translations?.en?.descriptionLong || ''),
-        audioLabel: String(translations?.en?.audioLabel || ''),
         audioUrl: String(translations?.en?.audioUrl || '')
       },
       fr: {
-        name: String(translations?.fr?.name || ''),
         descriptionShort: String(translations?.fr?.descriptionShort || ''),
         descriptionLong: String(translations?.fr?.descriptionLong || ''),
-        audioLabel: String(translations?.fr?.audioLabel || ''),
         audioUrl: String(translations?.fr?.audioUrl || '')
       },
       es: {
-        name: String(translations?.es?.name || ''),
         descriptionShort: String(translations?.es?.descriptionShort || ''),
         descriptionLong: String(translations?.es?.descriptionLong || ''),
-        audioLabel: String(translations?.es?.audioLabel || ''),
         audioUrl: String(translations?.es?.audioUrl || '')
       }
     };
@@ -3553,18 +3899,14 @@ export class AdminDashboardComponent implements OnInit {
     const translations: PoiTranslations = {};
 
     this.contentLanguages.forEach(({ code }) => {
-      const name = this.normalizeTranslationValue(value?.[code]?.name);
       const descriptionShort = this.normalizeTranslationValue(value?.[code]?.descriptionShort);
       const descriptionLong = this.normalizeTranslationValue(value?.[code]?.descriptionLong);
-      const audioLabel = this.normalizeTranslationValue(value?.[code]?.audioLabel);
       const audioUrl = this.normalizeTranslationValue(value?.[code]?.audioUrl);
 
-      if (name || descriptionShort || descriptionLong || audioLabel || audioUrl) {
+      if (descriptionShort || descriptionLong || audioUrl) {
         translations[code] = {
-          ...(name ? { name } : {}),
           ...(descriptionShort ? { descriptionShort } : {}),
           ...(descriptionLong ? { descriptionLong } : {}),
-          ...(audioLabel ? { audioLabel } : {}),
           ...(audioUrl ? { audioUrl } : {})
         };
       }
@@ -3576,6 +3918,82 @@ export class AdminDashboardComponent implements OnInit {
   private normalizeTranslationValue(value: string | null | undefined): string | undefined {
     const normalized = String(value || '').trim();
     return normalized || undefined;
+  }
+
+  private ensureGptTranslationCitySelection(): string {
+    if (!this.catalogCities.length) {
+      this.gptTranslationForm.controls.cityId.setValue('', { emitEvent: false });
+      return '';
+    }
+
+    const currentCityId = this.gptTranslationForm.controls.cityId.value;
+    const currentIsValid = Boolean(currentCityId && this.catalogCities.some((city) => city.id === currentCityId));
+    const selectedCatalogCityIsValid = Boolean(
+      this.selectedCatalogCityId && this.catalogCities.some((city) => city.id === this.selectedCatalogCityId)
+    );
+    const nextCityId = currentIsValid
+      ? currentCityId
+      : selectedCatalogCityIsValid
+      ? this.selectedCatalogCityId
+      : this.catalogCities[0]?.id || '';
+
+    if (nextCityId !== currentCityId) {
+      this.gptTranslationForm.controls.cityId.setValue(nextCityId, { emitEvent: false });
+    }
+    if (nextCityId && this.selectedCatalogCityId !== nextCityId) {
+      this.selectedCatalogCityId = nextCityId;
+    }
+
+    return nextCityId;
+  }
+
+  private ensureSelectedGptTranslationPoi(): void {
+    const selectedPoiId = this.gptTranslationForm.controls.poiId.value;
+    const selectedStillExists = Boolean(selectedPoiId && this.openAiTranslationStatusRows.some((row) => row.poiId === selectedPoiId));
+    if (selectedStillExists) {
+      this.selectedGptTranslationPoiId = selectedPoiId;
+      return;
+    }
+
+    const firstMissing = this.openAiTranslationStatusRows.find((row) => !row.isComplete);
+    const nextPoiId = firstMissing?.poiId || this.openAiTranslationStatusRows[0]?.poiId || '';
+    this.selectedGptTranslationPoiId = nextPoiId;
+    this.gptTranslationForm.controls.poiId.setValue(nextPoiId, { emitEvent: false });
+  }
+
+  private resetGptTranslationProgress(total = 0): void {
+    this.gptTranslationProgressTotal = total;
+    this.gptTranslationProgressDone = 0;
+    this.gptTranslationUsage = {
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0
+    };
+    this.gptTranslationLog = [];
+  }
+
+  private applyOpenAiTranslationResponse(response: OpenAiTranslatePoiResponse): void {
+    const index = this.catalogPois.findIndex((poi) => poi.id === response.poi.id);
+    if (index < 0) {
+      return;
+    }
+
+    const nextPois = [...this.catalogPois];
+    nextPois[index] = response.poi;
+    this.catalogPois = nextPois;
+  }
+
+  private addGptTranslationUsage(usage: OpenAiTranslationUsage | null | undefined): void {
+    this.gptTranslationUsage = {
+      inputTokens: this.gptTranslationUsage.inputTokens + Number(usage?.inputTokens || 0),
+      outputTokens: this.gptTranslationUsage.outputTokens + Number(usage?.outputTokens || 0),
+      totalTokens: this.gptTranslationUsage.totalTokens + Number(usage?.totalTokens || 0)
+    };
+  }
+
+  private dashboardErrorMessage(error: unknown, fallback: string): string {
+    const candidate = error as { error?: { message?: string }; message?: string };
+    return candidate?.error?.message || candidate?.message || fallback;
   }
 
   private sortPartnerRequests(rows: DashboardPartnerRequest[]): DashboardPartnerRequest[] {

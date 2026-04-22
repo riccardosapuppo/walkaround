@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CityTranslations, PoiTranslations } from '../models/localized-content.model';
+import { CityTranslations, PoiTranslationFields, PoiTranslations } from '../models/localized-content.model';
 
 const ADMIN_SESSION_KEY = 'walkaround.dashboard.session';
 
@@ -169,6 +169,7 @@ export interface DashboardCatalogPoi {
   cityId: string;
   cityName: string | null;
   name: string;
+  address: string;
   lat: number;
   lng: number;
   category: string;
@@ -193,6 +194,7 @@ export interface CatalogCityInput {
 export interface CatalogPoiInput {
   cityId: string;
   name: string;
+  address: string;
   lat: number;
   lng: number;
   category: string;
@@ -203,6 +205,52 @@ export interface CatalogPoiInput {
   priceSingle: number;
   durationSec: number;
   translations?: PoiTranslations;
+}
+
+export type OpenAiTranslationTargetLanguage = 'en' | 'fr' | 'es';
+
+export interface OpenAiTranslationSettings {
+  hasApiKey: boolean;
+  maskedApiKey: string | null;
+  model: string;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface OpenAiTranslationSettingsInput {
+  apiKey?: string;
+  model: string;
+  clearApiKey?: boolean;
+}
+
+export interface OpenAiTranslationUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+}
+
+export interface OpenAiPoiTranslationStatus {
+  poiId: string;
+  cityId: string;
+  cityName: string | null;
+  name: string;
+  targetLanguage: OpenAiTranslationTargetLanguage;
+  isComplete: boolean;
+  missingFields: string[];
+  translation: PoiTranslationFields;
+}
+
+export interface OpenAiTranslatePoiInput {
+  cityId?: string;
+  targetLanguage: OpenAiTranslationTargetLanguage;
+  overwrite?: boolean;
+}
+
+export interface OpenAiTranslatePoiResponse {
+  poi: DashboardCatalogPoi;
+  translation: PoiTranslationFields;
+  usage: OpenAiTranslationUsage;
+  skipped?: boolean;
 }
 
 export interface CatalogMediaTarget {
@@ -619,6 +667,62 @@ export class AdminAuthService {
 
     return this.http.delete<{ deleted: boolean; poiId: string; cityId: string }>(
       `${environment.apiBaseUrl}/admin/catalog/pois/${encodeURIComponent(poiId)}`,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  getOpenAiTranslationSettings(): Observable<OpenAiTranslationSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<OpenAiTranslationSettings>(`${environment.apiBaseUrl}/admin/openai-translations/settings`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  saveOpenAiTranslationSettings(payload: OpenAiTranslationSettingsInput): Observable<OpenAiTranslationSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.put<OpenAiTranslationSettings>(
+      `${environment.apiBaseUrl}/admin/openai-translations/settings`,
+      payload,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  listOpenAiPoiTranslationStatus(
+    cityId: string,
+    targetLanguage: OpenAiTranslationTargetLanguage
+  ): Observable<OpenAiPoiTranslationStatus[]> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    const query = `?targetLanguage=${encodeURIComponent(targetLanguage)}`;
+    return this.http.get<OpenAiPoiTranslationStatus[]>(
+      `${environment.apiBaseUrl}/admin/openai-translations/cities/${encodeURIComponent(cityId)}/status${query}`,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  translateCatalogPoiWithOpenAi(
+    poiId: string,
+    payload: OpenAiTranslatePoiInput
+  ): Observable<OpenAiTranslatePoiResponse> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<OpenAiTranslatePoiResponse>(
+      `${environment.apiBaseUrl}/admin/openai-translations/pois/${encodeURIComponent(poiId)}/translate`,
+      payload,
       { headers: this.authHeaders(token) }
     );
   }

@@ -114,6 +114,7 @@ function mapPoi(row) {
     id: row.id,
     cityId: row.city_id,
     name: sanitizeText(row.name),
+    address: sanitizeText(row.address),
     lat: Number(row.lat),
     lng: Number(row.lng),
     category: sanitizeText(row.category),
@@ -132,7 +133,7 @@ function sanitizeCityTranslations(value) {
 }
 
 function sanitizePoiTranslations(value) {
-  return sanitizeTranslations(value, ['name', 'descriptionShort', 'descriptionLong', 'audioLabel', 'audioUrl']);
+  return sanitizeTranslations(value, ['descriptionShort', 'descriptionLong', 'audioUrl']);
 }
 
 function sanitizeTranslations(value, allowedFields) {
@@ -622,7 +623,7 @@ async function buildPayPalCheckoutPreview(payload, client) {
       [payload.cityId]
     );
     if (!cityResult.rowCount) {
-      throw createHttpError(404, 'Citta non trovata.');
+      throw createHttpError(404, 'Città non trovata.');
     }
 
     const city = cityResult.rows[0];
@@ -671,7 +672,7 @@ async function buildPayPalCheckoutPreview(payload, client) {
           cityName: sanitizeText(city.name),
           poiId: null,
           poiName: null,
-          label: `Pacchetto citta - ${sanitizeText(city.name)}`,
+          label: `Pacchetto città - ${sanitizeText(city.name)}`,
           ...pricing,
           structureId: structureContext?.structureId || null,
           inviteCode: structureContext?.inviteCode || null
@@ -852,7 +853,7 @@ async function buildPayPalCheckoutPreview(payload, client) {
 
 function buildPayPalItemName(item) {
   if (item.purchaseType === 'bundle') {
-    return item.cityName ? `Pacchetto citta ${item.cityName}` : 'Pacchetto citta';
+    return item.cityName ? `Pacchetto città ${item.cityName}` : 'Pacchetto città';
   }
   return item.poiName || item.label || 'Luogo';
 }
@@ -870,7 +871,7 @@ function buildPayPalOrderBody(checkoutPreview, settings, localReference) {
 
   const description =
     checkoutPreview.checkoutContext === 'bundle'
-      ? `Sblocco citta ${checkoutPreview.cityName || ''}`.trim()
+      ? `Sblocco città ${checkoutPreview.cityName || ''}`.trim()
       : checkoutPreview.checkoutContext === 'single'
         ? `Sblocco luogo ${checkoutPreview.poiName || ''}`.trim()
         : `Carrello audio guide (${checkoutPreview.items.length})`;

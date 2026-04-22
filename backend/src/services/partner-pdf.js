@@ -217,7 +217,7 @@ export function buildPartnerPromotionPdf(data) {
   const stepsLines = [
     '1. Scarica l app Walk Around.',
     `2. Inserisci il codice ${discountCode} nella sezione dedicata.`,
-    '3. Sblocca il tour e ascolta le audioguide della citta.'
+    '3. Sblocca il tour e ascolta le audioguide della città.'
   ];
 
   const commands = [];

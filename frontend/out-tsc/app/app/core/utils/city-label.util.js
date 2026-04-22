@@ -7,7 +7,7 @@ const cityNameMap = {
 export function formatCityLabel(cityId, cities = [], language = 'it') {
     const rawCityId = String(cityId || '').trim();
     if (!rawCityId) {
-        return language === 'en' ? 'City' : language === 'fr' ? 'Ville' : language === 'es' ? 'Ciudad' : 'Citta';
+        return language === 'en' ? 'City' : language === 'fr' ? 'Ville' : language === 'es' ? 'Ciudad' : 'Città';
     }
     const normalizedCityId = rawCityId.toLowerCase();
     if (cityNameMap[normalizedCityId]) {

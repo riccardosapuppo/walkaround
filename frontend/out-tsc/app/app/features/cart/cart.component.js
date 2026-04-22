@@ -106,9 +106,9 @@ function CartComponent_div_16_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵadvance();
     i0.ɵɵproperty("ngIf", ctx_r2.quote);
 } }
-function CartComponent_div_17_div_8_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 32);
-    i0.ɵɵelement(1, "mat-spinner", 33);
+function CartComponent_div_17_div_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 31);
+    i0.ɵɵelement(1, "mat-spinner", 32);
     i0.ɵɵelementStart(2, "span");
     i0.ɵɵtext(3);
     i0.ɵɵpipe(4, "t");
@@ -117,8 +117,8 @@ function CartComponent_div_17_div_8_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵadvance(3);
     i0.ɵɵtextInterpolate(i0.ɵɵpipeBind1(4, 1, "cart.loadingQuote"));
 } }
-function CartComponent_div_17_p_9_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "p", 34);
+function CartComponent_div_17_p_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p", 33);
     i0.ɵɵtext(1);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
@@ -126,26 +126,20 @@ function CartComponent_div_17_p_9_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵadvance();
     i0.ɵɵtextInterpolate(ctx_r2.paymentError);
 } }
-function CartComponent_div_17_div_10_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelement(0, "div", 35, 1);
+function CartComponent_div_17_div_7_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelement(0, "div", 34, 1);
 } }
 function CartComponent_div_17_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "div", 26)(1, "p", 27)(2, "strong");
     i0.ɵɵtext(3);
     i0.ɵɵpipe(4, "t");
     i0.ɵɵelementEnd()();
-    i0.ɵɵelementStart(5, "p", 28);
-    i0.ɵɵtext(6);
-    i0.ɵɵpipe(7, "t");
-    i0.ɵɵelementEnd();
-    i0.ɵɵtemplate(8, CartComponent_div_17_div_8_Template, 5, 3, "div", 29)(9, CartComponent_div_17_p_9_Template, 2, 1, "p", 30)(10, CartComponent_div_17_div_10_Template, 2, 0, "div", 31);
+    i0.ɵɵtemplate(5, CartComponent_div_17_div_5_Template, 5, 3, "div", 28)(6, CartComponent_div_17_p_6_Template, 2, 1, "p", 29)(7, CartComponent_div_17_div_7_Template, 2, 0, "div", 30);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     const ctx_r2 = i0.ɵɵnextContext();
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(i0.ɵɵpipeBind1(4, 5, "cart.paymentMethod"));
-    i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(i0.ɵɵpipeBind1(7, 7, "cart.paymentNote"));
+    i0.ɵɵtextInterpolate(i0.ɵɵpipeBind1(4, 4, "cart.paymentMethod"));
     i0.ɵɵadvance(2);
     i0.ɵɵproperty("ngIf", ctx_r2.loadingQuote);
     i0.ɵɵadvance();
@@ -155,7 +149,7 @@ function CartComponent_div_17_Template(rf, ctx) { if (rf & 1) {
 } }
 function CartComponent_div_18_Template(rf, ctx) { if (rf & 1) {
     const _r4 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 36)(1, "button", 37);
+    i0.ɵɵelementStart(0, "div", 35)(1, "button", 36);
     i0.ɵɵlistener("click", function CartComponent_div_18_Template_button_click_1_listener() { i0.ɵɵrestoreView(_r4); const ctx_r2 = i0.ɵɵnextContext(); return i0.ɵɵresetView(ctx_r2.clearCart()); });
     i0.ɵɵtext(2);
     i0.ɵɵpipe(3, "t");
@@ -360,7 +354,7 @@ export class CartComponent {
         } if (rf & 2) {
             let _t;
             i0.ɵɵqueryRefresh(_t = i0.ɵɵloadQuery()) && (ctx.paypalButtonsContainer = _t.first);
-        } }, standalone: false, decls: 19, vars: 14, consts: [["emptyCart", ""], ["paypalButtonsContainer", ""], [1, "page-shell", "cart-page"], [1, "brand-hero"], [1, "brand-hero-stage"], ["src", "/assets/logo.png", "loading", "eager", "decoding", "sync", "fetchpriority", "high", 1, "brand-hero-logo"], [1, "brand-hero-footer"], [1, "brand-hero-slogan"], [1, "card", "section"], ["class", "cart-list", 4, "ngIf", "ngIfElse"], ["class", "cart-total-block", 4, "ngIf"], ["class", "paypal-panel", 4, "ngIf"], ["class", "cart-actions", 4, "ngIf"], [1, "cart-list"], ["class", "cart-item", 4, "ngFor", "ngForOf"], [1, "cart-item"], [1, "cart-item-title"], [1, "cart-item-sub"], ["mat-icon-button", "", "color", "warn", 3, "click"], ["fontSet", "material-icons-round"], [1, "cart-total-block"], [1, "cart-total"], ["class", "cart-total discount-line", 4, "ngIf"], ["class", "cart-total final-line", 4, "ngIf"], [1, "cart-total", "discount-line"], [1, "cart-total", "final-line"], [1, "paypal-panel"], [1, "paypal-title"], [1, "payment-note"], ["class", "paypal-loading", 4, "ngIf"], ["class", "payment-error", 4, "ngIf"], ["class", "paypal-buttons", 4, "ngIf"], [1, "paypal-loading"], ["diameter", "24"], [1, "payment-error"], [1, "paypal-buttons"], [1, "cart-actions"], ["mat-stroked-button", "", "color", "warn", 3, "click", "disabled"]], template: function CartComponent_Template(rf, ctx) { if (rf & 1) {
+        } }, standalone: false, decls: 19, vars: 14, consts: [["emptyCart", ""], ["paypalButtonsContainer", ""], [1, "page-shell", "cart-page"], [1, "brand-hero"], [1, "brand-hero-stage"], ["src", "/assets/logo.png", "loading", "eager", "decoding", "sync", "fetchpriority", "high", 1, "brand-hero-logo"], [1, "brand-hero-footer"], [1, "brand-hero-slogan"], [1, "card", "section"], ["class", "cart-list", 4, "ngIf", "ngIfElse"], ["class", "cart-total-block", 4, "ngIf"], ["class", "paypal-panel", 4, "ngIf"], ["class", "cart-actions", 4, "ngIf"], [1, "cart-list"], ["class", "cart-item", 4, "ngFor", "ngForOf"], [1, "cart-item"], [1, "cart-item-title"], [1, "cart-item-sub"], ["mat-icon-button", "", "color", "warn", 3, "click"], ["fontSet", "material-icons-round"], [1, "cart-total-block"], [1, "cart-total"], ["class", "cart-total discount-line", 4, "ngIf"], ["class", "cart-total final-line", 4, "ngIf"], [1, "cart-total", "discount-line"], [1, "cart-total", "final-line"], [1, "paypal-panel"], [1, "paypal-title"], ["class", "paypal-loading", 4, "ngIf"], ["class", "payment-error", 4, "ngIf"], ["class", "paypal-buttons", 4, "ngIf"], [1, "paypal-loading"], ["diameter", "24"], [1, "payment-error"], [1, "paypal-buttons"], [1, "cart-actions"], ["mat-stroked-button", "", "color", "warn", 3, "click", "disabled"]], template: function CartComponent_Template(rf, ctx) { if (rf & 1) {
             i0.ɵɵelementStart(0, "section", 2)(1, "header", 3)(2, "div", 4);
             i0.ɵɵelement(3, "img", 5);
             i0.ɵɵpipe(4, "t");
@@ -372,7 +366,7 @@ export class CartComponent {
             i0.ɵɵtext(11);
             i0.ɵɵpipe(12, "t");
             i0.ɵɵelementEnd();
-            i0.ɵɵtemplate(13, CartComponent_div_13_Template, 2, 1, "div", 9)(14, CartComponent_ng_template_14_Template, 3, 3, "ng-template", null, 0, i0.ɵɵtemplateRefExtractor)(16, CartComponent_div_16_Template, 8, 6, "div", 10)(17, CartComponent_div_17_Template, 11, 9, "div", 11)(18, CartComponent_div_18_Template, 4, 4, "div", 12);
+            i0.ɵɵtemplate(13, CartComponent_div_13_Template, 2, 1, "div", 9)(14, CartComponent_ng_template_14_Template, 3, 3, "ng-template", null, 0, i0.ɵɵtemplateRefExtractor)(16, CartComponent_div_16_Template, 8, 6, "div", 10)(17, CartComponent_div_17_Template, 8, 6, "div", 11)(18, CartComponent_div_18_Template, 4, 4, "div", 12);
             i0.ɵɵelementEnd()();
         } if (rf & 2) {
             const emptyCart_r5 = i0.ɵɵreference(15);
@@ -394,9 +388,9 @@ export class CartComponent {
 }
 (() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassMetadata(CartComponent, [{
         type: Component,
-        args: [{ standalone: false, selector: 'app-cart', template: "<section class=\"page-shell cart-page\">\n  <header class=\"brand-hero\">\n    <div class=\"brand-hero-stage\">\n      <img\n        class=\"brand-hero-logo\"\n        src=\"/assets/logo.png\"\n        [attr.alt]=\"'common.appName' | t\"\n        loading=\"eager\"\n        decoding=\"sync\"\n        fetchpriority=\"high\"\n      />\n      <div class=\"brand-hero-footer\">\n        <p class=\"brand-hero-slogan\">{{ 'common.brandTagline' | t }}</p>\n      </div>\n    </div>\n  </header>\n\n  <mat-card class=\"card section\">\n    <h3>{{ 'cart.placesInCart' | t }}</h3>\n\n    <div class=\"cart-list\" *ngIf=\"cartItems.length; else emptyCart\">\n      <div class=\"cart-item\" *ngFor=\"let item of cartItems\">\n        <div>\n          <p class=\"cart-item-title\">{{ itemLabel(item) }}</p>\n          <p class=\"cart-item-sub\">{{ itemCityName(item) }} - {{ itemAmountLabel(item) }}</p>\n        </div>\n        <button mat-icon-button color=\"warn\" (click)=\"removeCartItem(item.key)\" [attr.aria-label]=\"'cart.removeAria' | t\">\n          <mat-icon fontSet=\"material-icons-round\">delete</mat-icon>\n        </button>\n      </div>\n    </div>\n    <ng-template #emptyCart>\n      <p>{{ 'cart.empty' | t }}</p>\n    </ng-template>\n\n    <div class=\"cart-total-block\" *ngIf=\"cartItems.length\">\n      <p class=\"cart-total\"><strong>{{ 'cart.total' | t }}:</strong> {{ cartTotalLabel() }}</p>\n      <p class=\"cart-total discount-line\" *ngIf=\"quote && (quote.discountAmount || 0) > 0\">\n        <strong>{{ 'cart.discount' | t }}:</strong> -{{ quotedDiscountLabel() }}\n      </p>\n      <p class=\"cart-total final-line\" *ngIf=\"quote\">\n        <strong>{{ 'cart.paypalTotal' | t }}:</strong> {{ quotedFinalLabel() }}\n      </p>\n    </div>\n\n    <div class=\"paypal-panel\" *ngIf=\"cartItems.length\">\n      <p class=\"paypal-title\"><strong>{{ 'cart.paymentMethod' | t }}</strong></p>\n      <p class=\"payment-note\">{{ 'cart.paymentNote' | t }}</p>\n\n      <div class=\"paypal-loading\" *ngIf=\"loadingQuote\">\n        <mat-spinner diameter=\"24\"></mat-spinner>\n        <span>{{ 'cart.loadingQuote' | t }}</span>\n      </div>\n\n      <p class=\"payment-error\" *ngIf=\"paymentError\">{{ paymentError }}</p>\n      <div #paypalButtonsContainer class=\"paypal-buttons\" *ngIf=\"!loadingQuote && !paymentError && quote\"></div>\n    </div>\n\n    <div class=\"cart-actions\" *ngIf=\"cartItems.length\">\n      <button mat-stroked-button color=\"warn\" (click)=\"clearCart()\" [disabled]=\"cartPaying || loadingQuote\">{{ 'cart.clear' | t }}</button>\n    </div>\n  </mat-card>\n</section>\n", styles: [".cart-page {\n  display: grid;\n  gap: 12px;\n  align-content: start;\n  align-items: start;\n}\n\n.section {\n  padding: 14px;\n  display: grid;\n  gap: 10px;\n  align-self: start;\n\n  h3 {\n    margin: 0;\n    font-size: 1.05rem;\n  }\n\n  p {\n    margin: 0;\n    color: #677790;\n  }\n}\n\n.cart-list {\n  display: grid;\n  gap: 8px;\n}\n\n.cart-item {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 10px;\n  border: 1px solid #d9e3f2;\n  background: #f8fbff;\n  border-radius: 10px;\n  padding: 8px 10px;\n}\n\n:host-context(body.app-user-theme) .cart-item {\n  border-color: rgba(182, 164, 129, 0.18);\n  background: linear-gradient(180deg, rgba(246, 250, 254, 0.94) 0%, rgba(250, 246, 239, 0.92) 100%);\n}\n\n.cart-item-title {\n  margin: 0;\n  font-weight: 600;\n  color: #213a58;\n}\n\n.cart-item-sub {\n  margin: 2px 0 0;\n  color: #6b7d95;\n  font-size: 0.84rem;\n}\n\n.cart-total {\n  color: #1f3753 !important;\n}\n\n.cart-total-block {\n  display: grid;\n  gap: 4px;\n}\n\n.discount-line {\n  color: #0f6b3f !important;\n}\n\n.final-line {\n  font-size: 0.96rem;\n}\n\n.paypal-panel {\n  display: grid;\n  gap: 10px;\n  padding: 12px;\n  border: 1px solid #d9e3f2;\n  background: #f8fbff;\n  border-radius: 12px;\n}\n\n:host-context(body.app-user-theme) .paypal-panel {\n  border-color: rgba(182, 164, 129, 0.2);\n  background: linear-gradient(180deg, rgba(247, 250, 253, 0.96) 0%, rgba(250, 246, 239, 0.94) 100%);\n}\n\n.paypal-title {\n  color: #1f3753 !important;\n}\n\n.payment-note {\n  color: #4b6583 !important;\n  font-size: 0.86rem;\n}\n\n.paypal-loading {\n  display: inline-flex;\n  align-items: center;\n  gap: 10px;\n  color: #16365a;\n  font-size: 0.88rem;\n  font-weight: 600;\n}\n\n.payment-error {\n  color: #c62828 !important;\n  font-size: 0.88rem;\n}\n\n.paypal-buttons {\n  min-height: 44px;\n}\n\n.cart-actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n"] }]
+        args: [{ standalone: false, selector: 'app-cart', template: "<section class=\"page-shell cart-page\">\n  <header class=\"brand-hero\">\n    <div class=\"brand-hero-stage\">\n      <img\n        class=\"brand-hero-logo\"\n        src=\"/assets/logo.png\"\n        [attr.alt]=\"'common.appName' | t\"\n        loading=\"eager\"\n        decoding=\"sync\"\n        fetchpriority=\"high\"\n      />\n      <div class=\"brand-hero-footer\">\n        <p class=\"brand-hero-slogan\">{{ 'common.brandTagline' | t }}</p>\n      </div>\n    </div>\n  </header>\n\n  <mat-card class=\"card section\">\n    <h3>{{ 'cart.placesInCart' | t }}</h3>\n\n    <div class=\"cart-list\" *ngIf=\"cartItems.length; else emptyCart\">\n      <div class=\"cart-item\" *ngFor=\"let item of cartItems\">\n        <div>\n          <p class=\"cart-item-title\">{{ itemLabel(item) }}</p>\n          <p class=\"cart-item-sub\">{{ itemCityName(item) }} - {{ itemAmountLabel(item) }}</p>\n        </div>\n        <button mat-icon-button color=\"warn\" (click)=\"removeCartItem(item.key)\" [attr.aria-label]=\"'cart.removeAria' | t\">\n          <mat-icon fontSet=\"material-icons-round\">delete</mat-icon>\n        </button>\n      </div>\n    </div>\n    <ng-template #emptyCart>\n      <p>{{ 'cart.empty' | t }}</p>\n    </ng-template>\n\n    <div class=\"cart-total-block\" *ngIf=\"cartItems.length\">\n      <p class=\"cart-total\"><strong>{{ 'cart.total' | t }}:</strong> {{ cartTotalLabel() }}</p>\n      <p class=\"cart-total discount-line\" *ngIf=\"quote && (quote.discountAmount || 0) > 0\">\n        <strong>{{ 'cart.discount' | t }}:</strong> -{{ quotedDiscountLabel() }}\n      </p>\n      <p class=\"cart-total final-line\" *ngIf=\"quote\">\n        <strong>{{ 'cart.paypalTotal' | t }}:</strong> {{ quotedFinalLabel() }}\n      </p>\n    </div>\n\n    <div class=\"paypal-panel\" *ngIf=\"cartItems.length\">\n      <p class=\"paypal-title\"><strong>{{ 'cart.paymentMethod' | t }}</strong></p>\n\n      <div class=\"paypal-loading\" *ngIf=\"loadingQuote\">\n        <mat-spinner diameter=\"24\"></mat-spinner>\n        <span>{{ 'cart.loadingQuote' | t }}</span>\n      </div>\n\n      <p class=\"payment-error\" *ngIf=\"paymentError\">{{ paymentError }}</p>\n      <div #paypalButtonsContainer class=\"paypal-buttons\" *ngIf=\"!loadingQuote && !paymentError && quote\"></div>\n    </div>\n\n    <div class=\"cart-actions\" *ngIf=\"cartItems.length\">\n      <button mat-stroked-button color=\"warn\" (click)=\"clearCart()\" [disabled]=\"cartPaying || loadingQuote\">{{ 'cart.clear' | t }}</button>\n    </div>\n  </mat-card>\n</section>\n", styles: [".cart-page {\n  display: grid;\n  gap: 12px;\n  align-content: start;\n  align-items: start;\n}\n\n.section {\n  padding: 14px;\n  display: grid;\n  gap: 10px;\n  align-self: start;\n\n  h3 {\n    margin: 0;\n    font-size: 1.05rem;\n  }\n\n  p {\n    margin: 0;\n    color: #677790;\n  }\n}\n\n.cart-list {\n  display: grid;\n  gap: 8px;\n}\n\n.cart-item {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 10px;\n  border: 1px solid #d9e3f2;\n  background: #f8fbff;\n  border-radius: 10px;\n  padding: 8px 10px;\n}\n\n:host-context(body.app-user-theme) .cart-item {\n  border-color: rgba(182, 164, 129, 0.18);\n  background: linear-gradient(180deg, rgba(246, 250, 254, 0.94) 0%, rgba(250, 246, 239, 0.92) 100%);\n}\n\n.cart-item-title {\n  margin: 0;\n  font-weight: 600;\n  color: #213a58;\n}\n\n.cart-item-sub {\n  margin: 2px 0 0;\n  color: #6b7d95;\n  font-size: 0.84rem;\n}\n\n.cart-total {\n  color: #1f3753 !important;\n}\n\n.cart-total-block {\n  display: grid;\n  gap: 4px;\n}\n\n.discount-line {\n  color: #0f6b3f !important;\n}\n\n.final-line {\n  font-size: 0.96rem;\n}\n\n.paypal-panel {\n  display: grid;\n  gap: 10px;\n  padding: 12px;\n  border: 1px solid #d9e3f2;\n  background: #f8fbff;\n  border-radius: 12px;\n}\n\n:host-context(body.app-user-theme) .paypal-panel {\n  border-color: rgba(182, 164, 129, 0.2);\n  background: linear-gradient(180deg, rgba(247, 250, 253, 0.96) 0%, rgba(250, 246, 239, 0.94) 100%);\n}\n\n.paypal-title {\n  color: #1f3753 !important;\n}\n\n.payment-note {\n  color: #4b6583 !important;\n  font-size: 0.86rem;\n}\n\n.paypal-loading {\n  display: inline-flex;\n  align-items: center;\n  gap: 10px;\n  color: #16365a;\n  font-size: 0.88rem;\n  font-weight: 600;\n}\n\n.payment-error {\n  color: #c62828 !important;\n  font-size: 0.88rem;\n}\n\n.paypal-buttons {\n  min-height: 44px;\n}\n\n.cart-actions {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 8px;\n}\n"] }]
     }], () => [{ type: i1.CartService }, { type: i2.PurchaseService }, { type: i3.PayPalCheckoutService }, { type: i4.AppStateService }, { type: i5.MatSnackBar }, { type: i6.PoiService }, { type: i7.I18nService }], { paypalButtonsContainer: [{
             type: ViewChild,
             args: ['paypalButtonsContainer']
         }] }); })();
-(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(CartComponent, { className: "CartComponent", filePath: "frontend/src/app/features/cart/cart.component.ts", lineNumber: 20 }); })();
+(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(CartComponent, { className: "CartComponent", filePath: "src/app/features/cart/cart.component.ts", lineNumber: 20 }); })();

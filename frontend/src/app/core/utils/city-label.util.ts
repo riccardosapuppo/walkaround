@@ -17,7 +17,7 @@ interface CityLike {
 export function formatCityLabel(cityId: string, cities: CityLike[] = [], language: AppLanguage = 'it'): string {
   const rawCityId = String(cityId || '').trim();
   if (!rawCityId) {
-    return language === 'en' ? 'City' : language === 'fr' ? 'Ville' : language === 'es' ? 'Ciudad' : 'Citta';
+    return language === 'en' ? 'City' : language === 'fr' ? 'Ville' : language === 'es' ? 'Ciudad' : 'Città';
   }
 
   const normalizedCityId = rawCityId.toLowerCase();

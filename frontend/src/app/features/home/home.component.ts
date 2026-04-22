@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { catchError, combineLatest, map, of, shareReplay, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
@@ -45,7 +45,7 @@ const citySummaryMaxLength = 160;
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   apiErrorMessage: string | null = null;
   loading = true;
   readonly cityUnlockPrice = 15;
@@ -56,9 +56,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   citySummaryExpanded = false;
 
   readonly vm$ = combineLatest([
-    this.appState.activeCityId$.pipe(
-      switchMap((cityId) =>
-        this.poiService.getPoisByCity(cityId).pipe(
+    combineLatest([this.appState.activeCityId$, this.appState.language$]).pipe(
+      switchMap(([cityId]) =>
+        this.poiService.getPoisByCity(cityId, true).pipe(
           tap(() => {
             this.apiErrorMessage = null;
           }),
@@ -109,10 +109,14 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private readonly geofenceShown = new Set<string>();
   private readonly expandedPoiDescriptions = new Set<string>();
+  private expandablePoiDescriptions = new Set<string>();
   private readonly destroy$ = new Subject<void>();
   private readonly shouldRestoreScroll: boolean;
   private restoredScroll = false;
   private lastActiveCityId: string | null = null;
+  private descriptionMeasurementTimer: ReturnType<typeof setTimeout> | null = null;
+
+  @ViewChildren('poiTeaser') private readonly poiTeaserElements?: QueryList<ElementRef<HTMLElement>>;
 
   constructor(
     private readonly appState: AppStateService,
@@ -169,7 +173,12 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.lastActiveCityId = cityId;
         this.activeCityId = cityId;
         this.associatedStructure = association;
+        this.schedulePoiDescriptionMeasurement();
       });
+
+    this.appState.language$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.schedulePoiDescriptionMeasurement();
+    });
 
     this.vm$.pipe(takeUntil(this.destroy$)).subscribe((vm) => {
       this.loading = false;
@@ -177,6 +186,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (vm.cityId === this.activeCityId) {
         this.citySwitching = false;
       }
+      this.schedulePoiDescriptionMeasurement();
 
       if (vm.nearestPoi && vm.nearestPoi.near && !this.geofenceShown.has(vm.nearestPoi.id) && this.hasPlayableAudio(vm.nearestPoi)) {
         this.geofenceShown.add(vm.nearestPoi.id);
@@ -210,9 +220,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngAfterViewInit(): void {
+    this.poiTeaserElements?.changes.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.schedulePoiDescriptionMeasurement();
+    });
+    this.schedulePoiDescriptionMeasurement();
+  }
+
   ngOnDestroy(): void {
+    if (this.descriptionMeasurementTimer) {
+      clearTimeout(this.descriptionMeasurementTimer);
+      this.descriptionMeasurementTimer = null;
+    }
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.schedulePoiDescriptionMeasurement();
   }
 
   onCityChanged(cityId: string): void {
@@ -340,11 +366,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   canExpandPoiDescription(poi: Poi): boolean {
-    return String(this.poiDescription(poi) || '').trim().length > 120;
+    return Boolean(poi?.id && this.expandablePoiDescriptions.has(poi.id));
   }
 
   poiAddress(poi: Poi): string {
-    return `${this.cityName(poi.cityId)} - ${this.i18n.t('common.coordinates')} ${poi.lat.toFixed(4)}, ${poi.lng.toFixed(4)}`;
+    return String(poi.address || '').trim() || `${this.poiName(poi)}, ${this.cityName(poi.cityId)}`;
   }
 
   poiName(poi: Poi | null | undefined): string {
@@ -408,6 +434,51 @@ export class HomeComponent implements OnInit, OnDestroy {
       duration,
       verticalPosition: 'top'
     });
+  }
+
+  private schedulePoiDescriptionMeasurement(): void {
+    if (this.descriptionMeasurementTimer) {
+      clearTimeout(this.descriptionMeasurementTimer);
+    }
+
+    this.descriptionMeasurementTimer = setTimeout(() => {
+      this.descriptionMeasurementTimer = null;
+      this.measureExpandablePoiDescriptions();
+    }, 0);
+  }
+
+  private measureExpandablePoiDescriptions(): void {
+    const elements = this.poiTeaserElements?.toArray() || [];
+    const nextExpandable = new Set<string>();
+
+    elements.forEach((elementRef) => {
+      const element = elementRef.nativeElement;
+      const poiId = String(element.dataset['poiId'] || '').trim();
+      if (!poiId) {
+        return;
+      }
+
+      const wasExpanded = element.classList.contains('expanded');
+      if (wasExpanded) {
+        element.classList.remove('expanded');
+      }
+
+      const isOverflowing = element.scrollHeight > element.clientHeight + 1;
+      if (isOverflowing) {
+        nextExpandable.add(poiId);
+      }
+
+      if (wasExpanded) {
+        element.classList.add('expanded');
+      }
+    });
+
+    this.expandedPoiDescriptions.forEach((poiId) => {
+      if (!nextExpandable.has(poiId)) {
+        this.expandedPoiDescriptions.delete(poiId);
+      }
+    });
+    this.expandablePoiDescriptions = nextExpandable;
   }
 
   private saveScrollPosition(): void {

@@ -131,7 +131,7 @@ export class MyAudioComponent implements OnInit, OnDestroy {
   }
 
   poiAddress(poi: Poi): string {
-    return `${formatCityLabel(poi.cityId, [], this.i18n.language)} - ${this.i18n.t('common.coordinates')} ${poi.lat.toFixed(4)}, ${poi.lng.toFixed(4)}`;
+    return String(poi.address || '').trim() || `${this.poiName(poi)}, ${formatCityLabel(poi.cityId, [], this.i18n.language)}`;
   }
 
   distanceLabel(distanceMeters: number | null): string {

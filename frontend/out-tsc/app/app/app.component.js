@@ -60,4 +60,4 @@ export class AppComponent {
         type: Component,
         args: [{ standalone: false, selector: 'app-root', template: "<router-outlet></router-outlet>\n<app-bottom-nav *ngIf=\"showBottomNav$ | async\"></app-bottom-nav>\r\n", styles: [":host {\n  display: block;\n  min-height: 100vh;\n}\r\n"] }]
     }], () => [{ type: i1.Router }, { type: i2.AppStateService }], null); })();
-(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(AppComponent, { className: "AppComponent", filePath: "frontend/src/app/app.component.ts", lineNumber: 12 }); })();
+(() => { (typeof ngDevMode === "undefined" || ngDevMode) && i0.ɵsetClassDebugInfo(AppComponent, { className: "AppComponent", filePath: "src/app/app.component.ts", lineNumber: 12 }); })();
