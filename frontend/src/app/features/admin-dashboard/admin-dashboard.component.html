@@ -1113,6 +1113,9 @@
               <button
                 mat-flat-button
                 color="primary"
+                type="button"
+                (click)="translateMissingGptPoisForCity()"
+                [disabled]="!canTranslateMissingGptPois"
               >
                 {{ bulkTranslatingPois ? 'Traduco...' : 'Traduci i luoghi mancanti della città' }}
               </button>
