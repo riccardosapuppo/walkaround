@@ -15,17 +15,173 @@
     </div>
   </header>
 
-  <mat-card class="card section-loading-card" *ngIf="loading">
-    <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
-    <p>{{ 'profile.loading' | t }}</p>
-  </mat-card>
+  <ng-container>
+    <mat-card class="card section account-card" *ngIf="appSessionChecked && !isAppLoggedIn">
+      <div class="account-auth-head">
+        <h3>{{ 'auth.accountTitle' | t }}</h3>
+        <p>{{ 'auth.accountSubtitle' | t }}</p>
+      </div>
 
-  <ng-container *ngIf="!loading">
+      <div class="auth-tabs" role="tablist" [attr.aria-label]="'auth.accountTitle' | t">
+        <button mat-stroked-button type="button" [color]="authMode === 'login' ? 'primary' : undefined" (click)="setAuthMode('login')">
+          {{ 'auth.loginTab' | t }}
+        </button>
+        <button mat-stroked-button type="button" [color]="authMode === 'register' ? 'primary' : undefined" (click)="setAuthMode('register')">
+          {{ 'auth.registerTab' | t }}
+        </button>
+      </div>
+
+      <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="loginAppUser()" *ngIf="authMode === 'login'">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'auth.email' | t }}</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'auth.password' | t }}</mat-label>
+          <input
+            matInput
+            [type]="showLoginPassword ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="toggleLoginPasswordVisibility()"
+            [attr.aria-label]="showLoginPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+          >
+            <mat-icon fontSet="material-icons-round">{{ showLoginPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit" [disabled]="authSubmitting">
+          {{ authSubmitting ? ('auth.loggingIn' | t) : ('auth.loginAction' | t) }}
+        </button>
+      </form>
+
+      <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="registerAppUser()" *ngIf="authMode === 'register'">
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'auth.firstName' | t }}</mat-label>
+          <input matInput type="text" formControlName="firstName" autocomplete="given-name" />
+          <mat-error *ngIf="registerForm.controls.firstName.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'auth.lastName' | t }}</mat-label>
+          <input matInput type="text" formControlName="lastName" autocomplete="family-name" />
+          <mat-error *ngIf="registerForm.controls.lastName.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'auth.email' | t }}</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          <mat-error *ngIf="registerForm.controls.email.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
+          <mat-error *ngIf="registerForm.controls.email.hasError('email')">{{ 'auth.invalidEmail' | t }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'auth.password' | t }}</mat-label>
+          <input
+            matInput
+            [type]="showRegisterPassword ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="new-password"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="toggleRegisterPasswordVisibility()"
+            [attr.aria-label]="showRegisterPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+          >
+            <mat-icon fontSet="material-icons-round">{{ showRegisterPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-hint>{{ 'auth.passwordRequirements' | t }}</mat-hint>
+          <mat-error *ngIf="registerForm.controls.password.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
+          <mat-error *ngIf="registerForm.controls.password.hasError('minlength')">{{ 'auth.passwordMinLength' | t }}</mat-error>
+          <mat-error *ngIf="registerForm.controls.password.hasError('maxlength')">{{ 'auth.passwordMaxLength' | t }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'completeRegistration.confirmPassword' | t }}</mat-label>
+          <input
+            matInput
+            [type]="showRegisterConfirmPassword ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="toggleRegisterConfirmPasswordVisibility()"
+            [attr.aria-label]="showRegisterConfirmPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+          >
+            <mat-icon fontSet="material-icons-round">{{ showRegisterConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="registerForm.controls.confirmPassword.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit" [disabled]="authSubmitting">
+          {{ authSubmitting ? ('auth.registering' | t) : ('auth.registerAction' | t) }}
+        </button>
+      </form>
+
+      <form class="auth-form reset-form" [formGroup]="resetForm" (ngSubmit)="requestPasswordReset()">
+        <button mat-button color="primary" type="button" (click)="resetRequested = false">
+          {{ 'auth.forgotPassword' | t }}
+        </button>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'auth.resetEmail' | t }}</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+        </mat-form-field>
+        <button mat-stroked-button color="primary" type="submit" [disabled]="resetSubmitting">
+          {{ resetSubmitting ? ('auth.sendingReset' | t) : ('auth.sendResetLink' | t) }}
+        </button>
+        <small *ngIf="resetRequested">{{ 'auth.resetSentHint' | t }}</small>
+      </form>
+    </mat-card>
+
+    <mat-card class="card section account-card" *ngIf="isAppLoggedIn">
+      <div class="account-main">
+        <div class="account-avatar" aria-hidden="true">{{ appInitials }}</div>
+        <div class="account-copy">
+          <span>{{ 'auth.connectedAccount' | t }}</span>
+          <strong>{{ appDisplayName }}</strong>
+          <small>{{ appEmail }}</small>
+        </div>
+      </div>
+
+      <div class="account-meta" *ngIf="isDashboardLoggedIn">
+        <span>
+          <strong>{{ 'profile.accountRole' | t }}:</strong>
+          {{ accountRoleLabel }}
+        </span>
+        <span *ngIf="accountStructureName">
+          <strong>{{ 'profile.accountStructure' | t }}:</strong>
+          {{ accountStructureName }}
+        </span>
+        <span *ngIf="isImpersonating">
+          <strong>{{ 'profile.accountImpersonating' | t }}:</strong>
+          {{ impersonatedByEmail }}
+        </span>
+      </div>
+
+      <div class="account-actions">
+        <button mat-stroked-button color="warn" type="button" [disabled]="loggingOutApp" (click)="openAppLogoutDialog()">
+          {{ loggingOutApp ? ('profile.loggingOut' | t) : ('profile.logout' | t) }}
+        </button>
+      </div>
+    </mat-card>
+
     <mat-card class="card section">
       <h3>{{ 'profile.activeCity' | t }}</h3>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ 'profile.city' | t }}</mat-label>
-        <mat-select [value]="activeCityId" (selectionChange)="setCity($event.value)">
+        <mat-select [value]="activeCityId" (selectionChange)="setCity($event.value)" [disabled]="loadingCities || !cities.length">
+          <mat-option *ngIf="loadingCities" disabled>{{ 'profile.loading' | t }}</mat-option>
           <mat-option *ngFor="let city of cities" [value]="city.id">{{ cityName(city.id) }}</mat-option>
         </mat-select>
       </mat-form-field>
@@ -88,21 +244,46 @@
     <mat-card class="card section">
       <h3>{{ 'profile.unlockedCities' | t }}</h3>
       <div class="chips">
-        <span class="status-chip unlocked" *ngFor="let cityId of unlockedCityIds">{{ cityName(cityId) }}</span>
-        <span class="status-chip locked" *ngIf="!unlockedCityIds.length">{{ 'profile.noUnlockedCities' | t }}</span>
+        <span class="status-chip unlocked" *ngFor="let cityId of displayedUnlockedCityIds">{{ cityName(cityId) }}</span>
+        <span class="status-chip locked" *ngIf="!displayedUnlockedCityIds.length">{{ 'profile.noUnlockedCities' | t }}</span>
       </div>
 
-      <div class="language-row">
-        <button mat-stroked-button color="primary" (click)="restorePurchases()">{{ 'profile.restorePurchases' | t }}</button>
+      <div class="admin-simulation" *ngIf="isAdmin">
+        <div class="admin-simulation-status">
+          <strong>{{ 'profile.adminSimulationTitle' | t }}</strong>
+          <span [class]="adminUnlockSimulationActive ? 'status-chip unlocked' : 'status-chip locked'">
+            {{ adminUnlockSimulationActive ? ('profile.adminSimulationUnlocked' | t) : ('profile.adminSimulationReal' | t) }}
+          </span>
+        </div>
         <button
-          mat-stroked-button
-          color="warn"
+          mat-flat-button
+          color="primary"
           type="button"
-          [disabled]="resettingUserSession"
-          (click)="resetUserSession()"
+          *ngIf="!adminUnlockSimulationActive; else disableAdminSimulation"
+          [disabled]="togglingAdminUnlockSimulation"
+          (click)="toggleAdminUnlockSimulation(true)"
         >
-          {{ resettingUserSession ? ('profile.resettingUser' | t) : ('profile.resetUser' | t) }}
+          {{
+            togglingAdminUnlockSimulation
+              ? ('profile.adminSimulationChanging' | t)
+              : ('profile.adminSimulationEnable' | t)
+          }}
         </button>
+        <ng-template #disableAdminSimulation>
+          <button
+            mat-stroked-button
+            color="warn"
+            type="button"
+            [disabled]="togglingAdminUnlockSimulation"
+            (click)="toggleAdminUnlockSimulation(false)"
+          >
+            {{
+              togglingAdminUnlockSimulation
+                ? ('profile.adminSimulationChanging' | t)
+                : ('profile.adminSimulationDisable' | t)
+            }}
+          </button>
+        </ng-template>
       </div>
     </mat-card>
 
@@ -121,6 +302,12 @@
         <button mat-stroked-button [color]="language === 'es' ? 'primary' : undefined" (click)="setLanguage('es')">
           {{ 'common.spanish' | t }}
         </button>
+        <button mat-stroked-button [color]="language === 'de' ? 'primary' : undefined" (click)="setLanguage('de')">
+          {{ 'common.german' | t }}
+        </button>
+        <button mat-stroked-button [color]="language === 'pl' ? 'primary' : undefined" (click)="setLanguage('pl')">
+          {{ 'common.polish' | t }}
+        </button>
       </div>
     </mat-card>
 
@@ -128,5 +315,19 @@
       <a href="mailto:info@walkaround.cloud">{{ 'common.support' | t }}</a>
       <a href="#" target="_blank" rel="noopener">{{ 'common.privacy' | t }}</a>
     </mat-card>
+
+    <ng-template #appLogoutDialog>
+      <h2 mat-dialog-title>{{ 'profile.logoutDialogTitle' | t }}</h2>
+      <div mat-dialog-content class="logout-dialog-body">
+        <p>{{ 'auth.logoutDialogMessage' | t }}</p>
+        <small *ngIf="isDashboardLoggedIn">{{ 'auth.logoutDashboardHint' | t }}</small>
+        <strong>{{ appDisplayName }}</strong>
+        <small>{{ appEmail }}</small>
+      </div>
+      <div mat-dialog-actions align="end" class="logout-dialog-actions">
+        <button mat-stroked-button type="button" [mat-dialog-close]="false">{{ 'common.cancel' | t }}</button>
+        <button mat-flat-button color="warn" type="button" [mat-dialog-close]="true">{{ 'profile.logoutConfirm' | t }}</button>
+      </div>
+    </ng-template>
   </ng-container>
 </section>

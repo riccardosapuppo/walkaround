@@ -51,8 +51,13 @@
         <span>{{ 'cart.loadingQuote' | t }}</span>
       </div>
 
+      <div class="auth-required" *ngIf="!loadingQuote && !isAppLoggedIn">
+        <p>{{ 'auth.checkoutRequired' | t }}</p>
+        <button mat-flat-button color="primary" type="button" (click)="goToLogin()">{{ 'auth.loginOrRegister' | t }}</button>
+      </div>
+
       <p class="payment-error" *ngIf="paymentError">{{ paymentError }}</p>
-      <div #paypalButtonsContainer class="paypal-buttons" *ngIf="!loadingQuote && !paymentError && quote"></div>
+      <div #paypalButtonsContainer class="paypal-buttons" *ngIf="!loadingQuote && isAppLoggedIn && !paymentError && quote"></div>
     </div>
 
     <div class="cart-actions" *ngIf="cartItems.length">

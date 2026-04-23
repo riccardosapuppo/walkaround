@@ -10,6 +10,19 @@
   padding: 24px;
 }
 
+.login-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.login-logo {
+  display: block;
+  width: min(178px, 70%);
+  height: auto;
+  object-fit: contain;
+}
+
 .login-form {
   margin-top: 20px;
   display: grid;

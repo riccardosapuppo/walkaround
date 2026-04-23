@@ -117,6 +117,16 @@ export class AppStateService {
     this.activeCityIdSubject.next(cityId);
   }
 
+  setUserId(userId: string): void {
+    const normalized = String(userId || '').trim();
+    if (!normalized) {
+      return;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.userId, normalized);
+    this.userIdSubject.next(normalized);
+  }
+
   setHotelCode(code: string): void {
     localStorage.setItem(STORAGE_KEYS.hotelCode, code);
     this.hotelCodeSubject.next(code);
@@ -168,6 +178,22 @@ export class AppStateService {
 
     this.userIdSubject.next(nextUserId);
     this.activeCityIdSubject.next(defaultCityId);
+    this.hotelCodeSubject.next('');
+    this.hotelAssociationSubject.next(null);
+    this.favoritesSubject.next([]);
+
+    return nextUserId;
+  }
+
+  startGuestSession(): string {
+    const nextUserId = uuidv4();
+
+    localStorage.setItem(STORAGE_KEYS.userId, nextUserId);
+    localStorage.removeItem(STORAGE_KEYS.hotelCode);
+    localStorage.removeItem(STORAGE_KEYS.hotelAssociation);
+    localStorage.removeItem(STORAGE_KEYS.favorites);
+
+    this.userIdSubject.next(nextUserId);
     this.hotelCodeSubject.next('');
     this.hotelAssociationSubject.next(null);
     this.favoritesSubject.next([]);

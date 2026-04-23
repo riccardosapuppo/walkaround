@@ -1,6 +1,10 @@
 import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-dotenv.config();
+const envPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.env');
+
+dotenv.config({ path: envPath });
 
 function parsePositiveNumber(value, fallback) {
   const parsed = Number(value);

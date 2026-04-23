@@ -12,6 +12,8 @@
           <mat-option value="en">{{ 'common.english' | t }}</mat-option>
           <mat-option value="fr">{{ 'common.french' | t }}</mat-option>
           <mat-option value="es">{{ 'common.spanish' | t }}</mat-option>
+          <mat-option value="de">{{ 'common.german' | t }}</mat-option>
+          <mat-option value="pl">{{ 'common.polish' | t }}</mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -24,11 +26,20 @@
       </mat-form-field>
 
       <div class="welcome-description-card">
-        <p class="welcome-description">{{ 'welcome.description' | t }}</p>
+        <p class="welcome-description"><strong>{{ 'common.appName' | t }}</strong>{{ welcomeDescriptionRest }}</p>
       </div>
 
       <div class="welcome-actions">
         <button mat-flat-button color="primary" class="big-cta welcome-cta primary-cta" (click)="start()">{{ 'common.enter' | t }}</button>
+        <button
+          mat-stroked-button
+          color="primary"
+          class="big-cta welcome-cta secondary-cta"
+          *ngIf="!isAppLoggedIn"
+          (click)="goToLogin()"
+        >
+          {{ 'auth.loginOrRegister' | t }}
+        </button>
         <button mat-stroked-button color="primary" class="big-cta welcome-cta secondary-cta" (click)="goToPartnerRegistration()">
           {{ 'common.becomePartner' | t }}
         </button>

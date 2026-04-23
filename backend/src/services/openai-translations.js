@@ -5,7 +5,9 @@ const REQUEST_TIMEOUT_MS = 90_000;
 const TARGET_LANGUAGE_LABELS = {
   en: 'inglese',
   fr: 'francese',
-  es: 'spagnolo'
+  es: 'spagnolo',
+  de: 'tedesco',
+  pl: 'polacco'
 };
 
 export class OpenAITranslationError extends Error {

@@ -3,6 +3,7 @@ import { hashPassword } from '../auth/security.js';
 import { pool } from './pool.js';
 import { getPoiAddress, poiAddressesById } from './poi-addresses.js';
 import { citiesSeed, hotelCodesSeed, poisSeed } from './seed-data.js';
+import { DEFAULT_PARTNER_EMAIL_SETTINGS } from '../services/partner-email-templates.js';
 
 const DB_INIT_LOCK_NAMESPACE = 7518401;
 const DB_INIT_LOCK_KEY = 1;
@@ -770,6 +771,46 @@ async function createSchema(client) {
   `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_partner_email_settings (
+      id SMALLINT PRIMARY KEY,
+      approval_subject TEXT NOT NULL,
+      approval_body TEXT NOT NULL,
+      rejection_subject TEXT NOT NULL,
+      rejection_body TEXT NOT NULL,
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_partner_email_settings
+    DROP CONSTRAINT IF EXISTS dashboard_partner_email_settings_singleton;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_partner_email_settings
+    ADD CONSTRAINT dashboard_partner_email_settings_singleton CHECK (id = 1);
+  `);
+  await client.query(
+    `
+      INSERT INTO dashboard_partner_email_settings (
+        id,
+        approval_subject,
+        approval_body,
+        rejection_subject,
+        rejection_body
+      )
+      VALUES (1, $1, $2, $3, $4)
+      ON CONFLICT (id) DO NOTHING;
+    `,
+    [
+      DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
+    ]
+  );
+
+  await client.query(`
     CREATE TABLE IF NOT EXISTS dashboard_invites (
       id BIGSERIAL PRIMARY KEY,
       email TEXT NOT NULL,
@@ -800,6 +841,38 @@ async function createSchema(client) {
       user_id TEXT NOT NULL REFERENCES dashboard_users(id) ON DELETE CASCADE,
       impersonated_by_user_id TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
       expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS app_users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      first_name TEXT NOT NULL DEFAULT '',
+      last_name TEXT NOT NULL DEFAULT '',
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS app_sessions (
+      token_hash TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS app_password_resets (
+      id BIGSERIAL PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -1005,6 +1078,10 @@ async function createSchema(client) {
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_password_resets_expires_at ON dashboard_password_resets(expires_at);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_sessions_user_id ON dashboard_sessions(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_sessions_expires_at ON dashboard_sessions(expires_at);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_app_sessions_user_id ON app_sessions(user_id);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_app_sessions_expires_at ON app_sessions(expires_at);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_app_password_resets_user_id ON app_password_resets(user_id);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_app_password_resets_expires_at ON app_password_resets(expires_at);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_users_structure_id ON dashboard_users(structure_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_structures_created_at ON dashboard_structures(created_at);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_user_structure_links_structure_id ON app_user_structure_links(structure_id);`);
@@ -1020,6 +1097,9 @@ async function createSchema(client) {
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_paypal_settings_updated_by ON dashboard_paypal_settings(updated_by);`);
   await client.query(
     `CREATE INDEX IF NOT EXISTS idx_dashboard_openai_translation_settings_updated_by ON dashboard_openai_translation_settings(updated_by);`
+  );
+  await client.query(
+    `CREATE INDEX IF NOT EXISTS idx_dashboard_partner_email_settings_updated_by ON dashboard_partner_email_settings(updated_by);`
   );
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_user_id ON paypal_checkout_orders(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_status ON paypal_checkout_orders(status);`);

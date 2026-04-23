@@ -1,9 +1,10 @@
 import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { catchError, forkJoin, of, Subject, takeUntil } from 'rxjs';
 import { CartItem } from '../../core/models/cart-item.model';
 import { Poi } from '../../core/models/poi.model';
-import { AppStateService } from '../../core/services/app-state.service';
+import { AppAuthService } from '../../core/services/app-auth.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PayPalCheckoutService, PayPalQuoteResponse } from '../../core/services/paypal-checkout.service';
 import { CartService } from '../../core/services/cart.service';
@@ -34,7 +35,8 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
     private readonly cartService: CartService,
     private readonly purchaseService: PurchaseService,
     private readonly paypalCheckout: PayPalCheckoutService,
-    private readonly appState: AppStateService,
+    private readonly appAuth: AppAuthService,
+    private readonly router: Router,
     private readonly snackBar: MatSnackBar,
     private readonly poiService: PoiService,
     public readonly i18n: I18nService
@@ -42,6 +44,10 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnInit(): void {
     this.purchaseService.refresh();
+    this.appAuth.restoreSession().pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.purchaseService.refresh();
+      this.loadQuote();
+    });
     this.cartService.items$.pipe(takeUntil(this.destroy$)).subscribe((items) => {
       this.cartItems = items;
       this.loadItemDetails();
@@ -51,7 +57,15 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngAfterViewChecked(): void {
     const container = this.paypalButtonsContainer?.nativeElement;
-    if (!container || !this.cartItems.length || this.loadingQuote || this.cartPaying || !this.quote || this.paymentError) {
+    if (
+      !container ||
+      !this.cartItems.length ||
+      !this.isAppLoggedIn ||
+      this.loadingQuote ||
+      this.cartPaying ||
+      !this.quote ||
+      this.paymentError
+    ) {
       return;
     }
 
@@ -111,6 +125,14 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.cartService.clear();
   }
 
+  get isAppLoggedIn(): boolean {
+    return this.appAuth.isAuthenticated;
+  }
+
+  goToLogin(): void {
+    void this.router.navigate(['/profile'], { queryParams: { returnUrl: this.router.url } });
+  }
+
   private loadQuote(): void {
     this.resetPayPalRenderState();
 
@@ -126,7 +148,7 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.paypalCheckout
       .getQuote({
-        userId: this.appState.userId,
+        userId: this.purchaseService.effectiveUserId,
         checkoutContext: 'cart',
         poiIds: this.cartItems.map((item) => item.poiId),
         ignoreDiscountCode: false
@@ -199,7 +221,7 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
       await this.paypalCheckout.renderButtons(
         container,
         {
-          userId: this.appState.userId,
+          userId: this.purchaseService.effectiveUserId,
           checkoutContext: 'cart',
           poiIds: this.cartItems.map((item) => item.poiId),
           ignoreDiscountCode: false

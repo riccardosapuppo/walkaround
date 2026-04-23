@@ -2,14 +2,17 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable } from 'rxjs';
 import {
   AdminAuthService,
   InvitationStatusResponse,
   PasswordResetStatusResponse
 } from '../../core/services/admin-auth.service';
+import { AppAuthService } from '../../core/services/app-auth.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 type RegistrationState = 'loading' | 'valid' | 'expired' | 'already_registered' | 'invalid' | 'completed';
-type CompletionMode = 'invite' | 'reset';
+type CompletionMode = 'invite' | 'reset' | 'app-reset';
 
 @Component({
   standalone: false,
@@ -36,13 +39,16 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly auth: AdminAuthService,
-    private readonly snackBar: MatSnackBar
+    private readonly appAuth: AppAuthService,
+    private readonly snackBar: MatSnackBar,
+    public readonly i18n: I18nService
   ) {}
 
   ngOnInit(): void {
     this.token = String(this.route.snapshot.queryParamMap.get('token') || '').trim();
     const modeParam = String(this.route.snapshot.queryParamMap.get('mode') || '').trim().toLowerCase();
-    this.mode = modeParam === 'reset' ? 'reset' : 'invite';
+    const isAppResetRoute = this.router.url.includes('/auth/app-password-reset');
+    this.mode = isAppResetRoute || modeParam === 'app-reset' ? 'app-reset' : modeParam === 'reset' ? 'reset' : 'invite';
     if (!this.token) {
       this.state = 'invalid';
       return;
@@ -65,28 +71,36 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
 
     const { password, confirmPassword } = this.form.getRawValue();
     if (password !== confirmPassword) {
-      this.snackBar.open('Le password non coincidono', 'Chiudi', { duration: 2800 });
+      this.snackBar.open(this.i18n.t('completeRegistration.passwordMismatch'), this.i18n.t('common.close'), { duration: 2800 });
       return;
     }
 
     this.submitting = true;
     const request$ =
-      this.mode === 'reset'
+      this.mode === 'app-reset'
+        ? this.appAuth.completePasswordReset(this.token, password)
+        : this.mode === 'reset'
         ? this.auth.completePasswordReset(this.token, password)
         : this.auth.completeInvitation(this.token, password);
 
-    request$.subscribe({
+    (request$ as Observable<unknown>).subscribe({
       next: () => {
         this.submitting = false;
         this.state = 'completed';
-        const successMessage = this.mode === 'reset' ? 'Password aggiornata' : 'Registrazione completata';
-        this.snackBar.open(successMessage, 'OK', { duration: 2200 });
+        const successMessage = this.mode === 'reset'
+          ? this.i18n.t('completeRegistration.passwordUpdated')
+          : this.i18n.t('completeRegistration.registrationCompleted');
+        this.snackBar.open(successMessage, this.i18n.t('common.ok'), { duration: 2200 });
         this.redirectTimeoutId = window.setTimeout(() => {
+          if (this.mode === 'app-reset') {
+            void this.router.navigate(['/profile'], { queryParams: { passwordReset: 1 } });
+            return;
+          }
           const queryParams = this.mode === 'reset' ? { passwordReset: 1 } : { registered: 1 };
           void this.router.navigate(['/dashboard'], { queryParams });
         }, 1100);
       },
-      error: (error: { error?: { status?: RegistrationState; message?: string } }) => {
+      error: (error: { error?: { status?: RegistrationState } }) => {
         this.submitting = false;
         const status = error?.error?.status;
         if (this.mode === 'invite' && status === 'already_registered') {
@@ -103,9 +117,10 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
         }
 
         this.state = 'invalid';
-        const fallbackMessage =
-          this.mode === 'reset' ? 'Impossibile aggiornare la password' : 'Impossibile completare registrazione';
-        this.snackBar.open(error?.error?.message || fallbackMessage, 'Chiudi', {
+        const fallbackMessage = this.mode === 'reset'
+          ? this.i18n.t('completeRegistration.updateError')
+          : this.i18n.t('completeRegistration.completeError');
+        this.snackBar.open(fallbackMessage, this.i18n.t('common.close'), {
           duration: 3200
         });
       }
@@ -113,13 +128,17 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
   }
 
   goToLogin(): void {
-    void this.router.navigate(['/dashboard']);
+    void this.router.navigate([this.mode === 'app-reset' ? '/profile' : '/dashboard']);
   }
 
   private checkStatus(): void {
     this.state = 'loading';
     const request$ =
-      this.mode === 'reset' ? this.auth.getPasswordResetStatus(this.token) : this.auth.getInvitationStatus(this.token);
+      this.mode === 'app-reset'
+        ? this.appAuth.getPasswordResetStatus(this.token)
+        : this.mode === 'reset'
+          ? this.auth.getPasswordResetStatus(this.token)
+          : this.auth.getInvitationStatus(this.token);
 
     request$.subscribe({
       next: (status) => {
@@ -156,22 +175,30 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
   }
 
   get pageTitle(): string {
-    return this.mode === 'reset' ? 'Reset password' : 'Completa registrazione';
+    return this.mode === 'reset'
+      || this.mode === 'app-reset'
+      ? this.i18n.t('completeRegistration.pageTitleReset')
+      : this.i18n.t('completeRegistration.pageTitleInvite');
   }
 
   get submitLabel(): string {
-    return this.mode === 'reset' ? 'Aggiorna password' : 'Completa registrazione';
+    return this.mode === 'reset'
+      || this.mode === 'app-reset'
+      ? this.i18n.t('completeRegistration.submitReset')
+      : this.i18n.t('completeRegistration.submitInvite');
   }
 
   get completedMessage(): string {
     return this.mode === 'reset'
-      ? 'Password aggiornata. Reindirizzamento al login...'
-      : 'Registrazione completata. Reindirizzamento al login...';
+      || this.mode === 'app-reset'
+      ? this.i18n.t('completeRegistration.completedReset')
+      : this.i18n.t('completeRegistration.completedInvite');
   }
 
   get expiredMessage(): string {
     return this.mode === 'reset'
-      ? 'Link reset scaduto. Richiedi un nuovo reset password dalla dashboard admin.'
-      : 'Link scaduto. Richiedi un nuovo invito dalla dashboard admin.';
+      || this.mode === 'app-reset'
+      ? this.i18n.t('completeRegistration.expiredReset')
+      : this.i18n.t('completeRegistration.expiredInvite');
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, filter, map, startWith, takeUntil } from 'rxjs';
+import { AppAuthService } from './core/services/app-auth.service';
 import { AppStateService } from './core/services/app-state.service';
 
 @Component({
@@ -13,16 +14,18 @@ export class AppComponent implements OnDestroy {
   readonly showBottomNav$ = this.router.events.pipe(
     filter((event): event is NavigationEnd => event instanceof NavigationEnd),
     startWith(null),
-    map(() => !this.routeTreeHasHiddenNav(this.router.routerState.snapshot.root))
+    map(() => this.shouldShowBottomNav())
   );
 
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly router: Router,
-    private readonly appState: AppStateService
+    private readonly appState: AppStateService,
+    private readonly appAuth: AppAuthService
   ) {
     this.syncSurfaceTheme(this.router.url);
+    this.appAuth.restoreSession().pipe(takeUntil(this.destroy$)).subscribe();
 
     this.appState.language$
       .pipe(takeUntil(this.destroy$))
@@ -52,6 +55,23 @@ export class AppComponent implements OnDestroy {
     }
 
     return false;
+  }
+
+  private shouldShowBottomNav(): boolean {
+    return !this.urlHasHiddenNav(this.router.url) && !this.routeTreeHasHiddenNav(this.router.routerState.snapshot.root);
+  }
+
+  private urlHasHiddenNav(rawUrl: string): boolean {
+    const path = String(rawUrl || '').split('?')[0].split('#')[0].toLowerCase();
+    return (
+      path === '/dashboard' ||
+      path.startsWith('/dashboard/') ||
+      path.startsWith('/admin/') ||
+      path.startsWith('/auth/') ||
+      path === '/welcome' ||
+      path.startsWith('/partner-registration') ||
+      path.startsWith('/player/')
+    );
   }
 
   private syncSurfaceTheme(rawUrl: string): void {

@@ -4,25 +4,25 @@
 
     <div class="loading-state" *ngIf="state === 'loading'">
       <mat-spinner diameter="34"></mat-spinner>
-      <p>Verifica link in corso...</p>
+      <p>{{ 'completeRegistration.loading' | t }}</p>
     </div>
 
     <ng-container *ngIf="state === 'valid'">
-      <p class="page-subtitle" *ngIf="email">Imposta la password per: <strong>{{ email }}</strong></p>
+      <p class="page-subtitle" *ngIf="email">{{ 'completeRegistration.passwordFor' | t }}: <strong>{{ email }}</strong></p>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="registration-form">
         <mat-form-field appearance="outline">
-          <mat-label>Nuova password</mat-label>
+          <mat-label>{{ 'completeRegistration.newPassword' | t }}</mat-label>
           <input matInput type="password" formControlName="password" autocomplete="new-password" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Conferma password</mat-label>
+          <mat-label>{{ 'completeRegistration.confirmPassword' | t }}</mat-label>
           <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
         </mat-form-field>
 
         <button mat-flat-button color="primary" class="big-cta" [disabled]="submitting" type="submit">
-          {{ submitting ? 'Salvataggio...' : submitLabel }}
+          {{ submitting ? ('completeRegistration.saving' | t) : submitLabel }}
         </button>
       </form>
     </ng-container>
@@ -32,17 +32,17 @@
     </div>
 
     <div class="state-message" *ngIf="state === 'already_registered'">
-      Utente gia registrato. Reindirizzamento al login...
+      {{ 'completeRegistration.alreadyRegistered' | t }}
     </div>
 
     <div class="state-message" *ngIf="state === 'expired'">
       {{ expiredMessage }}
-      <button mat-stroked-button color="primary" (click)="goToLogin()">Vai al login</button>
+      <button mat-stroked-button color="primary" (click)="goToLogin()">{{ 'completeRegistration.goToLogin' | t }}</button>
     </div>
 
     <div class="state-message" *ngIf="state === 'invalid'">
-      Link non valido.
-      <button mat-stroked-button color="primary" (click)="goToLogin()">Vai al login</button>
+      {{ 'completeRegistration.invalidLink' | t }}
+      <button mat-stroked-button color="primary" (click)="goToLogin()">{{ 'completeRegistration.goToLogin' | t }}</button>
     </div>
   </mat-card>
 </section>

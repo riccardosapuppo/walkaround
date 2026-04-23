@@ -8,8 +8,9 @@ import { env } from '../config/env.js';
 import { requireAdmin, requireAuth } from '../auth/middleware.js';
 import { createOpaqueToken, hashPassword, hashToken } from '../auth/security.js';
 import { pool } from '../db/pool.js';
-import { sendInvitationEmail, sendPartnerApprovalEmail, sendPasswordResetEmail } from '../services/mailer.js';
+import { sendInvitationEmail, sendPartnerApprovalEmail, sendPartnerRejectionEmail, sendPasswordResetEmail } from '../services/mailer.js';
 import { buildPartnerPromotionFileName, buildPartnerPromotionPdf } from '../services/partner-pdf.js';
+import { DEFAULT_PARTNER_EMAIL_SETTINGS, PARTNER_EMAIL_TEMPLATE_PLACEHOLDERS } from '../services/partner-email-templates.js';
 import {
   PayPalConfigurationError,
   getPayPalSettings,
@@ -119,6 +120,13 @@ const partnerRequestPdfPreviewSchema = z.object({
   expiresAt: discountCodeExpiresAtSchema.optional()
 });
 
+const partnerEmailSettingsSchema = z.object({
+  approvalSubject: z.string().trim().min(1, 'Oggetto approvazione obbligatorio').max(200, 'Oggetto approvazione troppo lungo'),
+  approvalBody: z.string().trim().min(1, 'Testo approvazione obbligatorio').max(10000, 'Testo approvazione troppo lungo'),
+  rejectionSubject: z.string().trim().min(1, 'Oggetto rifiuto obbligatorio').max(200, 'Oggetto rifiuto troppo lungo'),
+  rejectionBody: z.string().trim().min(1, 'Testo rifiuto obbligatorio').max(10000, 'Testo rifiuto troppo lungo')
+});
+
 const userStructureUpdateSchema = z
   .object({
     structureId: z.string().trim().min(1).nullable().optional(),
@@ -162,7 +170,7 @@ const paypalSettingsSchema = z.object({
   currencyCode: z.literal('EUR').optional().default('EUR')
 });
 
-const openAiTranslationTargetLanguageSchema = z.enum(['en', 'fr', 'es']);
+const openAiTranslationTargetLanguageSchema = z.enum(['en', 'fr', 'es', 'de', 'pl']);
 const openAiTranslationSettingsSchema = z.object({
   apiKey: z.string().trim().max(500).optional().default(''),
   model: z.string().trim().min(1, 'Modello obbligatorio').max(120, 'Modello troppo lungo').optional().default(DEFAULT_OPENAI_TRANSLATION_MODEL),
@@ -181,7 +189,7 @@ const discountCodesQuerySchema = z.object({
   structureId: z.string().trim().min(1).optional()
 });
 
-const contentLanguageSchema = z.enum(['it', 'en', 'fr', 'es']);
+const contentLanguageSchema = z.enum(['it', 'en', 'fr', 'es', 'de', 'pl']);
 const cityTranslationFieldsSchema = z.object({
   name: z.string().trim().max(120, 'Nome tradotto troppo lungo').optional()
 }).partial();
@@ -588,8 +596,8 @@ function mapCatalogPoiRow(row) {
   };
 }
 
-function sanitizeCatalogCityTranslations(value) {
-  return sanitizeCatalogTranslations(value, ['name']);
+function sanitizeCatalogCityTranslations(_value) {
+  return {};
 }
 
 function sanitizeCatalogPoiTranslations(value) {
@@ -601,7 +609,7 @@ function sanitizeCatalogTranslations(value, allowedFields) {
     return {};
   }
 
-  const supportedLanguages = ['it', 'en', 'fr', 'es'];
+  const supportedLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
   const sanitized = {};
 
   supportedLanguages.forEach((language) => {
@@ -848,6 +856,24 @@ function mapOpenAiTranslationSettingsForResponse(row) {
     model: normalizeOpenAITranslationModel(row?.model),
     updatedAt: row?.updated_at || null,
     updatedBy: row?.updated_by || null
+  };
+}
+
+function normalizePartnerEmailSettings(row) {
+  return {
+    approvalSubject: String(row?.approval_subject || DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject),
+    approvalBody: String(row?.approval_body || DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody),
+    rejectionSubject: String(row?.rejection_subject || DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject),
+    rejectionBody: String(row?.rejection_body || DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody),
+    updatedAt: row?.updated_at || null,
+    updatedBy: row?.updated_by || null
+  };
+}
+
+function mapPartnerEmailSettingsForResponse(row) {
+  return {
+    ...normalizePartnerEmailSettings(row),
+    placeholders: PARTNER_EMAIL_TEMPLATE_PLACEHOLDERS
   };
 }
 
@@ -1117,7 +1143,7 @@ async function fetchStructureById(structureId, client = pool) {
 }
 
 async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
-  const lockSql = options.forUpdate ? 'FOR UPDATE' : '';
+  const lockSql = options.forUpdate ? 'FOR UPDATE OF pr' : '';
   const result = await client.query(
     `
       SELECT
@@ -1275,6 +1301,62 @@ async function getOpenAiTranslationSettings(client = pool) {
       RETURNING id, api_key, model, updated_at, updated_by
     `,
     [DEFAULT_OPENAI_TRANSLATION_MODEL]
+  );
+
+  return inserted.rows[0];
+}
+
+async function getPartnerEmailSettings(client = pool) {
+  const result = await client.query(
+    `
+      SELECT
+        id,
+        approval_subject,
+        approval_body,
+        rejection_subject,
+        rejection_body,
+        updated_at,
+        updated_by
+      FROM dashboard_partner_email_settings
+      WHERE id = 1
+      LIMIT 1
+    `
+  );
+
+  if (result.rowCount) {
+    return result.rows[0];
+  }
+
+  const inserted = await client.query(
+    `
+      INSERT INTO dashboard_partner_email_settings (
+        id,
+        approval_subject,
+        approval_body,
+        rejection_subject,
+        rejection_body
+      )
+      VALUES (1, $1, $2, $3, $4)
+      ON CONFLICT (id) DO UPDATE SET
+        approval_subject = COALESCE(dashboard_partner_email_settings.approval_subject, EXCLUDED.approval_subject),
+        approval_body = COALESCE(dashboard_partner_email_settings.approval_body, EXCLUDED.approval_body),
+        rejection_subject = COALESCE(dashboard_partner_email_settings.rejection_subject, EXCLUDED.rejection_subject),
+        rejection_body = COALESCE(dashboard_partner_email_settings.rejection_body, EXCLUDED.rejection_body)
+      RETURNING
+        id,
+        approval_subject,
+        approval_body,
+        rejection_subject,
+        rejection_body,
+        updated_at,
+        updated_by
+    `,
+    [
+      DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
+    ]
   );
 
   return inserted.rows[0];
@@ -2969,6 +3051,67 @@ router.post('/paypal-settings/test', requireAuth, requireAdmin, async (_req, res
   }
 });
 
+router.get('/partner-email-settings', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getPartnerEmailSettings();
+    return res.json(mapPartnerEmailSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/partner-email-settings', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = partnerEmailSettingsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+
+  try {
+    const saved = await pool.query(
+      `
+        INSERT INTO dashboard_partner_email_settings (
+          id,
+          approval_subject,
+          approval_body,
+          rejection_subject,
+          rejection_body,
+          updated_by,
+          updated_at
+        )
+        VALUES (1, $1, $2, $3, $4, $5, NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          approval_subject = EXCLUDED.approval_subject,
+          approval_body = EXCLUDED.approval_body,
+          rejection_subject = EXCLUDED.rejection_subject,
+          rejection_body = EXCLUDED.rejection_body,
+          updated_by = EXCLUDED.updated_by,
+          updated_at = NOW()
+        RETURNING
+          id,
+          approval_subject,
+          approval_body,
+          rejection_subject,
+          rejection_body,
+          updated_at,
+          updated_by
+      `,
+      [
+        payload.approvalSubject,
+        payload.approvalBody,
+        payload.rejectionSubject,
+        payload.rejectionBody,
+        req.authSession.user.id
+      ]
+    );
+
+    return res.json(mapPartnerEmailSettingsForResponse(saved.rows[0]));
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get('/openai-translations/settings', requireAuth, requireAdmin, async (_req, res, next) => {
   try {
     const settings = await getOpenAiTranslationSettings();
@@ -3390,10 +3533,28 @@ router.post('/partner-requests/:requestId/reject', requireAuth, requireAdmin, as
       return res.status(404).json({ message: 'Richiesta partner non trovata' });
     }
 
-    if (normalizePartnerRequestStatus(current.status) === 'approved') {
+    const currentStatus = normalizePartnerRequestStatus(current.status);
+    if (currentStatus === 'approved') {
       await client.query('ROLLBACK');
       return res.status(409).json({ message: 'La richiesta e gia approvata e non puo essere negata' });
     }
+    if (currentStatus === 'rejected') {
+      await client.query('ROLLBACK');
+      return res.json(mapPartnerRequestRow(current));
+    }
+
+    const emailSettings = normalizePartnerEmailSettings(await getPartnerEmailSettings(client));
+    await sendPartnerRejectionEmail({
+      requestId: current.id,
+      to: current.contact_email,
+      contactName: [current.contact_first_name, current.contact_last_name].filter(Boolean).join(' '),
+      structureName: current.structure_name,
+      structureType: current.structure_type,
+      contactEmail: current.contact_email,
+      addressCity: current.address_city,
+      subjectTemplate: emailSettings.rejectionSubject,
+      bodyTemplate: emailSettings.rejectionBody
+    });
 
     const updated = await client.query(
       `
@@ -3603,16 +3764,25 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
     });
     const pdfBuffer = buildPartnerPromotionPdf(pdfPayload);
     const pdfFileName = buildPartnerPromotionFileName(requestRow.structure_name, normalizedCode);
+    const emailSettings = normalizePartnerEmailSettings(await getPartnerEmailSettings(client));
 
     await sendPartnerApprovalEmail({
+      requestId: requestRow.id,
       to: requestRow.contact_email,
       contactName: [requestRow.contact_first_name, requestRow.contact_last_name].filter(Boolean).join(' '),
       structureName: requestRow.structure_name,
+      structureType: requestRow.structure_type,
+      contactEmail: requestRow.contact_email,
+      addressCity: requestRow.address_city,
       discountCode: normalizedCode,
       cityNames: orderedCityNames,
       expiresAt: payload.expiresAt.toISOString(),
+      userDiscountPercent: payload.userDiscountPercent,
+      structureFixedAmount: payload.structureFixedAmount,
       pdfBuffer,
-      pdfFileName
+      pdfFileName,
+      subjectTemplate: emailSettings.approvalSubject,
+      bodyTemplate: emailSettings.approvalBody
     });
 
     const updated = await client.query(
@@ -3734,7 +3904,7 @@ router.post('/catalog/cities', requireAuth, requireAdmin, async (req, res, next)
         VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
         RETURNING id, name, region, bundle_price, hero_image, is_default, translations
       `,
-      [cityId, payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify(payload.translations || {})]
+      [cityId, payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify({})]
     );
 
     await client.query('COMMIT');
@@ -3784,7 +3954,7 @@ router.patch('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, r
         WHERE id = $7
         RETURNING id, name, region, bundle_price, hero_image, is_default, translations
       `,
-      [payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify(payload.translations || {}), cityId]
+      [payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify({}), cityId]
     );
 
     await client.query('COMMIT');

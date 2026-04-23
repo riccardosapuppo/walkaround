@@ -207,7 +207,7 @@ export interface CatalogPoiInput {
   translations?: PoiTranslations;
 }
 
-export type OpenAiTranslationTargetLanguage = 'en' | 'fr' | 'es';
+export type OpenAiTranslationTargetLanguage = 'en' | 'fr' | 'es' | 'de' | 'pl';
 
 export interface OpenAiTranslationSettings {
   hasApiKey: boolean;
@@ -347,6 +347,28 @@ export interface DashboardPayPalVerificationResponse {
   };
   settings?: DashboardPayPalSettings;
   message?: string;
+}
+
+export interface PartnerEmailTemplatePlaceholder {
+  key: string;
+  description: string;
+}
+
+export interface DashboardPartnerEmailSettings {
+  approvalSubject: string;
+  approvalBody: string;
+  rejectionSubject: string;
+  rejectionBody: string;
+  placeholders: PartnerEmailTemplatePlaceholder[];
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface PartnerEmailSettingsInput {
+  approvalSubject: string;
+  approvalBody: string;
+  rejectionSubject: string;
+  rejectionBody: string;
 }
 
 export interface DashboardPartnerRequest {
@@ -985,6 +1007,28 @@ export class AdminAuthService {
     });
   }
 
+  getPartnerEmailSettings(): Observable<DashboardPartnerEmailSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardPartnerEmailSettings>(`${environment.apiBaseUrl}/admin/partner-email-settings`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  updatePartnerEmailSettings(payload: PartnerEmailSettingsInput): Observable<DashboardPartnerEmailSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.put<DashboardPartnerEmailSettings>(`${environment.apiBaseUrl}/admin/partner-email-settings`, payload, {
+      headers: this.authHeaders(token)
+    });
+  }
+
   listPartnerRequests(): Observable<DashboardPartnerRequest[]> {
     const token = this.sessionSubject.value?.token;
     if (!token) {
@@ -1176,7 +1220,7 @@ export class AdminAuthService {
     });
   }
 
-  private persistSession(session: DashboardSession): DashboardSession {
+  persistSession(session: DashboardSession): DashboardSession {
     localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session));
     this.sessionSubject.next(session);
     return session;

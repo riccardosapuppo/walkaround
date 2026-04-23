@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AppLanguage } from '../../core/i18n/app-language';
 import { City } from '../../core/models/city.model';
+import { AppAuthService } from '../../core/services/app-auth.service';
 import { AppStateService } from '../../core/services/app-state.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PoiService } from '../../core/services/poi.service';
@@ -23,6 +24,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   selectedCityId = 'catania';
   cities: City[] = [];
   loadingCities = false;
+  isAppLoggedIn = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -30,6 +32,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly snackBar: MatSnackBar,
     private readonly appState: AppStateService,
+    private readonly appAuth: AppAuthService,
     private readonly poiService: PoiService,
     private readonly purchaseService: PurchaseService,
     public readonly i18n: I18nService
@@ -40,6 +43,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.isAppLoggedIn = this.appAuth.isAuthenticated;
+    this.appAuth.session$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((session) => {
+        this.isAppLoggedIn = !!session?.user?.id;
+      });
+
     this.loadingCities = true;
     this.poiService
       .getCities()
@@ -84,11 +94,23 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   }
 
   cityName(city: City): string {
-    return this.i18n.resolveCityField(city.name, city.translations, 'name') || city.name;
+    return String(city.name || '').trim();
+  }
+
+  get welcomeDescriptionRest(): string {
+    const description = this.i18n.t('welcome.description').trim();
+    const appName = this.i18n.t('common.appName').trim();
+    return description.toLowerCase().startsWith(appName.toLowerCase())
+      ? description.slice(appName.length)
+      : ` ${description}`;
   }
 
   goToPartnerRegistration(): void {
     void this.router.navigate(['/partner-registration']);
+  }
+
+  goToLogin(): void {
+    void this.router.navigate(['/profile']);
   }
 
   validateCode(): void {

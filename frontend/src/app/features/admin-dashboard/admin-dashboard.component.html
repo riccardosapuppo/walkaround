@@ -1,16 +1,25 @@
 ﻿<section class="page-shell admin-shell">
-  <mat-card class="card login-card" *ngIf="!authChecked">
-    <div class="loading-state">
+  <div class="dashboard-login-surface" *ngIf="!authChecked">
+    <div class="login-brand">
+      <img class="login-logo" src="/assets/logo.png" alt="Logo Walk Around" loading="eager" decoding="sync" fetchpriority="high" />
+    </div>
+    <div class="login-loading-state">
       <mat-spinner diameter="34"></mat-spinner>
       <p>Controllo sessione dashboard...</p>
     </div>
-  </mat-card>
+  </div>
 
-  <mat-card class="card login-card" *ngIf="authChecked && !isAuthenticated">
-    <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Accedi per entrare nella dashboard.</p>
+  <div class="dashboard-login-surface" *ngIf="authChecked && !isAuthenticated">
+    <div class="login-brand">
+      <img class="login-logo" src="/assets/logo.png" alt="Logo Walk Around" loading="eager" decoding="sync" fetchpriority="high" />
+    </div>
+    <div class="login-copy">
+      <span class="login-kicker">Area riservata</span>
+      <h1>Dashboard</h1>
+      <p>Accedi per entrare nella dashboard.</p>
+    </div>
 
-    <form [formGroup]="loginForm" (ngSubmit)="login()" class="form-grid">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
       <mat-form-field appearance="outline">
         <mat-label>Email</mat-label>
         <input matInput type="email" formControlName="email" autocomplete="username" />
@@ -18,14 +27,28 @@
 
       <mat-form-field appearance="outline">
         <mat-label>Password</mat-label>
-        <input matInput type="password" formControlName="password" autocomplete="current-password" />
+        <input
+          matInput
+          [type]="showLoginPassword ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="toggleLoginPasswordVisibility()"
+          [attr.aria-label]="showLoginPassword ? 'Nascondi password' : 'Mostra password'"
+        >
+          <mat-icon fontSet="material-icons-round">{{ showLoginPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
       </mat-form-field>
 
       <button mat-flat-button color="primary" class="big-cta" [disabled]="loggingIn" type="submit">
         {{ loggingIn ? 'Accesso...' : 'Accedi' }}
       </button>
     </form>
-  </mat-card>
+  </div>
 
   <div class="dashboard-layout" *ngIf="authChecked && isAuthenticated">
     <aside class="sidebar">
@@ -808,6 +831,127 @@
         </mat-card>
       </ng-container>
 
+      <ng-container *ngIf="canManagePartnerEmails && activeSection === 'partnerEmails'">
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <span>Template approvazione</span>
+            <strong *ngIf="!loadingPartnerEmailSettings; else partnerApprovalEmailLoading">Attivo</strong>
+            <ng-template #partnerApprovalEmailLoading>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+          <mat-card class="stat-card">
+            <span>Template rifiuto</span>
+            <strong *ngIf="!loadingPartnerEmailSettings; else partnerRejectionEmailLoading">Attivo</strong>
+            <ng-template #partnerRejectionEmailLoading>
+              <div class="stat-spinner">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+            </ng-template>
+          </mat-card>
+        </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Email partner</h2>
+              <p class="table-subtitle">Modifica oggetto e testo delle email inviate quando una richiesta partner viene approvata o negata.</p>
+            </div>
+            <div class="table-actions">
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                (click)="resetPartnerEmailSettingsToDefaults()"
+                [disabled]="savingPartnerEmailSettings"
+              >
+                Ripristina default
+              </button>
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                (click)="loadPartnerEmailSettings(true)"
+                [disabled]="loadingPartnerEmailSettings || savingPartnerEmailSettings"
+              >
+                {{ loadingPartnerEmailSettings ? 'Aggiorno...' : 'Ricarica template' }}
+              </button>
+            </div>
+          </div>
+
+          <form class="partner-email-settings-form" [formGroup]="partnerEmailSettingsForm" (ngSubmit)="savePartnerEmailSettings()">
+            <div class="paypal-status-strip" *ngIf="partnerEmailSettings">
+              <strong>Template email configurati</strong>
+              <span *ngIf="partnerEmailSettings.updatedAt">Ultimo aggiornamento: {{ formatDateTime(partnerEmailSettings.updatedAt) }}</span>
+            </div>
+
+            <section class="partner-placeholder-panel">
+              <strong>Legenda placeholder</strong>
+              <p>Inseriscili nel testo o nell'oggetto usando le doppie parentesi graffe, ad esempio {{ partnerEmailPlaceholderToken('contactName') }}.</p>
+              <div class="partner-placeholder-list">
+                <div class="partner-placeholder-item" *ngFor="let placeholder of partnerEmailPlaceholders">
+                  <code [textContent]="partnerEmailPlaceholderToken(placeholder.key)"></code>
+                  <span>{{ placeholder.description }}</span>
+                </div>
+              </div>
+            </section>
+
+            <div class="partner-email-template-grid">
+              <section class="partner-email-template-card">
+                <h3>Mail di approvazione</h3>
+                <p>Usata dopo la creazione della struttura, del codice sconto e del PDF allegato.</p>
+
+                <mat-form-field appearance="outline" class="full-span">
+                  <mat-label>Oggetto approvazione</mat-label>
+                  <input matInput formControlName="approvalSubject" autocomplete="off" />
+                  <mat-error *ngIf="partnerEmailSettingsForm.controls.approvalSubject.invalid && partnerEmailSettingsForm.controls.approvalSubject.touched">
+                    Oggetto obbligatorio
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-span">
+                  <mat-label>Testo approvazione</mat-label>
+                  <textarea matInput rows="12" formControlName="approvalBody"></textarea>
+                  <mat-hint>Il PDF promozionale resta allegato automaticamente.</mat-hint>
+                  <mat-error *ngIf="partnerEmailSettingsForm.controls.approvalBody.invalid && partnerEmailSettingsForm.controls.approvalBody.touched">
+                    Testo obbligatorio
+                  </mat-error>
+                </mat-form-field>
+              </section>
+
+              <section class="partner-email-template-card">
+                <h3>Mail di rifiuto</h3>
+                <p>Usata quando la richiesta partner in attesa viene negata dalla dashboard.</p>
+
+                <mat-form-field appearance="outline" class="full-span">
+                  <mat-label>Oggetto rifiuto</mat-label>
+                  <input matInput formControlName="rejectionSubject" autocomplete="off" />
+                  <mat-error *ngIf="partnerEmailSettingsForm.controls.rejectionSubject.invalid && partnerEmailSettingsForm.controls.rejectionSubject.touched">
+                    Oggetto obbligatorio
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-span">
+                  <mat-label>Testo rifiuto</mat-label>
+                  <textarea matInput rows="12" formControlName="rejectionBody"></textarea>
+                  <mat-error *ngIf="partnerEmailSettingsForm.controls.rejectionBody.invalid && partnerEmailSettingsForm.controls.rejectionBody.touched">
+                    Testo obbligatorio
+                  </mat-error>
+                </mat-form-field>
+              </section>
+            </div>
+
+            <div class="paypal-actions">
+              <button mat-flat-button color="primary" type="submit" [disabled]="!canSavePartnerEmailSettings">
+                {{ savingPartnerEmailSettings ? 'Salvo...' : 'Salva template email' }}
+              </button>
+            </div>
+          </form>
+        </mat-card>
+      </ng-container>
+
       <ng-container *ngIf="canManageUsers && activeSection === 'payments'">
         <div class="stats-grid">
           <mat-card class="stat-card">
@@ -1469,24 +1613,6 @@
               <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
             </mat-form-field>
 
-            <div class="translation-panel" formGroupName="translations">
-              <div class="translation-panel-head">
-                <strong>Traduzioni app utente</strong>
-                <span>Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.</span>
-              </div>
-
-              <div class="translation-grid">
-                <section class="translation-card" *ngFor="let language of contentLanguages" [formGroupName]="language.code">
-                  <h3>{{ language.label }}</h3>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Nome città {{ language.label }}</mat-label>
-                    <input matInput type="text" formControlName="name" />
-                  </mat-form-field>
-                </section>
-              </div>
-            </div>
-
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
               <div class="media-block-head">
@@ -1612,6 +1738,57 @@
                 <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
               </mat-form-field>
 
+              <input type="hidden" formControlName="audioUrl" />
+              <div class="media-block">
+                <div class="media-block-head">
+                  <strong>Audioguida italiana principale</strong>
+                  <span>{{ catalogPoiForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>
+                </div>
+
+                <div class="audio-file-pill" *ngIf="catalogPoiForm.controls.audioUrl.value; else createPoiAudioEmpty">
+                  <span class="audio-file-label">File:</span>
+                  <strong>{{ audioFileNameFromUrl(catalogPoiForm.controls.audioUrl.value) }}</strong>
+                </div>
+                <ng-template #createPoiAudioEmpty>
+                  <div class="media-preview placeholder">Audio italiano opzionale: puoi caricarlo ora o dopo.</div>
+                </ng-template>
+
+                <div class="media-upload-actions">
+                  <input
+                    #createCatalogPoiAudioInput
+                    type="file"
+                    accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
+                    hidden
+                    (change)="onCatalogAudioFileSelected($event)"
+                  />
+                  <button
+                    type="button"
+                    class="generate-code-btn"
+                    (click)="createCatalogPoiAudioInput.click()"
+                    [disabled]="uploadingCatalogAudio || savingCatalogPoi"
+                  >
+                    {{ uploadingCatalogAudio ? 'Upload...' : catalogPoiForm.controls.audioUrl.value ? 'Sostituisci audio italiano' : 'Carica audio italiano' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost-btn"
+                    *ngIf="catalogPoiForm.controls.audioUrl.value"
+                    (click)="clearCatalogPoiAudio()"
+                    [disabled]="uploadingCatalogAudio || savingCatalogPoi"
+                  >
+                    Rimuovi audio italiano
+                  </button>
+                </div>
+
+                <audio
+                  class="media-player"
+                  controls
+                  preload="none"
+                  *ngIf="catalogPoiForm.controls.audioUrl.value"
+                  [src]="catalogPoiForm.controls.audioUrl.value"
+                ></audio>
+              </div>
+
               <div class="translation-panel" formGroupName="translations">
                 <div class="translation-panel-head">
                   <strong>Traduzioni app utente</strong>
@@ -1734,57 +1911,6 @@
                 </div>
               </div>
 
-              <input type="hidden" formControlName="audioUrl" />
-              <div class="media-block">
-                <div class="media-block-head">
-                  <strong>Audioguida</strong>
-                  <span>{{ catalogPoiForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>
-                </div>
-
-                <div class="audio-file-pill" *ngIf="catalogPoiForm.controls.audioUrl.value; else createPoiAudioEmpty">
-                  <span class="audio-file-label">File:</span>
-                  <strong>{{ audioFileNameFromUrl(catalogPoiForm.controls.audioUrl.value) }}</strong>
-                </div>
-                <ng-template #createPoiAudioEmpty>
-                  <div class="media-preview placeholder">Audio opzionale: puoi caricarlo ora o dopo.</div>
-                </ng-template>
-
-                <div class="media-upload-actions">
-                  <input
-                    #createCatalogPoiAudioInput
-                    type="file"
-                    accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
-                    hidden
-                    (change)="onCatalogAudioFileSelected($event)"
-                  />
-                  <button
-                    type="button"
-                    class="generate-code-btn"
-                    (click)="createCatalogPoiAudioInput.click()"
-                    [disabled]="uploadingCatalogAudio || savingCatalogPoi"
-                  >
-                    {{ uploadingCatalogAudio ? 'Upload...' : catalogPoiForm.controls.audioUrl.value ? 'Sostituisci audio' : 'Carica audio' }}
-                  </button>
-                  <button
-                    type="button"
-                    class="ghost-btn"
-                    *ngIf="catalogPoiForm.controls.audioUrl.value"
-                    (click)="clearCatalogPoiAudio()"
-                    [disabled]="uploadingCatalogAudio || savingCatalogPoi"
-                  >
-                    Rimuovi audio
-                  </button>
-                </div>
-
-                <audio
-                  class="media-player"
-                  controls
-                  preload="none"
-                  *ngIf="catalogPoiForm.controls.audioUrl.value"
-                  [src]="catalogPoiForm.controls.audioUrl.value"
-                ></audio>
-              </div>
-
               <div class="coords-grid">
                 <mat-form-field appearance="outline">
                   <mat-label>Prezzo singolo (EUR)</mat-label>
@@ -1823,24 +1949,6 @@
               <mat-label>Prezzo bundle (EUR)</mat-label>
               <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
             </mat-form-field>
-
-            <div class="translation-panel" formGroupName="translations">
-              <div class="translation-panel-head">
-                <strong>Traduzioni app utente</strong>
-                <span>Compila le lingue disponibili. Se un campo resta vuoto, l'app mostra l'italiano principale.</span>
-              </div>
-
-              <div class="translation-grid">
-                <section class="translation-card" *ngFor="let language of contentLanguages" [formGroupName]="language.code">
-                  <h3>{{ language.label }}</h3>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Nome città {{ language.label }}</mat-label>
-                    <input matInput type="text" formControlName="name" />
-                  </mat-form-field>
-                </section>
-              </div>
-            </div>
 
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
@@ -1960,6 +2068,63 @@
               <mat-label>Descrizione lunga</mat-label>
               <textarea matInput rows="5" formControlName="descriptionLong"></textarea>
             </mat-form-field>
+
+            <input type="hidden" formControlName="audioUrl" />
+            <div class="media-block">
+              <div class="media-block-head">
+                <strong>Audioguida italiana principale</strong>
+                <span>{{ catalogPoiEditForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>
+              </div>
+
+              <div class="audio-file-pill" *ngIf="catalogPoiEditForm.controls.audioUrl.value; else poiEditAudioEmpty">
+                <span class="audio-file-label">File:</span>
+                <strong>{{ audioFileNameFromUrl(catalogPoiEditForm.controls.audioUrl.value) }}</strong>
+              </div>
+              <ng-template #poiEditAudioEmpty>
+                <div class="media-preview placeholder">Audio italiano opzionale: puoi caricarlo ora o dopo.</div>
+              </ng-template>
+
+              <div class="media-upload-actions">
+                <input
+                  #catalogPoiEditAudioInput
+                  type="file"
+                  accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
+                  hidden
+                  (change)="onCatalogPoiEditAudioFileSelected($event)"
+                />
+                <button
+                  type="button"
+                  class="generate-code-btn"
+                  (click)="catalogPoiEditAudioInput.click()"
+                  [disabled]="uploadingCatalogPoiEditAudio || savingCatalogPoi"
+                >
+                  {{
+                    uploadingCatalogPoiEditAudio
+                      ? 'Upload...'
+                      : catalogPoiEditForm.controls.audioUrl.value
+                        ? 'Sostituisci audio italiano'
+                        : 'Carica audio italiano'
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="ghost-btn"
+                  *ngIf="catalogPoiEditForm.controls.audioUrl.value"
+                  (click)="clearCatalogPoiEditAudio()"
+                  [disabled]="uploadingCatalogPoiEditAudio || savingCatalogPoi"
+                >
+                  Rimuovi audio italiano
+                </button>
+              </div>
+
+              <audio
+                class="media-player"
+                controls
+                preload="none"
+                *ngIf="catalogPoiEditForm.controls.audioUrl.value"
+                [src]="catalogPoiEditForm.controls.audioUrl.value"
+              ></audio>
+            </div>
 
             <div class="translation-panel" formGroupName="translations">
               <div class="translation-panel-head">
@@ -2087,63 +2252,6 @@
                   Rimuovi immagine
                 </button>
               </div>
-            </div>
-
-            <input type="hidden" formControlName="audioUrl" />
-            <div class="media-block">
-              <div class="media-block-head">
-                <strong>Audioguida</strong>
-                <span>{{ catalogPoiEditForm.controls.audioUrl.value ? 'Pronta' : 'Nessun audio' }}</span>
-              </div>
-
-              <div class="audio-file-pill" *ngIf="catalogPoiEditForm.controls.audioUrl.value; else poiEditAudioEmpty">
-                <span class="audio-file-label">File:</span>
-                <strong>{{ audioFileNameFromUrl(catalogPoiEditForm.controls.audioUrl.value) }}</strong>
-              </div>
-              <ng-template #poiEditAudioEmpty>
-                <div class="media-preview placeholder">Audio opzionale: puoi caricarlo ora o dopo.</div>
-              </ng-template>
-
-              <div class="media-upload-actions">
-                <input
-                  #catalogPoiEditAudioInput
-                  type="file"
-                  accept=".mp3,.m4a,.wav,.ogg,.aac,audio/*"
-                  hidden
-                  (change)="onCatalogPoiEditAudioFileSelected($event)"
-                />
-                <button
-                  type="button"
-                  class="generate-code-btn"
-                  (click)="catalogPoiEditAudioInput.click()"
-                  [disabled]="uploadingCatalogPoiEditAudio || savingCatalogPoi"
-                >
-                  {{
-                    uploadingCatalogPoiEditAudio
-                      ? 'Upload...'
-                      : catalogPoiEditForm.controls.audioUrl.value
-                        ? 'Sostituisci audio'
-                        : 'Carica audio'
-                  }}
-                </button>
-                <button
-                  type="button"
-                  class="ghost-btn"
-                  *ngIf="catalogPoiEditForm.controls.audioUrl.value"
-                  (click)="clearCatalogPoiEditAudio()"
-                  [disabled]="uploadingCatalogPoiEditAudio || savingCatalogPoi"
-                >
-                  Rimuovi audio
-                </button>
-              </div>
-
-              <audio
-                class="media-player"
-                controls
-                preload="none"
-                *ngIf="catalogPoiEditForm.controls.audioUrl.value"
-                [src]="catalogPoiEditForm.controls.audioUrl.value"
-              ></audio>
             </div>
 
             <div class="coords-grid">

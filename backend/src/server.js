@@ -9,6 +9,7 @@ import { env } from './config/env.js';
 import { initDatabase } from './db/init.js';
 import { pool } from './db/pool.js';
 import { adminRouter } from './routes/admin.js';
+import { appAuthRouter } from './routes/app-auth.js';
 import { apiRouter } from './routes/api.js';
 import { authRouter } from './routes/auth.js';
 
@@ -171,6 +172,7 @@ app.use('/public', async (req, res, next) => {
 });
 app.use('/public', express.static(publicPath));
 app.use('/api/auth', authRouter);
+app.use('/api/app-auth', appAuthRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api', apiRouter);
 

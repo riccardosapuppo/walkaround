@@ -22,4 +22,5 @@ export interface PurchasesResponse {
   items: PurchaseItem[];
   unlockedPoiIds: string[];
   unlockedCityIds: string[];
+  adminUnlockSimulation?: boolean;
 }

@@ -1,8 +1,13 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest, finalize, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { AppLanguage } from '../../core/i18n/app-language';
 import { City } from '../../core/models/city.model';
+import { AdminAuthService, DashboardSession, UserRole } from '../../core/services/admin-auth.service';
+import { AppAuthService, AppSession } from '../../core/services/app-auth.service';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PoiService } from '../../core/services/poi.service';
@@ -24,9 +29,42 @@ export class ProfileComponent implements OnInit, OnDestroy {
   hotelCodeEntries: HotelCodeStatusEntry[] = [];
   unlockedCityIds: string[] = [];
   language: AppLanguage = 'it';
-  loading = true;
+  loadingCities = true;
   removingInviteCode = false;
-  resettingUserSession = false;
+  isAdmin = false;
+  adminSessionChecked = false;
+  appSessionChecked = false;
+  appSession: AppSession | null = null;
+  dashboardSession: DashboardSession | null = null;
+  adminUnlockSimulationActive = false;
+  togglingAdminUnlockSimulation = false;
+  authMode: 'login' | 'register' = 'login';
+  authSubmitting = false;
+  resetSubmitting = false;
+  resetRequested = false;
+  loggingOutApp = false;
+  showLoginPassword = false;
+  showRegisterPassword = false;
+  showRegisterConfirmPassword = false;
+
+  @ViewChild('appLogoutDialog') private appLogoutDialog?: TemplateRef<unknown>;
+
+  readonly loginForm = this.formBuilder.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]]
+  });
+
+  readonly registerForm = this.formBuilder.nonNullable.group({
+    firstName: ['', [Validators.required, Validators.maxLength(80)]],
+    lastName: ['', [Validators.required, Validators.maxLength(80)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(120)]],
+    confirmPassword: ['', [Validators.required]]
+  });
+
+  readonly resetForm = this.formBuilder.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]]
+  });
 
   private readonly destroy$ = new Subject<void>();
 
@@ -34,13 +72,38 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private readonly poiService: PoiService,
     private readonly appState: AppStateService,
     private readonly purchaseService: PurchaseService,
+    private readonly adminAuth: AdminAuthService,
+    private readonly appAuth: AppAuthService,
     private readonly structureLocationService: StructureLocationService,
+    private readonly formBuilder: FormBuilder,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly dialog: MatDialog,
     private readonly snackBar: MatSnackBar,
     public readonly i18n: I18nService
   ) {}
 
   ngOnInit(): void {
+    this.hydrateStoredSessions();
     this.purchaseService.refresh();
+    this.appAuth
+      .restoreSession()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.appSessionChecked = true;
+        this.appSession = this.appAuth.session;
+        this.purchaseService.refresh();
+        this.syncHotelAssociationDetails();
+      });
+    this.adminAuth
+      .restoreSession()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.adminSessionChecked = true;
+        this.isAdmin = this.adminAuth.user?.role === 'admin';
+        this.purchaseService.refresh();
+        this.syncAppSessionFromDashboard();
+      });
     this.syncHotelAssociationDetails();
 
     this.poiService
@@ -49,10 +112,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (cities) => {
           this.cities = cities;
-          this.loading = false;
+          this.loadingCities = false;
         },
         error: () => {
-          this.loading = false;
+          this.loadingCities = false;
           this.cities = [];
         }
       });
@@ -62,21 +125,41 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.appState.hotelCode$,
       this.appState.hotelAssociation$,
       this.appState.language$,
-      this.purchaseService.purchases$
+      this.purchaseService.purchases$,
+      this.adminAuth.session$,
+      this.appAuth.session$,
+      this.purchaseService.adminUnlockSimulation$
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([cityId, hotelCode, hotelAssociation, language, purchases]) => {
+      .subscribe(([cityId, hotelCode, hotelAssociation, language, purchases, adminSession, appSession, adminUnlockSimulation]) => {
         this.activeCityId = cityId;
         this.hotelCode = hotelCode || '-';
         this.hotelAssociation = hotelAssociation;
         this.language = language;
         this.unlockedCityIds = purchases.unlockedCityIds;
+        this.appSession = this.appSessionChecked ? appSession : null;
+        this.dashboardSession = this.adminSessionChecked ? adminSession : null;
+        this.isAdmin = this.adminSessionChecked && adminSession?.user?.role === 'admin';
+        this.adminUnlockSimulationActive = this.isAdmin && adminUnlockSimulation && purchases.adminUnlockSimulation === true;
       });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private hydrateStoredSessions(): void {
+    this.appSession = this.appAuth.session;
+    if (this.appSession?.user) {
+      this.appSessionChecked = true;
+    }
+
+    this.dashboardSession = this.adminAuth.session;
+    if (this.dashboardSession?.user) {
+      this.adminSessionChecked = true;
+      this.isAdmin = this.dashboardSession.user.role === 'admin';
+    }
   }
 
   setCity(cityId: string): void {
@@ -94,6 +177,69 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   get hasStoredInviteCode(): boolean {
     return this.hotelCode !== '-' || !!this.hotelAssociation;
+  }
+
+  get isAppLoggedIn(): boolean {
+    return this.appSessionChecked && !!this.appSession?.user;
+  }
+
+  get isDashboardLoggedIn(): boolean {
+    return this.adminSessionChecked && !!this.dashboardSession?.user;
+  }
+
+  get appDisplayName(): string {
+    const firstName = this.appSession?.user?.firstName || '';
+    const lastName = this.appSession?.user?.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    return fullName || this.appEmail || '-';
+  }
+
+  get appEmail(): string {
+    return this.appSession?.user?.email || '';
+  }
+
+  get appInitials(): string {
+    return this.initialsFrom(this.appDisplayName || this.appEmail || 'WA');
+  }
+
+  get accountDisplayName(): string {
+    const firstName = this.dashboardSession?.user?.firstName || '';
+    const lastName = this.dashboardSession?.user?.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    return fullName || this.accountEmail || '-';
+  }
+
+  get accountEmail(): string {
+    return this.dashboardSession?.user?.email || '';
+  }
+
+  get accountInitials(): string {
+    return this.initialsFrom(this.accountDisplayName || this.accountEmail || 'WA');
+  }
+
+  get accountRoleLabel(): string {
+    const role = this.dashboardSession?.user?.role || 'user';
+    return this.roleLabel(role);
+  }
+
+  get accountStructureName(): string {
+    return this.dashboardSession?.user?.structureName || '';
+  }
+
+  get isImpersonating(): boolean {
+    return Boolean(this.dashboardSession?.session?.isImpersonating);
+  }
+
+  get impersonatedByEmail(): string {
+    return this.dashboardSession?.session?.impersonatedBy?.email || '';
+  }
+
+  get displayedUnlockedCityIds(): string[] {
+    if (this.adminUnlockSimulationActive) {
+      return this.cities.map((city) => city.id);
+    }
+
+    return this.unlockedCityIds;
   }
 
   get inviteCodeStatusText(): string {
@@ -151,9 +297,194 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  restorePurchases(): void {
-    this.purchaseService.refresh();
-    this.snackBar.open(this.i18n.t('profile.restoreDone'), this.i18n.t('common.ok'), { duration: 2200 });
+  setAuthMode(mode: 'login' | 'register'): void {
+    this.authMode = mode;
+    this.resetRequested = false;
+  }
+
+  toggleLoginPasswordVisibility(): void {
+    this.showLoginPassword = !this.showLoginPassword;
+  }
+
+  toggleRegisterPasswordVisibility(): void {
+    this.showRegisterPassword = !this.showRegisterPassword;
+  }
+
+  toggleRegisterConfirmPasswordVisibility(): void {
+    this.showRegisterConfirmPassword = !this.showRegisterConfirmPassword;
+  }
+
+  loginAppUser(): void {
+    if (this.authSubmitting || this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    const { email, password } = this.loginForm.getRawValue();
+    this.authSubmitting = true;
+    this.appAuth
+      .login(email, password)
+      .pipe(
+        finalize(() => {
+          this.authSubmitting = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => this.handleAppAuthSuccess('auth.loginDone'),
+        error: (error: { error?: { message?: string } }) => {
+          this.snackBar.open(error?.error?.message || this.i18n.t('auth.loginError'), this.i18n.t('common.close'), {
+            duration: 3000
+          });
+        }
+      });
+  }
+
+  registerAppUser(): void {
+    if (this.authSubmitting || this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
+    }
+
+    const { firstName, lastName, email, password, confirmPassword } = this.registerForm.getRawValue();
+    if (password !== confirmPassword) {
+      this.snackBar.open(this.i18n.t('completeRegistration.passwordMismatch'), this.i18n.t('common.close'), { duration: 2800 });
+      return;
+    }
+
+    this.authSubmitting = true;
+    this.appAuth
+      .register(firstName, lastName, email, password)
+      .pipe(
+        finalize(() => {
+          this.authSubmitting = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => this.handleAppAuthSuccess('auth.registerDone'),
+        error: (error: { error?: { message?: string } }) => {
+          this.snackBar.open(error?.error?.message || this.i18n.t('auth.registerError'), this.i18n.t('common.close'), {
+            duration: 3200
+          });
+        }
+      });
+  }
+
+  requestPasswordReset(): void {
+    if (this.resetSubmitting || this.resetForm.invalid) {
+      this.resetForm.markAllAsTouched();
+      return;
+    }
+
+    const { email } = this.resetForm.getRawValue();
+    this.resetSubmitting = true;
+    this.appAuth
+      .requestPasswordReset(email, window.location.origin)
+      .pipe(
+        finalize(() => {
+          this.resetSubmitting = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {
+          this.resetRequested = true;
+          this.snackBar.open(this.i18n.t('auth.resetSent'), this.i18n.t('common.ok'), { duration: 3200 });
+        },
+        error: () => {
+          this.snackBar.open(this.i18n.t('auth.resetError'), this.i18n.t('common.close'), { duration: 3200 });
+        }
+      });
+  }
+
+  openAppLogoutDialog(): void {
+    if (!this.isAppLoggedIn || this.loggingOutApp || !this.appLogoutDialog) {
+      return;
+    }
+
+    this.dialog
+      .open(this.appLogoutDialog, {
+        autoFocus: false,
+        restoreFocus: true,
+        width: '92vw',
+        maxWidth: '420px'
+      })
+      .afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((confirmed) => {
+        if (confirmed === true) {
+          this.logoutAppUser();
+        }
+      });
+  }
+
+  private logoutAppUser(): void {
+    if (this.loggingOutApp) {
+      return;
+    }
+
+    this.loggingOutApp = true;
+    this.purchaseService
+      .setAdminUnlockSimulation(false)
+      .pipe(
+        switchMap(() => this.logoutDashboardSessionIfNeeded()),
+        switchMap(() => this.appAuth.logout()),
+        finalize(() => {
+          this.loggingOutApp = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {
+          this.appSession = null;
+          this.dashboardSession = null;
+          this.isAdmin = false;
+          this.adminUnlockSimulationActive = false;
+          this.purchaseService.resetLocalState();
+          this.purchaseService.refresh();
+          this.snackBar.open(this.i18n.t('auth.logoutDone'), this.i18n.t('common.ok'), { duration: 2200 });
+        },
+        error: () => {
+          this.snackBar.open(this.i18n.t('auth.logoutError'), this.i18n.t('common.close'), { duration: 3000 });
+        }
+      });
+  }
+
+  private logoutDashboardSessionIfNeeded() {
+    if (!this.adminAuth.session?.token) {
+      return of(void 0);
+    }
+
+    return this.adminAuth.logout();
+  }
+
+  toggleAdminUnlockSimulation(enabled: boolean): void {
+    if (this.togglingAdminUnlockSimulation) {
+      return;
+    }
+
+    this.togglingAdminUnlockSimulation = true;
+    this.purchaseService.setAdminUnlockSimulation(enabled).subscribe({
+      next: (changed) => {
+        this.togglingAdminUnlockSimulation = false;
+        if (!changed) {
+          this.snackBar.open(this.i18n.t('profile.adminSimulationUnavailable'), this.i18n.t('common.close'), {
+            duration: 3000
+          });
+          return;
+        }
+
+        const message = enabled ? 'profile.adminSimulationEnabled' : 'profile.adminSimulationDisabled';
+        this.snackBar.open(this.i18n.t(message), this.i18n.t('common.ok'), { duration: 2200 });
+      },
+      error: () => {
+        this.togglingAdminUnlockSimulation = false;
+        this.snackBar.open(this.i18n.t('profile.adminSimulationUnavailable'), this.i18n.t('common.close'), {
+          duration: 3000
+        });
+      }
+    });
   }
 
   codeEntryStatusLabel(entry: HotelCodeStatusEntry): string {
@@ -221,27 +552,67 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return String(entry.inviteCode || '').trim().toUpperCase() === String(this.hotelAssociation.inviteCode || '').trim().toUpperCase();
   }
 
-  resetUserSession(): void {
-    if (this.resettingUserSession) {
+  private roleLabel(role: UserRole): string {
+    if (role === 'admin') {
+      return this.i18n.t('profile.role.admin');
+    }
+    if (role === 'facility_manager') {
+      return this.i18n.t('profile.role.facilityManager');
+    }
+    return this.i18n.t('profile.role.user');
+  }
+
+  private handleAppAuthSuccess(messageKey: string): void {
+    this.appSessionChecked = true;
+    this.appSession = this.appAuth.session;
+    const dashboardSession = this.adminAuth.session;
+    if (dashboardSession?.user) {
+      this.adminSessionChecked = true;
+      this.dashboardSession = dashboardSession;
+      this.isAdmin = dashboardSession.user.role === 'admin';
+    }
+    this.purchaseService.refresh();
+    this.syncHotelAssociationDetails();
+    this.snackBar.open(this.i18n.t(messageKey), this.i18n.t('common.ok'), { duration: 2200 });
+
+    const returnUrl = String(this.route.snapshot.queryParamMap.get('returnUrl') || '').trim();
+    if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
+      void this.router.navigateByUrl(returnUrl);
+    }
+  }
+
+  private syncAppSessionFromDashboard(): void {
+    const dashboardToken = this.adminAuth.session?.token;
+    if (!dashboardToken || this.appAuth.isAuthenticated) {
       return;
     }
 
-    const confirmed = window.confirm(this.i18n.t('profile.resetConfirm'));
-    if (!confirmed) {
-      return;
+    this.appAuth
+      .loginWithDashboardSession(dashboardToken)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.appSessionChecked = true;
+          this.appSession = this.appAuth.session;
+          this.purchaseService.refresh();
+          this.syncHotelAssociationDetails();
+        },
+        error: () => {
+          // Dashboard session remains valid even if app-account sync is unavailable.
+        }
+      });
+  }
+
+  private initialsFrom(source: string): string {
+    const normalized = String(source || 'WA').trim();
+    const parts = normalized
+      .split(/\s+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
-
-    this.resettingUserSession = true;
-
-    const finalizeReset = () => {
-      this.purchaseService.resetLocalState();
-      this.appState.resetUserSession();
-      this.hotelCodeEntries = [];
-      this.purchaseService.refresh();
-      this.resettingUserSession = false;
-      this.snackBar.open(this.i18n.t('profile.resetDone'), this.i18n.t('common.ok'), { duration: 2400 });
-    };
-    finalizeReset();
+    return normalized.slice(0, 2).toUpperCase();
   }
 
   navigateToAssociatedStructure(): void {

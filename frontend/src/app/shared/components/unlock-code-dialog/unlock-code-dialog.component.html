@@ -121,7 +121,13 @@
         </div>
 
         <p class="error-text" *ngIf="paymentError">{{ paymentError }}</p>
-        <div #paypalButtonsContainer class="paypal-buttons" *ngIf="!processingPayment && !paymentCompleted"></div>
+        <div class="auth-required" *ngIf="!isAppLoggedIn">
+          <p>{{ i18n.t('auth.checkoutRequired') }}</p>
+          <button mat-flat-button color="primary" type="button" (click)="goToLogin()">
+            {{ i18n.t('auth.loginOrRegister') }}
+          </button>
+        </div>
+        <div #paypalButtonsContainer class="paypal-buttons" *ngIf="isAppLoggedIn && !processingPayment && !paymentCompleted"></div>
       </div>
     </div>
 

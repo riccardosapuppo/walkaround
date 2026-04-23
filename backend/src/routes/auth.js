@@ -16,7 +16,7 @@ const completeRegistrationSchema = z.object({
   password: z
     .string()
     .min(8, 'La password deve avere almeno 8 caratteri')
-    .max(120, 'La password e troppo lunga')
+    .max(120, 'La password è troppo lunga')
 });
 
 function sessionExpiryDate() {
@@ -24,7 +24,7 @@ function sessionExpiryDate() {
   return new Date(now + env.auth.sessionTtlHours * 60 * 60 * 1000);
 }
 
-async function createSession(userId, options = {}) {
+export async function createSession(userId, options = {}) {
   const token = createOpaqueToken(32);
   const tokenHash = hashToken(token);
   const expiresAt = sessionExpiryDate();

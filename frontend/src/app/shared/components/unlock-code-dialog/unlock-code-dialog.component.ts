@@ -8,7 +8,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
+import { AppAuthService } from '../../../core/services/app-auth.service';
 import { AppStateService, HotelAssociation } from '../../../core/services/app-state.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { PayPalCheckoutRequest, PayPalCheckoutService } from '../../../core/services/paypal-checkout.service';
@@ -117,6 +119,8 @@ export class UnlockCodeDialogComponent implements AfterViewChecked, OnDestroy {
     private readonly http: HttpClient,
     private readonly paypalCheckout: PayPalCheckoutService,
     private readonly appState: AppStateService,
+    private readonly appAuth: AppAuthService,
+    private readonly router: Router,
     public readonly i18n: I18nService,
     @Inject(MAT_DIALOG_DATA) readonly data: UnlockCodeDialogData
   ) {
@@ -135,7 +139,7 @@ export class UnlockCodeDialogComponent implements AfterViewChecked, OnDestroy {
   }
 
   ngAfterViewChecked(): void {
-    if (this.step !== 'summary' || this.paymentCompleted) {
+    if (this.step !== 'summary' || this.paymentCompleted || !this.isAppLoggedIn) {
       return;
     }
 
@@ -188,6 +192,10 @@ export class UnlockCodeDialogComponent implements AfterViewChecked, OnDestroy {
 
   get finalAmount(): number {
     return this.roundMoney(Math.max(0, this.baseAmount - this.discountAmount));
+  }
+
+  get isAppLoggedIn(): boolean {
+    return this.appAuth.isAuthenticated;
   }
 
   associationCitiesLabel(association: HotelAssociation | null | undefined): string {
@@ -261,6 +269,11 @@ export class UnlockCodeDialogComponent implements AfterViewChecked, OnDestroy {
 
   proceedWithoutCode(): void {
     this.openPayPalSummaryWithoutCode();
+  }
+
+  goToLogin(): void {
+    this.dialogRef.close({ action: 'cancel' });
+    void this.router.navigate(['/profile'], { queryParams: { returnUrl: this.router.url } });
   }
 
   closeAfterPayment(): void {
@@ -349,7 +362,7 @@ export class UnlockCodeDialogComponent implements AfterViewChecked, OnDestroy {
     this.http
       .post<HotelValidationResponse>(`${environment.apiBaseUrl}/hotel/validate`, {
         code,
-        userId: this.data.userId,
+        userId: this.appAuth.user?.id || this.data.userId,
         targetType: this.data.target.type,
         cityId: this.data.target.cityId
       })
@@ -571,7 +584,7 @@ export class UnlockCodeDialogComponent implements AfterViewChecked, OnDestroy {
     }
 
     return {
-      userId: this.data.userId,
+      userId: this.appAuth.user?.id || this.data.userId,
       checkoutContext: 'single',
       poiId: this.data.target.poiId || '',
       ignoreDiscountCode: !this.appliedAssociation?.structureId

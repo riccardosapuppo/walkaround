@@ -15,8 +15,10 @@ import {
   DashboardCatalogPoi,
   DashboardDiscountCode,
   DashboardPayPalSettings,
+  DashboardPartnerEmailSettings,
   DashboardPaymentRow,
   DashboardPaymentsSummary,
+  PartnerEmailSettingsInput,
   PartnerRequestApprovalInput,
   PartnerRequestPdfPreviewInput,
   DashboardStructure,
@@ -30,27 +32,27 @@ import {
   OpenAiTranslationUsage,
   UserRole
 } from '../../core/services/admin-auth.service';
-import { CityTranslations, PoiTranslationFields, PoiTranslations } from '../../core/models/localized-content.model';
+import { PoiTranslationFields, PoiTranslations } from '../../core/models/localized-content.model';
 
 type DashboardSection =
   | 'users'
   | 'structures'
   | 'discounts'
   | 'partnerRequests'
+  | 'partnerEmails'
   | 'payments'
   | 'paypal'
   | 'gptTranslations'
   | 'catalog';
 type CatalogTab = 'cities' | 'pois';
 type PoiMapPickerTarget = 'create' | 'edit';
-type ContentEditorLanguage = 'en' | 'fr' | 'es';
+type ContentEditorLanguage = 'en' | 'fr' | 'es' | 'de' | 'pl';
 type PoiMapSearchResult = {
   displayName: string;
   lat: number;
   lng: number;
   osmUrl: string;
 };
-type CatalogCityTranslationsFormValue = Record<ContentEditorLanguage, { name: string }>;
 type CatalogPoiTranslationsFormValue = Record<
   ContentEditorLanguage,
   {
@@ -66,6 +68,47 @@ type DiscountCodesByStructureGroup = {
   codes: DashboardDiscountCode[];
 };
 
+const DEFAULT_PARTNER_EMAIL_SETTINGS: PartnerEmailSettingsInput = {
+  approvalSubject: 'Walk Around - Richiesta partner approvata',
+  approvalBody: [
+    'Ciao {{contactName}},',
+    '',
+    'la richiesta partner per {{structureName}} e stata approvata.',
+    'Codice sconto: {{discountCode}}.',
+    'Citta abilitate: {{cityNames}}.',
+    'Scadenza codice: {{expiresAt}}.',
+    '',
+    'In allegato trovi il PDF pronto da esporre ai turisti.',
+    '',
+    'Per qualsiasi dubbio puoi rispondere a questa email.'
+  ].join('\n'),
+  rejectionSubject: 'Walk Around - Richiesta partner non approvata',
+  rejectionBody: [
+    'Ciao {{contactName}},',
+    '',
+    'ti informiamo che la richiesta partner per {{structureName}} non e stata approvata.',
+    '',
+    'Per maggiori informazioni puoi rispondere a questa email.',
+    '',
+    'Grazie,',
+    'Walk Around'
+  ].join('\n')
+};
+
+const DEFAULT_PARTNER_EMAIL_PLACEHOLDERS: DashboardPartnerEmailSettings['placeholders'] = [
+  { key: 'contactName', description: 'Nome e cognome del referente partner' },
+  { key: 'structureName', description: 'Nome della struttura' },
+  { key: 'structureType', description: 'Tipologia della struttura' },
+  { key: 'contactEmail', description: 'Email del referente partner' },
+  { key: 'requestId', description: 'ID della richiesta partner' },
+  { key: 'addressCity', description: 'Citta indicata nella richiesta' },
+  { key: 'discountCode', description: 'Codice sconto generato in approvazione' },
+  { key: 'cityNames', description: 'Citta abilitate per il codice sconto' },
+  { key: 'expiresAt', description: 'Scadenza del codice sconto' },
+  { key: 'userDiscountPercent', description: 'Percentuale sconto applicata agli utenti' },
+  { key: 'structureFixedAmount', description: 'Quota fissa riconosciuta alla struttura' }
+];
+
 @Component({
   standalone: false,
   selector: 'app-admin-dashboard',
@@ -78,7 +121,9 @@ export class AdminDashboardComponent implements OnInit {
   readonly contentLanguages: ReadonlyArray<{ code: ContentEditorLanguage; label: string }> = [
     { code: 'en', label: 'Inglese' },
     { code: 'fr', label: 'Francese' },
-    { code: 'es', label: 'Spagnolo' }
+    { code: 'es', label: 'Spagnolo' },
+    { code: 'de', label: 'Tedesco' },
+    { code: 'pl', label: 'Polacco' }
   ];
   readonly poiCategoryOptions: string[] = [
     'Monumento',
@@ -104,6 +149,7 @@ export class AdminDashboardComponent implements OnInit {
     { id: 'structures', label: 'Strutture' },
     { id: 'discounts', label: 'Codici invito/sconto' },
     { id: 'partnerRequests', label: 'Richieste partner' },
+    { id: 'partnerEmails', label: 'Email partner' },
     { id: 'payments', label: 'Pagamenti' },
     { id: 'paypal', label: 'PayPal' },
     { id: 'gptTranslations', label: 'Traduzioni GPT' },
@@ -127,6 +173,7 @@ export class AdminDashboardComponent implements OnInit {
   catalogTab: CatalogTab = 'cities';
 
   loggingIn = false;
+  showLoginPassword = false;
   inviting = false;
   creatingUser = false;
   loadingUsers = false;
@@ -134,6 +181,7 @@ export class AdminDashboardComponent implements OnInit {
   loadingAssociatedUsers = false;
   loadingPayments = false;
   loadingPartnerRequests = false;
+  loadingPartnerEmailSettings = false;
   loadingPayPalSettings = false;
   loadingOpenAiTranslationSettings = false;
   loadingOpenAiTranslationStatus = false;
@@ -143,6 +191,7 @@ export class AdminDashboardComponent implements OnInit {
   creatingDiscountCode = false;
   updatingDiscountCode = false;
   savingPayPalSettings = false;
+  savingPartnerEmailSettings = false;
   savingOpenAiTranslationSettings = false;
   bulkTranslatingPois = false;
   testingPayPalSettings = false;
@@ -153,11 +202,11 @@ export class AdminDashboardComponent implements OnInit {
   uploadingCatalogAudio = false;
   uploadingCatalogCityImage = false;
   uploadingCatalogImage = false;
-  uploadingCatalogPoiTranslationAudio: Record<ContentEditorLanguage, boolean> = { en: false, fr: false, es: false };
+  uploadingCatalogPoiTranslationAudio: Record<ContentEditorLanguage, boolean> = { en: false, fr: false, es: false, de: false, pl: false };
   uploadingCatalogCityEditImage = false;
   uploadingCatalogPoiEditImage = false;
   uploadingCatalogPoiEditAudio = false;
-  uploadingCatalogPoiEditTranslationAudio: Record<ContentEditorLanguage, boolean> = { en: false, fr: false, es: false };
+  uploadingCatalogPoiEditTranslationAudio: Record<ContentEditorLanguage, boolean> = { en: false, fr: false, es: false, de: false, pl: false };
   deletingCatalogCityId: string | null = null;
   deletingCatalogPoiId: string | null = null;
   savingUserId: string | null = null;
@@ -177,6 +226,7 @@ export class AdminDashboardComponent implements OnInit {
   associatedUsers: StructureAssociatedUserRow[] = [];
   payments: DashboardPaymentRow[] = [];
   partnerRequests: DashboardPartnerRequest[] = [];
+  partnerEmailSettings: DashboardPartnerEmailSettings | null = null;
   payPalSettings: DashboardPayPalSettings | null = null;
   openAiTranslationSettings: OpenAiTranslationSettings | null = null;
   openAiTranslationStatusRows: OpenAiPoiTranslationStatus[] = [];
@@ -338,6 +388,13 @@ export class AdminDashboardComponent implements OnInit {
     expiresAt: ['', [Validators.required]]
   });
 
+  readonly partnerEmailSettingsForm = this.formBuilder.nonNullable.group({
+    approvalSubject: [DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject, [Validators.required, Validators.maxLength(200)]],
+    approvalBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody, [Validators.required, Validators.maxLength(10000)]],
+    rejectionSubject: [DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject, [Validators.required, Validators.maxLength(200)]],
+    rejectionBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody, [Validators.required, Validators.maxLength(10000)]]
+  });
+
   readonly payPalForm = this.formBuilder.nonNullable.group({
     isEnabled: [false],
     mode: ['sandbox' as 'sandbox' | 'live', [Validators.required]],
@@ -366,17 +423,7 @@ export class AdminDashboardComponent implements OnInit {
     region: [{ value: this.fixedCreateCityRegion, disabled: true }, [Validators.required, Validators.maxLength(120)]],
     bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     heroImage: ['', [Validators.required, Validators.maxLength(500)]],
-    translations: this.formBuilder.nonNullable.group({
-      en: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(120)]]
-      }),
-      fr: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(120)]]
-      }),
-      es: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(120)]]
-      })
-    })
+    translations: this.formBuilder.nonNullable.group({})
   });
 
   readonly catalogPoiForm = this.formBuilder.nonNullable.group({
@@ -407,6 +454,16 @@ export class AdminDashboardComponent implements OnInit {
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
         audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      de: this.formBuilder.nonNullable.group({
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      pl: this.formBuilder.nonNullable.group({
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
       })
     })
   });
@@ -416,17 +473,7 @@ export class AdminDashboardComponent implements OnInit {
     region: ['', [Validators.required, Validators.maxLength(120)]],
     bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     heroImage: ['', [Validators.required, Validators.maxLength(500)]],
-    translations: this.formBuilder.nonNullable.group({
-      en: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(120)]]
-      }),
-      fr: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(120)]]
-      }),
-      es: this.formBuilder.nonNullable.group({
-        name: ['', [Validators.maxLength(120)]]
-      })
-    })
+    translations: this.formBuilder.nonNullable.group({})
   });
 
   readonly catalogPoiEditForm = this.formBuilder.nonNullable.group({
@@ -454,6 +501,16 @@ export class AdminDashboardComponent implements OnInit {
         audioUrl: ['', [Validators.maxLength(500)]]
       }),
       es: this.formBuilder.nonNullable.group({
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      de: this.formBuilder.nonNullable.group({
+        descriptionShort: ['', [Validators.maxLength(1000)]],
+        descriptionLong: ['', [Validators.maxLength(10000)]],
+        audioUrl: ['', [Validators.maxLength(500)]]
+      }),
+      pl: this.formBuilder.nonNullable.group({
         descriptionShort: ['', [Validators.maxLength(1000)]],
         descriptionLong: ['', [Validators.maxLength(10000)]],
         audioUrl: ['', [Validators.maxLength(500)]]
@@ -546,6 +603,10 @@ export class AdminDashboardComponent implements OnInit {
     return this.canManageUsers;
   }
 
+  get canManagePartnerEmails(): boolean {
+    return this.canManageUsers;
+  }
+
   get canManageGptTranslations(): boolean {
     return this.canManageUsers;
   }
@@ -566,6 +627,14 @@ export class AdminDashboardComponent implements OnInit {
 
   get canSavePayPalSettings(): boolean {
     return this.canManagePayPal && !this.savingPayPalSettings && this.payPalForm.valid;
+  }
+
+  get canSavePartnerEmailSettings(): boolean {
+    return this.canManagePartnerEmails && !this.savingPartnerEmailSettings && this.partnerEmailSettingsForm.valid;
+  }
+
+  get partnerEmailPlaceholders(): DashboardPartnerEmailSettings['placeholders'] {
+    return this.partnerEmailSettings?.placeholders?.length ? this.partnerEmailSettings.placeholders : DEFAULT_PARTNER_EMAIL_PLACEHOLDERS;
   }
 
   get canSaveOpenAiTranslationSettings(): boolean {
@@ -882,6 +951,8 @@ export class AdminDashboardComponent implements OnInit {
       this.loadPayments();
     } else if (section === 'partnerRequests' && this.canManageUsers) {
       this.loadPartnerRequests();
+    } else if (section === 'partnerEmails' && this.canManagePartnerEmails) {
+      this.loadPartnerEmailSettings();
     } else if (section === 'paypal' && this.canManagePayPal) {
       this.loadPayPalSettings();
     } else if (section === 'gptTranslations' && this.canManageGptTranslations) {
@@ -1169,6 +1240,10 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  toggleLoginPasswordVisibility(): void {
+    this.showLoginPassword = !this.showLoginPassword;
+  }
+
   invite(): void {
     if (!this.canManageUsers) {
       return;
@@ -1411,6 +1486,83 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  loadPartnerEmailSettings(force = false): void {
+    if (!this.canManagePartnerEmails || this.loadingPartnerEmailSettings) {
+      return;
+    }
+    if (this.partnerEmailSettings && !force) {
+      return;
+    }
+
+    this.loadingPartnerEmailSettings = true;
+    this.auth.getPartnerEmailSettings().subscribe({
+      next: (settings) => {
+        this.loadingPartnerEmailSettings = false;
+        this.partnerEmailSettings = settings;
+        this.partnerEmailSettingsForm.reset({
+          approvalSubject: settings.approvalSubject || '',
+          approvalBody: settings.approvalBody || '',
+          rejectionSubject: settings.rejectionSubject || '',
+          rejectionBody: settings.rejectionBody || ''
+        });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingPartnerEmailSettings = false;
+        const message = error?.error?.message || 'Errore caricamento template email partner';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  savePartnerEmailSettings(): void {
+    if (!this.canSavePartnerEmailSettings) {
+      this.partnerEmailSettingsForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.partnerEmailSettingsForm.getRawValue();
+    const payload: PartnerEmailSettingsInput = {
+      approvalSubject: formValue.approvalSubject.trim(),
+      approvalBody: formValue.approvalBody.trim(),
+      rejectionSubject: formValue.rejectionSubject.trim(),
+      rejectionBody: formValue.rejectionBody.trim()
+    };
+
+    this.savingPartnerEmailSettings = true;
+    this.auth.updatePartnerEmailSettings(payload).subscribe({
+      next: (settings) => {
+        this.savingPartnerEmailSettings = false;
+        this.partnerEmailSettings = settings;
+        this.partnerEmailSettingsForm.reset({
+          approvalSubject: settings.approvalSubject || '',
+          approvalBody: settings.approvalBody || '',
+          rejectionSubject: settings.rejectionSubject || '',
+          rejectionBody: settings.rejectionBody || ''
+        });
+        this.snackBar.open('Template email partner salvati', 'OK', { duration: 2400 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.savingPartnerEmailSettings = false;
+        const message = error?.error?.message || 'Errore salvataggio template email partner';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  resetPartnerEmailSettingsToDefaults(): void {
+    this.partnerEmailSettingsForm.reset({
+      approvalSubject: DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject,
+      approvalBody: DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody,
+      rejectionSubject: DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject,
+      rejectionBody: DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
+    });
+    this.partnerEmailSettingsForm.markAsDirty();
+  }
+
+  partnerEmailPlaceholderToken(key: string): string {
+    return `{{${key}}}`;
+  }
+
   openPartnerRequestApproval(request: DashboardPartnerRequest): void {
     if (!this.canManageUsers || !this.partnerRequestApprovalDialog) {
       return;
@@ -1586,7 +1738,7 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    const confirmed = window.confirm(`Negare la richiesta partner per "${request.structureName}"?`);
+    const confirmed = window.confirm(`Negare la richiesta partner per "${request.structureName}" e inviare la mail di rifiuto?`);
     if (!confirmed) {
       return;
     }
@@ -1598,7 +1750,7 @@ export class AdminDashboardComponent implements OnInit {
         this.partnerRequests = this.sortPartnerRequests(
           this.partnerRequests.map((item) => (item.id === updated.id ? updated : item))
         );
-        this.snackBar.open(`Richiesta ${updated.structureName} negata`, 'OK', { duration: 2600 });
+        this.snackBar.open(`Richiesta ${updated.structureName} negata e inviata via email`, 'OK', { duration: 3000 });
       },
       error: (error: { error?: { message?: string } }) => {
         this.rejectingPartnerRequestId = null;
@@ -2541,7 +2693,7 @@ export class AdminDashboardComponent implements OnInit {
       region: this.fixedCreateCityRegion,
       bundlePrice: 0,
       heroImage: '',
-      translations: this.emptyCatalogCityTranslationsFormValue()
+      translations: {}
     });
     this.catalogCityForm.controls.region.disable({ emitEvent: false });
   }
@@ -2554,7 +2706,7 @@ export class AdminDashboardComponent implements OnInit {
       region: city.region,
       bundlePrice: city.bundlePrice,
       heroImage: city.heroImage,
-      translations: this.catalogCityTranslationsFormValue(city.translations)
+      translations: {}
     });
 
     if (!this.editCatalogCityDialog) {
@@ -2601,7 +2753,7 @@ export class AdminDashboardComponent implements OnInit {
       region: '',
       bundlePrice: 0,
       heroImage: '',
-      translations: this.emptyCatalogCityTranslationsFormValue()
+      translations: {}
     });
   }
 
@@ -3283,6 +3435,7 @@ export class AdminDashboardComponent implements OnInit {
       this.associatedUsers = [];
       this.payments = [];
       this.partnerRequests = [];
+      this.partnerEmailSettings = null;
       this.payPalSettings = null;
       this.openAiTranslationSettings = null;
       this.openAiTranslationStatusRows = [];
@@ -3433,7 +3586,7 @@ export class AdminDashboardComponent implements OnInit {
         region: this.fixedCreateCityRegion,
         bundlePrice: 0,
         heroImage: '',
-        translations: this.emptyCatalogCityTranslationsFormValue()
+        translations: {}
       });
       this.catalogCityForm.controls.region.disable({ emitEvent: false });
       this.discountCodeCreateForm.reset({
@@ -3477,7 +3630,7 @@ export class AdminDashboardComponent implements OnInit {
         region: '',
         bundlePrice: 0,
         heroImage: '',
-        translations: this.emptyCatalogCityTranslationsFormValue()
+        translations: {}
       });
       this.catalogPoiForm.reset({
         cityId: '',
@@ -3816,6 +3969,9 @@ export class AdminDashboardComponent implements OnInit {
     if (this.activeSection === 'partnerRequests' && this.canManageUsers) {
       this.loadPartnerRequests();
     }
+    if (this.activeSection === 'partnerEmails' && this.canManagePartnerEmails) {
+      this.loadPartnerEmailSettings(true);
+    }
     if (this.activeSection === 'payments') {
       this.loadPayments();
     }
@@ -3859,7 +4015,6 @@ export class AdminDashboardComponent implements OnInit {
       region: string;
       bundlePrice: number;
       heroImage: string;
-      translations: CatalogCityTranslationsFormValue;
     },
     isDefault: boolean
   ): CatalogCityInput {
@@ -3869,7 +4024,7 @@ export class AdminDashboardComponent implements OnInit {
       bundlePrice: Number(value.bundlePrice),
       heroImage: value.heroImage.trim(),
       isDefault: Boolean(isDefault),
-      translations: this.buildCatalogCityTranslationsPayload(value.translations)
+      translations: {}
     };
   }
 
@@ -3911,14 +4066,6 @@ export class AdminDashboardComponent implements OnInit {
     };
   }
 
-  private emptyCatalogCityTranslationsFormValue(): CatalogCityTranslationsFormValue {
-    return {
-      en: { name: '' },
-      fr: { name: '' },
-      es: { name: '' }
-    };
-  }
-
   private emptyCatalogPoiTranslationsFormValue(): CatalogPoiTranslationsFormValue {
     return {
       en: {
@@ -3935,15 +4082,17 @@ export class AdminDashboardComponent implements OnInit {
         descriptionShort: '',
         descriptionLong: '',
         audioUrl: ''
+      },
+      de: {
+        descriptionShort: '',
+        descriptionLong: '',
+        audioUrl: ''
+      },
+      pl: {
+        descriptionShort: '',
+        descriptionLong: '',
+        audioUrl: ''
       }
-    };
-  }
-
-  private catalogCityTranslationsFormValue(translations: CityTranslations | null | undefined): CatalogCityTranslationsFormValue {
-    return {
-      en: { name: String(translations?.en?.name || '') },
-      fr: { name: String(translations?.fr?.name || '') },
-      es: { name: String(translations?.es?.name || '') }
     };
   }
 
@@ -3963,21 +4112,18 @@ export class AdminDashboardComponent implements OnInit {
         descriptionShort: String(translations?.es?.descriptionShort || ''),
         descriptionLong: String(translations?.es?.descriptionLong || ''),
         audioUrl: String(translations?.es?.audioUrl || '')
+      },
+      de: {
+        descriptionShort: String(translations?.de?.descriptionShort || ''),
+        descriptionLong: String(translations?.de?.descriptionLong || ''),
+        audioUrl: String(translations?.de?.audioUrl || '')
+      },
+      pl: {
+        descriptionShort: String(translations?.pl?.descriptionShort || ''),
+        descriptionLong: String(translations?.pl?.descriptionLong || ''),
+        audioUrl: String(translations?.pl?.audioUrl || '')
       }
     };
-  }
-
-  private buildCatalogCityTranslationsPayload(value: CatalogCityTranslationsFormValue): CityTranslations | undefined {
-    const translations: CityTranslations = {};
-
-    this.contentLanguages.forEach(({ code }) => {
-      const name = this.normalizeTranslationValue(value?.[code]?.name);
-      if (name) {
-        translations[code] = { name };
-      }
-    });
-
-    return Object.keys(translations).length ? translations : undefined;
   }
 
   private buildCatalogPoiTranslationsPayload(value: CatalogPoiTranslationsFormValue): PoiTranslations | undefined {

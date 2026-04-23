@@ -24,6 +24,108 @@
   width: 100%;
 }
 
+.account-card {
+  gap: 12px;
+}
+
+.account-auth-head {
+  display: grid;
+  gap: 4px;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  p {
+    color: #677790;
+  }
+}
+
+.auth-tabs,
+.auth-form {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.reset-form {
+  padding-top: 2px;
+  border-top: 1px solid rgba(103, 119, 144, 0.18);
+
+  small {
+    color: #0f6b3f;
+  }
+}
+
+.account-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #1769aa;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.account-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+
+  span,
+  small {
+    color: #677790;
+  }
+
+  strong,
+  small {
+    overflow-wrap: anywhere;
+  }
+}
+
+.account-meta {
+  display: grid;
+  gap: 6px;
+  color: #677790;
+  font-size: 0.9rem;
+}
+
+.account-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.logout-dialog-body {
+  display: grid;
+  gap: 6px;
+
+  p {
+    margin: 0;
+    color: #677790;
+  }
+
+  small {
+    color: #677790;
+    overflow-wrap: anywhere;
+  }
+}
+
+.logout-dialog-actions {
+  gap: 8px;
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -39,6 +141,20 @@
 .structure-actions {
   display: flex;
   justify-content: flex-start;
+}
+
+.admin-simulation {
+  display: grid;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.admin-simulation-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .code-history {

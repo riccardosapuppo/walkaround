@@ -1,6 +1,8 @@
 import express from 'express';
 import { z } from 'zod';
-import { pool } from '../db/pool.js';
+import { resolveAppSessionUser } from '../auth/app-middleware.js';
+import { resolveSessionUser } from '../auth/middleware.js';
+import { pool, queryWithRetry } from '../db/pool.js';
 import {
   PayPalConfigurationError,
   getPayPalSettings,
@@ -10,6 +12,21 @@ import {
 } from '../services/paypal.js';
 
 const router = express.Router();
+
+async function requireCheckoutAppUser(req, userId) {
+  const session = await resolveAppSessionUser(req);
+  if (!session) {
+    const error = new Error('Accedi o crea un account per completare il pagamento.');
+    error.status = 401;
+    throw error;
+  }
+  if (session.user.id !== userId) {
+    const error = new Error('Sessione utente non valida per questo pagamento.');
+    error.status = 403;
+    throw error;
+  }
+  return session.user;
+}
 
 function sanitizeText(value) {
   if (typeof value !== 'string' || value.length === 0) {
@@ -128,8 +145,8 @@ function mapPoi(row) {
   };
 }
 
-function sanitizeCityTranslations(value) {
-  return sanitizeTranslations(value, ['name']);
+function sanitizeCityTranslations(_value) {
+  return {};
 }
 
 function sanitizePoiTranslations(value) {
@@ -141,7 +158,7 @@ function sanitizeTranslations(value, allowedFields) {
     return {};
   }
 
-  const supportedLanguages = ['it', 'en', 'fr', 'es'];
+  const supportedLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
   const sanitized = {};
 
   supportedLanguages.forEach((language) => {
@@ -1001,14 +1018,16 @@ router.post('/partner-registration-requests', async (req, res, next) => {
 
 router.get('/cities', async (_req, res, next) => {
   try {
-    const result = await pool.query(
+    const result = await queryWithRetry(
       `
       SELECT c.*, COUNT(p.id)::int AS poi_count
       FROM cities c
       LEFT JOIN pois p ON p.city_id = c.id
       GROUP BY c.id
       ORDER BY c.is_default DESC, c.name ASC
-      `
+      `,
+      [],
+      { label: 'public cities list' }
     );
 
     const data = result.rows.map((row) => ({
@@ -1026,14 +1045,15 @@ router.get('/cities/:cityId/pois', async (req, res, next) => {
   const { cityId } = req.params;
 
   try {
-    const result = await pool.query(
+    const result = await queryWithRetry(
       `
       SELECT *
       FROM pois
       WHERE city_id = $1
       ORDER BY name ASC
       `,
-      [cityId]
+      [cityId],
+      { label: 'public city pois list' }
     );
 
     res.json(result.rows.map(mapPoi));
@@ -1046,7 +1066,9 @@ router.get('/pois/:poiId', async (req, res, next) => {
   const { poiId } = req.params;
 
   try {
-    const result = await pool.query('SELECT * FROM pois WHERE id = $1 LIMIT 1', [poiId]);
+    const result = await queryWithRetry('SELECT * FROM pois WHERE id = $1 LIMIT 1', [poiId], {
+      label: 'public poi detail'
+    });
     if (!result.rowCount) {
       return res.status(404).json({ message: 'POI not found' });
     }
@@ -1162,6 +1184,7 @@ router.post('/paypal/checkout/create-order', async (req, res, next) => {
 
   const client = await pool.connect();
   try {
+    await requireCheckoutAppUser(req, parsed.data.userId);
     await markExpiredPayPalOrders(client);
     const settings = await getPayPalSettings(client);
     const checkoutPreview = await buildPayPalCheckoutPreview(parsed.data, client);
@@ -1268,6 +1291,9 @@ router.post('/paypal/checkout/create-order', async (req, res, next) => {
       checkout: checkoutPreview
     });
   } catch (error) {
+    if (error?.status) {
+      return res.status(error.status).json({ message: error.message, details: error.details || null });
+    }
     if (error instanceof PayPalConfigurationError) {
       return res.status(error.status || 502).json({ message: error.message });
     }
@@ -1291,6 +1317,7 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
   let pendingOrder = null;
 
   try {
+    await requireCheckoutAppUser(req, userId);
     await markExpiredPayPalOrders(client);
     const pendingQuery = await client.query(
       `
@@ -1606,9 +1633,32 @@ router.get('/me/purchases', async (req, res, next) => {
     return res.status(400).json({ message: 'Missing userId query parameter' });
   }
 
+  const adminUnlockSimulationRequested = String(req.query.adminUnlockSimulation || '').trim() === '1';
+
   try {
-    const [purchases, unlockedPois] = await Promise.all([
-      pool.query(
+    let adminUnlockSimulation = false;
+    if (adminUnlockSimulationRequested) {
+      const session = await resolveSessionUser(req);
+      if (!session || session.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Simulazione sblocco disponibile solo per admin' });
+      }
+      adminUnlockSimulation = true;
+    }
+
+    const cityUnlockSimulationQuery = adminUnlockSimulation
+      ? queryWithRetry(
+          `
+          SELECT id
+          FROM cities
+          ORDER BY name ASC
+          `,
+          [],
+          { label: 'admin simulated unlocked cities' }
+        )
+      : Promise.resolve({ rows: [] });
+
+    const [purchases, unlockedPois, simulatedUnlockedCities] = await Promise.all([
+      queryWithRetry(
         `
         SELECT
           id,
@@ -1630,9 +1680,10 @@ router.get('/me/purchases', async (req, res, next) => {
         WHERE user_id = $1
         ORDER BY purchased_at DESC
         `,
-        [userId]
+        [userId],
+        { label: 'user purchases list' }
       ),
-      pool.query(
+      queryWithRetry(
         `
         SELECT DISTINCT poi_id AS id
         FROM purchases
@@ -1649,8 +1700,10 @@ router.get('/me/purchases', async (req, res, next) => {
          AND b.city_id = p.city_id
          AND (b.purchased_at + INTERVAL '3 months') > NOW()
         `,
-        [userId]
-      )
+        [userId],
+        { label: 'user unlocked pois list' }
+      ),
+      cityUnlockSimulationQuery
     ]);
 
     const now = new Date();
@@ -1675,12 +1728,15 @@ router.get('/me/purchases', async (req, res, next) => {
     }));
 
     const unlockedPoiIds = unlockedPois.rows.map((row) => row.id);
-    const unlockedCityIds = Array.from(new Set(raw.filter((item) => item.type === 'bundle' && item.isActive).map((item) => item.cityId)));
+    const purchasedCityIds = raw.filter((item) => item.type === 'bundle' && item.isActive).map((item) => item.cityId);
+    const simulatedCityIds = adminUnlockSimulation ? simulatedUnlockedCities.rows.map((row) => row.id) : [];
+    const unlockedCityIds = Array.from(new Set([...purchasedCityIds, ...simulatedCityIds].filter(Boolean)));
 
     return res.json({
       items: raw,
       unlockedPoiIds,
-      unlockedCityIds
+      unlockedCityIds,
+      adminUnlockSimulation
     });
   } catch (error) {
     return next(error);

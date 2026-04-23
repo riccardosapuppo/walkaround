@@ -1,28 +1,32 @@
 import { Injectable } from '@angular/core';
 import { AppLanguage } from '../i18n/app-language';
 import { translations } from '../i18n/translations';
-import { CityTranslationFields, CityTranslations, PoiTranslationFields, PoiTranslations } from '../models/localized-content.model';
+import { PoiTranslationFields, PoiTranslations } from '../models/localized-content.model';
 import { AppStateService } from './app-state.service';
 
 const localeMap: Record<AppLanguage, string> = {
   it: 'it-IT',
   en: 'en-US',
   fr: 'fr-FR',
-  es: 'es-ES'
+  es: 'es-ES',
+  de: 'de-DE',
+  pl: 'pl-PL'
 };
 
 const paypalLocaleMap: Record<AppLanguage, string> = {
   it: 'it_IT',
   en: 'en_US',
   fr: 'fr_FR',
-  es: 'es_ES'
+  es: 'es_ES',
+  de: 'de_DE',
+  pl: 'pl_PL'
 };
 
-const cityNameMap: Record<string, Record<AppLanguage, string>> = {
-  catania: { it: 'Catania', en: 'Catania', fr: 'Catane', es: 'Catania' },
-  siracusa: { it: 'Siracusa', en: 'Syracuse', fr: 'Syracuse', es: 'Siracusa' },
-  taormina: { it: 'Taormina e dintorni', en: 'Taormina and surroundings', fr: 'Taormine et environs', es: 'Taormina y alrededores' },
-  ragusa: { it: 'Ragusa', en: 'Ragusa', fr: 'Raguse', es: 'Ragusa' }
+const cityNameMap: Record<string, string> = {
+  catania: 'Catania',
+  siracusa: 'Siracusa',
+  taormina: 'Taormina e dintorni',
+  ragusa: 'Ragusa'
 };
 
 @Injectable({ providedIn: 'root' })
@@ -43,8 +47,9 @@ export class I18nService {
 
   t(key: string, params?: Record<string, string | number | null | undefined>): string {
     const dictionary = translations[this.language];
+    const englishDictionary = translations.en;
     const fallbackDictionary = translations.it;
-    const template = dictionary[key] ?? fallbackDictionary[key] ?? key;
+    const template = dictionary[key] ?? fallbackDictionary[key] ?? englishDictionary[key] ?? key;
     if (!params) {
       return template;
     }
@@ -86,7 +91,7 @@ export class I18nService {
   translateCityById(cityId: string, fallback = ''): string {
     const normalizedCityId = String(cityId || '').trim().toLowerCase();
     if (cityNameMap[normalizedCityId]) {
-      return cityNameMap[normalizedCityId][this.language];
+      return cityNameMap[normalizedCityId];
     }
     return String(fallback || '').trim();
   }
@@ -99,10 +104,6 @@ export class I18nService {
     const key = `regions.${normalized}`;
     const translated = this.t(key);
     return translated === key ? String(region || '').trim() : translated;
-  }
-
-  resolveCityField(fallback: string | null | undefined, translationsMap: CityTranslations | null | undefined, field: keyof CityTranslationFields): string {
-    return this.resolveTranslatedField(fallback, translationsMap, field);
   }
 
   resolvePoiField(fallback: string | null | undefined, translationsMap: PoiTranslations | null | undefined, field: keyof PoiTranslationFields): string {
@@ -141,6 +142,12 @@ export class I18nService {
     }
     if (language === 'es') {
       return this.t('common.spanish');
+    }
+    if (language === 'de') {
+      return this.t('common.german');
+    }
+    if (language === 'pl') {
+      return this.t('common.polish');
     }
     return this.t('common.italian');
   }

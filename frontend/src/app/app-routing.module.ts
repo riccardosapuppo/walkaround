@@ -41,6 +41,12 @@ const routes: Routes = [
       import('./features/complete-registration/complete-registration.module').then((m) => m.CompleteRegistrationModule)
   },
   {
+    path: 'auth/app-password-reset',
+    data: { hideBottomNav: true },
+    loadChildren: () =>
+      import('./features/complete-registration/complete-registration.module').then((m) => m.CompleteRegistrationModule)
+  },
+  {
     path: 'auth/login',
     redirectTo: 'dashboard',
     pathMatch: 'full'

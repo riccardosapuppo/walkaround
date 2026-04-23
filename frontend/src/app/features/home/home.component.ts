@@ -253,7 +253,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   currentCityName(): string {
     const city = this.cities.find((item) => item.id === this.activeCityId);
-    return this.i18n.resolveCityField(city?.name, city?.translations, 'name') || this.cityName(this.activeCityId);
+    return String(city?.name || '').trim() || this.cityName(this.activeCityId);
   }
 
   currentCityRegion(): string {

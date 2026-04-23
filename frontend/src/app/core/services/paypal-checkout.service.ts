@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CheckoutPurchaseResponse } from './purchase.service';
 import { I18nService } from './i18n.service';
+import { AppAuthService } from './app-auth.service';
 
 type PayPalCheckoutContext = 'single' | 'bundle' | 'cart';
 
@@ -126,7 +127,8 @@ export class PayPalCheckoutService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly i18n: I18nService
+    private readonly i18n: I18nService,
+    private readonly appAuth: AppAuthService
   ) {}
 
   getSdkConfig() {
@@ -166,7 +168,9 @@ export class PayPalCheckoutService {
         callbacks.onStart?.();
         try {
           const created = await firstValueFrom(
-            this.http.post<PayPalCreateOrderResponse>(`${environment.apiBaseUrl}/paypal/checkout/create-order`, payload)
+            this.http.post<PayPalCreateOrderResponse>(`${environment.apiBaseUrl}/paypal/checkout/create-order`, payload, {
+              headers: this.appAuth.authHeaders()
+            })
           );
           callbacks.onCreate?.(created);
           return created.orderId;
@@ -188,6 +192,8 @@ export class PayPalCheckoutService {
             this.http.post<PayPalCaptureOrderResponse>(`${environment.apiBaseUrl}/paypal/checkout/capture-order`, {
               orderId,
               userId: payload.userId
+            }, {
+              headers: this.appAuth.authHeaders()
             })
           );
           callbacks.onSuccess(captured);

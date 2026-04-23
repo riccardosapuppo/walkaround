@@ -1,4 +1,4 @@
-import { pool } from '../db/pool.js';
+import { queryWithRetry } from '../db/pool.js';
 import { hashToken } from './security.js';
 
 const SESSION_BY_TOKEN_QUERY = `
@@ -27,40 +27,10 @@ const SESSION_BY_TOKEN_QUERY = `
   LIMIT 1
 `;
 
-function isTransientDbError(error) {
-  const code = error?.code;
-  return code === 'ECONNRESET' || code === 'EPIPE' || code === 'ETIMEDOUT';
-}
-
 async function querySessionByTokenHash(tokenHash) {
-  async function runLookup() {
-    const client = await pool.connect();
-    let destroyClient = false;
-
-    try {
-      return await client.query(SESSION_BY_TOKEN_QUERY, [tokenHash]);
-    } catch (error) {
-      destroyClient = isTransientDbError(error);
-      throw error;
-    } finally {
-      client.release(destroyClient);
-    }
-  }
-
-  try {
-    return await runLookup();
-  } catch (error) {
-    if (!isTransientDbError(error)) {
-      throw error;
-    }
-
-    console.warn('[auth] transient DB error while resolving session, retrying once', {
-      code: error.code,
-      message: error.message
-    });
-
-    return runLookup();
-  }
+  return queryWithRetry(SESSION_BY_TOKEN_QUERY, [tokenHash], {
+    label: 'dashboard session lookup'
+  });
 }
 
 function readBearerToken(req) {

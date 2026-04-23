@@ -6,10 +6,92 @@
   min-height: 100vh;
 }
 
-.login-card {
-  width: min(460px, calc(100% - 32px));
-  padding: 24px;
-  margin: 28px auto;
+.dashboard-login-surface {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  padding: clamp(32px, 8vh, 72px) 20px;
+  background: #f3f7fc;
+}
+
+.login-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.login-logo {
+  display: block;
+  width: min(224px, 72vw);
+  height: auto;
+  object-fit: contain;
+}
+
+.login-copy {
+  width: min(520px, 100%);
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.login-kicker {
+  display: block;
+  margin-bottom: 8px;
+  color: #f07c00;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.login-copy h1 {
+  margin: 0;
+  color: #09284a;
+  font-size: clamp(2.15rem, 5vw, 3.1rem);
+  line-height: 1;
+}
+
+.login-copy p,
+.login-loading-state p {
+  margin: 10px 0 0;
+  color: #526b8d;
+  font-size: 1rem;
+}
+
+.login-form {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 14px;
+}
+
+.login-form mat-form-field {
+  width: 100%;
+}
+
+::ng-deep .login-form .mat-mdc-text-field-wrapper {
+  background: #ffffff;
+  border-radius: 10px;
+}
+
+::ng-deep .login-form .mdc-notched-outline__leading {
+  border-radius: 10px 0 0 10px;
+}
+
+::ng-deep .login-form .mdc-notched-outline__trailing {
+  border-radius: 0 10px 10px 0;
+}
+
+.login-form .big-cta {
+  min-height: 52px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+.login-loading-state {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
 }
 
 .form-grid {
@@ -35,6 +117,58 @@
 .gpt-settings-form {
   display: grid;
   gap: 14px;
+}
+
+.partner-email-settings-form {
+  display: grid;
+  gap: 16px;
+}
+
+.partner-email-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.partner-email-template-card,
+.partner-placeholder-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #d8e4f4;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.partner-email-template-card h3,
+.partner-email-template-card p,
+.partner-placeholder-panel p {
+  margin: 0;
+}
+
+.partner-email-template-card p,
+.partner-placeholder-panel p {
+  color: #526b8d;
+}
+
+.partner-placeholder-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.partner-placeholder-item {
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #526b8d;
+}
+
+.partner-placeholder-item code {
+  color: #153966;
+  font-weight: 700;
 }
 
 .paypal-status-strip {
