@@ -275,11 +275,15 @@ export class PayPalCheckoutService {
   private extractHttpErrorMessage(error: unknown): string {
     if (error && typeof error === 'object') {
       const record = error as {
-        error?: { message?: string };
+        error?: { message?: string; details?: unknown };
         message?: string;
       };
       const backendMessage = String(record.error?.message || '').trim();
       if (backendMessage) {
+        const detailMessage = this.extractPayPalDetailMessage(record.error?.details);
+        if (detailMessage && detailMessage !== backendMessage) {
+          return `${backendMessage}: ${detailMessage}`;
+        }
         return backendMessage;
       }
       const directMessage = String(record.message || '').trim();
@@ -289,5 +293,33 @@ export class PayPalCheckoutService {
     }
 
     return this.i18n.t('paypal.operationFailed');
+  }
+
+  private extractPayPalDetailMessage(details: unknown): string {
+    if (!details || typeof details !== 'object') {
+      return '';
+    }
+
+    const payload = details as {
+      message?: unknown;
+      details?: Array<{ issue?: unknown; description?: unknown }>;
+      name?: unknown;
+    };
+    const directMessage = String(payload.message || '').trim();
+    if (directMessage) {
+      return directMessage;
+    }
+
+    const firstDetail = Array.isArray(payload.details) ? payload.details[0] : null;
+    if (!firstDetail || typeof firstDetail !== 'object') {
+      return String(payload.name || '').trim();
+    }
+
+    const issue = String(firstDetail.issue || '').trim();
+    const description = String(firstDetail.description || '').trim();
+    if (issue && description) {
+      return `${issue}: ${description}`;
+    }
+    return description || issue;
   }
 }

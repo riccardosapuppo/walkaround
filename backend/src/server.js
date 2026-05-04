@@ -148,6 +148,11 @@ app.use(helmet({
 app.use(morgan('dev'));
 app.use(express.json({ limit: '30mb' }));
 
+app.use('/api', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 app.use('/public', async (req, res, next) => {
   try {
     const relativeRequestPath = String(req.path || '').replace(/^\/+/, '');

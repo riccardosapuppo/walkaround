@@ -20,16 +20,6 @@
   ],
   "dataGroups": [
     {
-      "name": "api-data",
-      "urls": ["/api/**"],
-      "cacheConfig": {
-        "maxSize": 100,
-        "maxAge": "12h",
-        "timeout": "10s",
-        "strategy": "freshness"
-      }
-    },
-    {
       "name": "media-runtime",
       "urls": ["/public/images/**", "/public/audio/**"],
       "cacheConfig": {

@@ -1849,6 +1849,16 @@ export class AdminDashboardComponent implements OnInit {
         next: (settings) => {
           this.savingPayPalSettings = false;
           this.payPalSettings = settings;
+          this.payPalForm.reset({
+            isEnabled: settings.isEnabled,
+            mode: settings.mode,
+            clientId: settings.clientId || '',
+            clientSecret: settings.clientSecret || '',
+            merchantId: settings.merchantId || '',
+            merchantEmail: settings.merchantEmail || '',
+            brandName: settings.brandName || 'Walk Around',
+            webhookId: settings.webhookId || ''
+          });
           this.snackBar.open('Configurazione PayPal salvata', 'OK', { duration: 2400 });
         },
         error: (error: { error?: { message?: string } }) => {
@@ -1870,6 +1880,16 @@ export class AdminDashboardComponent implements OnInit {
         this.testingPayPalSettings = false;
         if (response.settings) {
           this.payPalSettings = response.settings;
+          this.payPalForm.reset({
+            isEnabled: response.settings.isEnabled,
+            mode: response.settings.mode,
+            clientId: response.settings.clientId || '',
+            clientSecret: response.settings.clientSecret || '',
+            merchantId: response.settings.merchantId || '',
+            merchantEmail: response.settings.merchantEmail || '',
+            brandName: response.settings.brandName || 'Walk Around',
+            webhookId: response.settings.webhookId || ''
+          });
         }
         this.snackBar.open('Connessione PayPal verificata', 'OK', { duration: 2600 });
       },
