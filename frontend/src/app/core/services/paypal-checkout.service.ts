@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -124,6 +124,7 @@ export class PayPalCheckoutService {
   private loadedSdkKey = '';
   private sdkLoadPromise?: Promise<PayPalNamespace>;
   private sdkScript?: HTMLScriptElement;
+  private readonly noServiceWorkerCacheHeaders = new HttpHeaders({ 'ngsw-bypass': 'true' });
 
   constructor(
     private readonly http: HttpClient,
@@ -132,11 +133,15 @@ export class PayPalCheckoutService {
   ) {}
 
   getSdkConfig() {
-    return this.http.get<PayPalSdkConfigResponse>(`${environment.apiBaseUrl}/paypal/sdk-config`);
+    return this.http.get<PayPalSdkConfigResponse>(`${environment.apiBaseUrl}/paypal/sdk-config`, {
+      headers: this.noServiceWorkerCacheHeaders
+    });
   }
 
   getQuote(payload: PayPalCheckoutRequest) {
-    return this.http.post<PayPalQuoteResponse>(`${environment.apiBaseUrl}/paypal/checkout/quote`, payload);
+    return this.http.post<PayPalQuoteResponse>(`${environment.apiBaseUrl}/paypal/checkout/quote`, payload, {
+      headers: this.noServiceWorkerCacheHeaders
+    });
   }
 
   async renderButtons(

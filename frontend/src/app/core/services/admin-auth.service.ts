@@ -1216,7 +1216,8 @@ export class AdminAuthService {
 
   private authHeaders(token: string): HttpHeaders {
     return new HttpHeaders({
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
+      'ngsw-bypass': 'true'
     });
   }
 

@@ -163,7 +163,8 @@ export class AppAuthService {
 
   authHeaders(token = this.session?.token || ''): HttpHeaders {
     return new HttpHeaders({
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
+      'ngsw-bypass': 'true'
     });
   }
 
