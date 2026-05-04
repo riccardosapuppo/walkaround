@@ -68,6 +68,8 @@ type DiscountCodesByStructureGroup = {
   codes: DashboardDiscountCode[];
 };
 
+const DASHBOARD_ACTIVE_SECTION_KEY = 'walkaround.dashboard.activeSection';
+
 const DEFAULT_PARTNER_EMAIL_SETTINGS: PartnerEmailSettingsInput = {
   approvalSubject: 'Walk Around - Richiesta partner approvata',
   approvalBody: [
@@ -163,7 +165,7 @@ export class AdminDashboardComponent implements OnInit {
 
   authChecked = false;
   isAuthenticated = false;
-  activeSection: DashboardSection = 'users';
+  activeSection: DashboardSection = this.readStoredActiveSection();
   showInviteSection = false;
   showCreateUserSection = false;
   showStructureSection = false;
@@ -921,6 +923,7 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.activeSection = section;
+    this.storeActiveSection(section);
     if (section !== 'users') {
       this.showInviteSection = false;
       this.showCreateUserSection = false;
@@ -980,6 +983,7 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
     this.activeSection = this.visibleSections[0].id;
+    this.storeActiveSection(this.activeSection);
   }
 
   private syncDashboardDataForCurrentRole(): void {
@@ -1806,16 +1810,7 @@ export class AdminDashboardComponent implements OnInit {
       next: (settings) => {
         this.loadingPayPalSettings = false;
         this.payPalSettings = settings;
-        this.payPalForm.reset({
-          isEnabled: settings.isEnabled,
-          mode: settings.mode,
-          clientId: settings.clientId || '',
-          clientSecret: settings.clientSecret || '',
-          merchantId: settings.merchantId || '',
-          merchantEmail: settings.merchantEmail || '',
-          brandName: settings.brandName || 'Walk Around',
-          webhookId: settings.webhookId || ''
-        });
+        this.applyPayPalSettingsToForm(settings);
       },
       error: (error: { error?: { message?: string } }) => {
         this.loadingPayPalSettings = false;
@@ -1852,16 +1847,7 @@ export class AdminDashboardComponent implements OnInit {
         next: (settings) => {
           this.savingPayPalSettings = false;
           this.payPalSettings = settings;
-          this.payPalForm.reset({
-            isEnabled: settings.isEnabled,
-            mode: settings.mode,
-            clientId: settings.clientId || '',
-            clientSecret: settings.clientSecret || '',
-            merchantId: settings.merchantId || '',
-            merchantEmail: settings.merchantEmail || '',
-            brandName: settings.brandName || 'Walk Around',
-            webhookId: settings.webhookId || ''
-          });
+          this.applyPayPalSettingsToForm(settings);
           this.snackBar.open('Configurazione PayPal salvata', 'OK', { duration: 2400 });
         },
         error: (error: { error?: { message?: string } }) => {
@@ -1883,16 +1869,7 @@ export class AdminDashboardComponent implements OnInit {
         this.testingPayPalSettings = false;
         if (response.settings) {
           this.payPalSettings = response.settings;
-          this.payPalForm.reset({
-            isEnabled: response.settings.isEnabled,
-            mode: response.settings.mode,
-            clientId: response.settings.clientId || '',
-            clientSecret: response.settings.clientSecret || '',
-            merchantId: response.settings.merchantId || '',
-            merchantEmail: response.settings.merchantEmail || '',
-            brandName: response.settings.brandName || 'Walk Around',
-            webhookId: response.settings.webhookId || ''
-          });
+          this.applyPayPalSettingsToForm(response.settings);
         }
         this.snackBar.open('Connessione PayPal verificata', 'OK', { duration: 2600 });
       },
@@ -4030,6 +4007,41 @@ export class AdminDashboardComponent implements OnInit {
         replaceUrl: true
       });
     }
+  }
+
+  private readStoredActiveSection(): DashboardSection {
+    try {
+      const stored = localStorage.getItem(DASHBOARD_ACTIVE_SECTION_KEY) as DashboardSection | null;
+      const isKnownSection =
+        this.sections.some((section) => section.id === stored) ||
+        this.managerSections.some((section) => section.id === stored);
+      return isKnownSection && stored ? stored : 'users';
+    } catch {
+      return 'users';
+    }
+  }
+
+  private storeActiveSection(section: DashboardSection): void {
+    try {
+      localStorage.setItem(DASHBOARD_ACTIVE_SECTION_KEY, section);
+    } catch {
+      // Section persistence is only a UI convenience.
+    }
+  }
+
+  private applyPayPalSettingsToForm(settings: DashboardPayPalSettings): void {
+    this.payPalForm.setValue({
+      isEnabled: Boolean(settings.isEnabled),
+      mode: settings.mode === 'live' ? 'live' : 'sandbox',
+      clientId: settings.clientId || '',
+      clientSecret: settings.clientSecret || '',
+      merchantId: settings.merchantId || '',
+      merchantEmail: settings.merchantEmail || '',
+      brandName: settings.brandName || 'Walk Around',
+      webhookId: settings.webhookId || ''
+    });
+    this.payPalForm.markAsPristine();
+    this.payPalForm.markAsUntouched();
   }
 
   private toCatalogCityPayload(
