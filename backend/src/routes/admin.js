@@ -829,7 +829,7 @@ function buildPaymentCustomerProfile(row) {
 }
 
 function mapPayPalSettingsForResponse(row) {
-  const settings = mapPayPalSettingsRow(row);
+  const settings = row && Object.prototype.hasOwnProperty.call(row, 'clientId') ? row : mapPayPalSettingsRow(row);
   return {
     id: settings.id,
     isEnabled: settings.isEnabled,
