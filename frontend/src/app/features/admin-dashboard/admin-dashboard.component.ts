@@ -1833,12 +1833,15 @@ export class AdminDashboardComponent implements OnInit {
 
     this.savingPayPalSettings = true;
     const payload = this.payPalForm.getRawValue();
+    const clientId = payload.clientId.trim();
+    const clientSecret = payload.clientSecret.trim();
+    const hasRequiredCredentials = Boolean(clientId && clientSecret);
     this.auth
       .updatePayPalSettings({
-        isEnabled: payload.isEnabled,
+        isEnabled: payload.isEnabled || hasRequiredCredentials,
         mode: payload.mode,
-        clientId: payload.clientId.trim(),
-        clientSecret: payload.clientSecret.trim(),
+        clientId,
+        clientSecret,
         merchantId: payload.merchantId.trim(),
         merchantEmail: payload.merchantEmail.trim(),
         brandName: payload.brandName.trim() || 'Walk Around',
