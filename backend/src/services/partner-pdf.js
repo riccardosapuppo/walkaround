@@ -522,19 +522,19 @@ function qrAddAlignmentPattern(matrix, reserved, centerRow, centerCol) {
 function qrReserveFormatAreas(matrix, reserved) {
   const size = matrix.length;
   for (let index = 0; index <= 5; index += 1) {
-    qrAddFunctionPattern(matrix, reserved, 8, index, false);
+    qrAddFunctionPattern(matrix, reserved, index, 8, false);
   }
-  qrAddFunctionPattern(matrix, reserved, 8, 7, false);
-  qrAddFunctionPattern(matrix, reserved, 8, 8, false);
   qrAddFunctionPattern(matrix, reserved, 7, 8, false);
+  qrAddFunctionPattern(matrix, reserved, 8, 8, false);
+  qrAddFunctionPattern(matrix, reserved, 8, 7, false);
   for (let index = 9; index < 15; index += 1) {
-    qrAddFunctionPattern(matrix, reserved, 14 - index, 8, false);
+    qrAddFunctionPattern(matrix, reserved, 8, 14 - index, false);
   }
   for (let index = 0; index < 8; index += 1) {
-    qrAddFunctionPattern(matrix, reserved, size - 1 - index, 8, false);
+    qrAddFunctionPattern(matrix, reserved, 8, size - 1 - index, false);
   }
   for (let index = 8; index < 15; index += 1) {
-    qrAddFunctionPattern(matrix, reserved, 8, size - 15 + index, false);
+    qrAddFunctionPattern(matrix, reserved, size - 15 + index, 8, false);
   }
   qrAddFunctionPattern(matrix, reserved, size - 8, 8, true);
 }
@@ -543,31 +543,43 @@ function qrSetFormatBits(matrix, errorCorrectionLevelBits, mask) {
   const size = matrix.length;
   const bits = qrFormatBits(errorCorrectionLevelBits, mask);
   for (let index = 0; index <= 5; index += 1) {
-    matrix[8][index] = ((bits >>> index) & 1) !== 0;
+    matrix[index][8] = ((bits >>> index) & 1) !== 0;
   }
-  matrix[8][7] = ((bits >>> 6) & 1) !== 0;
+  matrix[7][8] = ((bits >>> 6) & 1) !== 0;
   matrix[8][8] = ((bits >>> 7) & 1) !== 0;
-  matrix[7][8] = ((bits >>> 8) & 1) !== 0;
+  matrix[8][7] = ((bits >>> 8) & 1) !== 0;
   for (let index = 9; index < 15; index += 1) {
-    matrix[14 - index][8] = ((bits >>> index) & 1) !== 0;
+    matrix[8][14 - index] = ((bits >>> index) & 1) !== 0;
   }
   for (let index = 0; index < 8; index += 1) {
-    matrix[size - 1 - index][8] = ((bits >>> index) & 1) !== 0;
+    matrix[8][size - 1 - index] = ((bits >>> index) & 1) !== 0;
   }
   for (let index = 8; index < 15; index += 1) {
-    matrix[8][size - 15 + index] = ((bits >>> index) & 1) !== 0;
+    matrix[size - 15 + index][8] = ((bits >>> index) & 1) !== 0;
   }
   matrix[size - 8][8] = true;
 }
 
+function qrVersionConfigForPayload(payload) {
+  const candidates = [
+    { version: 3, dataCodewordCount: 55, ecCodewordCount: 15 },
+    { version: 4, dataCodewordCount: 80, ecCodewordCount: 20 }
+  ];
+  const requiredBits = 4 + 8 + payload.length * 8;
+  return candidates.find((candidate) => requiredBits <= candidate.dataCodewordCount * 8) || null;
+}
+
 function buildQrMatrix(value) {
-  const version = 4;
+  const payload = Buffer.from(String(value || ''), 'utf8');
+  const config = qrVersionConfigForPayload(payload);
+  if (!config) {
+    return null;
+  }
+
+  const { version, dataCodewordCount, ecCodewordCount } = config;
   const size = 21 + (version - 1) * 4;
-  const dataCodewordCount = 80;
-  const ecCodewordCount = 20;
   const mask = 0;
   const errorCorrectionLevelBits = 1; // QR level L.
-  const payload = Buffer.from(String(value || ''), 'utf8');
   const bits = [];
 
   qrAppendBits(bits, 0b0100, 4);
@@ -605,7 +617,8 @@ function buildQrMatrix(value) {
     qrAddFunctionPattern(matrix, reserved, 6, index, dark);
     qrAddFunctionPattern(matrix, reserved, index, 6, dark);
   }
-  qrAddAlignmentPattern(matrix, reserved, 26, 26);
+  const alignmentPosition = 4 * version + 10;
+  qrAddAlignmentPattern(matrix, reserved, alignmentPosition, alignmentPosition);
   qrReserveFormatAreas(matrix, reserved);
 
   const dataBits = [];
@@ -646,9 +659,13 @@ function pushQrCode(commands, value, x, y, size, title, subtitle) {
   });
 
   const quietZone = 4;
-  const moduleSize = size / (matrix.length + quietZone * 2);
-  const qrX = x + quietZone * moduleSize;
-  const qrY = y + quietZone * moduleSize;
+  const totalModules = matrix.length + quietZone * 2;
+  const moduleSize = Math.max(1, Math.floor(size / totalModules));
+  const renderedSize = moduleSize * totalModules;
+  const renderX = x + (size - renderedSize) / 2;
+  const renderY = y + (size - renderedSize) / 2;
+  const qrX = renderX + quietZone * moduleSize;
+  const qrY = renderY + quietZone * moduleSize;
 
   matrix.forEach((row, rowIndex) => {
     let startCol = -1;
@@ -1255,26 +1272,25 @@ export function buildPartnerPromotionPdf(data) {
 
   const activationInfoLines = discountCode
     ? [
-        'Link diretto / Direct link:',
-        partnerLandingUrl,
+        `Link diretto / Direct link: ${partnerLandingUrl}`,
         `Manuale / Manual: www.walkaround.cloud + codice/code ${discountCode}`
       ]
     : [
         'Quando il codice sarà assegnato, usa QR Code, link diretto o inserimento manuale.',
         'Once the code is assigned, use QR Code, direct link or manual entry.'
-      ];
+  ];
   activationInfoLines.forEach((line, index) => {
-    pushText(commands, line, PAGE_WIDTH / 2, 316 - index * 9, {
+    pushText(commands, line, PAGE_WIDTH / 2, 321 - index * 10, {
       font: 'F1',
-      fontSize: 7.8,
+      fontSize: 7.3,
       color: [0.35, 0.43, 0.53],
       align: 'center'
     });
   });
 
-  const qrSize = 76;
+  const qrSize = 123;
   const qrX = Math.round((PAGE_WIDTH - qrSize) / 2);
-  const qrY = 218;
+  const qrY = 177;
   if (discountCode) {
     pushQrCode(commands, partnerLandingUrl, qrX, qrY, qrSize, '', '');
   } else {
@@ -1282,7 +1298,7 @@ export function buildPartnerPromotionPdf(data) {
   }
 
   if (discountRows.length) {
-    pushDiscountCodesTable(commands, 57, 58, 481, discountRows);
+    pushDiscountCodesTable(commands, 57, 34, 481, discountRows);
   } else {
     pushText(commands, 'Codice sconto non ancora assegnato', PAGE_WIDTH / 2, 136, {
       font: 'F2',
@@ -1292,28 +1308,23 @@ export function buildPartnerPromotionPdf(data) {
     });
   }
 
-  let footerY = 35;
-  partnerMeta.forEach((line) => {
+  let footerY = 26;
+  const footerLines = [
+    ...partnerMeta,
+    contactMeta.length ? contactMeta.join(' | ') : null
+  ].filter(Boolean);
+  footerLines.slice(0, 4).forEach((line) => {
     pushWrappedText(commands, line, PAGE_MARGIN, footerY, 72, {
       font: 'F1',
-      fontSize: 7.8,
+      fontSize: 6.7,
       color: [0.39, 0.46, 0.56],
-      lineHeight: 9,
+      lineHeight: 7,
       maxLines: 1
     });
-    footerY -= 9;
+    footerY -= 7;
   });
 
-  if (contactMeta.length) {
-    pushWrappedText(commands, contactMeta.join(' | '), PAGE_MARGIN, 19, 85, {
-      font: 'F1',
-      fontSize: 7.3,
-      color: [0.5, 0.56, 0.64],
-      lineHeight: 8,
-      maxLines: 1
-    });
-  }
-  pushText(commands, 'www.walkaround.cloud', PAGE_WIDTH - PAGE_MARGIN, 19, {
+  pushText(commands, 'www.walkaround.cloud', PAGE_WIDTH - PAGE_MARGIN, 11, {
     font: 'F2',
     fontSize: 8.4,
     color: accentBlue,
