@@ -255,6 +255,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   deletingCatalogPoiId: string | null = null;
   savingUserId: string | null = null;
   savingDiscountCodeId: number | null = null;
+  previewingDiscountCodeId: number | null = null;
   deletingDiscountCodeId: number | null = null;
   deletingStructureId: string | null = null;
   resettingPasswordUserId: string | null = null;
@@ -1183,6 +1184,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
     if (section !== 'discounts') {
       this.savingDiscountCodeId = null;
+      this.previewingDiscountCodeId = null;
       this.deletingDiscountCodeId = null;
       this.highlightedDiscountCodeId = null;
       this.highlightedDiscountStructureId = null;
@@ -2114,13 +2116,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       .subscribe({
         next: (blob) => {
           this.previewingPartnerRequestId = null;
-          const objectUrl = URL.createObjectURL(blob);
-          const previewLink = document.createElement('a');
-          previewLink.href = objectUrl;
-          previewLink.target = '_blank';
-          previewLink.rel = 'noopener';
-          previewLink.click();
-          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+          this.openPdfBlob(blob);
         },
         error: (error: { error?: { message?: string } }) => {
           this.previewingPartnerRequestId = null;
@@ -2128,6 +2124,35 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
           this.snackBar.open(message, 'Chiudi', { duration: 3500 });
         }
       });
+  }
+
+  previewDiscountCodePdf(discountCode: DashboardDiscountCode): void {
+    if (!this.canViewDiscountCodes || this.previewingDiscountCodeId !== null) {
+      return;
+    }
+
+    this.previewingDiscountCodeId = discountCode.id;
+    this.auth.previewDiscountCodePdf(discountCode.id).subscribe({
+      next: (blob) => {
+        this.previewingDiscountCodeId = null;
+        this.openPdfBlob(blob);
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.previewingDiscountCodeId = null;
+        const message = error?.error?.message || 'Errore generazione PDF codice sconto';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  private openPdfBlob(blob: Blob): void {
+    const objectUrl = URL.createObjectURL(blob);
+    const previewLink = document.createElement('a');
+    previewLink.href = objectUrl;
+    previewLink.target = '_blank';
+    previewLink.rel = 'noopener';
+    previewLink.click();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
   }
 
   previewSelectedPartnerRequestPdf(): void {
@@ -2252,6 +2277,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.approvingPartnerRequestId === request.id ||
       this.rejectingPartnerRequestId === request.id ||
       this.previewingPartnerRequestId === request.id
+    );
+  }
+
+  isDiscountCodeBusy(discountCode: DashboardDiscountCode): boolean {
+    return (
+      this.previewingDiscountCodeId !== null ||
+      this.savingDiscountCodeId === discountCode.id ||
+      this.deletingDiscountCodeId === discountCode.id
     );
   }
 

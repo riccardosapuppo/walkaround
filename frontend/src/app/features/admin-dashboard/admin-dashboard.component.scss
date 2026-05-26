@@ -1125,6 +1125,21 @@
   gap: 2px;
 }
 
+.structure-code-main {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.structure-code-pdf-btn {
+  min-width: 58px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  line-height: 28px;
+}
+
 .discount-group-list {
   display: grid;
   gap: 10px;

@@ -318,6 +318,31 @@ body.app-user-theme .home-brand-stage::after {
     0 4px 10px rgba(10, 25, 47, 0.32);
 }
 
+.app-snackbar {
+  --mdc-snackbar-container-shape: 14px;
+  --mdc-snackbar-supporting-text-weight: 700;
+  --mat-mdc-snack-bar-button-color: #ffffff;
+}
+
+.app-snackbar .mdc-snackbar__surface {
+  box-shadow: 0 14px 30px rgba(10, 25, 47, 0.22);
+}
+
+.app-snackbar-success {
+  --mdc-snackbar-container-color: #1d7048;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.app-snackbar-info {
+  --mdc-snackbar-container-color: #1769aa;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.app-snackbar-warning {
+  --mdc-snackbar-container-color: #9a5a12;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
 @media (min-width: 900px) {
   .page-shell {
     max-width: 760px;

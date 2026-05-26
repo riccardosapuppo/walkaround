@@ -1,7 +1,16 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import zlib from 'node:zlib';
+
 const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
 const PAGE_MARGIN = 44;
 const PARTNER_LANDING_URL = 'https://www.walkaround.cloud/';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+let officialLogoCacheLoaded = false;
+let officialLogoCache = null;
 
 function sanitizePdfText(value) {
   return String(value ?? '')
@@ -101,42 +110,86 @@ function buildPartnerLandingUrl(discountCode) {
 }
 
 function buildPdfObject(objectId, body) {
-  return `${objectId} 0 obj\n${body}\nendobj\n`;
+  return Buffer.from(`${objectId} 0 obj\n${body}\nendobj\n`, 'latin1');
 }
 
-function buildPdfDocument(contentStream) {
+function buildPdfStreamObject(objectId, dictionary, streamBuffer) {
+  return Buffer.concat([
+    Buffer.from(`${objectId} 0 obj\n${dictionary}\nstream\n`, 'latin1'),
+    streamBuffer,
+    Buffer.from('\nendstream\nendobj\n', 'latin1')
+  ]);
+}
+
+function buildPdfDocument(contentStream, xObjects = []) {
   const contentBuffer = Buffer.from(contentStream, 'latin1');
+  const imageDefinitions = [];
+  let nextObjectId = 7;
+
+  xObjects.forEach((image) => {
+    const objectId = nextObjectId;
+    nextObjectId += 1;
+    const smaskObjectId = image.smaskData ? nextObjectId : null;
+    if (smaskObjectId) {
+      nextObjectId += 1;
+    }
+    imageDefinitions.push({ ...image, objectId, smaskObjectId });
+  });
+
+  const xObjectResource = imageDefinitions.length
+    ? ` /XObject << ${imageDefinitions.map((image) => `/${image.name} ${image.objectId} 0 R`).join(' ')} >>`
+    : '';
+  const pageResources = `<< /Font << /F1 4 0 R /F2 5 0 R >>${xObjectResource} >>`;
   const objects = [
     null,
     buildPdfObject(1, '<< /Type /Catalog /Pages 2 0 R >>'),
     buildPdfObject(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>'),
     buildPdfObject(
       3,
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>`
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources ${pageResources} /Contents 6 0 R >>`
     ),
     buildPdfObject(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'),
     buildPdfObject(5, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'),
-    buildPdfObject(6, `<< /Length ${contentBuffer.length} >>\nstream\n${contentStream}\nendstream`)
+    buildPdfStreamObject(6, `<< /Length ${contentBuffer.length} >>`, contentBuffer)
   ];
 
-  let pdf = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
+  imageDefinitions.forEach((image) => {
+    const smaskPart = image.smaskObjectId ? ` /SMask ${image.smaskObjectId} 0 R` : '';
+    objects[image.objectId] = buildPdfStreamObject(
+      image.objectId,
+      `<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Length ${image.rgbData.length}${smaskPart} >>`,
+      image.rgbData
+    );
+    if (image.smaskObjectId) {
+      objects[image.smaskObjectId] = buildPdfStreamObject(
+        image.smaskObjectId,
+        `<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${image.smaskData.length} >>`,
+        image.smaskData
+      );
+    }
+  });
+
+  const chunks = [Buffer.from('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n', 'latin1')];
   const offsets = [0];
+  let currentOffset = chunks[0].length;
 
   for (let index = 1; index < objects.length; index += 1) {
-    offsets[index] = Buffer.byteLength(pdf, 'latin1');
-    pdf += objects[index];
+    offsets[index] = currentOffset;
+    chunks.push(objects[index]);
+    currentOffset += objects[index].length;
   }
 
-  const xrefOffset = Buffer.byteLength(pdf, 'latin1');
-  pdf += `xref\n0 ${objects.length}\n`;
-  pdf += '0000000000 65535 f \n';
+  const xrefOffset = currentOffset;
+  let xref = `xref\n0 ${objects.length}\n`;
+  xref += '0000000000 65535 f \n';
 
   for (let index = 1; index < objects.length; index += 1) {
-    pdf += `${String(offsets[index]).padStart(10, '0')} 00000 n \n`;
+    xref += `${String(offsets[index]).padStart(10, '0')} 00000 n \n`;
   }
 
-  pdf += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-  return Buffer.from(pdf, 'latin1');
+  xref += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+  chunks.push(Buffer.from(xref, 'latin1'));
+  return Buffer.concat(chunks);
 }
 
 function pushRectangle(commands, x, y, width, height, options = {}) {
@@ -209,6 +262,428 @@ function pushWrappedText(commands, text, x, y, maxChars, options = {}) {
   return currentY;
 }
 
+function pushImage(commands, name, x, y, width, height) {
+  commands.push('q');
+  commands.push(`${width.toFixed(2)} 0 0 ${height.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm`);
+  commands.push(`/${name} Do`);
+  commands.push('Q');
+}
+
+function resolveOfficialLogoPath() {
+  const candidates = [
+    path.resolve(__dirname, '../../../frontend/src/assets/logo.png'),
+    path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/browser/assets/logo.png'),
+    path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/assets/logo.png'),
+    path.resolve(process.cwd(), 'frontend/src/assets/logo.png'),
+    path.resolve(process.cwd(), 'src/assets/logo.png'),
+    path.resolve(process.cwd(), 'assets/logo.png')
+  ];
+
+  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
+function paethPredictor(left, up, upperLeft) {
+  const estimate = left + up - upperLeft;
+  const leftDistance = Math.abs(estimate - left);
+  const upDistance = Math.abs(estimate - up);
+  const upperLeftDistance = Math.abs(estimate - upperLeft);
+  if (leftDistance <= upDistance && leftDistance <= upperLeftDistance) {
+    return left;
+  }
+  if (upDistance <= upperLeftDistance) {
+    return up;
+  }
+  return upperLeft;
+}
+
+function decodePngImage(buffer) {
+  if (!buffer.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+    return null;
+  }
+
+  let offset = 8;
+  let width = 0;
+  let height = 0;
+  let bitDepth = 0;
+  let colorType = 0;
+  const idatChunks = [];
+
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.slice(offset + 4, offset + 8).toString('ascii');
+    const dataStart = offset + 8;
+    const dataEnd = dataStart + length;
+    if (dataEnd + 4 > buffer.length) {
+      return null;
+    }
+    const data = buffer.slice(dataStart, dataEnd);
+    if (type === 'IHDR') {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      bitDepth = data[8];
+      colorType = data[9];
+    } else if (type === 'IDAT') {
+      idatChunks.push(data);
+    } else if (type === 'IEND') {
+      break;
+    }
+    offset = dataEnd + 4;
+  }
+
+  if (!width || !height || bitDepth !== 8 || (colorType !== 2 && colorType !== 6)) {
+    return null;
+  }
+
+  const channels = colorType === 6 ? 4 : 3;
+  const rowLength = width * channels;
+  const inflated = zlib.inflateSync(Buffer.concat(idatChunks));
+  const rgb = Buffer.alloc(width * height * 3);
+  const alpha = colorType === 6 ? Buffer.alloc(width * height) : null;
+  let hasTransparency = false;
+  let inputOffset = 0;
+  let previousRow = Buffer.alloc(rowLength);
+
+  for (let row = 0; row < height; row += 1) {
+    const filter = inflated[inputOffset];
+    inputOffset += 1;
+    const rawRow = inflated.slice(inputOffset, inputOffset + rowLength);
+    inputOffset += rowLength;
+    const currentRow = Buffer.alloc(rowLength);
+
+    for (let index = 0; index < rowLength; index += 1) {
+      const left = index >= channels ? currentRow[index - channels] : 0;
+      const up = previousRow[index] || 0;
+      const upperLeft = index >= channels ? previousRow[index - channels] || 0 : 0;
+      let value = rawRow[index];
+      if (filter === 1) {
+        value = (value + left) & 0xff;
+      } else if (filter === 2) {
+        value = (value + up) & 0xff;
+      } else if (filter === 3) {
+        value = (value + Math.floor((left + up) / 2)) & 0xff;
+      } else if (filter === 4) {
+        value = (value + paethPredictor(left, up, upperLeft)) & 0xff;
+      }
+      currentRow[index] = value;
+    }
+
+    for (let col = 0; col < width; col += 1) {
+      const sourceIndex = col * channels;
+      const pixelIndex = row * width + col;
+      const rgbIndex = pixelIndex * 3;
+      rgb[rgbIndex] = currentRow[sourceIndex];
+      rgb[rgbIndex + 1] = currentRow[sourceIndex + 1];
+      rgb[rgbIndex + 2] = currentRow[sourceIndex + 2];
+      if (alpha) {
+        const alphaValue = currentRow[sourceIndex + 3];
+        alpha[pixelIndex] = alphaValue;
+        if (alphaValue < 255) {
+          hasTransparency = true;
+        }
+      }
+    }
+
+    previousRow = currentRow;
+  }
+
+  return {
+    width,
+    height,
+    rgbData: zlib.deflateSync(rgb),
+    smaskData: alpha && hasTransparency ? zlib.deflateSync(alpha) : null
+  };
+}
+
+function loadOfficialLogoImage() {
+  if (officialLogoCacheLoaded) {
+    return officialLogoCache;
+  }
+
+  officialLogoCacheLoaded = true;
+  const logoPath = resolveOfficialLogoPath();
+  if (!logoPath) {
+    officialLogoCache = null;
+    return officialLogoCache;
+  }
+
+  try {
+    officialLogoCache = decodePngImage(fs.readFileSync(logoPath));
+  } catch {
+    officialLogoCache = null;
+  }
+  return officialLogoCache;
+}
+
+function qrAppendBits(bits, value, length) {
+  for (let index = length - 1; index >= 0; index -= 1) {
+    bits.push((value >>> index) & 1);
+  }
+}
+
+function qrBuildGaloisTables() {
+  const exp = new Array(512).fill(0);
+  const log = new Array(256).fill(0);
+  let value = 1;
+  for (let index = 0; index < 255; index += 1) {
+    exp[index] = value;
+    log[value] = index;
+    value <<= 1;
+    if (value & 0x100) {
+      value ^= 0x11d;
+    }
+  }
+  for (let index = 255; index < 512; index += 1) {
+    exp[index] = exp[index - 255];
+  }
+  return { exp, log };
+}
+
+const QR_GALOIS = qrBuildGaloisTables();
+
+function qrGfMultiply(left, right) {
+  if (!left || !right) {
+    return 0;
+  }
+  return QR_GALOIS.exp[QR_GALOIS.log[left] + QR_GALOIS.log[right]];
+}
+
+function qrReedSolomonGenerator(degree) {
+  let result = [1];
+  for (let index = 0; index < degree; index += 1) {
+    const next = new Array(result.length + 1).fill(0);
+    result.forEach((coefficient, coefficientIndex) => {
+      next[coefficientIndex] ^= coefficient;
+      next[coefficientIndex + 1] ^= qrGfMultiply(coefficient, QR_GALOIS.exp[index]);
+    });
+    result = next;
+  }
+  return result;
+}
+
+function qrReedSolomonCompute(dataCodewords, ecCodewords) {
+  const generator = qrReedSolomonGenerator(ecCodewords);
+  const result = new Array(ecCodewords).fill(0);
+
+  dataCodewords.forEach((codeword) => {
+    const factor = codeword ^ result.shift();
+    result.push(0);
+    for (let index = 0; index < ecCodewords; index += 1) {
+      result[index] ^= qrGfMultiply(generator[index + 1], factor);
+    }
+  });
+
+  return result;
+}
+
+function qrFormatBits(errorCorrectionLevelBits, mask) {
+  let data = (errorCorrectionLevelBits << 3) | mask;
+  let bits = data << 10;
+  const generator = 0x537;
+  for (let index = 14; index >= 10; index -= 1) {
+    if (((bits >>> index) & 1) !== 0) {
+      bits ^= generator << (index - 10);
+    }
+  }
+  return (((data << 10) | bits) ^ 0x5412) & 0x7fff;
+}
+
+function qrAddFunctionPattern(matrix, reserved, row, col, dark) {
+  if (row < 0 || row >= matrix.length || col < 0 || col >= matrix.length) {
+    return;
+  }
+  matrix[row][col] = dark;
+  reserved[row][col] = true;
+}
+
+function qrAddFinderPattern(matrix, reserved, row, col) {
+  for (let dy = -1; dy <= 7; dy += 1) {
+    for (let dx = -1; dx <= 7; dx += 1) {
+      const currentRow = row + dy;
+      const currentCol = col + dx;
+      if (currentRow < 0 || currentRow >= matrix.length || currentCol < 0 || currentCol >= matrix.length) {
+        continue;
+      }
+      const inPattern = dy >= 0 && dy <= 6 && dx >= 0 && dx <= 6;
+      const distance = Math.max(Math.abs(dy - 3), Math.abs(dx - 3));
+      qrAddFunctionPattern(matrix, reserved, currentRow, currentCol, inPattern && (distance === 3 || distance <= 1));
+    }
+  }
+}
+
+function qrAddAlignmentPattern(matrix, reserved, centerRow, centerCol) {
+  for (let dy = -2; dy <= 2; dy += 1) {
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const distance = Math.max(Math.abs(dy), Math.abs(dx));
+      qrAddFunctionPattern(matrix, reserved, centerRow + dy, centerCol + dx, distance === 2 || distance === 0);
+    }
+  }
+}
+
+function qrReserveFormatAreas(matrix, reserved) {
+  const size = matrix.length;
+  for (let index = 0; index <= 5; index += 1) {
+    qrAddFunctionPattern(matrix, reserved, 8, index, false);
+  }
+  qrAddFunctionPattern(matrix, reserved, 8, 7, false);
+  qrAddFunctionPattern(matrix, reserved, 8, 8, false);
+  qrAddFunctionPattern(matrix, reserved, 7, 8, false);
+  for (let index = 9; index < 15; index += 1) {
+    qrAddFunctionPattern(matrix, reserved, 14 - index, 8, false);
+  }
+  for (let index = 0; index < 8; index += 1) {
+    qrAddFunctionPattern(matrix, reserved, size - 1 - index, 8, false);
+  }
+  for (let index = 8; index < 15; index += 1) {
+    qrAddFunctionPattern(matrix, reserved, 8, size - 15 + index, false);
+  }
+}
+
+function qrSetFormatBits(matrix, errorCorrectionLevelBits, mask) {
+  const size = matrix.length;
+  const bits = qrFormatBits(errorCorrectionLevelBits, mask);
+  for (let index = 0; index <= 5; index += 1) {
+    matrix[8][index] = ((bits >>> index) & 1) !== 0;
+  }
+  matrix[8][7] = ((bits >>> 6) & 1) !== 0;
+  matrix[8][8] = ((bits >>> 7) & 1) !== 0;
+  matrix[7][8] = ((bits >>> 8) & 1) !== 0;
+  for (let index = 9; index < 15; index += 1) {
+    matrix[14 - index][8] = ((bits >>> index) & 1) !== 0;
+  }
+  for (let index = 0; index < 8; index += 1) {
+    matrix[size - 1 - index][8] = ((bits >>> index) & 1) !== 0;
+  }
+  for (let index = 8; index < 15; index += 1) {
+    matrix[8][size - 15 + index] = ((bits >>> index) & 1) !== 0;
+  }
+}
+
+function buildQrMatrix(value) {
+  const version = 4;
+  const size = 21 + (version - 1) * 4;
+  const dataCodewordCount = 80;
+  const ecCodewordCount = 20;
+  const mask = 0;
+  const errorCorrectionLevelBits = 1; // QR level L.
+  const payload = Buffer.from(String(value || ''), 'utf8');
+  const bits = [];
+
+  qrAppendBits(bits, 0b0100, 4);
+  qrAppendBits(bits, payload.length, 8);
+  payload.forEach((byte) => qrAppendBits(bits, byte, 8));
+  if (bits.length > dataCodewordCount * 8) {
+    return null;
+  }
+  qrAppendBits(bits, 0, Math.min(4, dataCodewordCount * 8 - bits.length));
+  while (bits.length % 8 !== 0) {
+    bits.push(0);
+  }
+
+  const dataCodewords = [];
+  for (let index = 0; index < bits.length; index += 8) {
+    let codeword = 0;
+    for (let bitIndex = 0; bitIndex < 8; bitIndex += 1) {
+      codeword = (codeword << 1) | bits[index + bitIndex];
+    }
+    dataCodewords.push(codeword);
+  }
+  for (let padIndex = 0; dataCodewords.length < dataCodewordCount; padIndex += 1) {
+    dataCodewords.push(padIndex % 2 === 0 ? 0xec : 0x11);
+  }
+
+  const codewords = [...dataCodewords, ...qrReedSolomonCompute(dataCodewords, ecCodewordCount)];
+  const matrix = Array.from({ length: size }, () => new Array(size).fill(false));
+  const reserved = Array.from({ length: size }, () => new Array(size).fill(false));
+
+  qrAddFinderPattern(matrix, reserved, 0, 0);
+  qrAddFinderPattern(matrix, reserved, 0, size - 7);
+  qrAddFinderPattern(matrix, reserved, size - 7, 0);
+  for (let index = 8; index < size - 8; index += 1) {
+    const dark = index % 2 === 0;
+    qrAddFunctionPattern(matrix, reserved, 6, index, dark);
+    qrAddFunctionPattern(matrix, reserved, index, 6, dark);
+  }
+  qrAddAlignmentPattern(matrix, reserved, 26, 26);
+  qrAddFunctionPattern(matrix, reserved, 4 * version + 9, 8, true);
+  qrReserveFormatAreas(matrix, reserved);
+
+  const dataBits = [];
+  codewords.forEach((codeword) => qrAppendBits(dataBits, codeword, 8));
+  let bitIndex = 0;
+  let upward = true;
+  for (let col = size - 1; col >= 1; col -= 2) {
+    if (col === 6) {
+      col -= 1;
+    }
+    for (let rowOffset = 0; rowOffset < size; rowOffset += 1) {
+      const row = upward ? size - 1 - rowOffset : rowOffset;
+      for (let currentCol = col; currentCol >= col - 1; currentCol -= 1) {
+        if (reserved[row][currentCol]) {
+          continue;
+        }
+        const maskBit = (row + currentCol) % 2 === 0;
+        matrix[row][currentCol] = Boolean(dataBits[bitIndex] || 0) !== maskBit;
+        bitIndex += 1;
+      }
+    }
+    upward = !upward;
+  }
+
+  qrSetFormatBits(matrix, errorCorrectionLevelBits, mask);
+  return matrix;
+}
+
+function pushQrCode(commands, value, x, y, size, title, subtitle) {
+  const matrix = buildQrMatrix(value);
+  if (!matrix) {
+    pushQrPlaceholder(commands, x, y, size, title, subtitle);
+    return;
+  }
+
+  pushRectangle(commands, x, y, size, size, {
+    fillColor: [1, 1, 1],
+    strokeColor: [0.18, 0.27, 0.38],
+    lineWidth: 1
+  });
+
+  const quietZone = 4;
+  const moduleSize = size / (matrix.length + quietZone * 2);
+  const qrX = x + quietZone * moduleSize;
+  const qrY = y + quietZone * moduleSize;
+
+  matrix.forEach((row, rowIndex) => {
+    let startCol = -1;
+    row.forEach((dark, colIndex) => {
+      if (dark && startCol === -1) {
+        startCol = colIndex;
+      }
+      const atEnd = colIndex === row.length - 1;
+      if ((!dark || atEnd) && startCol !== -1) {
+        const endCol = dark && atEnd ? colIndex : colIndex - 1;
+        pushRectangle(commands, qrX + startCol * moduleSize, qrY + (matrix.length - 1 - rowIndex) * moduleSize, (endCol - startCol + 1) * moduleSize, moduleSize, {
+          fillColor: [0.05, 0.08, 0.12]
+        });
+        startCol = -1;
+      }
+    });
+  });
+
+  if (title) {
+    pushText(commands, title, x + size / 2, y - 16, {
+      font: 'F2',
+      fontSize: 8.5,
+      color: [0.08, 0.22, 0.36],
+      align: 'center'
+    });
+  }
+  pushText(commands, subtitle, x + size / 2, title ? y - 28 : y - 16, {
+    font: 'F1',
+    fontSize: 7.5,
+    color: [0.32, 0.4, 0.5],
+    align: 'center'
+  });
+}
+
 function buildAddressLine(data) {
   const parts = [];
   const firstLine = [data.addressStreet, data.addressNumber].filter(Boolean).join(' ');
@@ -240,15 +715,32 @@ function formatDiscountPercentLabel(value) {
   return `${roundedValue}%`;
 }
 
-function buildDiscountRows(cityNames, discountCode) {
+function buildDiscountScopeLabels(applyTo) {
+  if (applyTo === 'single') {
+    return {
+      it: 'Singole audioguide',
+      en: 'Single audio guides'
+    };
+  }
+
+  return {
+    it: 'Pacchetto città',
+    en: 'City package'
+  };
+}
+
+function buildDiscountRows(cityNames, discountCode, applyTo) {
   if (!discountCode) {
     return [];
   }
 
+  const scope = buildDiscountScopeLabels(applyTo);
   const cities = cityNames.length ? cityNames : ['Contenuti associati'];
   const rows = cities.map((cityName) => ({
     cityName: sanitizePdfText(cityName).toUpperCase(),
-    discountCode
+    discountCode,
+    scopeIt: scope.it,
+    scopeEn: scope.en
   }));
 
   if (rows.length <= 5) {
@@ -259,7 +751,9 @@ function buildDiscountRows(cityNames, discountCode) {
     ...rows.slice(0, 4),
     {
       cityName: `ALTRE ${rows.length - 4} CITTÀ`,
-      discountCode
+      discountCode,
+      scopeIt: scope.it,
+      scopeEn: scope.en
     }
   ];
 }
@@ -419,13 +913,15 @@ function pushQrPlaceholder(commands, x, y, size, title, subtitle) {
     align: 'center'
   });
 
-  pushText(commands, title, x + size / 2, y - 16, {
-    font: 'F2',
-    fontSize: 8.5,
-    color: [0.08, 0.22, 0.36],
-    align: 'center'
-  });
-  pushText(commands, subtitle, x + size / 2, y - 28, {
+  if (title) {
+    pushText(commands, title, x + size / 2, y - 16, {
+      font: 'F2',
+      fontSize: 8.5,
+      color: [0.08, 0.22, 0.36],
+      align: 'center'
+    });
+  }
+  pushText(commands, subtitle, x + size / 2, title ? y - 28 : y - 16, {
     font: 'F1',
     fontSize: 7.5,
     color: [0.39, 0.46, 0.56],
@@ -438,49 +934,114 @@ function pushDiscountCodesTable(commands, x, y, width, rows) {
     return;
   }
 
-  const headerHeight = 26;
-  const rowHeight = 24;
-  const height = headerHeight + rows.length * rowHeight;
-  const codeColumnWidth = width / 2;
-  const cityColumnWidth = width - codeColumnWidth;
+  const titleHeight = 24;
+  const columnHeaderHeight = 20;
+  const rowHeight = 21;
+  const height = titleHeight + columnHeaderHeight + rows.length * rowHeight;
+  const cityColumnWidth = 162;
+  const codeColumnWidth = 124;
+  const scopeColumnWidth = width - cityColumnWidth - codeColumnWidth;
+  const titleY = y + height - titleHeight;
+  const columnHeaderY = titleY - columnHeaderHeight;
+  const cityColumnX = x;
+  const codeColumnX = x + cityColumnWidth;
+  const scopeColumnX = codeColumnX + codeColumnWidth;
 
   pushRectangle(commands, x, y, width, height, {
     fillColor: [0.972, 0.976, 0.98],
     strokeColor: [0.78, 0.82, 0.87],
     lineWidth: 0.8
   });
-  pushRectangle(commands, x, y + height - headerHeight, width, headerHeight, {
+  pushRectangle(commands, x, titleY, width, titleHeight, {
     fillColor: [0.972, 0.976, 0.98],
     strokeColor: [0.78, 0.82, 0.87],
     lineWidth: 0.8
   });
-  pushText(commands, 'CODICI SCONTO          DISCOUNT CODES', x + width / 2, y + height - 17, {
+  pushLine(commands, x + width / 2, titleY, x + width / 2, titleY + titleHeight, {
+    color: [0.82, 0.86, 0.9],
+    lineWidth: 0.6
+  });
+  pushText(commands, 'CODICI SCONTO', x + width / 4, titleY + 7, {
+    font: 'F2',
+    fontSize: 10,
+    color: [0.05, 0.19, 0.33],
+    align: 'center'
+  });
+  pushText(commands, 'DISCOUNT CODES', x + (width * 3) / 4, titleY + 7, {
     font: 'F2',
     fontSize: 10,
     color: [0.05, 0.19, 0.33],
     align: 'center'
   });
 
+  pushRectangle(commands, x, columnHeaderY, width, columnHeaderHeight, {
+    fillColor: [0.93, 0.95, 0.97],
+    strokeColor: [0.78, 0.82, 0.87],
+    lineWidth: 0.6
+  });
+  pushLine(commands, codeColumnX, columnHeaderY, codeColumnX, columnHeaderY + columnHeaderHeight, {
+    color: [0.82, 0.86, 0.9],
+    lineWidth: 0.6
+  });
+  pushLine(commands, scopeColumnX, columnHeaderY, scopeColumnX, columnHeaderY + columnHeaderHeight, {
+    color: [0.82, 0.86, 0.9],
+    lineWidth: 0.6
+  });
+  pushText(commands, 'CITTÀ / CITY', cityColumnX + cityColumnWidth / 2, columnHeaderY + 6.5, {
+    font: 'F2',
+    fontSize: 8,
+    color: [0.18, 0.27, 0.38],
+    align: 'center'
+  });
+  pushText(commands, 'CODICE / CODE', codeColumnX + codeColumnWidth / 2, columnHeaderY + 6.5, {
+    font: 'F2',
+    fontSize: 8,
+    color: [0.18, 0.27, 0.38],
+    align: 'center'
+  });
+  pushText(commands, 'APPLICATO A / APPLIES TO', scopeColumnX + scopeColumnWidth / 2, columnHeaderY + 6.5, {
+    font: 'F2',
+    fontSize: 7.6,
+    color: [0.18, 0.27, 0.38],
+    align: 'center'
+  });
+
   rows.forEach((row, index) => {
-    const rowY = y + height - headerHeight - (index + 1) * rowHeight;
+    const rowY = columnHeaderY - (index + 1) * rowHeight;
     pushRectangle(commands, x, rowY, width, rowHeight, {
       fillColor: index % 2 === 0 ? [1, 1, 1] : [0.972, 0.976, 0.98]
     });
     pushLine(commands, x, rowY, x + width, rowY, { color: [0.82, 0.86, 0.9], lineWidth: 0.6 });
-    pushLine(commands, x + cityColumnWidth, rowY, x + cityColumnWidth, rowY + rowHeight, {
+    pushLine(commands, codeColumnX, rowY, codeColumnX, rowY + rowHeight, {
       color: [0.82, 0.86, 0.9],
       lineWidth: 0.6
     });
-    pushText(commands, row.cityName.slice(0, 30), x + cityColumnWidth / 2, rowY + 8, {
+    pushLine(commands, scopeColumnX, rowY, scopeColumnX, rowY + rowHeight, {
+      color: [0.82, 0.86, 0.9],
+      lineWidth: 0.6
+    });
+    pushText(commands, row.cityName.slice(0, 24), cityColumnX + cityColumnWidth / 2, rowY + 7.2, {
       font: 'F2',
-      fontSize: 10,
+      fontSize: 8.8,
       color: [0.13, 0.23, 0.34],
       align: 'center'
     });
-    pushText(commands, row.discountCode, x + cityColumnWidth + codeColumnWidth / 2, rowY + 7, {
+    pushText(commands, row.discountCode, codeColumnX + codeColumnWidth / 2, rowY + 7.1, {
       font: 'F2',
-      fontSize: 10.5,
+      fontSize: 9.7,
       color: [0.05, 0.19, 0.33],
+      align: 'center'
+    });
+    pushText(commands, row.scopeIt, scopeColumnX + scopeColumnWidth / 2, rowY + 11.4, {
+      font: 'F2',
+      fontSize: 7.5,
+      color: [0.13, 0.23, 0.34],
+      align: 'center'
+    });
+    pushText(commands, row.scopeEn, scopeColumnX + scopeColumnWidth / 2, rowY + 3.8, {
+      font: 'F1',
+      fontSize: 7.2,
+      color: [0.32, 0.4, 0.5],
       align: 'center'
     });
   });
@@ -553,7 +1114,7 @@ export function buildPartnerPromotionPdf(data) {
   const website = sanitizePdfText(data?.website || '');
   const contactEmail = sanitizePdfText(data?.contactEmail || '');
   const contactPhone = sanitizePdfText(data?.contactPhone || '');
-  const discountRows = buildDiscountRows(cityNames, discountCode);
+  const discountRows = buildDiscountRows(cityNames, discountCode, applyTo);
   const discountOutroLabels = buildDiscountOutroLabels(applyTo, cityNames);
   const scope = applyTo === 'single'
     ? {
@@ -575,32 +1136,53 @@ export function buildPartnerPromotionPdf(data) {
   ].filter(Boolean);
 
   const commands = [];
+  const pdfImages = [];
   const darkBlue = [0.05, 0.19, 0.33];
   const accentBlue = [0.04, 0.31, 0.52];
   const orange = [1, 0.52, 0];
+  const officialLogo = loadOfficialLogoImage();
+  if (officialLogo) {
+    pdfImages.push({ name: 'AppLogo', ...officialLogo });
+  }
 
   pushRectangle(commands, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, { fillColor: [1, 1, 1] });
 
-  const logoFontSize = 34;
-  const walkLabel = 'Walk';
-  const aroundLabel = 'Around';
-  const logoGap = 8;
-  const logoWidth =
-    approximateTextWidth(walkLabel, logoFontSize, 'F2') +
-    logoGap +
-    approximateTextWidth(aroundLabel, logoFontSize, 'F2');
-  const logoStartX = (PAGE_WIDTH - logoWidth) / 2;
-  pushText(commands, walkLabel, logoStartX, 779, {
-    font: 'F2',
-    fontSize: logoFontSize,
-    color: [0.13, 0.3, 0.51]
-  });
-  pushText(commands, aroundLabel, logoStartX + approximateTextWidth(walkLabel, logoFontSize, 'F2') + logoGap, 779, {
-    font: 'F2',
-    fontSize: logoFontSize,
-    color: orange
-  });
-  pushLine(commands, 176, 766, 419, 766, { color: [0.9, 0.92, 0.94], lineWidth: 0.8 });
+  if (officialLogo) {
+    const logoBoxWidth = 210;
+    const logoBoxHeight = 84;
+    const logoRatio = officialLogo.width / officialLogo.height;
+    const logoDrawWidth = Math.min(logoBoxWidth, logoBoxHeight * logoRatio);
+    const logoDrawHeight = logoDrawWidth / logoRatio;
+    pushImage(
+      commands,
+      'AppLogo',
+      (PAGE_WIDTH - logoDrawWidth) / 2,
+      752 + (logoBoxHeight - logoDrawHeight) / 2,
+      logoDrawWidth,
+      logoDrawHeight
+    );
+  } else {
+    const logoFontSize = 34;
+    const walkLabel = 'Walk';
+    const aroundLabel = 'Around';
+    const logoGap = 8;
+    const logoWidth =
+      approximateTextWidth(walkLabel, logoFontSize, 'F2') +
+      logoGap +
+      approximateTextWidth(aroundLabel, logoFontSize, 'F2');
+    const logoStartX = (PAGE_WIDTH - logoWidth) / 2;
+    pushText(commands, walkLabel, logoStartX, 779, {
+      font: 'F2',
+      fontSize: logoFontSize,
+      color: [0.13, 0.3, 0.51]
+    });
+    pushText(commands, aroundLabel, logoStartX + approximateTextWidth(walkLabel, logoFontSize, 'F2') + logoGap, 779, {
+      font: 'F2',
+      fontSize: logoFontSize,
+      color: orange
+    });
+  }
+  pushLine(commands, 176, 746, 419, 746, { color: [0.9, 0.92, 0.94], lineWidth: 0.8 });
 
   pushText(commands, structureName, PAGE_WIDTH / 2, 725, {
     font: 'F2',
@@ -659,30 +1241,44 @@ export function buildPartnerPromotionPdf(data) {
   });
 
   pushLine(commands, 57, 418, PAGE_WIDTH - 57, 418, { color: [0.9, 0.92, 0.94], lineWidth: 0.8 });
-  pushText(commands, 'COME ATTIVARE / HOW TO USE', PAGE_WIDTH / 2, 398, {
+  pushText(commands, 'COME USARE LO SCONTO / HOW TO USE', PAGE_WIDTH / 2, 398, {
     font: 'F2',
     fontSize: 10.5,
     color: darkBlue,
     align: 'center'
   });
-  pushActivationStep(commands, 64, 320, 136, 1, ["SCARICA L'APP", 'DOWNLOAD THE APP']);
+  pushActivationStep(commands, 64, 320, 136, 1, ['INQUADRA IL QR O APRI IL LINK', 'SCAN QR OR OPEN LINK']);
   pushActivationStep(commands, 230, 320, 136, 2, [
-    discountCode ? 'INSERISCI IL CODICE' : 'INSERISCI IL CODICE SCONTO',
-    discountCode || 'ENTER THE DISCOUNT CODE'
+    discountCode ? 'CONFERMA IL CODICE' : 'INSERISCI IL CODICE',
+    discountCode ? 'CONFIRM THE CODE' : 'ENTER THE CODE'
   ]);
   pushActivationStep(commands, 396, 320, 136, 3, [scope.itUnlock, 'START EXPLORING']);
 
-  pushWrappedText(commands, `Inquadra il QR Code oppure vai su ${partnerLandingUrl}`, PAGE_WIDTH / 2, 304, 88, {
-    font: 'F1',
-    fontSize: 9.2,
-    color: [0.35, 0.43, 0.53],
-    align: 'center',
-    lineHeight: 10,
-    maxLines: 2
+  const activationInfoLines = discountCode
+    ? [
+        `QR/link diretto: codice già compilato. Manuale: vai su www.walkaround.cloud e inserisci ${discountCode}.`,
+        `QR/direct link: code prefilled. Manual: open www.walkaround.cloud and enter ${discountCode}.`
+      ]
+    : [
+        'Quando il codice sarà assegnato, usa QR Code, link diretto o inserimento manuale.',
+        'Once the code is assigned, use QR Code, direct link or manual entry.'
+      ];
+  activationInfoLines.forEach((line, index) => {
+    pushText(commands, line, PAGE_WIDTH / 2, 307 - index * 10, {
+      font: 'F1',
+      fontSize: 8.3,
+      color: [0.35, 0.43, 0.53],
+      align: 'center'
+    });
   });
 
-  pushQrPlaceholder(commands, 178, 224, 66, 'QR APP', 'Download app');
-  pushQrPlaceholder(commands, 351, 224, 66, 'QR CODE', discountCode ? 'Codice sconto' : 'Da assegnare');
+  const qrSize = 76;
+  const qrY = 204;
+  if (discountCode) {
+    pushQrCode(commands, partnerLandingUrl, (PAGE_WIDTH - qrSize) / 2, qrY, qrSize, '', 'Codice sconto');
+  } else {
+    pushQrPlaceholder(commands, (PAGE_WIDTH - qrSize) / 2, qrY, qrSize, '', 'Da assegnare');
+  }
 
   if (discountRows.length) {
     pushDiscountCodesTable(commands, 57, 58, 481, discountRows);
@@ -723,5 +1319,5 @@ export function buildPartnerPromotionPdf(data) {
     align: 'right'
   });
 
-  return buildPdfDocument(commands.join('\n'));
+  return buildPdfDocument(commands.join('\n'), pdfImages);
 }

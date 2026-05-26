@@ -1078,6 +1078,21 @@ export class AdminAuthService {
     );
   }
 
+  previewDiscountCodePdf(discountCodeId: number): Observable<Blob> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get(
+      `${environment.apiBaseUrl}/admin/discount-codes/${encodeURIComponent(String(discountCodeId))}/pdf-preview`,
+      {
+        headers: this.authHeaders(token),
+        responseType: 'blob'
+      }
+    );
+  }
+
   deleteDiscountCode(discountCodeId: number): Observable<{ deleted: boolean; id: number; code: string }> {
     const token = this.sessionSubject.value?.token;
     if (!token) {

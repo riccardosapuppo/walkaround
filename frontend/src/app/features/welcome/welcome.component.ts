@@ -11,7 +11,8 @@ import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
 
 type DiscountCodeStatus = 'valid' | 'expired' | 'invalid' | 'used';
-type LinkedDiscountState = 'idle' | 'checking' | 'loaded' | 'stored' | 'expired' | 'used';
+type LinkedDiscountState = 'idle' | 'checking' | 'loaded' | 'stored' | 'expired' | 'used' | 'invalid';
+type DiscountToastTone = 'info' | 'success' | 'warning';
 
 @Component({
   standalone: false,
@@ -127,7 +128,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     if (this.linkedDiscountState === 'loaded' || this.linkedDiscountState === 'stored') {
       return 'success';
     }
-    if (this.linkedDiscountState === 'expired' || this.linkedDiscountState === 'used') {
+    if (this.linkedDiscountState === 'expired' || this.linkedDiscountState === 'used' || this.linkedDiscountState === 'invalid') {
       return 'warning';
     }
     return 'info';
@@ -142,6 +143,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     }
     if (this.linkedDiscountState === 'used') {
       return 'block';
+    }
+    if (this.linkedDiscountState === 'invalid') {
+      return 'error_outline';
     }
     return 'vpn_key';
   }
@@ -287,6 +291,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     }
 
     this.lastLinkedCode = linkedCode;
+    this.hotelCode = linkedCode;
+    this.showCodeInput = true;
     this.validateLinkedDiscountCode(linkedCode);
   }
 
@@ -294,8 +300,12 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     const alreadyStoredLocally = this.appState.normalizeHotelCodeInput(this.appState.hotelCode) === code;
     this.isCheckingCode = true;
     this.setDiscountNotice('checking', 'Verifico il codice sconto', code);
+    this.showCodeToast(`Verifico codice ${code}`, 'info');
 
-    this.purchaseService.validateHotelCode(code).subscribe({
+    this.purchaseService
+      .validateHotelCode(code)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
       next: (response) => {
         this.isCheckingCode = false;
         const association = response.association;
@@ -314,7 +324,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         const message = alreadyStored ? 'Codice sconto gia salvato' : 'Codice sconto caricato';
         const detail = `${normalizedCode} e pronto per gli acquisti compatibili.`;
         this.setDiscountNotice(alreadyStored ? 'stored' : 'loaded', message, detail);
-        this.snackBar.open(message, this.i18n.t('common.ok'), { duration: 2600 });
+        this.showCodeToast(message, 'success');
       },
       error: (error: { status?: number; error?: { codeStatus?: DiscountCodeStatus; message?: string } }) => {
         this.isCheckingCode = false;
@@ -328,16 +338,17 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.clearLinkedCodeIfCurrent(code);
     if (status === 'expired') {
       this.setDiscountNotice('expired', 'Codice sconto scaduto', 'Puoi entrare senza codice o inserirne un altro.');
-      this.snackBar.open(this.i18n.t('welcome.codeExpired'), this.i18n.t('common.ok'), { duration: 3200 });
+      this.showCodeToast(this.i18n.t('welcome.codeExpired'), 'warning');
       return;
     }
     if (status === 'used') {
       this.setDiscountNotice('used', 'Codice sconto gia utilizzato', 'Puoi entrare senza codice o inserirne un altro.');
-      this.snackBar.open(this.i18n.t('welcome.codeUsed'), this.i18n.t('common.ok'), { duration: 3200 });
+      this.showCodeToast(this.i18n.t('welcome.codeUsed'), 'warning');
       return;
     }
 
-    this.clearDiscountNotice();
+    this.setDiscountNotice('invalid', 'Codice sconto non valido', 'Puoi entrare senza codice o inserirne un altro.');
+    this.showCodeToast(this.i18n.t('welcome.codeNotValid'), 'warning');
   }
 
   private clearLinkedCodeIfCurrent(code: string): void {
@@ -359,5 +370,20 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   private clearDiscountNotice(): void {
     this.setDiscountNotice('idle');
+  }
+
+  private showCodeToast(message: string, tone: DiscountToastTone): void {
+    const panelClass =
+      tone === 'success'
+        ? ['app-snackbar', 'app-snackbar-success']
+        : tone === 'warning'
+          ? ['app-snackbar', 'app-snackbar-warning']
+          : ['app-snackbar', 'app-snackbar-info'];
+    this.snackBar.open(message, this.i18n.t('common.ok'), {
+      duration: tone === 'info' ? 1800 : 3200,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass
+    });
   }
 }

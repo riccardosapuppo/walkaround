@@ -39,7 +39,10 @@ export class AppComponent implements OnDestroy {
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
-      .subscribe((event) => this.syncSurfaceTheme(event.urlAfterRedirects));
+      .subscribe((event) => {
+        this.syncSurfaceTheme(event.urlAfterRedirects);
+        this.redirectDiscountLinkToWelcome(event.urlAfterRedirects);
+      });
   }
 
   ngOnDestroy(): void {
@@ -87,6 +90,35 @@ export class AppComponent implements OnDestroy {
 
     document.body.classList.toggle('app-user-theme', !isDashboardSurface);
     document.body.classList.toggle('app-admin-theme', isDashboardSurface);
+  }
+
+  private redirectDiscountLinkToWelcome(rawUrl: string): void {
+    const tree = this.router.parseUrl(rawUrl || '');
+    const code = this.extractDiscountCode(tree.queryParams);
+    if (!code) {
+      return;
+    }
+
+    const path = `/${tree.root.children['primary']?.segments.map((segment) => segment.path).join('/') || ''}`;
+    if (path === '/welcome') {
+      return;
+    }
+
+    void this.router.navigate(['/welcome'], {
+      queryParams: { code },
+      replaceUrl: true
+    });
+  }
+
+  private extractDiscountCode(queryParams: Record<string, unknown>): string {
+    const keys = ['code', 'discountCode', 'codice', 'promo'];
+    for (const key of keys) {
+      const normalizedCode = this.appState.normalizeHotelCodeInput(queryParams[key]);
+      if (normalizedCode) {
+        return normalizedCode;
+      }
+    }
+    return '';
   }
 }
 

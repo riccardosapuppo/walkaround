@@ -1187,6 +1187,31 @@ function buildPartnerRequestPdfPayload(requestRow, options = {}) {
   };
 }
 
+function buildDiscountCodePdfPayload(discountCodeRow) {
+  const applyTo = discountCodeRow.apply_to === 'single' ? 'single' : 'bundle';
+  return {
+    structureName: discountCodeRow.structure_name,
+    structureType: '',
+    contactName: '',
+    addressStreet: discountCodeRow.address_street,
+    addressNumber: discountCodeRow.address_number,
+    addressCity: discountCodeRow.address_city,
+    addressPostalCode: discountCodeRow.address_postal_code,
+    addressProvince: discountCodeRow.address_province,
+    addressRegion: '',
+    addressCountry: discountCodeRow.address_country,
+    website: '',
+    contactPhone: '',
+    contactEmail: '',
+    applyTo,
+    cityNames: normalizeTextArray(discountCodeRow.city_names),
+    discountCode: normalizePartnerPreviewCode(discountCodeRow.discount_code || ''),
+    expiresAt: discountCodeRow.expires_at || null,
+    userDiscountPercent: optionalNumber(resolveDiscountRowValue(discountCodeRow, applyTo, 'user_discount_percent')),
+    structureFixedAmount: optionalNumber(resolveDiscountRowValue(discountCodeRow, applyTo, 'structure_fixed_amount'))
+  };
+}
+
 function mapPartnerRequestRow(row) {
   const approvedDiscountCodeId = row.approved_discount_code_id == null ? null : Number(row.approved_discount_code_id);
   const discountApplyTo = row.apply_to === 'single' || row.apply_to === 'bundle' ? row.apply_to : null;
@@ -1469,6 +1494,62 @@ async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
       ${lockSql}
     `,
     [requestId]
+  );
+
+  return result.rowCount ? result.rows[0] : null;
+}
+
+async function fetchDiscountCodeByIdForPdf(discountCodeId, client = pool, options = {}) {
+  const params = [discountCodeId];
+  const structureFilter = options.structureId ? 'AND dc.structure_id = $2' : '';
+  if (options.structureId) {
+    params.push(options.structureId);
+  }
+
+  const result = await client.query(
+    `
+      SELECT
+        dc.id,
+        dc.structure_id,
+        s.name AS structure_name,
+        s.address,
+        s.address_street,
+        s.address_number,
+        s.address_city,
+        s.address_postal_code,
+        s.address_province,
+        s.address_country,
+        dc.code AS discount_code,
+        dc.apply_to,
+        dc.city_id,
+        legacy_city.name AS city_name,
+        COALESCE(city_links.city_ids, CASE WHEN dc.city_id IS NOT NULL THEN ARRAY[dc.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
+        COALESCE(city_links.city_names, CASE WHEN legacy_city.name IS NOT NULL THEN ARRAY[legacy_city.name] ELSE ARRAY[]::TEXT[] END) AS city_names,
+        dc.user_discount_percent,
+        dc.user_discount_percent_single,
+        dc.user_discount_percent_bundle,
+        dc.structure_fixed_amount,
+        dc.structure_fixed_amount_single,
+        dc.structure_fixed_amount_bundle,
+        dc.expires_at,
+        dc.created_at,
+        dc.updated_at
+      FROM dashboard_structure_discount_codes dc
+      JOIN dashboard_structures s ON s.id = dc.structure_id AND s.deleted = 0
+      LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id
+      LEFT JOIN LATERAL (
+        SELECT
+          ARRAY_AGG(DISTINCT dcc.city_id ORDER BY dcc.city_id) AS city_ids,
+          ARRAY_AGG(DISTINCT c.name ORDER BY c.name) AS city_names
+        FROM dashboard_structure_discount_code_cities dcc
+        JOIN cities c ON c.id = dcc.city_id
+        WHERE dcc.discount_code_id = dc.id
+      ) city_links ON TRUE
+      WHERE dc.id = $1
+        ${structureFilter}
+      LIMIT 1
+    `,
+    params
   );
 
   return result.rowCount ? result.rows[0] : null;
@@ -2272,6 +2353,42 @@ router.get('/discount-codes', requireAuth, async (req, res, next) => {
     );
 
     return res.json(result.rows.map(mapDiscountCodeRow));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/discount-codes/:discountCodeId/pdf-preview', requireAuth, async (req, res, next) => {
+  const role = req.authSession?.user?.role;
+  if (!canViewDiscountCodes(role)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  const discountCodeId = Number(req.params.discountCodeId);
+  if (!Number.isInteger(discountCodeId) || discountCodeId <= 0) {
+    return res.status(400).json({ message: 'Codice sconto non valido' });
+  }
+
+  const managerStructureId = req.authSession?.user?.structureId || null;
+  if (role === 'facility_manager' && !managerStructureId) {
+    return res.status(404).json({ message: 'Codice sconto non trovato' });
+  }
+
+  try {
+    const discountCodeRow = await fetchDiscountCodeByIdForPdf(discountCodeId, pool, {
+      structureId: role === 'facility_manager' ? managerStructureId : null
+    });
+    if (!discountCodeRow) {
+      return res.status(404).json({ message: 'Codice sconto non trovato' });
+    }
+
+    const pdfPayload = buildDiscountCodePdfPayload(discountCodeRow);
+    const pdfBuffer = buildPartnerPromotionPdf(pdfPayload);
+    const fileName = buildPartnerPromotionFileName(discountCodeRow.structure_name, discountCodeRow.discount_code);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    return res.send(pdfBuffer);
   } catch (error) {
     return next(error);
   }

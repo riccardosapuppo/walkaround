@@ -656,27 +656,37 @@
                               </span>
                             </span>
                           </div>
-                          <div class="action-buttons" *ngIf="canManageUsers; else discountReadOnlyActions">
+                          <div class="action-buttons">
                             <button
                               mat-stroked-button
                               color="primary"
                               type="button"
+                              (click)="previewDiscountCodePdf(discountCode)"
+                              [disabled]="isDiscountCodeBusy(discountCode)"
+                            >
+                              {{ previewingDiscountCodeId === discountCode.id ? 'Apro PDF...' : 'PDF' }}
+                            </button>
+                            <button
+                              *ngIf="canManageUsers"
+                              mat-stroked-button
+                              color="primary"
+                              type="button"
                               (click)="editDiscountCode(discountCode)"
-                              [disabled]="savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id"
+                              [disabled]="isDiscountCodeBusy(discountCode)"
                             >
                               Modifica
                             </button>
                             <button
+                              *ngIf="canManageUsers"
                               mat-stroked-button
                               color="warn"
                               type="button"
                               (click)="deleteDiscountCode(discountCode)"
-                              [disabled]="savingDiscountCodeId === discountCode.id || deletingDiscountCodeId === discountCode.id"
+                              [disabled]="isDiscountCodeBusy(discountCode)"
                             >
                               {{ deletingDiscountCodeId === discountCode.id ? 'Elimino...' : 'Elimina' }}
                             </button>
                           </div>
-                          <ng-template #discountReadOnlyActions></ng-template>
                         </div>
                       </div>
                     </td>
@@ -3181,7 +3191,20 @@
                     <td>
                       <div class="structure-codes-list" *ngIf="structureCodes(structure.id).length; else noStructureCodes">
                         <div class="structure-code-item" *ngFor="let discountCode of structureCodes(structure.id)">
-                          <code>{{ discountCode.code }}</code>
+                          <div class="structure-code-main">
+                            <code>{{ discountCode.code }}</code>
+                            <button
+                              mat-stroked-button
+                              color="primary"
+                              type="button"
+                              class="structure-code-pdf-btn"
+                              (click)="previewDiscountCodePdf(discountCode)"
+                              [disabled]="isDiscountCodeBusy(discountCode)"
+                            >
+                              {{ previewingDiscountCodeId === discountCode.id ? 'Apro...' : 'PDF' }}
+                            </button>
+                          </div>
+                          <small>{{ discountCodeApplyToLabel(discountCode.applyTo) }} - {{ discountCodeCitiesLabel(discountCode) }}</small>
                           <small>Scade: {{ formatDateTime(discountCode.expiresAt) }}</small>
                         </div>
                       </div>
