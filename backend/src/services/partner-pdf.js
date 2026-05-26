@@ -106,7 +106,7 @@ function buildPartnerLandingUrl(discountCode) {
     return PARTNER_LANDING_URL;
   }
 
-  return `${PARTNER_LANDING_URL}?code=${encodeURIComponent(normalizedCode)}`;
+  return `${PARTNER_LANDING_URL}welcome?code=${encodeURIComponent(normalizedCode)}`;
 }
 
 function buildPdfObject(objectId, body) {
@@ -536,6 +536,7 @@ function qrReserveFormatAreas(matrix, reserved) {
   for (let index = 8; index < 15; index += 1) {
     qrAddFunctionPattern(matrix, reserved, 8, size - 15 + index, false);
   }
+  qrAddFunctionPattern(matrix, reserved, size - 8, 8, true);
 }
 
 function qrSetFormatBits(matrix, errorCorrectionLevelBits, mask) {
@@ -556,6 +557,7 @@ function qrSetFormatBits(matrix, errorCorrectionLevelBits, mask) {
   for (let index = 8; index < 15; index += 1) {
     matrix[8][size - 15 + index] = ((bits >>> index) & 1) !== 0;
   }
+  matrix[size - 8][8] = true;
 }
 
 function buildQrMatrix(value) {
@@ -604,7 +606,6 @@ function buildQrMatrix(value) {
     qrAddFunctionPattern(matrix, reserved, index, 6, dark);
   }
   qrAddAlignmentPattern(matrix, reserved, 26, 26);
-  qrAddFunctionPattern(matrix, reserved, 4 * version + 9, 8, true);
   qrReserveFormatAreas(matrix, reserved);
 
   const dataBits = [];
@@ -641,9 +642,7 @@ function pushQrCode(commands, value, x, y, size, title, subtitle) {
   }
 
   pushRectangle(commands, x, y, size, size, {
-    fillColor: [1, 1, 1],
-    strokeColor: [0.18, 0.27, 0.38],
-    lineWidth: 1
+    fillColor: [1, 1, 1]
   });
 
   const quietZone = 4;
@@ -1256,28 +1255,30 @@ export function buildPartnerPromotionPdf(data) {
 
   const activationInfoLines = discountCode
     ? [
-        `QR/link diretto: codice già compilato. Manuale: vai su www.walkaround.cloud e inserisci ${discountCode}.`,
-        `QR/direct link: code prefilled. Manual: open www.walkaround.cloud and enter ${discountCode}.`
+        'Link diretto / Direct link:',
+        partnerLandingUrl,
+        `Manuale / Manual: www.walkaround.cloud + codice/code ${discountCode}`
       ]
     : [
         'Quando il codice sarà assegnato, usa QR Code, link diretto o inserimento manuale.',
         'Once the code is assigned, use QR Code, direct link or manual entry.'
       ];
   activationInfoLines.forEach((line, index) => {
-    pushText(commands, line, PAGE_WIDTH / 2, 307 - index * 10, {
+    pushText(commands, line, PAGE_WIDTH / 2, 316 - index * 9, {
       font: 'F1',
-      fontSize: 8.3,
+      fontSize: 7.8,
       color: [0.35, 0.43, 0.53],
       align: 'center'
     });
   });
 
   const qrSize = 76;
-  const qrY = 204;
+  const qrX = Math.round((PAGE_WIDTH - qrSize) / 2);
+  const qrY = 218;
   if (discountCode) {
-    pushQrCode(commands, partnerLandingUrl, (PAGE_WIDTH - qrSize) / 2, qrY, qrSize, '', 'Codice sconto');
+    pushQrCode(commands, partnerLandingUrl, qrX, qrY, qrSize, '', '');
   } else {
-    pushQrPlaceholder(commands, (PAGE_WIDTH - qrSize) / 2, qrY, qrSize, '', 'Da assegnare');
+    pushQrPlaceholder(commands, qrX, qrY, qrSize, '', '');
   }
 
   if (discountRows.length) {
