@@ -1,16 +1,36 @@
 import { inject, NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { PreloadAllModules, RedirectFunction, Router, RouterModule, Routes } from '@angular/router';
 import { AppStateService } from './core/services/app-state.service';
 
-function launchRedirect(): string {
+const DISCOUNT_CODE_QUERY_KEYS = ['code', 'discountCode', 'codice', 'promo'];
+
+function extractDiscountCodeFromQuery(queryParams: Record<string, unknown>, appState: AppStateService): string {
+  for (const key of DISCOUNT_CODE_QUERY_KEYS) {
+    const normalizedCode = appState.normalizeHotelCodeInput(queryParams[key]);
+    if (normalizedCode) {
+      return normalizedCode;
+    }
+  }
+
+  return '';
+}
+
+const launchRedirect: RedirectFunction = (route) => {
   const appState = inject(AppStateService);
+  const router = inject(Router);
+  const discountCode = extractDiscountCodeFromQuery(route.queryParams, appState);
+  if (discountCode) {
+    appState.markOnboardingSeen();
+    return router.createUrlTree(['/welcome'], { queryParams: { code: discountCode } });
+  }
+
   if (appState.shouldShowWelcomeOnLaunch()) {
     appState.markOnboardingSeen();
     return 'welcome';
   }
 
   return 'home';
-}
+};
 
 const routes: Routes = [
   {

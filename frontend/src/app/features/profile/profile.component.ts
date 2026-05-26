@@ -696,7 +696,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.appState.setHotelAssociation(association);
           if (association?.inviteCode) {
             this.appState.setHotelCode(association.inviteCode);
-          } else {
+          } else if (!this.appState.hotelCode) {
             this.appState.setHotelCode('');
           }
         },

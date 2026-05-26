@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, finalize, map, of, shareReplay, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, finalize, map, of, shareReplay, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AppStateService } from './app-state.service';
+import { AppStateService, HotelAssociation } from './app-state.service';
 import { DashboardSession, AdminAuthService } from './admin-auth.service';
 
 const APP_SESSION_KEY = 'walkaround.app.session';
@@ -29,6 +29,12 @@ interface AuthResponse {
 
 interface MeResponse {
   user: AppUser;
+}
+
+interface StoredDiscountValidationResponse {
+  valid: boolean;
+  association?: HotelAssociation;
+  codeStatus?: 'valid' | 'expired' | 'invalid' | 'used';
 }
 
 export interface PasswordResetStatusResponse {
@@ -219,10 +225,33 @@ export class AppAuthService {
     }
 
     return this.http
-      .post(`${environment.apiBaseUrl}/hotel/validate`, {
+      .post<StoredDiscountValidationResponse>(`${environment.apiBaseUrl}/hotel/validate`, {
         code,
         userId: this.appState.userId
       })
-      .pipe(catchError(() => of(null)));
+      .pipe(
+        tap((response) => {
+          if (response.valid && response.association?.codeStatus === 'valid') {
+            this.appState.setHotelCode(response.association.inviteCode || code);
+            this.appState.setHotelAssociation(response.association);
+            return;
+          }
+          if (response.codeStatus === 'expired' || response.codeStatus === 'invalid' || response.codeStatus === 'used') {
+            this.clearStoredDiscountCode();
+          }
+        }),
+        catchError((error: { status?: number; error?: { codeStatus?: 'expired' | 'invalid' | 'used' } }) => {
+          const status = error?.error?.codeStatus;
+          if (error?.status === 404 || status === 'expired' || status === 'invalid' || status === 'used') {
+            this.clearStoredDiscountCode();
+          }
+          return of(null);
+        })
+      );
+  }
+
+  private clearStoredDiscountCode(): void {
+    this.appState.setHotelCode('');
+    this.appState.setHotelAssociation(null);
   }
 }

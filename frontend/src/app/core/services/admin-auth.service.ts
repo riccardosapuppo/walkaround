@@ -450,6 +450,19 @@ export interface PartnerEmailSettingsInput {
   rejectionBody: string;
 }
 
+export interface DashboardPartnerRequestDiscount {
+  id: number;
+  code: string;
+  applyTo: DiscountCodeApplyTo;
+  cityId: string | null;
+  cityName: string | null;
+  cityIds: string[];
+  cityNames: string[];
+  userDiscountPercent: number;
+  structureFixedAmount: number;
+  expiresAt: string | null;
+}
+
 export interface DashboardPartnerRequest {
   id: number;
   structureName: string;
@@ -474,6 +487,7 @@ export interface DashboardPartnerRequest {
   approvedStructureId: string | null;
   approvedDiscountCodeId: number | null;
   discountCode: string | null;
+  discount: DashboardPartnerRequestDiscount | null;
   approvalEmailSentAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -489,6 +503,7 @@ export interface PartnerRequestApprovalInput {
 }
 
 export interface PartnerRequestPdfPreviewInput {
+  applyTo?: DiscountCodeApplyTo | null;
   cityIds?: string[];
   code?: string | null;
   userDiscountPercent?: number | null;

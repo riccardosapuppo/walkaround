@@ -269,6 +269,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   discountCodes: DashboardDiscountCode[] = [];
   discountCodesByStructureId: Record<string, DashboardDiscountCode[]> = {};
   discountCodeGroups: DiscountCodesByStructureGroup[] = [];
+  highlightedDiscountCodeId: number | null = null;
+  highlightedDiscountStructureId: string | null = null;
   associatedUsers: StructureAssociatedUserRow[] = [];
   payments: DashboardPaymentRow[] = [];
   partnerRequests: DashboardPartnerRequest[] = [];
@@ -1182,6 +1184,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     if (section !== 'discounts') {
       this.savingDiscountCodeId = null;
       this.deletingDiscountCodeId = null;
+      this.highlightedDiscountCodeId = null;
+      this.highlightedDiscountStructureId = null;
       this.closeCreateDiscountCodeDialog();
       this.closeEditDiscountCodeDialog();
     }
@@ -2106,7 +2110,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
     this.previewingPartnerRequestId = request.id;
     this.auth
-      .previewPartnerRequestPdf(request.id, payload || { code: request.discountCode || 'SCONTO' })
+      .previewPartnerRequestPdf(request.id, payload || {})
       .subscribe({
         next: (blob) => {
           this.previewingPartnerRequestId = null;
@@ -2132,15 +2136,25 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return;
     }
 
-    const { cityIds, code, userDiscountPercent, structureFixedAmount, expiresAt } = this.partnerRequestApprovalForm.getRawValue();
+    const { applyTo, cityIds, code, userDiscountPercent, structureFixedAmount, expiresAt } = this.partnerRequestApprovalForm.getRawValue();
     const expiresAtIso = this.toIsoDateTime(expiresAt);
-    this.previewPartnerRequestPdf(request, {
+    const normalizedCode = this.normalizeStructureInviteCode(code || '');
+    const normalizedUserDiscountPercent = this.normalizePercent(userDiscountPercent);
+    const previewPayload: PartnerRequestPdfPreviewInput = {
+      applyTo,
       cityIds: this.normalizeSelectedCityIds(cityIds),
-      code: this.normalizeStructureInviteCode(code || '') || 'SCONTO',
-      userDiscountPercent: this.normalizePercent(userDiscountPercent),
-      structureFixedAmount: this.normalizeEuroAmount(structureFixedAmount),
-      expiresAt: expiresAtIso
-    });
+      structureFixedAmount: this.normalizeEuroAmount(structureFixedAmount)
+    };
+    if (expiresAtIso) {
+      previewPayload.expiresAt = expiresAtIso;
+    }
+    if (normalizedCode) {
+      previewPayload.code = normalizedCode;
+    }
+    if (normalizedCode || normalizedUserDiscountPercent > 0) {
+      previewPayload.userDiscountPercent = normalizedUserDiscountPercent;
+    }
+    this.previewPartnerRequestPdf(request, previewPayload);
   }
 
   approvePartnerRequest(): void {
@@ -2239,6 +2253,54 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.rejectingPartnerRequestId === request.id ||
       this.previewingPartnerRequestId === request.id
     );
+  }
+
+  async openPartnerRequestDiscountCodes(request: DashboardPartnerRequest): Promise<void> {
+    if (!this.canViewDiscountCodes || (!request.approvedDiscountCodeId && !request.approvedStructureId)) {
+      return;
+    }
+
+    await this.selectSection('discounts');
+    if (this.activeSection !== 'discounts') {
+      return;
+    }
+
+    this.highlightedDiscountCodeId = request.approvedDiscountCodeId;
+    this.highlightedDiscountStructureId = request.approvedStructureId;
+    if (!this.discountCodes.length && !this.loadingDiscountCodes) {
+      this.loadDiscountCodes();
+    }
+    this.scrollHighlightedDiscountCodeIntoView();
+  }
+
+  partnerRequestDiscountCitiesLabel(request: DashboardPartnerRequest): string {
+    const discount = request.discount;
+    if (!discount) {
+      return '-';
+    }
+    const names = Array.isArray(discount.cityNames) ? discount.cityNames.filter(Boolean) : [];
+    if (names.length) {
+      return names.join(', ');
+    }
+    const ids = Array.isArray(discount.cityIds) ? discount.cityIds.filter(Boolean) : [];
+    if (ids.length) {
+      return ids.map((cityId) => this.cityDisplayName(cityId) || cityId).join(', ');
+    }
+    if (discount.cityName) {
+      return discount.cityName;
+    }
+    if (discount.cityId) {
+      return this.cityDisplayName(discount.cityId) || discount.cityId;
+    }
+    return 'Contenuti associati';
+  }
+
+  partnerRequestDiscountValueLabel(request: DashboardPartnerRequest): string {
+    const discount = request.discount;
+    if (!discount) {
+      return '-';
+    }
+    return `${Number(discount.userDiscountPercent || 0)}% / ${this.formatCurrency(discount.structureFixedAmount)}`;
   }
 
   partnerRequestStatusLabel(status: DashboardPartnerRequest['status']): string {
@@ -3004,6 +3066,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
         this.loadingDiscountCodes = false;
         this.discountCodes = rows.map((row) => this.normalizeDiscountCodeRow(row));
         this.rebuildDiscountCodesIndex();
+        this.scrollHighlightedDiscountCodeIntoView();
       },
       error: (error: { error?: { message?: string } }) => {
         this.loadingDiscountCodes = false;
@@ -5646,6 +5709,24 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       },
       {} as Record<string, DashboardDiscountCode[]>
     );
+  }
+
+  private scrollHighlightedDiscountCodeIntoView(): void {
+    if (!this.highlightedDiscountCodeId && !this.highlightedDiscountStructureId) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      const targetId = this.highlightedDiscountCodeId
+        ? `discount-code-${this.highlightedDiscountCodeId}`
+        : this.highlightedDiscountStructureId
+          ? `discount-structure-${this.highlightedDiscountStructureId}`
+          : '';
+      if (!targetId) {
+        return;
+      }
+      document.getElementById(targetId)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 120);
   }
 
   private normalizeSelectedCityIds(cityIdsRaw: readonly string[] | null | undefined): string[] {

@@ -1485,6 +1485,26 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
       return res.status(409).json({ message: 'L ordine PayPal e scaduto. Crea un nuovo checkout.' });
     }
 
+    const pendingInviteCode = normalizeInviteCode(pendingOrder.invite_code);
+    if (pendingInviteCode) {
+      const usedCode = await client.query(
+        `
+        SELECT 1
+        FROM app_user_discount_code_uses
+        WHERE user_id = $1
+          AND invite_code = $2
+        LIMIT 1
+        `,
+        [userId, pendingInviteCode]
+      );
+      if (usedCode.rowCount) {
+        return res.status(409).json({
+          codeStatus: 'used',
+          message: 'Questo codice sconto e gia stato utilizzato. Crea un nuovo checkout senza questo codice.'
+        });
+      }
+    }
+
     const settings = await getPayPalSettings(client);
     const accessToken = await requestPayPalAccessToken(settings);
     const capturePayload = await paypalApiRequest(
@@ -1562,7 +1582,7 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
 
     const firstDiscountedItem = rawItems.find((item) => item?.inviteCode);
     if (firstDiscountedItem?.inviteCode) {
-      await client.query(
+      const discountUse = await client.query(
         `
           INSERT INTO app_user_discount_code_uses (
             user_id,
@@ -1574,9 +1594,13 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
           )
           VALUES ($1, NULL, $2, $3, $4, NOW())
           ON CONFLICT (user_id, invite_code) DO NOTHING
+          RETURNING id
         `,
         [userId, firstDiscountedItem.structureId || null, firstDiscountedItem.inviteCode, firstDiscountedItem.purchaseType]
       );
+      if (!discountUse.rowCount) {
+        throw createHttpError(409, 'Questo codice sconto e gia stato utilizzato.', { codeStatus: 'used' });
+      }
     }
 
     const insertedPurchases = [];
@@ -1740,6 +1764,13 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
 
     if (error instanceof PayPalConfigurationError) {
       return res.status(error.status || 502).json({ message: error.message });
+    }
+    if (error?.status) {
+      return res.status(error.status).json({
+        message: error.message,
+        details: error.details || null,
+        codeStatus: error.details?.codeStatus
+      });
     }
     return next(error);
   } finally {
@@ -2039,6 +2070,24 @@ router.post('/hotel/validate', async (req, res, next) => {
       }
     }
 
+    const existingAssociation = await client.query(
+      `
+      SELECT
+        l.invite_code,
+        dc.code AS discount_code
+      FROM app_user_structure_links l
+      LEFT JOIN dashboard_structure_discount_codes dc ON dc.id = l.discount_code_id
+      WHERE l.user_id = $1
+      LIMIT 1
+      FOR UPDATE OF l
+      `,
+      [payload.userId]
+    );
+    const alreadyAssociated =
+      existingAssociation.rowCount > 0 &&
+      normalizeInviteCode(existingAssociation.rows[0].discount_code || existingAssociation.rows[0].invite_code) ===
+        normalizedDiscountCode;
+
     await client.query(
       `
       INSERT INTO app_user_structure_links (user_id, structure_id, discount_code_id, invite_code, associated_at, updated_at)
@@ -2057,6 +2106,7 @@ router.post('/hotel/validate', async (req, res, next) => {
     return res.json({
       valid: true,
       applied: true,
+      alreadyAssociated,
       message: 'Codice applicato',
       association: {
         structureId: discountCode.structure_id,

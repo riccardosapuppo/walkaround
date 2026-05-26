@@ -120,15 +120,18 @@ const partnerRequestApprovalSchema = z.object({
   expiresAt: discountCodeExpiresAtSchema
 });
 const partnerRequestPdfPreviewSchema = z.object({
+  applyTo: discountCodeApplyToSchema.optional(),
   cityIds: z.array(z.string().trim().min(1, 'Città non valida')).optional().default([]),
   code: z.string().trim().max(32, 'Codice non valido').optional().default(''),
-  userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido').optional(),
-  structureFixedAmount: z.coerce
-    .number()
-    .min(0, 'Importo struttura non valido')
-    .max(10000, 'Importo struttura non valido')
-    .optional(),
-  expiresAt: discountCodeExpiresAtSchema.optional()
+  userDiscountPercent: z.preprocess(
+    (value) => (value === null || value === '' ? undefined : value),
+    z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido').optional()
+  ),
+  structureFixedAmount: z.preprocess(
+    (value) => (value === null || value === '' ? undefined : value),
+    z.coerce.number().min(0, 'Importo struttura non valido').max(10000, 'Importo struttura non valido').optional()
+  ),
+  expiresAt: z.preprocess((value) => (value === null || value === '' ? undefined : value), discountCodeExpiresAtSchema.optional())
 });
 
 const partnerEmailSettingsSchema = z.object({
@@ -825,6 +828,19 @@ function safeNumber(value, fallback = 0) {
   return numericValue;
 }
 
+function optionalNumber(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+function resolveDiscountRowValue(row, applyTo, fieldBase) {
+  const scopedField = applyTo === 'single' ? `${fieldBase}_single` : `${fieldBase}_bundle`;
+  return row?.[scopedField] ?? row?.[fieldBase] ?? null;
+}
+
 function normalizePaymentStatusLabel(value) {
   const normalized = String(value || '').trim().toUpperCase();
   if (!normalized) {
@@ -1129,10 +1145,25 @@ function normalizePartnerPreviewCode(value) {
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '');
-  return normalized.slice(0, 16) || 'SCONTO';
+  return normalized.slice(0, 16);
 }
 
 function buildPartnerRequestPdfPayload(requestRow, options = {}) {
+  const applyTo = options.applyTo || requestRow.apply_to || 'bundle';
+  const optionCityNames = Array.isArray(options.cityNames) ? options.cityNames : null;
+  const rowCityNames = normalizeTextArray(requestRow.city_names);
+  const discountCode = normalizePartnerPreviewCode(
+    options.discountCode !== undefined && options.discountCode !== null ? options.discountCode : requestRow.discount_code || ''
+  );
+  const userDiscountPercent =
+    options.userDiscountPercent !== undefined && options.userDiscountPercent !== null
+      ? optionalNumber(options.userDiscountPercent)
+      : optionalNumber(resolveDiscountRowValue(requestRow, applyTo, 'user_discount_percent'));
+  const structureFixedAmount =
+    options.structureFixedAmount !== undefined && options.structureFixedAmount !== null
+      ? optionalNumber(options.structureFixedAmount)
+      : optionalNumber(resolveDiscountRowValue(requestRow, applyTo, 'structure_fixed_amount'));
+
   return {
     structureName: requestRow.structure_name,
     structureType: requestRow.structure_type,
@@ -1147,15 +1178,30 @@ function buildPartnerRequestPdfPayload(requestRow, options = {}) {
     website: requestRow.website,
     contactPhone: requestRow.contact_phone,
     contactEmail: requestRow.contact_email,
-    cityNames: Array.isArray(options.cityNames) ? options.cityNames : [],
-    discountCode: normalizePartnerPreviewCode(options.discountCode || requestRow.discount_code || ''),
-    expiresAt: options.expiresAt || null,
-    userDiscountPercent: safeNumber(options.userDiscountPercent, 0),
-    structureFixedAmount: safeNumber(options.structureFixedAmount, 0)
+    applyTo,
+    cityNames: optionCityNames || rowCityNames,
+    discountCode,
+    expiresAt: options.expiresAt || requestRow.expires_at || null,
+    userDiscountPercent,
+    structureFixedAmount
   };
 }
 
 function mapPartnerRequestRow(row) {
+  const approvedDiscountCodeId = row.approved_discount_code_id == null ? null : Number(row.approved_discount_code_id);
+  const discountApplyTo = row.apply_to === 'single' || row.apply_to === 'bundle' ? row.apply_to : null;
+  const discountCityIds = normalizeTextArray(row.city_ids);
+  const discountCityNames = normalizeTextArray(row.city_names);
+  const discountUserDiscountPercentSingle = optionalNumber(row.user_discount_percent_single ?? row.user_discount_percent);
+  const discountUserDiscountPercentBundle = optionalNumber(row.user_discount_percent_bundle ?? row.user_discount_percent);
+  const discountStructureFixedAmountSingle = optionalNumber(row.structure_fixed_amount_single ?? row.structure_fixed_amount);
+  const discountStructureFixedAmountBundle = optionalNumber(row.structure_fixed_amount_bundle ?? row.structure_fixed_amount);
+  const discountUserDiscountPercent =
+    discountApplyTo === 'single' ? discountUserDiscountPercentSingle : discountUserDiscountPercentBundle;
+  const discountStructureFixedAmount =
+    discountApplyTo === 'single' ? discountStructureFixedAmountSingle : discountStructureFixedAmountBundle;
+  const discountCode = row.discount_code ? sanitizeCatalogText(row.discount_code) : null;
+
   return {
     id: Number(row.id),
     structureName: sanitizeCatalogText(row.structure_name),
@@ -1178,8 +1224,23 @@ function mapPartnerRequestRow(row) {
     status: normalizePartnerRequestStatus(row.status),
     pdfReleaseStatus: normalizePartnerRequestPdfReleaseStatus(row.pdf_release_status),
     approvedStructureId: row.approved_structure_id || null,
-    approvedDiscountCodeId: row.approved_discount_code_id == null ? null : Number(row.approved_discount_code_id),
-    discountCode: row.discount_code ? sanitizeCatalogText(row.discount_code) : null,
+    approvedDiscountCodeId,
+    discountCode,
+    discount:
+      discountCode && approvedDiscountCodeId
+        ? {
+            id: approvedDiscountCodeId,
+            code: discountCode,
+            applyTo: discountApplyTo || 'bundle',
+            cityId: discountCityIds[0] || (row.city_id ? String(row.city_id).trim() : '') || null,
+            cityName: discountCityNames[0] || (row.city_name ? sanitizeCatalogText(row.city_name) : null),
+            cityIds: discountCityIds,
+            cityNames: discountCityNames,
+            userDiscountPercent: discountUserDiscountPercent ?? 0,
+            structureFixedAmount: discountStructureFixedAmount ?? 0,
+            expiresAt: row.expires_at || null
+          }
+        : null,
     approvalEmailSentAt: row.approval_email_sent_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -1378,10 +1439,31 @@ async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
         pr.approved_discount_code_id,
         pr.approval_email_sent_at,
         dc.code AS discount_code,
+        dc.apply_to,
+        dc.city_id,
+        legacy_city.name AS city_name,
+        COALESCE(city_links.city_ids, CASE WHEN dc.city_id IS NOT NULL THEN ARRAY[dc.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
+        COALESCE(city_links.city_names, CASE WHEN legacy_city.name IS NOT NULL THEN ARRAY[legacy_city.name] ELSE ARRAY[]::TEXT[] END) AS city_names,
+        dc.user_discount_percent,
+        dc.user_discount_percent_single,
+        dc.user_discount_percent_bundle,
+        dc.structure_fixed_amount,
+        dc.structure_fixed_amount_single,
+        dc.structure_fixed_amount_bundle,
+        dc.expires_at,
         pr.created_at,
         pr.updated_at
       FROM partner_registration_requests pr
       LEFT JOIN dashboard_structure_discount_codes dc ON dc.id = pr.approved_discount_code_id
+      LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id
+      LEFT JOIN LATERAL (
+        SELECT
+          ARRAY_AGG(DISTINCT dcc.city_id ORDER BY dcc.city_id) AS city_ids,
+          ARRAY_AGG(DISTINCT c.name ORDER BY c.name) AS city_names
+        FROM dashboard_structure_discount_code_cities dcc
+        JOIN cities c ON c.id = dcc.city_id
+        WHERE dcc.discount_code_id = dc.id
+      ) city_links ON TRUE
       WHERE pr.id = $1
       LIMIT 1
       ${lockSql}
@@ -4067,10 +4149,31 @@ router.get('/partner-requests', requireAuth, requireAdmin, async (_req, res, nex
           pr.approved_discount_code_id,
           pr.approval_email_sent_at,
           dc.code AS discount_code,
+          dc.apply_to,
+          dc.city_id,
+          legacy_city.name AS city_name,
+          COALESCE(city_links.city_ids, CASE WHEN dc.city_id IS NOT NULL THEN ARRAY[dc.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
+          COALESCE(city_links.city_names, CASE WHEN legacy_city.name IS NOT NULL THEN ARRAY[legacy_city.name] ELSE ARRAY[]::TEXT[] END) AS city_names,
+          dc.user_discount_percent,
+          dc.user_discount_percent_single,
+          dc.user_discount_percent_bundle,
+          dc.structure_fixed_amount,
+          dc.structure_fixed_amount_single,
+          dc.structure_fixed_amount_bundle,
+          dc.expires_at,
           pr.created_at,
           pr.updated_at
         FROM partner_registration_requests pr
         LEFT JOIN dashboard_structure_discount_codes dc ON dc.id = pr.approved_discount_code_id
+        LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id
+        LEFT JOIN LATERAL (
+          SELECT
+            ARRAY_AGG(DISTINCT dcc.city_id ORDER BY dcc.city_id) AS city_ids,
+            ARRAY_AGG(DISTINCT c.name ORDER BY c.name) AS city_names
+          FROM dashboard_structure_discount_code_cities dcc
+          JOIN cities c ON c.id = dcc.city_id
+          WHERE dcc.discount_code_id = dc.id
+        ) city_links ON TRUE
         ORDER BY
           CASE
             WHEN pr.status = 'pending' THEN 0
@@ -4112,14 +4215,25 @@ router.post('/partner-requests/:requestId/pdf-preview', requireAuth, requireAdmi
       return res.status(404).json({ message: 'Una o piu città selezionate non esistono' });
     }
     const cityNames = cityRows.map((row) => sanitizeCatalogText(row.name)).filter(Boolean);
-    const discountCode = normalizePartnerPreviewCode(parsed.data.code || requestRow.discount_code || '');
-    const pdfPayload = buildPartnerRequestPdfPayload(requestRow, {
-      cityNames,
-      discountCode,
-      expiresAt: parsed.data.expiresAt ? parsed.data.expiresAt.toISOString() : null,
-      userDiscountPercent: parsed.data.userDiscountPercent,
-      structureFixedAmount: parsed.data.structureFixedAmount
-    });
+    const requestedDiscountCode = normalizePartnerPreviewCode(parsed.data.code || '');
+    const discountCode = requestedDiscountCode || normalizePartnerPreviewCode(requestRow.discount_code || '');
+    const pdfOptions = {
+      applyTo: parsed.data.applyTo,
+      discountCode
+    };
+    if (selectedCityIds.length) {
+      pdfOptions.cityNames = cityNames;
+    }
+    if (parsed.data.expiresAt) {
+      pdfOptions.expiresAt = parsed.data.expiresAt.toISOString();
+    }
+    if (parsed.data.userDiscountPercent !== undefined && parsed.data.userDiscountPercent !== null) {
+      pdfOptions.userDiscountPercent = parsed.data.userDiscountPercent;
+    }
+    if (parsed.data.structureFixedAmount !== undefined && parsed.data.structureFixedAmount !== null) {
+      pdfOptions.structureFixedAmount = parsed.data.structureFixedAmount;
+    }
+    const pdfPayload = buildPartnerRequestPdfPayload(requestRow, pdfOptions);
     const pdfBuffer = buildPartnerPromotionPdf(pdfPayload);
     const fileName = buildPartnerPromotionFileName(requestRow.structure_name, discountCode);
 
@@ -4369,6 +4483,7 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
     const cityNameById = new Map(cityRows.map((row) => [String(row.id), sanitizeCatalogText(row.name)]));
     const orderedCityNames = selectedCityIds.map((cityId) => cityNameById.get(cityId)).filter(Boolean);
     const pdfPayload = buildPartnerRequestPdfPayload(requestRow, {
+      applyTo,
       cityNames: orderedCityNames,
       discountCode: normalizedCode,
       expiresAt: payload.expiresAt.toISOString(),
@@ -4443,7 +4558,18 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
     return res.json(
       mapPartnerRequestRow({
         ...updated.rows[0],
-        discount_code: normalizedCode
+        discount_code: normalizedCode,
+        apply_to: applyTo,
+        city_id: selectedCityIds[0] || null,
+        city_ids: selectedCityIds,
+        city_names: orderedCityNames,
+        user_discount_percent: payload.userDiscountPercent,
+        user_discount_percent_single: userDiscountPercentSingle,
+        user_discount_percent_bundle: userDiscountPercentBundle,
+        structure_fixed_amount: payload.structureFixedAmount,
+        structure_fixed_amount_single: structureFixedAmountSingle,
+        structure_fixed_amount_bundle: structureFixedAmountBundle,
+        expires_at: payload.expiresAt.toISOString()
       })
     );
   } catch (error) {

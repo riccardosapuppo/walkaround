@@ -603,7 +603,11 @@
                   <td colspan="2" class="empty-cell">Nessun codice sconto registrato.</td>
                 </tr>
                 <ng-container *ngIf="!loadingDiscountCodes && !loadingStructures">
-                  <tr *ngFor="let group of discountCodeGroups">
+                  <tr
+                    *ngFor="let group of discountCodeGroups"
+                    [attr.id]="'discount-structure-' + group.structureId"
+                    [class.discount-group-row-highlight]="group.structureId === highlightedDiscountStructureId"
+                  >
                     <td>
                       <strong>{{ group.structureName || '-' }}</strong>
                       <small *ngIf="group.structureAddress">{{ group.structureAddress }}</small>
@@ -611,7 +615,12 @@
                     </td>
                     <td>
                       <div class="discount-group-list">
-                        <div class="discount-group-item" *ngFor="let discountCode of group.codes">
+                        <div
+                          class="discount-group-item"
+                          *ngFor="let discountCode of group.codes"
+                          [attr.id]="'discount-code-' + discountCode.id"
+                          [class.discount-group-item-highlight]="discountCode.id === highlightedDiscountCodeId"
+                        >
                           <div class="discount-group-main">
                             <code>{{ discountCode.code }}</code>
                             <span class="discount-group-meta">
@@ -784,7 +793,19 @@
                       <span class="status-pill" [ngClass]="partnerRequestPdfStatusClass(request.pdfReleaseStatus)">
                         PDF: {{ partnerRequestPdfStatusLabel(request.pdfReleaseStatus) }}
                       </span>
-                      <small *ngIf="request.discountCode">Codice: <code>{{ request.discountCode }}</code></small>
+                      <div class="partner-request-discount-card" *ngIf="request.discount as discount; else partnerRequestDiscountEmpty">
+                        <span>Codice collegato</span>
+                        <code>{{ discount.code }}</code>
+                        <small>{{ discountCodeApplyToLabel(discount.applyTo) }} - {{ partnerRequestDiscountCitiesLabel(request) }}</small>
+                        <small>
+                          Sconto/Incasso:
+                          <strong>{{ partnerRequestDiscountValueLabel(request) }}</strong>
+                        </small>
+                        <small>Scadenza: {{ formatDateTime(discount.expiresAt) }}</small>
+                      </div>
+                      <ng-template #partnerRequestDiscountEmpty>
+                        <small *ngIf="request.status === 'pending'">Codice da creare in approvazione</small>
+                      </ng-template>
                       <small>Aggiornata {{ formatDateTime(request.updatedAt) }}</small>
                     </td>
                     <td class="partner-request-message-cell">
@@ -811,6 +832,16 @@
                           [disabled]="isPartnerRequestBusy(request) || request.status === 'approved'"
                         >
                           {{ approvingPartnerRequestId === request.id ? 'Invio...' : 'Approva' }}
+                        </button>
+                        <button
+                          mat-stroked-button
+                          color="primary"
+                          type="button"
+                          *ngIf="request.approvedDiscountCodeId || request.approvedStructureId"
+                          (click)="openPartnerRequestDiscountCodes(request)"
+                          [disabled]="isPartnerRequestBusy(request)"
+                        >
+                          Gestisci codice
                         </button>
                         <button
                           mat-stroked-button

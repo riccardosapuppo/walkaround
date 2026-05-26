@@ -132,6 +132,29 @@ export class AppStateService {
     this.hotelCodeSubject.next(code);
   }
 
+  normalizeHotelCodeInput(value: unknown): string {
+    const rawValue = Array.isArray(value) ? value[0] : value;
+    return String(rawValue || '')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toUpperCase()
+      .slice(0, 6);
+  }
+
+  setPendingHotelCode(value: unknown): string {
+    const normalizedCode = this.normalizeHotelCodeInput(value);
+    if (!normalizedCode) {
+      return '';
+    }
+
+    const currentAssociationCode = this.normalizeHotelCodeInput(this.hotelAssociationSubject.value?.inviteCode || '');
+    if (currentAssociationCode && currentAssociationCode !== normalizedCode) {
+      this.setHotelAssociation(null);
+    }
+
+    this.setHotelCode(normalizedCode);
+    return normalizedCode;
+  }
+
   setHotelAssociation(association: HotelAssociation | null): void {
     if (!association) {
       localStorage.removeItem(STORAGE_KEYS.hotelAssociation);

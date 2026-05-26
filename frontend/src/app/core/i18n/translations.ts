@@ -295,7 +295,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'profile.codeStatus.invalid': 'Non valido',
     'partner.title': 'Diventa Partner',
     'partner.intro':
-      'Prevedere un form di registrazione completo per le strutture. Dopo la nostra approvazione invieremo anche un PDF da poter esporre ai turisti.',
+      "Compila i dati richiesti per candidare la tua struttura. Dopo la nostra approvazione ti invieremo via email il PDF promozionale con il codice sconto e le istruzioni per esporlo ai turisti.",
     'partner.requestSent': 'Richiesta inviata',
     'partner.requestReceived': 'Abbiamo ricevuto la tua richiesta partner.',
     'partner.requestNumber': 'Numero richiesta',
@@ -764,7 +764,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'profile.codeStatus.invalid': 'Invalid',
     'partner.title': 'Become a Partner',
     'partner.intro':
-      'Complete the full registration form for your property. After approval we will also send a PDF that can be displayed for tourists.',
+      'Complete the requested details to submit your property. After our approval, we will email you the promotional PDF with the discount code and the instructions for displaying it to tourists.',
     'partner.requestSent': 'Request sent',
     'partner.requestReceived': 'We have received your partner request.',
     'partner.requestNumber': 'Request number',
@@ -1234,7 +1234,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'profile.codeStatus.invalid': 'Invalide',
     'partner.title': 'Devenir partenaire',
     'partner.intro':
-      'Remplissez le formulaire complet de votre structure. Apres approbation, nous enverrons egalement un PDF a exposer aux touristes.',
+      'Renseignez les informations demandees pour proposer votre structure. Apres notre approbation, nous vous enverrons par email le PDF promotionnel avec le code de reduction et les instructions pour le presenter aux touristes.',
     'partner.requestSent': 'Demande envoyee',
     'partner.requestReceived': 'Nous avons bien recu votre demande partenaire.',
     'partner.requestNumber': 'Numero de demande',
@@ -1703,7 +1703,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'profile.codeStatus.invalid': 'No valido',
     'partner.title': 'Hazte partner',
     'partner.intro':
-      'Completa el formulario de registro de tu alojamiento. Tras nuestra aprobacion tambien enviaremos un PDF para mostrar a los turistas.',
+      'Completa los datos solicitados para presentar tu alojamiento. Tras nuestra aprobacion te enviaremos por email el PDF promocional con el codigo de descuento y las instrucciones para mostrarlo a los turistas.',
     'partner.requestSent': 'Solicitud enviada',
     'partner.requestReceived': 'Hemos recibido tu solicitud partner.',
     'partner.requestNumber': 'Numero de solicitud',
@@ -2173,7 +2173,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'profile.codeStatus.invalid': 'Ungueltig',
     'partner.title': 'Partner werden',
     'partner.intro':
-      'Fuellen Sie das vollstaendige Registrierungsformular fuer Ihre Unterkunft aus. Nach unserer Freigabe senden wir auch ein PDF, das Sie den Touristen zeigen koennen.',
+      'Geben Sie die angeforderten Daten ein, um Ihre Unterkunft einzureichen. Nach unserer Freigabe senden wir Ihnen per E-Mail das Werbe-PDF mit dem Rabattcode und den Hinweisen fuer die Anzeige gegenueber Touristen.',
     'partner.requestSent': 'Anfrage gesendet',
     'partner.requestReceived': 'Wir haben Ihre Partneranfrage erhalten.',
     'partner.requestNumber': 'Anfragenummer',
@@ -2643,7 +2643,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'profile.codeStatus.invalid': 'Nieprawidlowy',
     'partner.title': 'Zostan partnerem',
     'partner.intro':
-      'Wypelnij pelny formularz rejestracyjny dla obiektu. Po naszej akceptacji wyslemy takze PDF do pokazania turystom.',
+      'Wypelnij wymagane dane, aby zglosic swoj obiekt. Po naszej akceptacji wyslemy e-mailem promocyjny PDF z kodem rabatowym oraz instrukcjami, jak pokazac go turystom.',
     'partner.requestSent': 'Wniosek wyslany',
     'partner.requestReceived': 'Otrzymalismy twoj wniosek partnerski.',
     'partner.requestNumber': 'Numer wniosku',

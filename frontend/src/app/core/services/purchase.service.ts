@@ -15,10 +15,12 @@ import { AppStateService, HotelAssociation } from './app-state.service';
 
 const ADMIN_UNLOCK_SIMULATION_KEY = 'walkaround.adminUnlockSimulation';
 
-interface HotelValidationResponse {
+export interface HotelValidationResponse {
   valid: boolean;
   applied?: boolean;
   association?: HotelAssociation;
+  alreadyAssociated?: boolean;
+  codeStatus?: 'valid' | 'expired' | 'invalid' | 'used';
   message?: string;
 }
 

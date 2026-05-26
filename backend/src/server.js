@@ -115,9 +115,13 @@ async function resolvePublicAlias(relativeRequestPath) {
     return requestedAbsolutePath;
   }
 
+  if (!requestedAbsolutePath.startsWith(publicImagesPath)) {
+    return null;
+  }
+
   const parsedRequestPath = path.parse(requestedAbsolutePath);
   const normalizedBaseName = stripUploadedPrefix(parsedRequestPath.base);
-  if (normalizedBaseName === parsedRequestPath.base && !requestedAbsolutePath.startsWith(publicImagesPath)) {
+  if (normalizedBaseName === parsedRequestPath.base) {
     return null;
   }
 

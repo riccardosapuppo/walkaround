@@ -1139,6 +1139,15 @@
   gap: 8px;
 }
 
+.discount-group-row-highlight > td {
+  background: #f8fbff;
+}
+
+.discount-group-item-highlight {
+  border-color: #0f5f99;
+  box-shadow: 0 0 0 2px rgba(15, 95, 153, 0.12);
+}
+
 .discount-group-main {
   display: flex;
   align-items: center;
@@ -1781,9 +1790,43 @@
 }
 
 .partner-request-status-cell {
-  min-width: 170px;
+  min-width: 230px;
   display: grid;
   gap: 6px;
+}
+
+.partner-request-discount-card {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #dfe8f8;
+  border-radius: 8px;
+  background: #f9fcff;
+}
+
+.partner-request-discount-card span {
+  color: #486286;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.partner-request-discount-card code {
+  width: fit-content;
+  background: #ecf3ff;
+  border: 1px solid #cfe0fb;
+  border-radius: 7px;
+  padding: 2px 7px;
+  color: #113b6e;
+  font-weight: 800;
+}
+
+.partner-request-discount-card small {
+  color: #486286;
+}
+
+.partner-request-discount-card strong {
+  color: #1f355c;
 }
 
 .partner-request-message-cell {

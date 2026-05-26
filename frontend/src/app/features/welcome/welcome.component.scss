@@ -193,6 +193,79 @@
   padding-bottom: 34px;
 }
 
+.discount-notice {
+  width: min(420px, 100%);
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(23, 105, 170, 0.18);
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(15, 47, 79, 0.08);
+}
+
+.discount-notice mat-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}
+
+.discount-notice-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.discount-notice-copy p,
+.discount-notice-copy small {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.discount-notice-copy p {
+  color: #17385c;
+  font-size: 0.96rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.discount-notice-copy small {
+  color: #5a6d83;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.discount-notice-info {
+  background: #f4f8fc;
+  border-color: rgba(23, 105, 170, 0.22);
+}
+
+.discount-notice-info mat-icon {
+  color: #1769aa;
+}
+
+.discount-notice-success {
+  background: #f3fbf6;
+  border-color: rgba(37, 132, 86, 0.24);
+}
+
+.discount-notice-success mat-icon {
+  color: #258456;
+}
+
+.discount-notice-warning {
+  background: #fff8ef;
+  border-color: rgba(190, 104, 26, 0.3);
+}
+
+.discount-notice-warning mat-icon {
+  color: #be681a;
+}
+
 .invite-toggle {
   min-width: 0;
   padding: 0 4px;
@@ -206,6 +279,42 @@
   padding: 14px;
   display: grid;
   gap: 12px;
+}
+
+.code-box-status {
+  min-height: 34px;
+  display: inline-grid;
+  grid-template-columns: 20px auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: rgba(37, 132, 86, 0.08);
+  color: #1d7048;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.code-box-status mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+.code-action {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.code-action mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
 }
 
 .full-width {
