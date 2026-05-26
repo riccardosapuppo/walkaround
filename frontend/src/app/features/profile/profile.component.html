@@ -313,7 +313,7 @@
 
     <mat-card class="card section links">
       <a href="mailto:info@walkaround.cloud">{{ 'common.support' | t }}</a>
-      <a href="#" target="_blank" rel="noopener">{{ 'common.privacy' | t }}</a>
+      <button mat-button color="primary" type="button" (click)="openPrivacyPolicyDialog()">{{ 'common.privacy' | t }}</button>
     </mat-card>
 
     <ng-template #appLogoutDialog>
@@ -327,6 +327,21 @@
       <div mat-dialog-actions align="end" class="logout-dialog-actions">
         <button mat-stroked-button type="button" [mat-dialog-close]="false">{{ 'common.cancel' | t }}</button>
         <button mat-flat-button color="warn" type="button" [mat-dialog-close]="true">{{ 'profile.logoutConfirm' | t }}</button>
+      </div>
+    </ng-template>
+
+    <ng-template #privacyPolicyDialog>
+      <h2 mat-dialog-title>{{ 'common.privacy' | t }}</h2>
+      <div mat-dialog-content class="privacy-dialog-body">
+        <div class="privacy-dialog-loading" *ngIf="privacyPolicyLoading">
+          <mat-spinner diameter="28"></mat-spinner>
+          <span>{{ 'profile.privacyLoading' | t }}</span>
+        </div>
+        <div class="privacy-policy-content" *ngIf="!privacyPolicyLoading && privacyPolicyHtml" [innerHTML]="privacyPolicyHtml"></div>
+        <p *ngIf="!privacyPolicyLoading && !privacyPolicyHtml">{{ 'profile.privacyUnavailable' | t }}</p>
+      </div>
+      <div mat-dialog-actions align="end" class="logout-dialog-actions">
+        <button mat-flat-button color="primary" type="button" mat-dialog-close>{{ 'common.close' | t }}</button>
       </div>
     </ng-template>
   </ng-container>

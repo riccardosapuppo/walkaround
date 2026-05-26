@@ -84,7 +84,7 @@ async function fetchInviteByToken(token, client = pool) {
         i.used_at,
         u.is_registered
       FROM dashboard_invites i
-      JOIN dashboard_users u ON u.id = i.user_id
+      JOIN dashboard_users u ON u.id = i.user_id AND u.deleted = 0
       WHERE i.token_hash = $1
       LIMIT 1
     `,
@@ -136,7 +136,7 @@ async function fetchPasswordResetByToken(token, client = pool) {
         r.used_at,
         u.email
       FROM dashboard_password_resets r
-      JOIN dashboard_users u ON u.id = r.user_id
+      JOIN dashboard_users u ON u.id = r.user_id AND u.deleted = 0
       WHERE r.token_hash = $1
       LIMIT 1
     `,
@@ -197,8 +197,9 @@ router.post('/login', async (req, res, next) => {
           u.password_hash,
           u.is_registered
         FROM dashboard_users u
-        LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+        LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
         WHERE u.email = $1
+          AND u.deleted = 0
         LIMIT 1
       `,
       [email]
@@ -269,8 +270,9 @@ router.post('/impersonation/exit', requireAuth, async (req, res, next) => {
           u.role,
           u.is_registered
         FROM dashboard_users u
-        LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+        LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
         WHERE u.id = $1
+          AND u.deleted = 0
         LIMIT 1
       `,
       [impersonatedBy.id]
@@ -338,7 +340,7 @@ router.post('/invitations/:token/complete', async (req, res, next) => {
           i.used_at,
           u.is_registered
         FROM dashboard_invites i
-        JOIN dashboard_users u ON u.id = i.user_id
+        JOIN dashboard_users u ON u.id = i.user_id AND u.deleted = 0
         WHERE i.token_hash = $1
         FOR UPDATE
       `,
@@ -434,7 +436,7 @@ router.post('/password-resets/:token/complete', async (req, res, next) => {
           r.used_at,
           u.email
         FROM dashboard_password_resets r
-        JOIN dashboard_users u ON u.id = r.user_id
+        JOIN dashboard_users u ON u.id = r.user_id AND u.deleted = 0
         WHERE r.token_hash = $1
         FOR UPDATE
       `,

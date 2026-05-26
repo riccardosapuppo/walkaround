@@ -169,8 +169,9 @@ async function fetchDashboardUserByEmail(email, client = pool) {
         s.name AS structure_name,
         u.is_registered
       FROM dashboard_users u
-      LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+      LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
       WHERE u.email = $1
+        AND u.deleted = 0
       LIMIT 1
     `,
     [email]
@@ -193,8 +194,9 @@ async function fetchDashboardUserById(userId, client = pool) {
         s.name AS structure_name,
         u.is_registered
       FROM dashboard_users u
-      LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+      LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
       WHERE u.id = $1
+        AND u.deleted = 0
       LIMIT 1
     `,
     [userId]

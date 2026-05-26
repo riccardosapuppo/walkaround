@@ -2,6 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, filter, map, startWith, takeUntil } from 'rxjs';
 import { AppAuthService } from './core/services/app-auth.service';
+import { AppCacheService } from './core/services/app-cache.service';
 import { AppStateService } from './core/services/app-state.service';
 
 @Component({
@@ -22,10 +23,12 @@ export class AppComponent implements OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly appState: AppStateService,
-    private readonly appAuth: AppAuthService
+    private readonly appAuth: AppAuthService,
+    private readonly appCache: AppCacheService
   ) {
     this.syncSurfaceTheme(this.router.url);
     this.appAuth.restoreSession().pipe(takeUntil(this.destroy$)).subscribe();
+    this.appCache.startMonitoring();
 
     this.appState.language$
       .pipe(takeUntil(this.destroy$))

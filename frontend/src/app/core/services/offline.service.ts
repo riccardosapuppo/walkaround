@@ -56,6 +56,18 @@ export class OfflineService {
     });
   }
 
+  async clearAll(): Promise<void> {
+    await caches.delete(CACHE_NAME);
+    const db = await this.openDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  }
+
   private async putRecord(record: OfflineRecord): Promise<void> {
     const db = await this.openDb();
     return new Promise<void>((resolve, reject) => {

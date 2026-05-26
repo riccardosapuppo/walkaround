@@ -21,8 +21,16 @@ import {
 } from '../services/paypal.js';
 import {
   DEFAULT_OPENAI_TRANSLATION_MODEL,
+  DEFAULT_OPENAI_TTS_INSTRUCTIONS,
+  DEFAULT_OPENAI_TTS_MODEL,
+  DEFAULT_OPENAI_TTS_VOICE,
   OpenAITranslationError,
   normalizeOpenAITranslationModel,
+  normalizeOpenAITtsInstructions,
+  normalizeOpenAITtsModel,
+  normalizeOpenAITtsVoice,
+  generateSpeechWithOpenAI,
+  translateHtmlWithOpenAI,
   translatePoiWithOpenAI
 } from '../services/openai-translations.js';
 
@@ -32,6 +40,9 @@ const __dirname = path.dirname(__filename);
 const publicRootDir = path.resolve(__dirname, '../../public');
 const publicAudioRootDir = path.resolve(__dirname, '../../public/audio');
 const publicImagesRootDir = path.resolve(__dirname, '../../public/images');
+const privacyPolicyLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
+const privacyPolicyTargetLanguages = ['en', 'fr', 'es', 'de', 'pl'];
+const privacyPolicyHtmlMaxLength = 120000;
 const dashboardRoleSchema = z.enum(['admin', 'facility_manager', 'user']);
 const inviteRoleSchema = z.enum(['admin', 'facility_manager']);
 
@@ -171,16 +182,33 @@ const paypalSettingsSchema = z.object({
 });
 
 const openAiTranslationTargetLanguageSchema = z.enum(['en', 'fr', 'es', 'de', 'pl']);
+const openAiTtsVoiceSchema = z.enum(['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer', 'verse', 'marin', 'cedar']);
 const openAiTranslationSettingsSchema = z.object({
   apiKey: z.string().trim().max(500).optional().default(''),
   model: z.string().trim().min(1, 'Modello obbligatorio').max(120, 'Modello troppo lungo').optional().default(DEFAULT_OPENAI_TRANSLATION_MODEL),
+  ttsModel: z.string().trim().min(1, 'Modello audio obbligatorio').max(120, 'Modello audio troppo lungo').optional().default(DEFAULT_OPENAI_TTS_MODEL),
+  ttsVoice: openAiTtsVoiceSchema.optional().default(DEFAULT_OPENAI_TTS_VOICE),
+  ttsInstructions: z.string().trim().max(1200, 'Istruzioni voce troppo lunghe').optional().default(DEFAULT_OPENAI_TTS_INSTRUCTIONS),
   clearApiKey: z.boolean().optional().default(false)
+});
+const openAiAudioPreviewSchema = z.object({
+  ttsModel: z.string().trim().min(1, 'Modello audio obbligatorio').max(120, 'Modello audio troppo lungo').optional().default(DEFAULT_OPENAI_TTS_MODEL),
+  ttsVoice: openAiTtsVoiceSchema.optional().default(DEFAULT_OPENAI_TTS_VOICE),
+  ttsInstructions: z.string().trim().max(1200, 'Istruzioni voce troppo lunghe').optional().default(DEFAULT_OPENAI_TTS_INSTRUCTIONS),
+  previewText: z.string().trim().max(500, 'Testo anteprima troppo lungo').optional().default(
+    'Benvenuto nella tua audioguida. Scopriamo insieme questo luogo, tra storia, dettagli e curiosita.'
+  )
 });
 const openAiTranslationStatusQuerySchema = z.object({
   targetLanguage: openAiTranslationTargetLanguageSchema
 });
 const openAiPoiTranslationSchema = z.object({
   cityId: z.string().trim().min(1, 'Città obbligatoria').optional(),
+  targetLanguage: openAiTranslationTargetLanguageSchema,
+  overwrite: z.boolean().optional().default(false)
+});
+const openAiPoiAudioGenerationSchema = z.object({
+  cityId: z.string().trim().min(1, 'CittÃ  obbligatoria').optional(),
   targetLanguage: openAiTranslationTargetLanguageSchema,
   overwrite: z.boolean().optional().default(false)
 });
@@ -200,6 +228,19 @@ const poiTranslationFieldsSchema = z.object({
 }).partial();
 const cityTranslationsSchema = z.record(contentLanguageSchema, cityTranslationFieldsSchema).default({});
 const poiTranslationsSchema = z.record(contentLanguageSchema, poiTranslationFieldsSchema).default({});
+const privacyPolicyTranslationsSchema = z.record(
+  contentLanguageSchema,
+  z.string().max(privacyPolicyHtmlMaxLength, 'Privacy policy troppo lunga')
+).default({});
+const privacyPolicySettingsSchema = z.object({
+  translations: privacyPolicyTranslationsSchema.optional().default({})
+});
+const privacyPolicyTranslateSchema = z.object({
+  sourceLanguage: z.literal('it').optional().default('it'),
+  targetLanguages: z.array(openAiTranslationTargetLanguageSchema).optional().default(privacyPolicyTargetLanguages),
+  overwrite: z.boolean().optional().default(false)
+});
+const publicationStatusSchema = z.enum(['published', 'draft']);
 
 const catalogCitySchema = z.object({
   name: z.string().trim().min(1, 'Nome città obbligatorio').max(120, 'Nome città troppo lungo'),
@@ -207,6 +248,7 @@ const catalogCitySchema = z.object({
   bundlePrice: z.coerce.number().min(0, 'Prezzo bundle non valido').max(10000, 'Prezzo bundle troppo alto'),
   heroImage: z.string().trim().min(1, 'Hero image obbligatoria').max(500, 'Hero image troppo lunga'),
   isDefault: z.boolean().optional().default(false),
+  publicationStatus: publicationStatusSchema.optional().default('draft'),
   translations: cityTranslationsSchema.optional().default({})
 });
 
@@ -223,6 +265,7 @@ const catalogPoiSchema = z.object({
   audioUrl: z.string().trim().max(500, 'URL audio troppo lungo').default(''),
   priceSingle: z.coerce.number().min(0, 'Prezzo singolo non valido').max(10000, 'Prezzo singolo troppo alto'),
   durationSec: z.coerce.number().int().min(1, 'Durata non valida').max(7200, 'Durata troppo lunga'),
+  publicationStatus: publicationStatusSchema.optional().default('draft'),
   translations: poiTranslationsSchema.optional().default({})
 });
 
@@ -569,6 +612,7 @@ function mapCatalogCityRow(row) {
     bundlePrice: Number(row.bundle_price),
     heroImage: row.hero_image,
     isDefault: row.is_default,
+    publicationStatus: row.publication_status === 'draft' ? 'draft' : 'published',
     translations: sanitizeCatalogCityTranslations(row.translations),
     poiCount: Number(row.poi_count || 0),
     createdAt: row.created_at || null,
@@ -592,6 +636,7 @@ function mapCatalogPoiRow(row) {
     audioUrl: row.audio_url,
     priceSingle: Number(row.price_single),
     durationSec: Number(row.duration_sec),
+    publicationStatus: row.publication_status === 'draft' ? 'draft' : 'published',
     translations: sanitizeCatalogPoiTranslations(row.translations)
   };
 }
@@ -854,6 +899,9 @@ function mapOpenAiTranslationSettingsForResponse(row) {
     hasApiKey: Boolean(row?.api_key),
     maskedApiKey: maskOpenAiApiKey(row?.api_key),
     model: normalizeOpenAITranslationModel(row?.model),
+    ttsModel: normalizeOpenAITtsModel(row?.tts_model),
+    ttsVoice: normalizeOpenAITtsVoice(row?.tts_voice),
+    ttsInstructions: normalizeOpenAITtsInstructions(row?.tts_instructions),
     updatedAt: row?.updated_at || null,
     updatedBy: row?.updated_by || null
   };
@@ -877,6 +925,77 @@ function mapPartnerEmailSettingsForResponse(row) {
   };
 }
 
+function mapPrivacyPolicySettingsForResponse(row) {
+  return {
+    translations: sanitizePrivacyPolicyTranslations(row?.translations),
+    updatedAt: row?.updated_at || null,
+    updatedBy: row?.updated_by || null
+  };
+}
+
+function mapAppCacheSettingsForResponse(row) {
+  return {
+    cacheVersion: String(row?.cache_version || '1'),
+    updatedAt: row?.updated_at || null,
+    updatedBy: row?.updated_by || null
+  };
+}
+
+function sanitizePrivacyPolicyTranslations(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const sanitized = {};
+  privacyPolicyLanguages.forEach((language) => {
+    const html = normalizePrivacyPolicyHtml(value?.[language]);
+    if (html) {
+      sanitized[language] = html;
+    }
+  });
+  return sanitized;
+}
+
+function normalizePrivacyPolicyHtml(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) {
+    return '';
+  }
+
+  const html = /<\/?[a-z][\s\S]*>/i.test(rawValue) ? rawValue : plainTextToHtml(rawValue);
+  return stripUnsafePrivacyHtml(html).slice(0, privacyPolicyHtmlMaxLength);
+}
+
+function plainTextToHtml(value) {
+  return String(value || '')
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+function stripUnsafePrivacyHtml(value) {
+  return String(value || '')
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta|base)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta|base)[^>]*\/?\s*>/gi, '')
+    .replace(/\s+on[a-z]+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\s+on[a-z]+\s*=\s*'[^']*'/gi, '')
+    .replace(/\s+on[a-z]+\s*=\s*[^\s>]+/gi, '')
+    .replace(/\s+(href|src)\s*=\s*"javascript:[^"]*"/gi, ' $1="#"')
+    .replace(/\s+(href|src)\s*=\s*'javascript:[^']*'/gi, " $1='#'")
+    .replace(/\s+(href|src)\s*=\s*javascript:[^\s>]+/gi, ' $1="#"');
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function maskOpenAiApiKey(value) {
   const key = String(value || '').trim();
   if (!key) {
@@ -894,6 +1013,7 @@ function buildPoiTranslationStatus(row, targetLanguage) {
   const missingFields = ['descriptionShort', 'descriptionLong'].filter((field) => {
     return !String(translation?.[field] || '').trim();
   });
+  const audioUrl = String(translation?.audioUrl || '').trim();
 
   return {
     poiId: row.id,
@@ -902,8 +1022,72 @@ function buildPoiTranslationStatus(row, targetLanguage) {
     name: sanitizeCatalogText(row.name),
     targetLanguage,
     isComplete: missingFields.length === 0,
+    textComplete: missingFields.length === 0,
+    hasAudio: Boolean(audioUrl),
+    audioUrl,
     missingFields,
     translation
+  };
+}
+
+function buildPoiTranslationSummary(rows, targetLanguage) {
+  const summary = {
+    targetLanguage,
+    totalPois: 0,
+    textMissingPois: 0,
+    textCompletePois: 0,
+    audioMissingPois: 0,
+    audioGenerableMissingPois: 0,
+    audioReadyPois: 0
+  };
+  const citySummariesById = {};
+
+  rows.forEach((row) => {
+    const status = buildPoiTranslationStatus(row, targetLanguage);
+    const cityId = status.cityId;
+    if (!citySummariesById[cityId]) {
+      citySummariesById[cityId] = {
+        cityId,
+        cityName: status.cityName,
+        totalPois: 0,
+        textMissingPois: 0,
+        textCompletePois: 0,
+        audioMissingPois: 0,
+        audioGenerableMissingPois: 0,
+        audioReadyPois: 0
+      };
+    }
+
+    const citySummary = citySummariesById[cityId];
+    summary.totalPois += 1;
+    citySummary.totalPois += 1;
+
+    if (status.hasAudio) {
+      summary.audioReadyPois += 1;
+      citySummary.audioReadyPois += 1;
+    } else {
+      summary.audioMissingPois += 1;
+      citySummary.audioMissingPois += 1;
+    }
+
+    if (status.isComplete) {
+      summary.textCompletePois += 1;
+      citySummary.textCompletePois += 1;
+      if (!status.hasAudio) {
+        summary.audioGenerableMissingPois += 1;
+        citySummary.audioGenerableMissingPois += 1;
+      }
+    } else {
+      summary.textMissingPois += 1;
+      citySummary.textMissingPois += 1;
+    }
+  });
+
+  return {
+    ...summary,
+    cities: Object.values(citySummariesById).sort((left, right) =>
+      String(left.cityName || '').localeCompare(String(right.cityName || ''), 'it-IT')
+    )
   };
 }
 
@@ -913,7 +1097,7 @@ function mergePoiTranslationFields(existingTranslations, targetLanguage, transla
   const currentFields = translations[targetLanguage] || {};
   const nextFields = { ...currentFields };
 
-  ['descriptionShort', 'descriptionLong'].forEach((field) => {
+  ['descriptionShort', 'descriptionLong', 'audioUrl'].forEach((field) => {
     const value = String(translatedFields?.[field] || '').trim();
     if (!value) {
       return;
@@ -1028,6 +1212,28 @@ function inferAudioExtension(fileName = '', mimeType = '') {
   return 'mp3';
 }
 
+function buildTranslatedPoiSpeechInput(translation) {
+  const descriptionLong = String(translation?.descriptionLong || '').trim();
+  const descriptionShort = String(translation?.descriptionShort || '').trim();
+  return descriptionLong || descriptionShort;
+}
+
+async function storeGeneratedPoiAudio({ cityId, poiName, targetLanguage, audioBuffer }) {
+  const cityFolder = await resolveCityFolder({ cityId });
+  if (!cityFolder) {
+    return null;
+  }
+
+  const cityAudioDir = path.join(publicAudioRootDir, cityFolder.folderSlug);
+  await fs.mkdir(cityAudioDir, { recursive: true });
+  const baseName = slugify(`${poiName}-${targetLanguage}`) || `audio-${targetLanguage}`;
+  const storedFileName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${baseName}.mp3`;
+  const absolutePath = path.join(cityAudioDir, storedFileName);
+  await fs.writeFile(absolutePath, audioBuffer);
+
+  return `/public/audio/${cityFolder.folderSlug}/${storedFileName}`;
+}
+
 function inferImageExtension(fileName = '', mimeType = '') {
   const extFromName = path.extname(fileName).toLowerCase().replace('.', '');
   const allowed = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']);
@@ -1134,6 +1340,7 @@ async function fetchStructureById(structureId, client = pool) {
         updated_at
       FROM dashboard_structures
       WHERE id = $1
+        AND deleted = 0
       LIMIT 1
     `,
     [structureId]
@@ -1229,6 +1436,7 @@ async function fetchStructureByInviteCode(inviteCode, client = pool) {
       FROM dashboard_structures s
       JOIN dashboard_structure_discount_codes d ON d.structure_id = s.id
       WHERE UPPER(d.code) = $1
+        AND s.deleted = 0
       LIMIT 1
     `,
     [inviteCode.toUpperCase()]
@@ -1240,7 +1448,7 @@ async function fetchStructureByInviteCode(inviteCode, client = pool) {
 async function fetchCityById(cityId, client = pool) {
   const result = await client.query(
     `
-      SELECT id, name, region, bundle_price, hero_image, is_default, translations
+      SELECT id, name, region, bundle_price, hero_image, is_default, publication_status, translations
       FROM cities
       WHERE id = $1
       LIMIT 1
@@ -1268,6 +1476,7 @@ async function fetchPoiById(poiId, client = pool) {
         p.audio_url,
         p.price_single,
         p.duration_sec,
+        p.publication_status,
         p.translations
       FROM pois p
       JOIN cities c ON c.id = p.city_id
@@ -1282,7 +1491,7 @@ async function fetchPoiById(poiId, client = pool) {
 async function getOpenAiTranslationSettings(client = pool) {
   const result = await client.query(
     `
-      SELECT id, api_key, model, updated_at, updated_by
+      SELECT id, api_key, model, tts_model, tts_voice, tts_instructions, updated_at, updated_by
       FROM dashboard_openai_translation_settings
       WHERE id = 1
       LIMIT 1
@@ -1295,12 +1504,16 @@ async function getOpenAiTranslationSettings(client = pool) {
 
   const inserted = await client.query(
     `
-      INSERT INTO dashboard_openai_translation_settings (id, model)
-      VALUES (1, $1)
-      ON CONFLICT (id) DO UPDATE SET model = COALESCE(dashboard_openai_translation_settings.model, EXCLUDED.model)
-      RETURNING id, api_key, model, updated_at, updated_by
+      INSERT INTO dashboard_openai_translation_settings (id, model, tts_model, tts_voice, tts_instructions)
+      VALUES (1, $1, $2, $3, $4)
+      ON CONFLICT (id) DO UPDATE SET
+        model = COALESCE(dashboard_openai_translation_settings.model, EXCLUDED.model),
+        tts_model = COALESCE(dashboard_openai_translation_settings.tts_model, EXCLUDED.tts_model),
+        tts_voice = COALESCE(dashboard_openai_translation_settings.tts_voice, EXCLUDED.tts_voice),
+        tts_instructions = COALESCE(dashboard_openai_translation_settings.tts_instructions, EXCLUDED.tts_instructions)
+      RETURNING id, api_key, model, tts_model, tts_voice, tts_instructions, updated_at, updated_by
     `,
-    [DEFAULT_OPENAI_TRANSLATION_MODEL]
+    [DEFAULT_OPENAI_TRANSLATION_MODEL, DEFAULT_OPENAI_TTS_MODEL, DEFAULT_OPENAI_TTS_VOICE, DEFAULT_OPENAI_TTS_INSTRUCTIONS]
   );
 
   return inserted.rows[0];
@@ -1362,6 +1575,58 @@ async function getPartnerEmailSettings(client = pool) {
   return inserted.rows[0];
 }
 
+async function getPrivacyPolicySettings(client = pool) {
+  const result = await client.query(
+    `
+      SELECT id, translations, updated_at, updated_by
+      FROM dashboard_privacy_policy_settings
+      WHERE id = 1
+      LIMIT 1
+    `
+  );
+
+  if (result.rowCount) {
+    return result.rows[0];
+  }
+
+  const inserted = await client.query(
+    `
+      INSERT INTO dashboard_privacy_policy_settings (id, translations)
+      VALUES (1, '{}'::jsonb)
+      ON CONFLICT (id) DO UPDATE SET translations = COALESCE(dashboard_privacy_policy_settings.translations, EXCLUDED.translations)
+      RETURNING id, translations, updated_at, updated_by
+    `
+  );
+
+  return inserted.rows[0];
+}
+
+async function getAppCacheSettings(client = pool) {
+  const result = await client.query(
+    `
+      SELECT id, cache_version, updated_at, updated_by
+      FROM dashboard_app_cache_settings
+      WHERE id = 1
+      LIMIT 1
+    `
+  );
+
+  if (result.rowCount) {
+    return result.rows[0];
+  }
+
+  const inserted = await client.query(
+    `
+      INSERT INTO dashboard_app_cache_settings (id, cache_version)
+      VALUES (1, '1')
+      ON CONFLICT (id) DO UPDATE SET cache_version = COALESCE(dashboard_app_cache_settings.cache_version, EXCLUDED.cache_version)
+      RETURNING id, cache_version, updated_at, updated_by
+    `
+  );
+
+  return inserted.rows[0];
+}
+
 async function fetchUserRow(userId, client = pool) {
   const result = await client.query(
     `
@@ -1385,8 +1650,9 @@ async function fetchUserRow(userId, client = pool) {
         u.created_at,
         u.updated_at
       FROM dashboard_users u
-      LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+      LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
       WHERE u.id = $1
+        AND u.deleted = 0
       LIMIT 1
     `,
     [userId]
@@ -1444,6 +1710,7 @@ router.get('/structures', requireAuth, requireAdmin, async (_req, res, next) => 
               SELECT u.id AS user_id
               FROM dashboard_users u
               WHERE u.structure_id = s.id
+                AND u.deleted = 0
               UNION
               SELECT l.user_id
               FROM app_user_structure_links l
@@ -1460,6 +1727,7 @@ router.get('/structures', requireAuth, requireAdmin, async (_req, res, next) => 
             WHERE p.structure_id = s.id
           ) AS total_structure_earnings
         FROM dashboard_structures s
+        WHERE s.deleted = 0
         ORDER BY s.created_at ASC
       `
     );
@@ -1638,6 +1906,7 @@ router.patch('/structures/:structureId', requireAuth, requireAdmin, async (req, 
             address_country = $8,
             updated_at = NOW()
         WHERE id = $9
+          AND deleted = 0
         RETURNING
           id,
           name,
@@ -1678,6 +1947,7 @@ router.patch('/structures/:structureId', requireAuth, requireAdmin, async (req, 
           SELECT u.id AS user_id
           FROM dashboard_users u
           WHERE u.structure_id = $1
+            AND u.deleted = 0
           UNION
           SELECT l.user_id
           FROM app_user_structure_links l
@@ -1745,6 +2015,7 @@ router.patch('/structures/:structureId/discounts', requireAuth, requireAdmin, as
             structure_fixed_amount = $2,
             updated_at = NOW()
         WHERE id = $3
+          AND deleted = 0
         RETURNING
           id,
           name,
@@ -1775,6 +2046,7 @@ router.patch('/structures/:structureId/discounts', requireAuth, requireAdmin, as
           SELECT u.id AS user_id
           FROM dashboard_users u
           WHERE u.structure_id = $1
+            AND u.deleted = 0
           UNION
           SELECT l.user_id
           FROM app_user_structure_links l
@@ -1817,6 +2089,34 @@ router.patch('/structures/:structureId/discounts', requireAuth, requireAdmin, as
       createdAt: row.created_at,
       updatedAt: row.updated_at
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete('/structures/:structureId', requireAuth, requireAdmin, async (req, res, next) => {
+  const structureId = String(req.params.structureId || '').trim();
+  if (!structureId) {
+    return res.status(400).json({ message: 'Struttura non valida' });
+  }
+
+  try {
+    const deleted = await pool.query(
+      `
+        UPDATE dashboard_structures
+        SET deleted = 1,
+            updated_at = NOW()
+        WHERE id = $1
+          AND deleted = 0
+        RETURNING id
+      `,
+      [structureId]
+    );
+    if (!deleted.rowCount) {
+      return res.status(404).json({ message: 'Struttura non trovata' });
+    }
+
+    return res.json({ deleted: true, structureId });
   } catch (error) {
     return next(error);
   }
@@ -1873,7 +2173,7 @@ router.get('/discount-codes', requireAuth, async (req, res, next) => {
           dc.created_at,
           dc.updated_at
         FROM dashboard_structure_discount_codes dc
-        JOIN dashboard_structures s ON s.id = dc.structure_id
+        JOIN dashboard_structures s ON s.id = dc.structure_id AND s.deleted = 0
         LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id
         LEFT JOIN LATERAL (
           SELECT
@@ -2086,6 +2386,12 @@ router.patch('/discount-codes/:discountCodeId', requireAuth, requireAdmin, async
               expires_at = $9,
               updated_at = NOW()
           WHERE id = $10
+            AND EXISTS (
+              SELECT 1
+              FROM dashboard_structures active_structure
+              WHERE active_structure.id = dashboard_structure_discount_codes.structure_id
+                AND active_structure.deleted = 0
+            )
           RETURNING *
         )
         SELECT
@@ -2107,7 +2413,7 @@ router.patch('/discount-codes/:discountCodeId', requireAuth, requireAdmin, async
           updated.created_at,
           updated.updated_at
         FROM updated
-        JOIN dashboard_structures s ON s.id = updated.structure_id
+        JOIN dashboard_structures s ON s.id = updated.structure_id AND s.deleted = 0
         LEFT JOIN cities c ON c.id = updated.city_id
       `,
       [
@@ -2373,8 +2679,9 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
             inviter.email AS invited_by_email,
             'dashboard'::TEXT AS account_type
           FROM dashboard_users u
-          LEFT JOIN dashboard_users inviter ON inviter.id = u.invited_by
-          LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+          LEFT JOIN dashboard_users inviter ON inviter.id = u.invited_by AND inviter.deleted = 0
+          LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
+          WHERE u.deleted = 0
         ),
         app_link_rows AS (
           SELECT
@@ -2393,7 +2700,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
             NULL::TEXT AS invited_by_email,
             'app'::TEXT AS account_type
           FROM app_user_structure_links l
-          JOIN dashboard_structures s ON s.id = l.structure_id
+          JOIN dashboard_structures s ON s.id = l.structure_id AND s.deleted = 0
           LEFT JOIN dashboard_users u ON u.id = l.user_id
           WHERE u.id IS NULL
         ),
@@ -2414,7 +2721,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
             NULL::TEXT AS invited_by_email,
             'app'::TEXT AS account_type
           FROM purchases p
-          JOIN dashboard_structures s ON s.id = p.structure_id
+          JOIN dashboard_structures s ON s.id = p.structure_id AND s.deleted = 0
           LEFT JOIN dashboard_users u ON u.id = p.user_id
           LEFT JOIN app_user_structure_links l ON l.user_id = p.user_id
           WHERE u.id IS NULL
@@ -2522,6 +2829,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
           FROM dashboard_users u
           JOIN selected_users su ON su.user_id = u.id
           WHERE u.structure_id IS NOT NULL
+            AND u.deleted = 0
         ),
         combined AS (
           SELECT * FROM link_source
@@ -2563,7 +2871,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
           d.updated_at,
           d.sort_weight
         FROM dedup d
-        LEFT JOIN dashboard_structures s ON s.id = d.structure_id
+        JOIN dashboard_structures s ON s.id = d.structure_id AND s.deleted = 0
         ORDER BY
           d.user_id ASC,
           d.sort_weight ASC,
@@ -2814,7 +3122,7 @@ router.get('/associated-users', requireAuth, async (req, res, next) => {
           (code_usage.last_used_at IS NOT NULL) AS invite_code_used,
           code_usage.last_used_at AS invite_code_used_at
         FROM user_structure_pairs usp
-        JOIN dashboard_structures s ON s.id = usp.structure_id
+        JOIN dashboard_structures s ON s.id = usp.structure_id AND s.deleted = 0
         LEFT JOIN LATERAL (
           SELECT NULLIF(UPPER(TRIM(l.invite_code)), '') AS current_invite_code
           FROM app_user_structure_links l
@@ -3112,6 +3420,156 @@ router.put('/partner-email-settings', requireAuth, requireAdmin, async (req, res
   }
 });
 
+router.get('/privacy-policy', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getPrivacyPolicySettings();
+    return res.json(mapPrivacyPolicySettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/privacy-policy', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = privacyPolicySettingsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const translations = sanitizePrivacyPolicyTranslations(parsed.data.translations);
+
+  try {
+    const saved = await pool.query(
+      `
+        INSERT INTO dashboard_privacy_policy_settings (
+          id,
+          translations,
+          updated_by,
+          updated_at
+        )
+        VALUES (1, $1::jsonb, $2, NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          translations = EXCLUDED.translations,
+          updated_by = EXCLUDED.updated_by,
+          updated_at = NOW()
+        RETURNING id, translations, updated_at, updated_by
+      `,
+      [JSON.stringify(translations), req.authSession.user.id]
+    );
+
+    return res.json(mapPrivacyPolicySettingsForResponse(saved.rows[0]));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/app-cache-settings', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getAppCacheSettings();
+    return res.json(mapAppCacheSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/app-cache-settings/bump', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const nextCacheVersion = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+    const saved = await pool.query(
+      `
+        INSERT INTO dashboard_app_cache_settings (
+          id,
+          cache_version,
+          updated_by,
+          updated_at
+        )
+        VALUES (1, $1, $2, NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          cache_version = EXCLUDED.cache_version,
+          updated_by = EXCLUDED.updated_by,
+          updated_at = NOW()
+        RETURNING id, cache_version, updated_at, updated_by
+      `,
+      [nextCacheVersion, req.authSession.user.id]
+    );
+
+    return res.json(mapAppCacheSettingsForResponse(saved.rows[0]));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/privacy-policy/translate', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = privacyPolicyTranslateSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+  const uniqueTargetLanguages = Array.from(new Set(payload.targetLanguages)).filter((language) =>
+    privacyPolicyTargetLanguages.includes(language)
+  );
+
+  try {
+    const settings = await getOpenAiTranslationSettings();
+    const privacySettings = await getPrivacyPolicySettings();
+    const translations = sanitizePrivacyPolicyTranslations(privacySettings.translations);
+    const sourceHtml = translations[payload.sourceLanguage] || '';
+    if (!sourceHtml) {
+      return res.status(400).json({ message: 'Carica prima la privacy policy in italiano.' });
+    }
+
+    const translatedLanguages = [];
+    const skippedLanguages = [];
+    const usage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+
+    for (const targetLanguage of uniqueTargetLanguages) {
+      if (!payload.overwrite && translations[targetLanguage]) {
+        skippedLanguages.push(targetLanguage);
+        continue;
+      }
+
+      const result = await translateHtmlWithOpenAI({
+        apiKey: settings.api_key,
+        model: settings.model,
+        sourceLanguage: 'italiano',
+        targetLanguage,
+        html: sourceHtml
+      });
+
+      translations[targetLanguage] = normalizePrivacyPolicyHtml(result.html);
+      translatedLanguages.push(targetLanguage);
+      usage.inputTokens += Number(result.usage?.inputTokens || 0);
+      usage.outputTokens += Number(result.usage?.outputTokens || 0);
+      usage.totalTokens += Number(result.usage?.totalTokens || 0);
+    }
+
+    const saved = await pool.query(
+      `
+        UPDATE dashboard_privacy_policy_settings
+        SET translations = $1::jsonb,
+            updated_by = $2,
+            updated_at = NOW()
+        WHERE id = 1
+        RETURNING id, translations, updated_at, updated_by
+      `,
+      [JSON.stringify(translations), req.authSession.user.id]
+    );
+
+    return res.json({
+      settings: mapPrivacyPolicySettingsForResponse(saved.rows[0] || { translations }),
+      translatedLanguages,
+      skippedLanguages,
+      usage
+    });
+  } catch (error) {
+    if (error instanceof OpenAITranslationError) {
+      const status = error.status === 429 ? 429 : error.status === 400 ? 400 : 502;
+      return res.status(status).json({ message: error.message });
+    }
+    return next(error);
+  }
+});
+
 router.get('/openai-translations/settings', requireAuth, requireAdmin, async (_req, res, next) => {
   try {
     const settings = await getOpenAiTranslationSettings();
@@ -3130,6 +3588,9 @@ router.put('/openai-translations/settings', requireAuth, requireAdmin, async (re
   const payload = parsed.data;
   const apiKey = String(payload.apiKey || '').trim();
   const model = normalizeOpenAITranslationModel(payload.model);
+  const ttsModel = normalizeOpenAITtsModel(payload.ttsModel);
+  const ttsVoice = normalizeOpenAITtsVoice(payload.ttsVoice);
+  const ttsInstructions = normalizeOpenAITtsInstructions(payload.ttsInstructions);
 
   try {
     const current = await getOpenAiTranslationSettings();
@@ -3140,21 +3601,85 @@ router.put('/openai-translations/settings', requireAuth, requireAdmin, async (re
           id,
           api_key,
           model,
+          tts_model,
+          tts_voice,
+          tts_instructions,
           updated_by,
           updated_at
         )
-        VALUES (1, $1, $2, $3, NOW())
+        VALUES (1, $1, $2, $3, $4, $5, $6, NOW())
         ON CONFLICT (id) DO UPDATE SET
           api_key = EXCLUDED.api_key,
           model = EXCLUDED.model,
+          tts_model = EXCLUDED.tts_model,
+          tts_voice = EXCLUDED.tts_voice,
+          tts_instructions = EXCLUDED.tts_instructions,
           updated_by = EXCLUDED.updated_by,
           updated_at = NOW()
-        RETURNING id, api_key, model, updated_at, updated_by
+        RETURNING id, api_key, model, tts_model, tts_voice, tts_instructions, updated_at, updated_by
       `,
-      [nextApiKey, model, req.authSession.user.id]
+      [nextApiKey, model, ttsModel, ttsVoice, ttsInstructions, req.authSession.user.id]
     );
 
     return res.json(mapOpenAiTranslationSettingsForResponse(saved.rows[0]));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/openai-translations/audio-preview', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = openAiAudioPreviewSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+
+  try {
+    const settings = await getOpenAiTranslationSettings();
+    const { audioBuffer, contentType } = await generateSpeechWithOpenAI({
+      apiKey: settings.api_key,
+      model: payload.ttsModel,
+      voice: payload.ttsVoice,
+      instructions: payload.ttsInstructions,
+      input: payload.previewText
+    });
+
+    res.setHeader('Content-Type', contentType || 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Length', audioBuffer.length);
+    return res.send(audioBuffer);
+  } catch (error) {
+    if (error instanceof OpenAITranslationError) {
+      const status = error.status === 429 ? 429 : error.status === 400 ? 400 : 502;
+      return res.status(status).json({ message: error.message });
+    }
+    return next(error);
+  }
+});
+
+router.get('/openai-translations/status-summary', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = openAiTranslationStatusQuerySchema.safeParse(req.query || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Query non valida', errors: parsed.error.flatten() });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+        SELECT
+          p.id,
+          p.city_id,
+          c.name AS city_name,
+          p.name,
+          p.translations
+        FROM pois p
+        JOIN cities c ON c.id = p.city_id
+        ORDER BY c.name ASC, p.name ASC
+      `
+    );
+
+    return res.json(buildPoiTranslationSummary(result.rows, parsed.data.targetLanguage));
   } catch (error) {
     return next(error);
   }
@@ -3262,6 +3787,94 @@ router.post('/openai-translations/pois/:poiId/translate', requireAuth, requireAd
       poi: mapCatalogPoiRow(updatedPoi),
       translation,
       usage,
+      skipped: false
+    });
+  } catch (error) {
+    if (error instanceof OpenAITranslationError) {
+      const status = error.status === 429 ? 429 : error.status === 400 ? 400 : 502;
+      return res.status(status).json({ message: error.message });
+    }
+    return next(error);
+  }
+});
+
+router.post('/openai-translations/pois/:poiId/audio', requireAuth, requireAdmin, async (req, res, next) => {
+  const poiId = String(req.params.poiId || '').trim();
+  if (!poiId) {
+    return res.status(400).json({ message: 'POI non valido' });
+  }
+
+  const parsed = openAiPoiAudioGenerationSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const payload = parsed.data;
+
+  try {
+    const poi = await fetchPoiById(poiId);
+    if (!poi) {
+      return res.status(404).json({ message: 'POI non trovato' });
+    }
+    if (payload.cityId && payload.cityId !== poi.city_id) {
+      return res.status(400).json({ message: 'Il POI non appartiene alla cittÃ  selezionata' });
+    }
+
+    const translations = sanitizeCatalogPoiTranslations(poi.translations);
+    const translation = translations[payload.targetLanguage] || {};
+    const existingAudioUrl = String(translation.audioUrl || '').trim();
+    if (existingAudioUrl && !payload.overwrite) {
+      return res.json({
+        poi: mapCatalogPoiRow(poi),
+        audioUrl: existingAudioUrl,
+        skipped: true
+      });
+    }
+
+    const speechInput = buildTranslatedPoiSpeechInput(translation);
+    if (!speechInput) {
+      return res.status(400).json({ message: 'Genera prima il testo tradotto per questa lingua.' });
+    }
+
+    const settings = await getOpenAiTranslationSettings();
+    const { audioBuffer } = await generateSpeechWithOpenAI({
+      apiKey: settings.api_key,
+      model: settings.tts_model,
+      voice: settings.tts_voice,
+      instructions: settings.tts_instructions,
+      input: speechInput
+    });
+
+    const audioUrl = await storeGeneratedPoiAudio({
+      cityId: poi.city_id,
+      poiName: poi.name,
+      targetLanguage: payload.targetLanguage,
+      audioBuffer
+    });
+    if (!audioUrl) {
+      return res.status(404).json({ message: 'CittÃ  non trovata' });
+    }
+
+    const latestPoi = (await fetchPoiById(poiId)) || poi;
+    const mergedTranslations = mergePoiTranslationFields(latestPoi.translations, payload.targetLanguage, { audioUrl }, { overwrite: true });
+
+    const updated = await pool.query(
+      `
+        UPDATE pois
+        SET translations = $1::jsonb
+        WHERE id = $2
+        RETURNING id
+      `,
+      [JSON.stringify(mergedTranslations), poiId]
+    );
+    if (!updated.rowCount) {
+      return res.status(404).json({ message: 'POI non trovato' });
+    }
+
+    const updatedPoi = await fetchPoiById(poiId);
+    return res.json({
+      poi: mapCatalogPoiRow(updatedPoi),
+      audioUrl,
       skipped: false
     });
   } catch (error) {
@@ -3858,6 +4471,7 @@ router.get('/catalog/cities', requireAuth, requireAdmin, async (_req, res, next)
           c.bundle_price,
           c.hero_image,
           c.is_default,
+          c.publication_status,
           c.translations,
           COUNT(p.id)::INT AS poi_count
         FROM cities c
@@ -3900,11 +4514,20 @@ router.post('/catalog/cities', requireAuth, requireAdmin, async (req, res, next)
 
     const created = await client.query(
       `
-        INSERT INTO cities (id, name, region, bundle_price, hero_image, is_default, translations)
-        VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
-        RETURNING id, name, region, bundle_price, hero_image, is_default, translations
+        INSERT INTO cities (id, name, region, bundle_price, hero_image, is_default, publication_status, translations)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+        RETURNING id, name, region, bundle_price, hero_image, is_default, publication_status, translations
       `,
-      [cityId, payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify({})]
+      [
+        cityId,
+        payload.name,
+        payload.region,
+        payload.bundlePrice,
+        payload.heroImage,
+        payload.isDefault,
+        payload.publicationStatus,
+        JSON.stringify({})
+      ]
     );
 
     await client.query('COMMIT');
@@ -3950,11 +4573,21 @@ router.patch('/catalog/cities/:cityId', requireAuth, requireAdmin, async (req, r
             bundle_price = $3,
             hero_image = $4,
             is_default = $5,
-            translations = $6::jsonb
-        WHERE id = $7
-        RETURNING id, name, region, bundle_price, hero_image, is_default, translations
+            publication_status = $6,
+            translations = $7::jsonb
+        WHERE id = $8
+        RETURNING id, name, region, bundle_price, hero_image, is_default, publication_status, translations
       `,
-      [payload.name, payload.region, payload.bundlePrice, payload.heroImage, payload.isDefault, JSON.stringify({}), cityId]
+      [
+        payload.name,
+        payload.region,
+        payload.bundlePrice,
+        payload.heroImage,
+        payload.isDefault,
+        payload.publicationStatus,
+        JSON.stringify({}),
+        cityId
+      ]
     );
 
     await client.query('COMMIT');
@@ -4047,6 +4680,7 @@ router.get('/catalog/cities/:cityId/pois', requireAuth, requireAdmin, async (req
           p.audio_url,
           p.price_single,
           p.duration_sec,
+          p.publication_status,
           p.translations
         FROM pois p
         JOIN cities c ON c.id = p.city_id
@@ -4096,9 +4730,10 @@ router.post('/catalog/pois', requireAuth, requireAdmin, async (req, res, next) =
           audio_url,
           price_single,
           duration_sec,
+          publication_status,
           translations
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::jsonb)
         RETURNING id
       `,
       [
@@ -4115,6 +4750,7 @@ router.post('/catalog/pois', requireAuth, requireAdmin, async (req, res, next) =
         payload.audioUrl,
         payload.priceSingle,
         payload.durationSec,
+        payload.publicationStatus,
         JSON.stringify(payload.translations || {})
       ]
     );
@@ -4159,8 +4795,9 @@ router.patch('/catalog/pois/:poiId', requireAuth, requireAdmin, async (req, res,
             audio_url = $10,
             price_single = $11,
             duration_sec = $12,
-            translations = $13::jsonb
-        WHERE id = $14
+            publication_status = $13,
+            translations = $14::jsonb
+        WHERE id = $15
         RETURNING id
       `,
       [
@@ -4176,6 +4813,7 @@ router.patch('/catalog/pois/:poiId', requireAuth, requireAdmin, async (req, res,
         payload.audioUrl,
         payload.priceSingle,
         payload.durationSec,
+        payload.publicationStatus,
         JSON.stringify(payload.translations || {}),
         poiId
       ]
@@ -4414,6 +5052,7 @@ router.post('/users/:userId/password-reset', requireAuth, requireAdmin, async (r
         SELECT id, email, is_registered
         FROM dashboard_users
         WHERE id = $1
+          AND deleted = 0
         LIMIT 1
       `,
       [userId]
@@ -4481,6 +5120,7 @@ router.patch('/users/:userId/access', requireAuth, requireAdmin, async (req, res
         SELECT id, role
         FROM dashboard_users
         WHERE id = $1
+          AND deleted = 0
         LIMIT 1
       `,
       [userId]
@@ -4517,6 +5157,7 @@ router.patch('/users/:userId/access', requireAuth, requireAdmin, async (req, res
             facility_name = $2,
             updated_at = NOW()
         WHERE id = $3
+          AND deleted = 0
         RETURNING id
       `,
       [targetStructureId, targetFacilityName, userId]
@@ -4550,6 +5191,7 @@ router.patch('/users/:userId/structure', requireAuth, requireAdmin, async (req, 
         SELECT id, role
         FROM dashboard_users
         WHERE id = $1
+          AND deleted = 0
         LIMIT 1
       `,
       [userId]
@@ -4591,6 +5233,7 @@ router.patch('/users/:userId/structure', requireAuth, requireAdmin, async (req, 
             facility_name = $2,
             updated_at = NOW()
         WHERE id = $3
+          AND deleted = 0
       `,
       [targetStructureId, structure?.name || null, userId]
     );
@@ -4613,11 +5256,22 @@ router.delete('/users/:userId', requireAuth, requireAdmin, async (req, res, next
   }
 
   try {
-    const deleted = await pool.query('DELETE FROM dashboard_users WHERE id = $1 RETURNING id', [userId]);
+    const deleted = await pool.query(
+      `
+        UPDATE dashboard_users
+        SET deleted = 1,
+            updated_at = NOW()
+        WHERE id = $1
+          AND deleted = 0
+        RETURNING id
+      `,
+      [userId]
+    );
     if (!deleted.rowCount) {
       return res.status(404).json({ message: 'Utente non trovato' });
     }
 
+    await pool.query('DELETE FROM dashboard_sessions WHERE user_id = $1 OR impersonated_by_user_id = $1', [userId]);
     return res.json({ deleted: true, userId });
   } catch (error) {
     return next(error);
@@ -4647,8 +5301,9 @@ router.post('/users/:userId/impersonate', requireAuth, requireAdmin, async (req,
           u.role,
           u.is_registered
         FROM dashboard_users u
-        LEFT JOIN dashboard_structures s ON s.id = u.structure_id
+        LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
         WHERE u.id = $1
+          AND u.deleted = 0
         LIMIT 1
       `,
       [userId]

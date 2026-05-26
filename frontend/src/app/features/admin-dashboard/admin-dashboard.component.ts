@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +8,9 @@ import {
   AdminAuthService,
   CatalogMediaTarget,
   CatalogCityInput,
+  CatalogPublicationStatus,
   CatalogPoiInput,
+  DashboardAppCacheSettings,
   DashboardPartnerRequest,
   DiscountCodeApplyTo,
   DashboardCatalogCity,
@@ -16,9 +18,11 @@ import {
   DashboardDiscountCode,
   DashboardPayPalSettings,
   DashboardPartnerEmailSettings,
+  DashboardPrivacyPolicySettings,
   DashboardPaymentRow,
   DashboardPaymentsSummary,
   PartnerEmailSettingsInput,
+  PrivacyPolicyTranslations,
   PartnerRequestApprovalInput,
   PartnerRequestPdfPreviewInput,
   DashboardStructure,
@@ -26,6 +30,8 @@ import {
   StructureAssociatedUserRow,
   DashboardUserRow,
   InviteResponse,
+  OpenAiGeneratePoiAudioResponse,
+  OpenAiPoiTranslationSummary,
   OpenAiPoiTranslationStatus,
   OpenAiTranslatePoiResponse,
   OpenAiTranslationSettings,
@@ -43,10 +49,13 @@ type DashboardSection =
   | 'payments'
   | 'paypal'
   | 'gptTranslations'
+  | 'globalSettings'
   | 'catalog';
 type CatalogTab = 'cities' | 'pois';
+type GlobalSettingsTab = 'privacyPolicy' | 'appCache';
 type PoiMapPickerTarget = 'create' | 'edit';
 type ContentEditorLanguage = 'en' | 'fr' | 'es' | 'de' | 'pl';
+type PrivacyPolicyLanguage = 'it' | ContentEditorLanguage;
 type PoiMapSearchResult = {
   displayName: string;
   lat: number;
@@ -117,7 +126,7 @@ const DEFAULT_PARTNER_EMAIL_PLACEHOLDERS: DashboardPartnerEmailSettings['placeho
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnDestroy, OnInit {
   readonly noStructureValue = '__none__';
   readonly fixedCreateCityRegion = 'Sicilia';
   readonly contentLanguages: ReadonlyArray<{ code: ContentEditorLanguage; label: string }> = [
@@ -126,6 +135,25 @@ export class AdminDashboardComponent implements OnInit {
     { code: 'es', label: 'Spagnolo' },
     { code: 'de', label: 'Tedesco' },
     { code: 'pl', label: 'Polacco' }
+  ];
+  readonly ttsVoiceOptions: ReadonlyArray<{ value: string; label: string }> = [
+    { value: 'alloy', label: 'Alloy' },
+    { value: 'ash', label: 'Ash' },
+    { value: 'ballad', label: 'Ballad' },
+    { value: 'coral', label: 'Coral' },
+    { value: 'echo', label: 'Echo' },
+    { value: 'fable', label: 'Fable' },
+    { value: 'onyx', label: 'Onyx' },
+    { value: 'nova', label: 'Nova' },
+    { value: 'sage', label: 'Sage' },
+    { value: 'shimmer', label: 'Shimmer' },
+    { value: 'verse', label: 'Verse' },
+    { value: 'marin', label: 'Marin' },
+    { value: 'cedar', label: 'Cedar' }
+  ];
+  readonly privacyPolicyLanguages: ReadonlyArray<{ code: PrivacyPolicyLanguage; label: string }> = [
+    { code: 'it', label: 'Italiano' },
+    ...this.contentLanguages
   ];
   readonly poiCategoryOptions: string[] = [
     'Monumento',
@@ -155,12 +183,17 @@ export class AdminDashboardComponent implements OnInit {
     { id: 'payments', label: 'Pagamenti' },
     { id: 'paypal', label: 'PayPal' },
     { id: 'gptTranslations', label: 'Traduzioni GPT' },
+    { id: 'globalSettings', label: 'Impostazioni globali' },
     { id: 'catalog', label: 'Città e Punti interesse' }
   ];
   readonly managerSections: Array<{ id: DashboardSection; label: string }> = [
     { id: 'users', label: 'Utenti associati' },
     { id: 'discounts', label: 'Codici invito/sconto' },
     { id: 'payments', label: 'Pagamenti' }
+  ];
+  readonly globalSettingsTabs: Array<{ id: GlobalSettingsTab; label: string }> = [
+    { id: 'privacyPolicy', label: 'Privacy policy' },
+    { id: 'appCache', label: 'Cache e aggiornamenti' }
   ];
 
   authChecked = false;
@@ -173,6 +206,7 @@ export class AdminDashboardComponent implements OnInit {
   selectedPaymentsStructureId = '';
   editingStructureId: string | null = null;
   catalogTab: CatalogTab = 'cities';
+  activeGlobalSettingsTab: GlobalSettingsTab = 'privacyPolicy';
 
   loggingIn = false;
   showLoginPassword = false;
@@ -187,6 +221,9 @@ export class AdminDashboardComponent implements OnInit {
   loadingPayPalSettings = false;
   loadingOpenAiTranslationSettings = false;
   loadingOpenAiTranslationStatus = false;
+  loadingOpenAiTranslationSummary = false;
+  loadingPrivacyPolicySettings = false;
+  loadingAppCacheSettings = false;
   creatingStructure = false;
   updatingStructure = false;
   loadingDiscountCodes = false;
@@ -195,7 +232,12 @@ export class AdminDashboardComponent implements OnInit {
   savingPayPalSettings = false;
   savingPartnerEmailSettings = false;
   savingOpenAiTranslationSettings = false;
+  previewingOpenAiVoice = false;
+  savingPrivacyPolicySettings = false;
+  bumpingAppCacheVersion = false;
+  translatingPrivacyPolicy = false;
   bulkTranslatingPois = false;
+  bulkGeneratingPoiAudios = false;
   testingPayPalSettings = false;
   loadingCatalogCities = false;
   loadingCatalogPois = false;
@@ -214,10 +256,12 @@ export class AdminDashboardComponent implements OnInit {
   savingUserId: string | null = null;
   savingDiscountCodeId: number | null = null;
   deletingDiscountCodeId: number | null = null;
+  deletingStructureId: string | null = null;
   resettingPasswordUserId: string | null = null;
   deletingUserId: string | null = null;
   impersonatingUserId: string | null = null;
   translatingPoiId: string | null = null;
+  generatingPoiAudioId: string | null = null;
 
   lastInvite: InviteResponse | null = null;
   users: DashboardUserRow[] = [];
@@ -232,6 +276,18 @@ export class AdminDashboardComponent implements OnInit {
   payPalSettings: DashboardPayPalSettings | null = null;
   openAiTranslationSettings: OpenAiTranslationSettings | null = null;
   openAiTranslationStatusRows: OpenAiPoiTranslationStatus[] = [];
+  openAiTranslationSummary: OpenAiPoiTranslationSummary | null = null;
+  privacyPolicySettings: DashboardPrivacyPolicySettings | null = null;
+  appCacheSettings: DashboardAppCacheSettings | null = null;
+  privacyPolicyTranslations: Record<PrivacyPolicyLanguage, string> = this.emptyPrivacyPolicyTranslations();
+  privacyPolicySelectedLanguage: PrivacyPolicyLanguage = 'it';
+  privacyPolicyTranslateOverwrite = false;
+  privacyPolicyTranslationUsage: OpenAiTranslationUsage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0
+  };
+  privacyPolicyTranslationLog: string[] = [];
   selectedGptTranslationPoiId = '';
   gptTranslationProgressTotal = 0;
   gptTranslationProgressDone = 0;
@@ -241,6 +297,9 @@ export class AdminDashboardComponent implements OnInit {
     totalTokens: 0
   };
   gptTranslationLog: string[] = [];
+  gptAudioProgressTotal = 0;
+  gptAudioProgressDone = 0;
+  gptAudioLog: string[] = [];
   paymentsSummary: DashboardPaymentsSummary = {
     totalPayments: 0,
     totalCollected: 0,
@@ -259,6 +318,7 @@ export class AdminDashboardComponent implements OnInit {
   private lastLoadedCatalogPoisCityId = '';
   private catalogPoisRequestToken = 0;
   private openAiTranslationStatusRequestToken = 0;
+  private openAiTranslationSummaryRequestToken = 0;
   private hasLoadedCatalogCitiesOnce = false;
   mapPickerLoading = false;
   mapPickerResults: PoiMapSearchResult[] = [];
@@ -284,11 +344,15 @@ export class AdminDashboardComponent implements OnInit {
   private gptTranslationRunToken = 0;
   private confirmedGptTranslationLanguage: ContentEditorLanguage = 'en';
   private confirmedGptTranslationOverwrite = false;
+  private openAiVoicePreviewAudio: HTMLAudioElement | null = null;
+  private openAiVoicePreviewUrl: string | null = null;
+  private openAiVoicePreviewRequestToken = 0;
   private readonly audioDurationByUrl: Record<string, number> = {};
   private readonly pendingAudioDurationUrls = new Set<string>();
   private readonly invalidAudioDurationUrls = new Set<string>();
   private readonly maxCatalogAudioUploadBytes = 15 * 1024 * 1024;
   private readonly maxCatalogImageUploadBytes = 10 * 1024 * 1024;
+  private readonly maxPrivacyPolicyImportBytes = 2 * 1024 * 1024;
   audioPlayerPoiName = '';
   audioPlayerFileName = '';
   audioPlayerUrl = '';
@@ -304,6 +368,7 @@ export class AdminDashboardComponent implements OnInit {
   @ViewChild('poiMapPickerDialog') poiMapPickerDialog?: TemplateRef<unknown>;
   @ViewChild('gptTranslationInterruptDialog') gptTranslationInterruptDialog?: TemplateRef<unknown>;
   @ViewChild('poiMapCanvas') poiMapCanvas?: ElementRef<HTMLDivElement>;
+  @ViewChild('privacyPolicyEditor') privacyPolicyEditor?: ElementRef<HTMLDivElement>;
 
   readonly structureInviteCodeDraftByUserId: Record<string, string> = {};
   editingDiscountCodeId: number | null = null;
@@ -410,7 +475,13 @@ export class AdminDashboardComponent implements OnInit {
 
   readonly openAiTranslationSettingsForm = this.formBuilder.nonNullable.group({
     apiKey: ['', [Validators.maxLength(500)]],
-    model: ['gpt-4o-mini', [Validators.required, Validators.maxLength(120)]]
+    model: ['gpt-4o-mini', [Validators.required, Validators.maxLength(120)]],
+    ttsModel: ['gpt-4o-mini-tts', [Validators.required, Validators.maxLength(120)]],
+    ttsVoice: ['alloy', [Validators.required]],
+    ttsInstructions: [
+      'Narrazione chiara, naturale e professionale per una audioguida turistica. Ritmo medio, tono coinvolgente e pronuncia curata dei nomi propri italiani.',
+      [Validators.maxLength(1200)]
+    ]
   });
 
   readonly gptTranslationForm = this.formBuilder.nonNullable.group({
@@ -425,6 +496,7 @@ export class AdminDashboardComponent implements OnInit {
     region: [{ value: this.fixedCreateCityRegion, disabled: true }, [Validators.required, Validators.maxLength(120)]],
     bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     heroImage: ['', [Validators.required, Validators.maxLength(500)]],
+    isPublished: [false],
     translations: this.formBuilder.nonNullable.group({})
   });
 
@@ -441,6 +513,7 @@ export class AdminDashboardComponent implements OnInit {
     audioUrl: ['', [Validators.maxLength(500)]],
     priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
+    isPublished: [false],
     translations: this.formBuilder.nonNullable.group({
       en: this.formBuilder.nonNullable.group({
         descriptionShort: ['', [Validators.maxLength(1000)]],
@@ -475,6 +548,7 @@ export class AdminDashboardComponent implements OnInit {
     region: ['', [Validators.required, Validators.maxLength(120)]],
     bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     heroImage: ['', [Validators.required, Validators.maxLength(500)]],
+    isPublished: [false],
     translations: this.formBuilder.nonNullable.group({})
   });
 
@@ -491,6 +565,7 @@ export class AdminDashboardComponent implements OnInit {
     audioUrl: ['', [Validators.maxLength(500)]],
     priceSingle: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     durationSec: [60, [Validators.required, Validators.min(1), Validators.max(7200)]],
+    isPublished: [false],
     translations: this.formBuilder.nonNullable.group({
       en: this.formBuilder.nonNullable.group({
         descriptionShort: ['', [Validators.maxLength(1000)]],
@@ -566,6 +641,13 @@ export class AdminDashboardComponent implements OnInit {
         this.partnerRequestApprovalForm.controls.code.setValue(normalized, { emitEvent: false });
       }
     });
+    [
+      this.openAiTranslationSettingsForm.controls.ttsModel,
+      this.openAiTranslationSettingsForm.controls.ttsVoice,
+      this.openAiTranslationSettingsForm.controls.ttsInstructions
+    ].forEach((control) => {
+      control.valueChanges.subscribe(() => this.cancelOpenAiVoicePreview());
+    });
 
     this.startCreateCatalogCity();
     this.startCreateCatalogPoi();
@@ -613,6 +695,10 @@ export class AdminDashboardComponent implements OnInit {
     return this.canManageUsers;
   }
 
+  get canManageGlobalSettings(): boolean {
+    return this.canManageUsers;
+  }
+
   get visibleSections(): Array<{ id: DashboardSection; label: string }> {
     if (this.canManageUsers) {
       return this.sections;
@@ -643,9 +729,85 @@ export class AdminDashboardComponent implements OnInit {
     return this.canManageGptTranslations && !this.savingOpenAiTranslationSettings && this.openAiTranslationSettingsForm.valid;
   }
 
+  get canPreviewOpenAiVoice(): boolean {
+    return (
+      this.canManageGptTranslations &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      this.openAiTranslationSettingsForm.controls.ttsModel.valid &&
+      this.openAiTranslationSettingsForm.controls.ttsVoice.valid &&
+      this.openAiTranslationSettingsForm.controls.ttsInstructions.valid &&
+      !this.previewingOpenAiVoice &&
+      !this.savingOpenAiTranslationSettings
+    );
+  }
+
+  get canSavePrivacyPolicySettings(): boolean {
+    return this.canManageGlobalSettings && !this.loadingPrivacyPolicySettings && !this.savingPrivacyPolicySettings;
+  }
+
+  get canBumpAppCacheVersion(): boolean {
+    return this.canManageGlobalSettings && !this.loadingAppCacheSettings && !this.bumpingAppCacheVersion;
+  }
+
+  get configuredPrivacyPolicyLanguagesCount(): number {
+    return this.privacyPolicyLanguages.filter(({ code }) => this.hasPrivacyPolicyContent(code)).length;
+  }
+
+  get selectedPrivacyPolicyLanguageLabel(): string {
+    return this.privacyPolicyLanguages.find((language) => language.code === this.privacyPolicySelectedLanguage)?.label || 'Italiano';
+  }
+
+  get hasItalianPrivacyPolicyContent(): boolean {
+    return this.hasPrivacyPolicyContent('it');
+  }
+
+  get canTranslatePrivacyPolicy(): boolean {
+    return (
+      this.canManageGlobalSettings &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      this.hasItalianPrivacyPolicyContent &&
+      !this.loadingPrivacyPolicySettings &&
+      !this.savingPrivacyPolicySettings &&
+      !this.translatingPrivacyPolicy
+    );
+  }
+
   get selectedGptTranslationLanguageLabel(): string {
     const selected = this.gptTranslationForm.controls.targetLanguage.value;
     return this.contentLanguages.find((language) => language.code === selected)?.label || selected.toUpperCase();
+  }
+
+  get selectedGptTranslationCityLabel(): string {
+    const cityId = this.gptTranslationForm.controls.cityId.value || this.selectedCatalogCityId;
+    return this.catalogCities.find((city) => city.id === cityId)?.name || 'nessuna citta selezionata';
+  }
+
+  get hasOpenAiGlobalSummary(): boolean {
+    return Boolean(this.openAiTranslationSummary);
+  }
+
+  get gptGlobalTotalPoisCount(): number {
+    return Number(this.openAiTranslationSummary?.totalPois || 0);
+  }
+
+  get gptGlobalTranslationMissingCount(): number {
+    return Number(this.openAiTranslationSummary?.textMissingPois || 0);
+  }
+
+  get gptGlobalTranslationCompleteCount(): number {
+    return Number(this.openAiTranslationSummary?.textCompletePois || 0);
+  }
+
+  get gptGlobalAudioMissingCount(): number {
+    return Number(this.openAiTranslationSummary?.audioMissingPois || 0);
+  }
+
+  get gptGlobalAudioGenerableMissingCount(): number {
+    return Number(this.openAiTranslationSummary?.audioGenerableMissingPois || 0);
+  }
+
+  get gptGlobalAudioReadyCount(): number {
+    return Number(this.openAiTranslationSummary?.audioReadyPois || 0);
   }
 
   get gptTranslationProgressPercent(): number {
@@ -655,12 +817,31 @@ export class AdminDashboardComponent implements OnInit {
     return Math.min(100, Math.round((this.gptTranslationProgressDone / this.gptTranslationProgressTotal) * 100));
   }
 
+  get gptAudioProgressPercent(): number {
+    if (!this.gptAudioProgressTotal) {
+      return 0;
+    }
+    return Math.min(100, Math.round((this.gptAudioProgressDone / this.gptAudioProgressTotal) * 100));
+  }
+
   get gptTranslationMissingCount(): number {
     return this.openAiTranslationStatusRows.filter((row) => !row.isComplete).length;
   }
 
   get gptTranslationCompleteCount(): number {
     return this.openAiTranslationStatusRows.filter((row) => row.isComplete).length;
+  }
+
+  get gptAudioMissingCount(): number {
+    return this.openAiTranslationStatusRows.filter((row) => !row.hasAudio).length;
+  }
+
+  get gptAudioGenerableMissingCount(): number {
+    return this.openAiTranslationStatusRows.filter((row) => this.isPoiTranslationTextReady(row.translation) && !row.hasAudio).length;
+  }
+
+  get gptAudioReadyCount(): number {
+    return this.openAiTranslationStatusRows.filter((row) => Boolean(row.hasAudio)).length;
   }
 
   get selectedGptTranslationPoi(): DashboardCatalogPoi | null {
@@ -677,6 +858,14 @@ export class AdminDashboardComponent implements OnInit {
     return poi?.translations?.[language] || {};
   }
 
+  get selectedGptTranslationPoiHasText(): boolean {
+    return this.isPoiTranslationTextReady(this.selectedGptTranslationPoiTargetFields);
+  }
+
+  get selectedGptTranslationPoiAudioUrl(): string {
+    return String(this.selectedGptTranslationPoiTargetFields.audioUrl || '').trim();
+  }
+
   get canTranslateSelectedGptPoi(): boolean {
     return (
       this.canManageGptTranslations &&
@@ -685,12 +874,14 @@ export class AdminDashboardComponent implements OnInit {
       !this.loadingCatalogPois &&
       !this.loadingOpenAiTranslationStatus &&
       !this.bulkTranslatingPois &&
-      !this.translatingPoiId
+      !this.bulkGeneratingPoiAudios &&
+      !this.translatingPoiId &&
+      !this.generatingPoiAudioId
     );
   }
 
   get hasActiveGptTranslation(): boolean {
-    return this.bulkTranslatingPois || Boolean(this.translatingPoiId);
+    return this.bulkTranslatingPois || this.bulkGeneratingPoiAudios || Boolean(this.translatingPoiId) || Boolean(this.generatingPoiAudioId);
   }
 
   get canTranslateMissingGptPois(): boolean {
@@ -702,7 +893,51 @@ export class AdminDashboardComponent implements OnInit {
       !this.loadingOpenAiTranslationStatus &&
       !this.loadingCatalogPois &&
       !this.bulkTranslatingPois &&
-      !this.translatingPoiId
+      !this.bulkGeneratingPoiAudios &&
+      !this.translatingPoiId &&
+      !this.generatingPoiAudioId
+    );
+  }
+
+  get canGenerateSelectedGptPoiAudio(): boolean {
+    return (
+      this.canManageGptTranslations &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      Boolean(this.selectedGptTranslationPoi) &&
+      this.selectedGptTranslationPoiHasText &&
+      (!this.selectedGptTranslationPoiAudioUrl || this.gptTranslationForm.controls.overwrite.value) &&
+      !this.loadingCatalogPois &&
+      !this.loadingOpenAiTranslationStatus &&
+      !this.bulkTranslatingPois &&
+      !this.bulkGeneratingPoiAudios &&
+      !this.translatingPoiId &&
+      !this.generatingPoiAudioId
+    );
+  }
+
+  get gptAudioRowsToGenerate(): OpenAiPoiTranslationStatus[] {
+    const overwrite = this.gptTranslationForm.controls.overwrite.value;
+    return this.openAiTranslationStatusRows.filter((row) => {
+      return this.isPoiTranslationTextReady(row.translation) && (overwrite || !row.hasAudio);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.cancelOpenAiVoicePreview();
+  }
+
+  get canGenerateMissingGptPoiAudios(): boolean {
+    return (
+      this.canManageGptTranslations &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      Boolean(this.gptTranslationForm.controls.cityId.value) &&
+      this.gptAudioRowsToGenerate.length > 0 &&
+      !this.loadingOpenAiTranslationStatus &&
+      !this.loadingCatalogPois &&
+      !this.bulkTranslatingPois &&
+      !this.bulkGeneratingPoiAudios &&
+      !this.translatingPoiId &&
+      !this.generatingPoiAudioId
     );
   }
 
@@ -893,6 +1128,18 @@ export class AdminDashboardComponent implements OnInit {
     );
   }
 
+  catalogPublicationStatusLabel(status: CatalogPublicationStatus | null | undefined): string {
+    return status === 'draft' ? 'Bozza' : 'Pubblicato';
+  }
+
+  catalogPublicationStatusClass(status: CatalogPublicationStatus | null | undefined): string {
+    return status === 'draft' ? 'draft' : 'published';
+  }
+
+  private isCatalogItemPublished(status: CatalogPublicationStatus | null | undefined): boolean {
+    return status !== 'draft';
+  }
+
   get canSaveStructureEdit(): boolean {
     return this.canManageUsers && !!this.editingStructureId && !this.updatingStructure && this.structureEditForm.valid;
   }
@@ -949,6 +1196,7 @@ export class AdminDashboardComponent implements OnInit {
     }
     if (section !== 'gptTranslations') {
       this.translatingPoiId = null;
+      this.generatingPoiAudioId = null;
     }
     if (section === 'payments' && this.canAccessDashboard) {
       this.loadPayments();
@@ -960,6 +1208,8 @@ export class AdminDashboardComponent implements OnInit {
       this.loadPayPalSettings();
     } else if (section === 'gptTranslations' && this.canManageGptTranslations) {
       this.ensureGptTranslationsLoaded();
+    } else if (section === 'globalSettings' && this.canManageGlobalSettings) {
+      this.ensureGlobalSettingsLoaded();
     } else if (section === 'discounts' && this.canViewDiscountCodes) {
       this.loadDiscountCodes();
     } else if (section === 'structures' && this.canManageUsers) {
@@ -1567,6 +1817,225 @@ export class AdminDashboardComponent implements OnInit {
     return `{{${key}}}`;
   }
 
+  ensureGlobalSettingsLoaded(force = false): void {
+    if (!this.canManageGlobalSettings) {
+      return;
+    }
+
+    this.loadPrivacyPolicySettings(force);
+    this.loadAppCacheSettings(force);
+    this.loadOpenAiTranslationSettings(force);
+  }
+
+  selectGlobalSettingsTab(tab: GlobalSettingsTab): void {
+    if (tab === this.activeGlobalSettingsTab) {
+      return;
+    }
+
+    this.capturePrivacyPolicyEditorContent();
+    this.activeGlobalSettingsTab = tab;
+    if (tab === 'privacyPolicy') {
+      this.syncPrivacyPolicyEditor();
+    } else if (tab === 'appCache') {
+      this.loadAppCacheSettings();
+    }
+  }
+
+  loadAppCacheSettings(force = false): void {
+    if (!this.canManageGlobalSettings || this.loadingAppCacheSettings) {
+      return;
+    }
+    if (this.appCacheSettings && !force) {
+      return;
+    }
+
+    this.loadingAppCacheSettings = true;
+    this.auth.getAppCacheSettings().subscribe({
+      next: (settings) => {
+        this.loadingAppCacheSettings = false;
+        this.appCacheSettings = settings;
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingAppCacheSettings = false;
+        const message = error?.error?.message || 'Errore caricamento impostazioni cache';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  bumpAppCacheVersion(): void {
+    if (!this.canBumpAppCacheVersion) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Forzare aggiornamento app e pulizia cache per tutti gli utenti? Al prossimo controllo l app eliminera cache offline, service worker e ricarichera la versione corrente.'
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.bumpingAppCacheVersion = true;
+    this.auth.bumpAppCacheVersion().subscribe({
+      next: (settings) => {
+        this.bumpingAppCacheVersion = false;
+        this.appCacheSettings = settings;
+        this.snackBar.open('Aggiornamento cache pubblicato', 'OK', { duration: 3200 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.bumpingAppCacheVersion = false;
+        const message = error?.error?.message || 'Errore pubblicazione aggiornamento cache';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  loadPrivacyPolicySettings(force = false): void {
+    if (!this.canManageGlobalSettings || this.loadingPrivacyPolicySettings) {
+      return;
+    }
+    if (this.privacyPolicySettings && !force) {
+      this.syncPrivacyPolicyEditor();
+      return;
+    }
+
+    this.loadingPrivacyPolicySettings = true;
+    this.auth.getPrivacyPolicySettings().subscribe({
+      next: (settings) => {
+        this.loadingPrivacyPolicySettings = false;
+        this.applyPrivacyPolicySettings(settings);
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingPrivacyPolicySettings = false;
+        const message = error?.error?.message || 'Errore caricamento privacy policy';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  savePrivacyPolicySettings(): void {
+    if (!this.canSavePrivacyPolicySettings) {
+      return;
+    }
+
+    this.capturePrivacyPolicyEditorContent();
+    this.savingPrivacyPolicySettings = true;
+    this.auth.updatePrivacyPolicySettings({ translations: this.privacyPolicyTranslations }).subscribe({
+      next: (settings) => {
+        this.savingPrivacyPolicySettings = false;
+        this.applyPrivacyPolicySettings(settings);
+        this.snackBar.open('Privacy policy salvata', 'OK', { duration: 2400 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.savingPrivacyPolicySettings = false;
+        const message = error?.error?.message || 'Errore salvataggio privacy policy';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  async translatePrivacyPolicy(): Promise<void> {
+    if (!this.canTranslatePrivacyPolicy) {
+      return;
+    }
+
+    this.capturePrivacyPolicyEditorContent();
+    this.translatingPrivacyPolicy = true;
+    this.privacyPolicyTranslationUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+    this.privacyPolicyTranslationLog = ['Salvataggio privacy italiana...'];
+
+    try {
+      const savedSettings = await firstValueFrom(this.auth.updatePrivacyPolicySettings({ translations: this.privacyPolicyTranslations }));
+      this.applyPrivacyPolicySettings(savedSettings);
+      this.privacyPolicyTranslationLog = ['Traduzione GPT in corso...'];
+      const response = await firstValueFrom(
+        this.auth.translatePrivacyPolicy({
+          sourceLanguage: 'it',
+          targetLanguages: this.contentLanguages.map((language) => language.code),
+          overwrite: this.privacyPolicyTranslateOverwrite
+        })
+      );
+
+      this.privacyPolicyTranslationUsage = response.usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+      this.applyPrivacyPolicySettings(response.settings);
+      const translatedLabels = response.translatedLanguages.map((language) => this.privacyPolicyLanguageLabel(language)).join(', ');
+      const skippedLabels = response.skippedLanguages.map((language) => this.privacyPolicyLanguageLabel(language)).join(', ');
+      this.privacyPolicyTranslationLog = [
+        translatedLabels ? `Tradotte: ${translatedLabels}` : 'Nessuna nuova lingua tradotta',
+        skippedLabels ? `Gia presenti: ${skippedLabels}` : ''
+      ].filter(Boolean);
+      this.snackBar.open('Traduzione privacy completata', 'OK', { duration: 2600 });
+    } catch (error) {
+      const message = this.dashboardErrorMessage(error, 'Traduzione privacy non riuscita');
+      this.privacyPolicyTranslationLog = [message];
+      this.snackBar.open(message, 'Chiudi', { duration: 4500 });
+    } finally {
+      this.translatingPrivacyPolicy = false;
+    }
+  }
+
+  selectPrivacyPolicyLanguage(language: PrivacyPolicyLanguage): void {
+    if (language === this.privacyPolicySelectedLanguage) {
+      return;
+    }
+
+    this.capturePrivacyPolicyEditorContent();
+    this.privacyPolicySelectedLanguage = language;
+    this.syncPrivacyPolicyEditor();
+  }
+
+  onPrivacyPolicyEditorInput(): void {
+    this.capturePrivacyPolicyEditorContent();
+  }
+
+  formatPrivacyPolicyEditor(command: string, value?: string): void {
+    const editor = this.privacyPolicyEditor?.nativeElement;
+    if (!editor) {
+      return;
+    }
+
+    editor.focus();
+    document.execCommand(command, false, value);
+    this.capturePrivacyPolicyEditorContent();
+  }
+
+  onPrivacyPolicyFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+    if (file.size > this.maxPrivacyPolicyImportBytes) {
+      this.snackBar.open('File privacy troppo grande', 'Chiudi', { duration: 3200 });
+      input.value = '';
+      return;
+    }
+
+    const fileName = file.name.toLowerCase();
+    if (!fileName.endsWith('.txt') && !fileName.endsWith('.html') && !fileName.endsWith('.htm')) {
+      this.snackBar.open('Importa file .txt o .html, oppure incolla il testo nell editor.', 'Chiudi', { duration: 4200 });
+      input.value = '';
+      return;
+    }
+
+    this.readFileAsText(file)
+      .then((content) => {
+        const html = fileName.endsWith('.txt') ? this.plainTextToPrivacyHtml(content) : content;
+        this.privacyPolicyTranslations[this.privacyPolicySelectedLanguage] = html;
+        this.syncPrivacyPolicyEditor();
+      })
+      .catch((error: Error) => {
+        this.snackBar.open(error.message || 'Impossibile leggere il file privacy', 'Chiudi', { duration: 3500 });
+      })
+      .finally(() => {
+        input.value = '';
+      });
+  }
+
+  hasPrivacyPolicyContent(language: PrivacyPolicyLanguage): boolean {
+    return Boolean(String(this.privacyPolicyTranslations[language] || '').trim());
+  }
+
   openPartnerRequestApproval(request: DashboardPartnerRequest): void {
     if (!this.canManageUsers || !this.partnerRequestApprovalDialog) {
       return;
@@ -1894,6 +2363,7 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.loadOpenAiTranslationSettings();
+    this.loadOpenAiTranslationSummary();
     if (!this.catalogCities.length && !this.loadingCatalogCities) {
       this.loadCatalogCities();
       return;
@@ -1921,7 +2391,10 @@ export class AdminDashboardComponent implements OnInit {
         this.openAiTranslationSettings = settings;
         this.openAiTranslationSettingsForm.reset({
           apiKey: '',
-          model: settings.model || 'gpt-4o-mini'
+          model: settings.model || 'gpt-4o-mini',
+          ttsModel: settings.ttsModel || 'gpt-4o-mini-tts',
+          ttsVoice: settings.ttsVoice || 'alloy',
+          ttsInstructions: settings.ttsInstructions || ''
         });
       },
       error: (error: { error?: { message?: string } }) => {
@@ -1943,7 +2416,10 @@ export class AdminDashboardComponent implements OnInit {
     this.auth
       .saveOpenAiTranslationSettings({
         apiKey: payload.apiKey.trim(),
-        model: payload.model.trim() || 'gpt-4o-mini'
+        model: payload.model.trim() || 'gpt-4o-mini',
+        ttsModel: payload.ttsModel.trim() || 'gpt-4o-mini-tts',
+        ttsVoice: payload.ttsVoice.trim() || 'alloy',
+        ttsInstructions: payload.ttsInstructions.trim()
       })
       .subscribe({
         next: (settings) => {
@@ -1951,7 +2427,10 @@ export class AdminDashboardComponent implements OnInit {
           this.openAiTranslationSettings = settings;
           this.openAiTranslationSettingsForm.reset({
             apiKey: '',
-            model: settings.model || 'gpt-4o-mini'
+            model: settings.model || 'gpt-4o-mini',
+            ttsModel: settings.ttsModel || 'gpt-4o-mini-tts',
+            ttsVoice: settings.ttsVoice || 'alloy',
+            ttsInstructions: settings.ttsInstructions || ''
           });
           this.snackBar.open('Configurazione OpenAI salvata', 'OK', { duration: 2400 });
         },
@@ -1959,6 +2438,44 @@ export class AdminDashboardComponent implements OnInit {
           this.savingOpenAiTranslationSettings = false;
           const message = error?.error?.message || 'Errore salvataggio configurazione OpenAI';
           this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+        }
+      });
+  }
+
+  previewOpenAiVoice(): void {
+    if (!this.canPreviewOpenAiVoice) {
+      if (!this.openAiTranslationSettings?.hasApiKey) {
+        this.snackBar.open('Salva una API key OpenAI prima di riprodurre l anteprima voce.', 'Chiudi', { duration: 3600 });
+      }
+      return;
+    }
+
+    const payload = this.openAiTranslationSettingsForm.getRawValue();
+    this.stopOpenAiVoicePreview();
+    const previewToken = ++this.openAiVoicePreviewRequestToken;
+    this.previewingOpenAiVoice = true;
+    this.auth
+      .previewOpenAiTranslationVoice({
+        ttsModel: payload.ttsModel.trim() || 'gpt-4o-mini-tts',
+        ttsVoice: payload.ttsVoice.trim() || 'alloy',
+        ttsInstructions: payload.ttsInstructions.trim()
+      })
+      .subscribe({
+        next: (audioBlob) => {
+          if (previewToken !== this.openAiVoicePreviewRequestToken) {
+            return;
+          }
+          this.previewingOpenAiVoice = false;
+          this.playOpenAiVoicePreview(audioBlob);
+        },
+        error: (error: unknown) => {
+          if (previewToken !== this.openAiVoicePreviewRequestToken) {
+            return;
+          }
+          this.previewingOpenAiVoice = false;
+          this.resolveDashboardErrorMessage(error, 'Anteprima voce non riuscita').then((message) => {
+            this.snackBar.open(message, 'Chiudi', { duration: 4200 });
+          });
         }
       });
   }
@@ -1975,6 +2492,7 @@ export class AdminDashboardComponent implements OnInit {
     this.gptTranslationForm.controls.poiId.setValue('', { emitEvent: false });
     this.selectedGptTranslationPoiId = '';
     this.resetGptTranslationProgress();
+    this.resetGptAudioProgress();
 
     if (!cityId) {
       this.openAiTranslationStatusRows = [];
@@ -1997,6 +2515,8 @@ export class AdminDashboardComponent implements OnInit {
     this.confirmedGptTranslationLanguage = language;
     this.gptTranslationForm.controls.targetLanguage.setValue(language, { emitEvent: false });
     this.resetGptTranslationProgress();
+    this.resetGptAudioProgress();
+    this.loadOpenAiTranslationSummary();
     this.loadOpenAiTranslationStatus();
   }
 
@@ -2022,6 +2542,7 @@ export class AdminDashboardComponent implements OnInit {
 
     this.confirmedGptTranslationOverwrite = overwrite;
     this.gptTranslationForm.controls.overwrite.setValue(overwrite, { emitEvent: false });
+    this.resetGptAudioProgress();
   }
 
   loadOpenAiTranslationStatus(): void {
@@ -2058,6 +2579,39 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  loadOpenAiTranslationSummary(): void {
+    if (!this.canManageGptTranslations) {
+      return;
+    }
+
+    const targetLanguage = this.gptTranslationForm.controls.targetLanguage.value;
+    if (!targetLanguage) {
+      this.openAiTranslationSummary = null;
+      return;
+    }
+
+    const requestToken = ++this.openAiTranslationSummaryRequestToken;
+    this.loadingOpenAiTranslationSummary = true;
+    this.auth.getOpenAiPoiTranslationSummary(targetLanguage).subscribe({
+      next: (summary) => {
+        if (requestToken !== this.openAiTranslationSummaryRequestToken) {
+          return;
+        }
+        this.loadingOpenAiTranslationSummary = false;
+        this.openAiTranslationSummary = summary;
+      },
+      error: (error: { error?: { message?: string } }) => {
+        if (requestToken !== this.openAiTranslationSummaryRequestToken) {
+          return;
+        }
+        this.loadingOpenAiTranslationSummary = false;
+        this.openAiTranslationSummary = null;
+        const message = error?.error?.message || 'Errore caricamento riepilogo traduzioni';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
   translateSelectedGptPoi(): void {
     const poi = this.selectedGptTranslationPoi;
     if (!this.canTranslateSelectedGptPoi || !poi) {
@@ -2083,6 +2637,7 @@ export class AdminDashboardComponent implements OnInit {
           this.applyOpenAiTranslationResponse(response);
           this.addGptTranslationUsage(response.usage);
           this.loadOpenAiTranslationStatus();
+          this.loadOpenAiTranslationSummary();
           this.snackBar.open(response.skipped ? 'POI gia tradotto' : 'Traduzione completata', 'OK', { duration: 2600 });
         },
         error: (error: { error?: { message?: string } }) => {
@@ -2151,7 +2706,103 @@ export class AdminDashboardComponent implements OnInit {
     this.bulkTranslatingPois = false;
     this.translatingPoiId = null;
     this.loadOpenAiTranslationStatus();
+    this.loadOpenAiTranslationSummary();
     this.snackBar.open('Traduzione massiva terminata', 'OK', { duration: 2600 });
+  }
+
+  generateSelectedGptPoiAudio(): void {
+    const poi = this.selectedGptTranslationPoi;
+    if (!this.canGenerateSelectedGptPoiAudio || !poi) {
+      return;
+    }
+
+    this.resetGptAudioProgress(1);
+    const runToken = ++this.gptTranslationRunToken;
+    this.generatingPoiAudioId = poi.id;
+    this.auth
+      .generateCatalogPoiAudioWithOpenAi(poi.id, {
+        cityId: this.gptTranslationForm.controls.cityId.value,
+        targetLanguage: this.gptTranslationForm.controls.targetLanguage.value,
+        overwrite: this.gptTranslationForm.controls.overwrite.value
+      })
+      .subscribe({
+        next: (response) => {
+          if (runToken !== this.gptTranslationRunToken) {
+            return;
+          }
+          this.generatingPoiAudioId = null;
+          this.gptAudioProgressDone = 1;
+          this.applyOpenAiAudioResponse(response);
+          this.loadOpenAiTranslationStatus();
+          this.loadOpenAiTranslationSummary();
+          this.snackBar.open(response.skipped ? 'Audio gia presente' : 'Audio tradotto generato', 'OK', { duration: 2600 });
+        },
+        error: (error: { error?: { message?: string } }) => {
+          if (runToken !== this.gptTranslationRunToken) {
+            return;
+          }
+          this.generatingPoiAudioId = null;
+          const message = error?.error?.message || 'Generazione audio non riuscita';
+          this.snackBar.open(message, 'Chiudi', { duration: 4200 });
+        }
+      });
+  }
+
+  async generateMissingGptPoiAudiosForCity(): Promise<void> {
+    if (!this.canGenerateMissingGptPoiAudios) {
+      return;
+    }
+
+    const cityId = this.gptTranslationForm.controls.cityId.value;
+    const targetLanguage = this.gptTranslationForm.controls.targetLanguage.value;
+    const overwrite = this.gptTranslationForm.controls.overwrite.value;
+    const rowsToGenerate = this.gptAudioRowsToGenerate;
+    if (!cityId || !rowsToGenerate.length) {
+      return;
+    }
+
+    this.bulkGeneratingPoiAudios = true;
+    const runToken = ++this.gptTranslationRunToken;
+    this.resetGptAudioProgress(rowsToGenerate.length);
+
+    for (const row of rowsToGenerate) {
+      if (runToken !== this.gptTranslationRunToken) {
+        break;
+      }
+      this.generatingPoiAudioId = row.poiId;
+      try {
+        const response = await firstValueFrom(
+          this.auth.generateCatalogPoiAudioWithOpenAi(row.poiId, {
+            cityId,
+            targetLanguage,
+            overwrite
+          })
+        );
+        if (runToken !== this.gptTranslationRunToken) {
+          break;
+        }
+        this.applyOpenAiAudioResponse(response);
+        this.gptAudioProgressDone += 1;
+        this.gptAudioLog = [`${row.name}: ${response.skipped ? 'audio gia presente' : 'audio generato'}`, ...this.gptAudioLog].slice(0, 8);
+      } catch (error) {
+        if (runToken !== this.gptTranslationRunToken) {
+          break;
+        }
+        const message = this.dashboardErrorMessage(error, 'Generazione audio interrotta');
+        this.gptAudioLog = [`${row.name}: ${message}`, ...this.gptAudioLog].slice(0, 8);
+        this.snackBar.open(message, 'Chiudi', { duration: 4500 });
+        break;
+      }
+    }
+
+    if (runToken !== this.gptTranslationRunToken) {
+      return;
+    }
+    this.bulkGeneratingPoiAudios = false;
+    this.generatingPoiAudioId = null;
+    this.loadOpenAiTranslationStatus();
+    this.loadOpenAiTranslationSummary();
+    this.snackBar.open('Generazione audio terminata', 'OK', { duration: 2600 });
   }
 
   gptMissingFieldsLabel(fields: string[] | null | undefined): string {
@@ -2293,6 +2944,46 @@ export class AdminDashboardComponent implements OnInit {
           this.snackBar.open(message, 'Chiudi', { duration: 3500 });
         }
       });
+  }
+
+  deleteStructure(structure: DashboardStructure): void {
+    if (!this.canManageUsers || this.deletingStructureId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Eliminare la struttura "${structure.name}"? La riga restera nello storico, ma non sara piu visibile nelle liste operative.`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingStructureId = structure.id;
+    this.auth.deleteStructure(structure.id).subscribe({
+      next: () => {
+        this.deletingStructureId = null;
+        this.structures = this.structures.filter((item) => item.id !== structure.id);
+        if (this.editingStructureId === structure.id) {
+          this.cancelStructureEdit();
+        }
+        if (this.selectedUsersStructureFilterId === structure.id) {
+          this.clearUsersStructureFilter();
+        }
+        if (this.selectedPaymentsStructureId === structure.id) {
+          this.selectedPaymentsStructureId = '';
+        }
+        this.discountCodes = this.discountCodes.filter((item) => item.structureId !== structure.id);
+        this.rebuildDiscountCodesIndex();
+        this.snackBar.open('Struttura eliminata', 'OK', { duration: 2400 });
+        this.loadUsers();
+        this.loadDiscountCodes();
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.deletingStructureId = null;
+        const message = error?.error?.message || 'Errore eliminazione struttura';
+        this.snackBar.open(message, 'Chiudi', { duration: 3200 });
+      }
+    });
   }
 
   loadDiscountCodes(): void {
@@ -2693,6 +3384,7 @@ export class AdminDashboardComponent implements OnInit {
       region: this.fixedCreateCityRegion,
       bundlePrice: 0,
       heroImage: '',
+      isPublished: false,
       translations: {}
     });
     this.catalogCityForm.controls.region.disable({ emitEvent: false });
@@ -2706,6 +3398,7 @@ export class AdminDashboardComponent implements OnInit {
       region: city.region,
       bundlePrice: city.bundlePrice,
       heroImage: city.heroImage,
+      isPublished: this.isCatalogItemPublished(city.publicationStatus),
       translations: {}
     });
 
@@ -2753,6 +3446,7 @@ export class AdminDashboardComponent implements OnInit {
       region: '',
       bundlePrice: 0,
       heroImage: '',
+      isPublished: false,
       translations: {}
     });
   }
@@ -2833,6 +3527,7 @@ export class AdminDashboardComponent implements OnInit {
       audioUrl: '',
       priceSingle: 0,
       durationSec: 60,
+      isPublished: false,
       translations: this.emptyCatalogPoiTranslationsFormValue()
     });
   }
@@ -2857,6 +3552,7 @@ export class AdminDashboardComponent implements OnInit {
       audioUrl: poi.audioUrl || '',
       priceSingle: poi.priceSingle,
       durationSec: poi.durationSec,
+      isPublished: this.isCatalogItemPublished(poi.publicationStatus),
       translations: this.catalogPoiTranslationsFormValue(poi.translations)
     });
 
@@ -2915,6 +3611,7 @@ export class AdminDashboardComponent implements OnInit {
       audioUrl: '',
       priceSingle: 0,
       durationSec: 60,
+      isPublished: false,
       translations: this.emptyCatalogPoiTranslationsFormValue()
     });
   }
@@ -3439,8 +4136,18 @@ export class AdminDashboardComponent implements OnInit {
       this.payPalSettings = null;
       this.openAiTranslationSettings = null;
       this.openAiTranslationStatusRows = [];
+      this.openAiTranslationSummary = null;
+      this.privacyPolicySettings = null;
+      this.appCacheSettings = null;
+      this.privacyPolicyTranslations = this.emptyPrivacyPolicyTranslations();
+      this.privacyPolicySelectedLanguage = 'it';
+      this.privacyPolicyTranslateOverwrite = false;
+      this.activeGlobalSettingsTab = 'privacyPolicy';
+      this.privacyPolicyTranslationUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+      this.privacyPolicyTranslationLog = [];
       this.selectedGptTranslationPoiId = '';
       this.resetGptTranslationProgress();
+      this.resetGptAudioProgress();
       this.paymentsSummary = {
         totalPayments: 0,
         totalCollected: 0,
@@ -3454,6 +4161,7 @@ export class AdminDashboardComponent implements OnInit {
       this.lastLoadedCatalogPoisCityId = '';
       this.catalogPoisRequestToken = 0;
       this.openAiTranslationStatusRequestToken = 0;
+      this.openAiTranslationSummaryRequestToken = 0;
       this.catalogTab = 'cities';
       this.editingCatalogCityId = null;
       this.editingCatalogPoiId = null;
@@ -3499,6 +4207,9 @@ export class AdminDashboardComponent implements OnInit {
       this.loadingPayPalSettings = false;
       this.loadingOpenAiTranslationSettings = false;
       this.loadingOpenAiTranslationStatus = false;
+      this.loadingOpenAiTranslationSummary = false;
+      this.loadingPrivacyPolicySettings = false;
+      this.loadingAppCacheSettings = false;
       this.creatingStructure = false;
       this.updatingStructure = false;
       this.loadingDiscountCodes = false;
@@ -3506,7 +4217,13 @@ export class AdminDashboardComponent implements OnInit {
       this.updatingDiscountCode = false;
       this.savingPayPalSettings = false;
       this.savingOpenAiTranslationSettings = false;
+      this.previewingOpenAiVoice = false;
+      this.cancelOpenAiVoicePreview();
+      this.savingPrivacyPolicySettings = false;
+      this.bumpingAppCacheVersion = false;
+      this.translatingPrivacyPolicy = false;
       this.bulkTranslatingPois = false;
+      this.bulkGeneratingPoiAudios = false;
       this.testingPayPalSettings = false;
       this.loadingCatalogCities = false;
       this.loadingCatalogPois = false;
@@ -3529,10 +4246,12 @@ export class AdminDashboardComponent implements OnInit {
       this.savingUserId = null;
       this.savingDiscountCodeId = null;
       this.deletingDiscountCodeId = null;
+      this.deletingStructureId = null;
       this.resettingPasswordUserId = null;
       this.deletingUserId = null;
       this.impersonatingUserId = null;
       this.translatingPoiId = null;
+      this.generatingPoiAudioId = null;
       this.activeSection = 'users';
       this.showInviteSection = false;
       this.showCreateUserSection = false;
@@ -3617,7 +4336,10 @@ export class AdminDashboardComponent implements OnInit {
       });
       this.openAiTranslationSettingsForm.reset({
         apiKey: '',
-        model: 'gpt-4o-mini'
+        model: 'gpt-4o-mini',
+        ttsModel: 'gpt-4o-mini-tts',
+        ttsVoice: 'alloy',
+        ttsInstructions: 'Narrazione chiara, naturale e professionale per una audioguida turistica. Ritmo medio, tono coinvolgente e pronuncia curata dei nomi propri italiani.'
       });
       this.gptTranslationForm.reset({
         cityId: '',
@@ -3981,6 +4703,9 @@ export class AdminDashboardComponent implements OnInit {
     if (this.activeSection === 'gptTranslations') {
       this.ensureGptTranslationsLoaded();
     }
+    if (this.activeSection === 'globalSettings') {
+      this.ensureGlobalSettingsLoaded(true);
+    }
     if (this.activeSection === 'catalog') {
       this.loadCatalogCities();
     }
@@ -4050,6 +4775,7 @@ export class AdminDashboardComponent implements OnInit {
       region: string;
       bundlePrice: number;
       heroImage: string;
+      isPublished: boolean;
     },
     isDefault: boolean
   ): CatalogCityInput {
@@ -4059,6 +4785,7 @@ export class AdminDashboardComponent implements OnInit {
       bundlePrice: Number(value.bundlePrice),
       heroImage: value.heroImage.trim(),
       isDefault: Boolean(isDefault),
+      publicationStatus: value.isPublished ? 'published' : 'draft',
       translations: {}
     };
   }
@@ -4076,6 +4803,7 @@ export class AdminDashboardComponent implements OnInit {
     audioUrl: string;
     priceSingle: number;
     durationSec: number;
+    isPublished: boolean;
     translations: CatalogPoiTranslationsFormValue;
   }): CatalogPoiInput {
     const normalizedAudioUrl = value.audioUrl.trim();
@@ -4097,6 +4825,7 @@ export class AdminDashboardComponent implements OnInit {
       audioUrl: normalizedAudioUrl,
       priceSingle: Number(value.priceSingle),
       durationSec: Math.max(1, Math.round(resolvedDuration)),
+      publicationStatus: value.isPublished ? 'published' : 'draft',
       translations: this.buildCatalogPoiTranslationsPayload(value.translations)
     };
   }
@@ -4186,6 +4915,64 @@ export class AdminDashboardComponent implements OnInit {
     return normalized || undefined;
   }
 
+  private applyPrivacyPolicySettings(settings: DashboardPrivacyPolicySettings): void {
+    this.privacyPolicySettings = settings;
+    this.privacyPolicyTranslations = this.emptyPrivacyPolicyTranslations(settings.translations);
+    this.syncPrivacyPolicyEditor();
+  }
+
+  private syncPrivacyPolicyEditor(): void {
+    window.setTimeout(() => {
+      const editor = this.privacyPolicyEditor?.nativeElement;
+      if (!editor) {
+        return;
+      }
+
+      editor.innerHTML = this.privacyPolicyTranslations[this.privacyPolicySelectedLanguage] || '';
+    });
+  }
+
+  private capturePrivacyPolicyEditorContent(): void {
+    const editor = this.privacyPolicyEditor?.nativeElement;
+    if (!editor) {
+      return;
+    }
+
+    this.privacyPolicyTranslations[this.privacyPolicySelectedLanguage] = editor.innerHTML.trim();
+  }
+
+  private emptyPrivacyPolicyTranslations(source?: PrivacyPolicyTranslations | null): Record<PrivacyPolicyLanguage, string> {
+    return this.privacyPolicyLanguages.reduce(
+      (acc, language) => {
+        acc[language.code] = String(source?.[language.code] || '');
+        return acc;
+      },
+      {} as Record<PrivacyPolicyLanguage, string>
+    );
+  }
+
+  private privacyPolicyLanguageLabel(language: PrivacyPolicyLanguage): string {
+    return this.privacyPolicyLanguages.find((item) => item.code === language)?.label || language.toUpperCase();
+  }
+
+  private plainTextToPrivacyHtml(value: string): string {
+    return String(value || '')
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+      .map((paragraph) => `<p>${this.escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`)
+      .join('');
+  }
+
+  private escapeHtml(value: string): string {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   private ensureGptTranslationCitySelection(): string {
     if (!this.catalogCities.length) {
       this.gptTranslationForm.controls.cityId.setValue('', { emitEvent: false });
@@ -4238,13 +5025,19 @@ export class AdminDashboardComponent implements OnInit {
     this.gptTranslationLog = [];
   }
 
+  private resetGptAudioProgress(total = 0): void {
+    this.gptAudioProgressTotal = total;
+    this.gptAudioProgressDone = 0;
+    this.gptAudioLog = [];
+  }
+
   private async confirmGptTranslationContextChange(): Promise<boolean> {
     if (!this.hasActiveGptTranslation) {
       return true;
     }
 
     if (!this.gptTranslationInterruptDialog) {
-      return window.confirm("C'e una traduzione GPT in corso. Vuoi continuare e interrompere l'avanzamento?");
+      return window.confirm("C'e una operazione GPT in corso. Vuoi continuare e interrompere l'avanzamento?");
     }
 
     if (this.gptTranslationInterruptDialogRef) {
@@ -4270,8 +5063,11 @@ export class AdminDashboardComponent implements OnInit {
 
     this.gptTranslationRunToken += 1;
     this.bulkTranslatingPois = false;
+    this.bulkGeneratingPoiAudios = false;
     this.translatingPoiId = null;
-    this.gptTranslationLog = ['Traduzione GPT interrotta dal cambio contesto', ...this.gptTranslationLog].slice(0, 8);
+    this.generatingPoiAudioId = null;
+    this.gptTranslationLog = ['Operazione GPT interrotta dal cambio contesto', ...this.gptTranslationLog].slice(0, 8);
+    this.gptAudioLog = ['Operazione GPT interrotta dal cambio contesto', ...this.gptAudioLog].slice(0, 8);
   }
 
   private applyOpenAiTranslationResponse(response: OpenAiTranslatePoiResponse): void {
@@ -4285,6 +5081,21 @@ export class AdminDashboardComponent implements OnInit {
     this.catalogPois = nextPois;
   }
 
+  private applyOpenAiAudioResponse(response: OpenAiGeneratePoiAudioResponse): void {
+    const index = this.catalogPois.findIndex((poi) => poi.id === response.poi.id);
+    if (index < 0) {
+      return;
+    }
+
+    const nextPois = [...this.catalogPois];
+    nextPois[index] = response.poi;
+    this.catalogPois = nextPois;
+  }
+
+  private isPoiTranslationTextReady(translation: PoiTranslationFields | null | undefined): boolean {
+    return Boolean(String(translation?.descriptionLong || '').trim() || String(translation?.descriptionShort || '').trim());
+  }
+
   private addGptTranslationUsage(usage: OpenAiTranslationUsage | null | undefined): void {
     this.gptTranslationUsage = {
       inputTokens: this.gptTranslationUsage.inputTokens + Number(usage?.inputTokens || 0),
@@ -4296,6 +5107,59 @@ export class AdminDashboardComponent implements OnInit {
   private dashboardErrorMessage(error: unknown, fallback: string): string {
     const candidate = error as { error?: { message?: string }; message?: string };
     return candidate?.error?.message || candidate?.message || fallback;
+  }
+
+  private async resolveDashboardErrorMessage(error: unknown, fallback: string): Promise<string> {
+    const candidate = error as { error?: Blob | { message?: string }; message?: string };
+    if (candidate?.error instanceof Blob) {
+      try {
+        const text = await candidate.error.text();
+        const parsed = JSON.parse(text) as { message?: string };
+        return parsed.message || fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    return this.dashboardErrorMessage(error, fallback);
+  }
+
+  private playOpenAiVoicePreview(audioBlob: Blob): void {
+    this.stopOpenAiVoicePreview();
+    const objectUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(objectUrl);
+    this.openAiVoicePreviewUrl = objectUrl;
+    this.openAiVoicePreviewAudio = audio;
+    audio.onended = () => this.stopOpenAiVoicePreview();
+    audio.onerror = () => {
+      this.stopOpenAiVoicePreview();
+      this.snackBar.open('Impossibile riprodurre l anteprima voce', 'Chiudi', { duration: 3600 });
+    };
+    audio.play().catch(() => {
+      this.stopOpenAiVoicePreview();
+      this.snackBar.open('Il browser ha bloccato la riproduzione dell anteprima', 'Chiudi', { duration: 3600 });
+    });
+  }
+
+  private cancelOpenAiVoicePreview(): void {
+    this.openAiVoicePreviewRequestToken += 1;
+    this.previewingOpenAiVoice = false;
+    this.stopOpenAiVoicePreview();
+  }
+
+  private stopOpenAiVoicePreview(): void {
+    if (this.openAiVoicePreviewAudio) {
+      const audio = this.openAiVoicePreviewAudio;
+      audio.onended = null;
+      audio.onerror = null;
+      audio.pause();
+      audio.src = '';
+      this.openAiVoicePreviewAudio = null;
+    }
+    if (this.openAiVoicePreviewUrl) {
+      URL.revokeObjectURL(this.openAiVoicePreviewUrl);
+      this.openAiVoicePreviewUrl = null;
+    }
   }
 
   private sortPartnerRequests(rows: DashboardPartnerRequest[]): DashboardPartnerRequest[] {
@@ -4545,6 +5409,15 @@ export class AdminDashboardComponent implements OnInit {
       reader.onload = () => resolve(String(reader.result || ''));
       reader.onerror = () => reject(new Error('Impossibile leggere il file selezionato'));
       reader.readAsDataURL(file);
+    });
+  }
+
+  private readFileAsText(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Impossibile leggere il file selezionato'));
+      reader.readAsText(file);
     });
   }
 

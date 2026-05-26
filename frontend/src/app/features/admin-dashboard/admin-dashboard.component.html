@@ -1176,32 +1176,116 @@
       </ng-container>
 
       <ng-container *ngIf="canManageGptTranslations && activeSection === 'gptTranslations'">
-        <div class="stats-grid">
-          <mat-card class="stat-card">
-            <span>Da tradurre</span>
-            <strong *ngIf="!loadingOpenAiTranslationStatus; else gptMissingLoading">{{ gptTranslationMissingCount }}</strong>
-            <ng-template #gptMissingLoading>
-              <div class="stat-spinner">
-                <mat-spinner diameter="24"></mat-spinner>
-              </div>
-            </ng-template>
-          </mat-card>
-          <mat-card class="stat-card">
-            <span>Completi</span>
-            <strong *ngIf="!loadingOpenAiTranslationStatus; else gptCompleteLoading">{{ gptTranslationCompleteCount }}</strong>
-            <ng-template #gptCompleteLoading>
-              <div class="stat-spinner">
-                <mat-spinner diameter="24"></mat-spinner>
-              </div>
-            </ng-template>
-          </mat-card>
-        </div>
+        <section class="gpt-stats-section">
+          <div class="gpt-stats-title">
+            <div>
+              <h2>Citta selezionata</h2>
+              <p>{{ selectedGptTranslationCityLabel }} - {{ selectedGptTranslationLanguageLabel }}</p>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <mat-card class="stat-card">
+              <span>Da tradurre</span>
+              <strong *ngIf="!loadingOpenAiTranslationStatus; else gptMissingLoading">{{ gptTranslationMissingCount }}</strong>
+              <ng-template #gptMissingLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Completi</span>
+              <strong *ngIf="!loadingOpenAiTranslationStatus; else gptCompleteLoading">{{ gptTranslationCompleteCount }}</strong>
+              <ng-template #gptCompleteLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Audio mancanti</span>
+              <strong *ngIf="!loadingOpenAiTranslationStatus; else gptAudioMissingLoading">{{ gptAudioMissingCount }}</strong>
+              <small *ngIf="!loadingOpenAiTranslationStatus">{{ gptAudioGenerableMissingCount }} generabili</small>
+              <ng-template #gptAudioMissingLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Audio pronti</span>
+              <strong *ngIf="!loadingOpenAiTranslationStatus; else gptAudioReadyLoading">{{ gptAudioReadyCount }}</strong>
+              <ng-template #gptAudioReadyLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+          </div>
+        </section>
+
+        <section class="gpt-stats-section global">
+          <div class="gpt-stats-title">
+            <div>
+              <h2>Totale catalogo</h2>
+              <p>Tutte le citta - {{ selectedGptTranslationLanguageLabel }}</p>
+            </div>
+          </div>
+          <div class="stats-grid global-stats-grid">
+            <mat-card class="stat-card">
+              <span>Luoghi</span>
+              <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalTotalLoading">{{ gptGlobalTotalPoisCount }}</strong>
+              <ng-template #gptGlobalTotalLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Da tradurre</span>
+              <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalMissingLoading">{{ gptGlobalTranslationMissingCount }}</strong>
+              <ng-template #gptGlobalMissingLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Completi</span>
+              <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalCompleteLoading">{{ gptGlobalTranslationCompleteCount }}</strong>
+              <ng-template #gptGlobalCompleteLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Audio mancanti</span>
+              <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalAudioMissingLoading">{{ gptGlobalAudioMissingCount }}</strong>
+              <small *ngIf="!loadingOpenAiTranslationSummary">{{ gptGlobalAudioGenerableMissingCount }} generabili</small>
+              <ng-template #gptGlobalAudioMissingLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Audio pronti</span>
+              <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalAudioReadyLoading">{{ gptGlobalAudioReadyCount }}</strong>
+              <ng-template #gptGlobalAudioReadyLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+          </div>
+        </section>
 
         <mat-card class="card table-card">
           <div class="table-head">
             <div>
               <h2>Configurazione OpenAI</h2>
-              <p class="table-subtitle">API key e modello usati solo dalle rotte admin per tradurre i luoghi di interesse.</p>
+              <p class="table-subtitle">La stessa API key viene usata per tradurre i testi e generare MP3 con il modello audio dedicato.</p>
             </div>
           </div>
 
@@ -1226,8 +1310,40 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Modello</mat-label>
+                <mat-label>Modello testo</mat-label>
                 <input matInput type="text" formControlName="model" autocomplete="off" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Modello audio</mat-label>
+                <input matInput type="text" formControlName="ttsModel" autocomplete="off" />
+                <mat-hint>Predefinito: gpt-4o-mini-tts.</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Voce audio</mat-label>
+                <mat-select formControlName="ttsVoice">
+                  <mat-option *ngFor="let voice of ttsVoiceOptions" [value]="voice.value">{{ voice.label }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div class="gpt-voice-preview-actions">
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  (click)="previewOpenAiVoice()"
+                  [disabled]="!canPreviewOpenAiVoice"
+                >
+                  <mat-icon fontSet="material-icons-round">{{ previewingOpenAiVoice ? 'hourglass_empty' : 'volume_up' }}</mat-icon>
+                  {{ previewingOpenAiVoice ? 'Genero anteprima...' : 'Riproduci anteprima voce' }}
+                </button>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-span">
+                <mat-label>Istruzioni voce</mat-label>
+                <textarea matInput rows="3" formControlName="ttsInstructions"></textarea>
+                <mat-hint>Usate dai modelli TTS compatibili per tono, ritmo e stile narrativo.</mat-hint>
               </mat-form-field>
             </div>
 
@@ -1253,7 +1369,18 @@
                 (click)="translateMissingGptPoisForCity()"
                 [disabled]="!canTranslateMissingGptPois"
               >
-                {{ bulkTranslatingPois ? 'Traduco...' : 'Traduci i luoghi mancanti della città' }}
+                <mat-icon fontSet="material-icons-round">translate</mat-icon>
+                {{ bulkTranslatingPois ? 'Traduco...' : 'Traduci testi mancanti' }}
+              </button>
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                (click)="generateMissingGptPoiAudiosForCity()"
+                [disabled]="!canGenerateMissingGptPoiAudios"
+              >
+                <mat-icon fontSet="material-icons-round">graphic_eq</mat-icon>
+                {{ bulkGeneratingPoiAudios ? 'Genero audio...' : gptTranslationForm.controls.overwrite.value ? 'Rigenera audio città' : 'Genera audio mancanti' }}
               </button>
             </div>
           </div>
@@ -1288,7 +1415,7 @@
             </mat-form-field>
 
             <mat-slide-toggle formControlName="overwrite" (change)="onGptTranslationOverwriteChanged($event.checked)">
-              Sovrascrivi traduzioni esistenti
+              Sovrascrivi testi/audio esistenti
             </mat-slide-toggle>
           </form>
 
@@ -1310,6 +1437,19 @@
             </div>
           </div>
 
+          <div class="gpt-progress-panel gpt-audio-progress-panel" *ngIf="gptAudioProgressTotal">
+            <div class="gpt-progress-head">
+              <strong>Audio {{ gptAudioProgressDone }} / {{ gptAudioProgressTotal }}</strong>
+              <span>{{ gptAudioProgressPercent }}%</span>
+            </div>
+            <div class="gpt-progress-track" aria-hidden="true">
+              <span class="gpt-progress-bar gpt-audio-progress-bar" [style.width.%]="gptAudioProgressPercent"></span>
+            </div>
+            <div class="gpt-log" *ngIf="gptAudioLog.length">
+              <span *ngFor="let item of gptAudioLog">{{ item }}</span>
+            </div>
+          </div>
+
           <div class="inline-loader" *ngIf="loadingCatalogCities || loadingCatalogPois || loadingOpenAiTranslationStatus">
             <mat-spinner diameter="24"></mat-spinner>
           </div>
@@ -1327,15 +1467,45 @@
               <strong>{{ poi.name }}</strong>
               <p>{{ selectedGptTranslationPoiTargetFields.descriptionShort || 'Descrizione breve mancante' }}</p>
               <p>{{ selectedGptTranslationPoiTargetFields.descriptionLong || 'Descrizione lunga mancante' }}</p>
-              <button
-                mat-flat-button
-                color="primary"
-                type="button"
-                (click)="translateSelectedGptPoi()"
-                [disabled]="!canTranslateSelectedGptPoi"
-              >
-                {{ translatingPoiId === poi.id ? 'Traduco...' : 'Traduci luogo selezionato' }}
-              </button>
+              <div class="gpt-audio-preview">
+                <div class="gpt-audio-preview-head">
+                  <span>Audio tradotto</span>
+                  <strong>{{ selectedGptTranslationPoiAudioUrl ? 'Pronto' : selectedGptTranslationPoiHasText ? 'Da generare' : 'Testo richiesto' }}</strong>
+                </div>
+                <div class="audio-file-pill" *ngIf="selectedGptTranslationPoiAudioUrl; else selectedGptAudioEmpty">
+                  <span class="audio-file-label">MP3</span>
+                  <strong>{{ audioFileNameFromUrl(selectedGptTranslationPoiAudioUrl) }}</strong>
+                </div>
+                <ng-template #selectedGptAudioEmpty>
+                  <div class="audio-file-pill muted">
+                    <span class="audio-file-label">MP3</span>
+                    <strong>{{ selectedGptTranslationPoiHasText ? 'Audio non ancora generato' : 'Genera prima il testo tradotto' }}</strong>
+                  </div>
+                </ng-template>
+                <audio *ngIf="selectedGptTranslationPoiAudioUrl" class="media-player" controls [src]="selectedGptTranslationPoiAudioUrl"></audio>
+              </div>
+              <div class="gpt-preview-actions">
+                <button
+                  mat-flat-button
+                  color="primary"
+                  type="button"
+                  (click)="translateSelectedGptPoi()"
+                  [disabled]="!canTranslateSelectedGptPoi"
+                >
+                  <mat-icon fontSet="material-icons-round">translate</mat-icon>
+                  {{ translatingPoiId === poi.id ? 'Traduco...' : 'Traduci testo' }}
+                </button>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  (click)="generateSelectedGptPoiAudio()"
+                  [disabled]="!canGenerateSelectedGptPoiAudio"
+                >
+                  <mat-icon fontSet="material-icons-round">graphic_eq</mat-icon>
+                  {{ generatingPoiAudioId === poi.id ? 'Genero...' : selectedGptTranslationPoiAudioUrl ? 'Rigenera audio' : 'Genera audio' }}
+                </button>
+              </div>
             </section>
           </div>
 
@@ -1345,12 +1515,13 @@
                 <tr>
                   <th>Luogo</th>
                   <th>Stato</th>
+                  <th>Audio</th>
                   <th>Campi mancanti</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngIf="!loadingOpenAiTranslationStatus && !openAiTranslationStatusRows.length">
-                  <td colspan="3" class="empty-cell">Nessun luogo disponibile per la città selezionata.</td>
+                  <td colspan="4" class="empty-cell">Nessun luogo disponibile per la città selezionata.</td>
                 </tr>
                 <tr *ngFor="let row of openAiTranslationStatusRows">
                   <td>
@@ -1362,6 +1533,12 @@
                       {{ row.isComplete ? 'Completa' : 'Incompleta' }}
                     </span>
                   </td>
+                  <td>
+                    <span class="association-status" [class.association-status-active]="row.hasAudio" [class.association-status-used]="!row.hasAudio && row.isComplete" [class.association-status-invalid]="!row.isComplete">
+                      {{ row.hasAudio ? 'Audio pronto' : row.isComplete ? 'Audio mancante' : 'Testo mancante' }}
+                    </span>
+                    <small *ngIf="row.audioUrl">{{ audioFileNameFromUrl(row.audioUrl) }}</small>
+                  </td>
                   <td>{{ gptMissingFieldsLabel(row.missingFields) }}</td>
                 </tr>
               </tbody>
@@ -1371,17 +1548,235 @@
       </ng-container>
 
       <ng-template #gptTranslationInterruptDialog>
-        <h2 mat-dialog-title>Traduzione GPT in corso</h2>
+        <h2 mat-dialog-title>Operazione GPT in corso</h2>
         <div mat-dialog-content class="confirm-dialog-body">
-          <p>La traduzione dei luoghi &egrave; ancora in corso.</p>
+          <p>La traduzione o generazione audio dei luoghi &egrave; ancora in corso.</p>
           <p>Cambiando sezione, lingua, citt&agrave; o ricaricando la pagina potresti perdere l'avanzamento visualizzato.</p>
           <p class="inline-note">La richiesta gi&agrave; inviata potrebbe completarsi, ma il processo massivo verr&agrave; interrotto.</p>
         </div>
         <div mat-dialog-actions align="end" class="dialog-actions">
-          <button type="button" class="row-save-btn secondary" [mat-dialog-close]="false">Continua la traduzione</button>
+          <button type="button" class="row-save-btn secondary" [mat-dialog-close]="false">Continua</button>
           <button type="button" class="row-save-btn danger" [mat-dialog-close]="true">Interrompi e cambia</button>
         </div>
       </ng-template>
+
+      <ng-container *ngIf="canManageGlobalSettings && activeSection === 'globalSettings'">
+        <mat-card class="card table-card global-settings-nav-card">
+          <div class="table-head">
+            <div>
+              <h2>Impostazioni globali</h2>
+              <p class="table-subtitle">Scegli l'area di configurazione dell'applicazione.</p>
+            </div>
+          </div>
+          <div class="catalog-tabs global-settings-tabs" role="tablist" aria-label="Impostazioni globali">
+            <button
+              type="button"
+              class="catalog-tab"
+              *ngFor="let tab of globalSettingsTabs"
+              [class.active]="activeGlobalSettingsTab === tab.id"
+              (click)="selectGlobalSettingsTab(tab.id)"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </mat-card>
+
+        <ng-container *ngIf="activeGlobalSettingsTab === 'privacyPolicy'">
+          <div class="stats-grid">
+            <mat-card class="stat-card">
+              <span>Lingue configurate</span>
+              <strong *ngIf="!loadingPrivacyPolicySettings; else privacyLanguagesLoading">
+                {{ configuredPrivacyPolicyLanguagesCount }} / {{ privacyPolicyLanguages.length }}
+              </strong>
+              <ng-template #privacyLanguagesLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Ultimo aggiornamento</span>
+              <strong *ngIf="!loadingPrivacyPolicySettings; else privacyUpdatedLoading">
+                {{ privacyPolicySettings?.updatedAt ? formatDateTime(privacyPolicySettings?.updatedAt) : '-' }}
+              </strong>
+              <ng-template #privacyUpdatedLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+          </div>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Privacy policy</h2>
+              <p class="table-subtitle">Gestisci il testo globale mostrato dalla voce Privacy nel profilo utente.</p>
+            </div>
+            <div class="table-actions">
+              <input
+                #privacyPolicyFileInput
+                type="file"
+                accept=".txt,.html,.htm,text/plain,text/html"
+                hidden
+                (change)="onPrivacyPolicyFileSelected($event)"
+              />
+              <button mat-stroked-button color="primary" type="button" (click)="privacyPolicyFileInput.click()" [disabled]="savingPrivacyPolicySettings || translatingPrivacyPolicy">
+                Importa txt/html
+              </button>
+              <button mat-stroked-button color="primary" type="button" (click)="loadPrivacyPolicySettings(true)" [disabled]="loadingPrivacyPolicySettings || savingPrivacyPolicySettings || translatingPrivacyPolicy">
+                {{ loadingPrivacyPolicySettings ? 'Aggiorno...' : 'Ricarica' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="privacy-policy-toolbar">
+            <div class="privacy-policy-language-tabs" role="tablist" aria-label="Lingue privacy policy">
+              <button
+                type="button"
+                class="catalog-tab"
+                *ngFor="let language of privacyPolicyLanguages"
+                [class.active]="privacyPolicySelectedLanguage === language.code"
+                (click)="selectPrivacyPolicyLanguage(language.code)"
+              >
+                {{ language.label }}
+                <span class="privacy-language-dot" [class.ready]="hasPrivacyPolicyContent(language.code)" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <div class="privacy-format-buttons" aria-label="Formato testo">
+              <button mat-icon-button type="button" matTooltip="Paragrafo" (click)="formatPrivacyPolicyEditor('formatBlock', '<p>')">
+                <mat-icon fontSet="material-icons-round">notes</mat-icon>
+              </button>
+              <button mat-icon-button type="button" matTooltip="Titolo" (click)="formatPrivacyPolicyEditor('formatBlock', '<h2>')">
+                <mat-icon fontSet="material-icons-round">title</mat-icon>
+              </button>
+              <button mat-icon-button type="button" matTooltip="Grassetto" (click)="formatPrivacyPolicyEditor('bold')">
+                <mat-icon fontSet="material-icons-round">format_bold</mat-icon>
+              </button>
+              <button mat-icon-button type="button" matTooltip="Corsivo" (click)="formatPrivacyPolicyEditor('italic')">
+                <mat-icon fontSet="material-icons-round">format_italic</mat-icon>
+              </button>
+              <button mat-icon-button type="button" matTooltip="Elenco puntato" (click)="formatPrivacyPolicyEditor('insertUnorderedList')">
+                <mat-icon fontSet="material-icons-round">format_list_bulleted</mat-icon>
+              </button>
+              <button mat-icon-button type="button" matTooltip="Elenco numerato" (click)="formatPrivacyPolicyEditor('insertOrderedList')">
+                <mat-icon fontSet="material-icons-round">format_list_numbered</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="privacy-policy-editor-shell">
+            <div class="privacy-policy-editor-head">
+              <strong>{{ selectedPrivacyPolicyLanguageLabel }}</strong>
+              <span>{{ hasPrivacyPolicyContent(privacyPolicySelectedLanguage) ? 'Testo presente' : 'Testo mancante' }}</span>
+            </div>
+            <div
+              #privacyPolicyEditor
+              class="privacy-policy-editor"
+              contenteditable="true"
+              role="textbox"
+              tabindex="0"
+              data-placeholder="Incolla qui la privacy policy oppure scrivi il testo."
+              (input)="onPrivacyPolicyEditorInput()"
+              (blur)="onPrivacyPolicyEditorInput()"
+            ></div>
+          </div>
+
+          <div class="privacy-policy-actions">
+            <button mat-flat-button color="primary" type="button" (click)="savePrivacyPolicySettings()" [disabled]="!canSavePrivacyPolicySettings">
+              {{ savingPrivacyPolicySettings ? 'Salvo...' : 'Salva privacy policy' }}
+            </button>
+          </div>
+        </mat-card>
+
+        <mat-card class="card table-card">
+          <div class="table-head">
+            <div>
+              <h2>Traduzione privacy con GPT</h2>
+              <p class="table-subtitle">La versione italiana viene usata come sorgente e il markup HTML viene mantenuto nelle traduzioni.</p>
+            </div>
+            <div class="table-actions">
+              <button mat-flat-button color="primary" type="button" (click)="translatePrivacyPolicy()" [disabled]="!canTranslatePrivacyPolicy">
+                {{ translatingPrivacyPolicy ? 'Traduco...' : 'Traduci in tutte le lingue' }}
+              </button>
+            </div>
+          </div>
+
+          <p class="inline-note" *ngIf="openAiTranslationSettings && !openAiTranslationSettings.hasApiKey">
+            Salva una API key OpenAI nella sezione Traduzioni GPT prima di avviare la traduzione.
+          </p>
+          <p class="inline-note" *ngIf="!hasItalianPrivacyPolicyContent">
+            Carica prima la privacy policy in italiano.
+          </p>
+
+          <mat-slide-toggle [checked]="privacyPolicyTranslateOverwrite" (change)="privacyPolicyTranslateOverwrite = $event.checked">
+            Sovrascrivi traduzioni esistenti
+          </mat-slide-toggle>
+
+          <div class="gpt-progress-panel" *ngIf="translatingPrivacyPolicy || privacyPolicyTranslationLog.length">
+            <div class="gpt-token-strip">
+              <span>Input: {{ privacyPolicyTranslationUsage.inputTokens }}</span>
+              <span>Output: {{ privacyPolicyTranslationUsage.outputTokens }}</span>
+              <span>Totale: {{ privacyPolicyTranslationUsage.totalTokens }}</span>
+            </div>
+            <div class="gpt-log" *ngIf="privacyPolicyTranslationLog.length">
+              <span *ngFor="let item of privacyPolicyTranslationLog">{{ item }}</span>
+            </div>
+          </div>
+        </mat-card>
+        </ng-container>
+
+        <ng-container *ngIf="activeGlobalSettingsTab === 'appCache'">
+          <div class="stats-grid">
+            <mat-card class="stat-card">
+              <span>Versione cache attiva</span>
+              <strong *ngIf="!loadingAppCacheSettings; else appCacheVersionLoading">
+                {{ appCacheSettings?.cacheVersion || '-' }}
+              </strong>
+              <ng-template #appCacheVersionLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Ultima pubblicazione</span>
+              <strong *ngIf="!loadingAppCacheSettings; else appCacheUpdatedLoading">
+                {{ appCacheSettings?.updatedAt ? formatDateTime(appCacheSettings?.updatedAt) : '-' }}
+              </strong>
+              <ng-template #appCacheUpdatedLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+          </div>
+
+          <mat-card class="card table-card">
+            <div class="table-head">
+              <div>
+                <h2>Cache e aggiornamenti app</h2>
+                <p class="table-subtitle">Pubblica una nuova versione cache per far ricaricare agli utenti la versione corrente dell'app.</p>
+              </div>
+              <div class="table-actions">
+                <button mat-stroked-button color="primary" type="button" (click)="loadAppCacheSettings(true)" [disabled]="loadingAppCacheSettings || bumpingAppCacheVersion">
+                  {{ loadingAppCacheSettings ? 'Aggiorno...' : 'Ricarica' }}
+                </button>
+                <button mat-flat-button color="primary" type="button" (click)="bumpAppCacheVersion()" [disabled]="!canBumpAppCacheVersion">
+                  {{ bumpingAppCacheVersion ? 'Pubblico...' : 'Forza aggiornamento app' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="cache-update-panel">
+              <strong>Effetto sugli utenti</strong>
+              <p>Al prossimo avvio o controllo periodico, l'app elimina Cache Storage, service worker e download offline salvati, poi ricarica la pagina.</p>
+              <p class="inline-note">Usalo dopo deploy, modifiche a file statici o aggiornamenti importanti di immagini/audio già cacheati.</p>
+            </div>
+          </mat-card>
+        </ng-container>
+      </ng-container>
 
       <ng-container *ngIf="canManageCatalog && activeSection === 'catalog'">
         <div class="stats-grid">
@@ -1456,6 +1851,7 @@
                   <thead>
                     <tr>
                       <th>Città</th>
+                      <th>Stato</th>
                       <th>Regione</th>
                       <th>Luoghi</th>
                       <th>Azioni</th>
@@ -1463,18 +1859,23 @@
                   </thead>
                   <tbody>
                     <tr *ngIf="loadingCatalogCities">
-                      <td colspan="4" class="empty-cell spinner-cell">
+                      <td colspan="5" class="empty-cell spinner-cell">
                         <mat-spinner diameter="28"></mat-spinner>
                       </td>
                     </tr>
                     <tr *ngIf="!loadingCatalogCities && !catalogCities.length">
-                      <td colspan="4" class="empty-cell">Nessuna città disponibile.</td>
+                      <td colspan="5" class="empty-cell">Nessuna città disponibile.</td>
                     </tr>
                     <ng-container *ngIf="!loadingCatalogCities">
                       <tr *ngFor="let city of catalogCities">
                         <td>
                           <strong>{{ city.name }}</strong>
                           <small *ngIf="city.isDefault">Predefinita</small>
+                        </td>
+                        <td>
+                          <span class="publication-badge" [ngClass]="catalogPublicationStatusClass(city.publicationStatus)">
+                            {{ catalogPublicationStatusLabel(city.publicationStatus) }}
+                          </span>
                         </td>
                         <td>{{ city.region }}</td>
                         <td>{{ city.poiCount }}</td>
@@ -1538,6 +1939,7 @@
                   <thead>
                     <tr>
                       <th>Luogo</th>
+                      <th>Stato</th>
                       <th>Categoria</th>
                       <th>Prezzo</th>
                       <th>Durata</th>
@@ -1547,16 +1949,21 @@
                   </thead>
                   <tbody>
                     <tr *ngIf="loadingCatalogPois">
-                      <td colspan="6" class="empty-cell spinner-cell">
+                      <td colspan="7" class="empty-cell spinner-cell">
                         <mat-spinner diameter="28"></mat-spinner>
                       </td>
                     </tr>
                     <tr *ngIf="!loadingCatalogPois && !catalogPois.length">
-                      <td colspan="6" class="empty-cell">Nessun luogo nella città selezionata.</td>
+                      <td colspan="7" class="empty-cell">Nessun luogo nella città selezionata.</td>
                     </tr>
                     <ng-container *ngIf="!loadingCatalogPois">
                       <tr *ngFor="let poi of catalogPois; trackBy: trackByCatalogPoiId">
                         <td><strong>{{ poi.name }}</strong></td>
+                        <td>
+                          <span class="publication-badge" [ngClass]="catalogPublicationStatusClass(poi.publicationStatus)">
+                            {{ catalogPublicationStatusLabel(poi.publicationStatus) }}
+                          </span>
+                        </td>
                         <td>{{ poi.category }}</td>
                         <td>{{ formatCurrency(poi.priceSingle) }}</td>
                         <td>{{ formatCatalogPoiDuration(poi) }}</td>
@@ -1612,6 +2019,11 @@
               <mat-label>Prezzo bundle (EUR)</mat-label>
               <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
             </mat-form-field>
+
+            <div class="publication-toggle-row">
+              <mat-slide-toggle formControlName="isPublished">Pubblicata</mat-slide-toggle>
+              <span>{{ catalogCityForm.controls.isPublished.value ? 'Visibile agli utenti' : 'Bozza non pubblica' }}</span>
+            </div>
 
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
@@ -1694,6 +2106,11 @@
                 <mat-label>Nome luogo</mat-label>
                 <input matInput type="text" formControlName="name" />
               </mat-form-field>
+
+              <div class="publication-toggle-row">
+                <mat-slide-toggle formControlName="isPublished">Pubblicato</mat-slide-toggle>
+                <span>{{ catalogPoiForm.controls.isPublished.value ? 'Visibile agli utenti' : 'Bozza non pubblica' }}</span>
+              </div>
 
               <mat-form-field appearance="outline">
                 <mat-label>Indirizzo</mat-label>
@@ -1950,6 +2367,11 @@
               <input matInput type="number" min="0" step="0.01" formControlName="bundlePrice" />
             </mat-form-field>
 
+            <div class="publication-toggle-row">
+              <mat-slide-toggle formControlName="isPublished">Pubblicata</mat-slide-toggle>
+              <span>{{ catalogCityEditForm.controls.isPublished.value ? 'Visibile agli utenti' : 'Bozza non pubblica' }}</span>
+            </div>
+
             <input type="hidden" formControlName="heroImage" />
             <div class="media-block">
               <div class="media-block-head">
@@ -2025,6 +2447,11 @@
               <mat-label>Nome luogo</mat-label>
               <input matInput type="text" formControlName="name" />
             </mat-form-field>
+
+            <div class="publication-toggle-row">
+              <mat-slide-toggle formControlName="isPublished">Pubblicato</mat-slide-toggle>
+              <span>{{ catalogPoiEditForm.controls.isPublished.value ? 'Visibile agli utenti' : 'Bozza non pubblica' }}</span>
+            </div>
 
             <mat-form-field appearance="outline">
               <mat-label>Indirizzo</mat-label>
@@ -2742,9 +3169,26 @@
                     <td>{{ formatCurrency(structure.totalStructureEarnings) }}</td>
                     <td>{{ formatDateTime(structure.createdAt) }}</td>
                     <td>
-                      <button mat-stroked-button color="primary" type="button" (click)="editStructure(structure)">
-                        Modifica
-                      </button>
+                      <div class="action-buttons">
+                        <button
+                          mat-stroked-button
+                          color="primary"
+                          type="button"
+                          (click)="editStructure(structure)"
+                          [disabled]="deletingStructureId === structure.id"
+                        >
+                          Modifica
+                        </button>
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          type="button"
+                          (click)="deleteStructure(structure)"
+                          [disabled]="deletingStructureId === structure.id || updatingStructure"
+                        >
+                          {{ deletingStructureId === structure.id ? 'Elimino...' : 'Elimina' }}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </ng-container>

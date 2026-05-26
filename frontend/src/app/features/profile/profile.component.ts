@@ -11,6 +11,7 @@ import { AppAuthService, AppSession } from '../../core/services/app-auth.service
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PoiService } from '../../core/services/poi.service';
+import { PrivacyPolicyService } from '../../core/services/privacy-policy.service';
 import { HotelCodeStatusEntry, PurchaseService } from '../../core/services/purchase.service';
 import { StructureLocationService } from '../../core/services/structure-location.service';
 import { formatCityLabel } from '../../core/utils/city-label.util';
@@ -43,11 +44,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
   resetSubmitting = false;
   resetRequested = false;
   loggingOutApp = false;
+  privacyPolicyLoading = false;
+  privacyPolicyHtml = '';
+  privacyPolicyDialogLanguage: AppLanguage = 'it';
   showLoginPassword = false;
   showRegisterPassword = false;
   showRegisterConfirmPassword = false;
 
   @ViewChild('appLogoutDialog') private appLogoutDialog?: TemplateRef<unknown>;
+  @ViewChild('privacyPolicyDialog') private privacyPolicyDialog?: TemplateRef<unknown>;
 
   readonly loginForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -74,6 +79,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private readonly purchaseService: PurchaseService,
     private readonly adminAuth: AdminAuthService,
     private readonly appAuth: AppAuthService,
+    private readonly privacyPolicyService: PrivacyPolicyService,
     private readonly structureLocationService: StructureLocationService,
     private readonly formBuilder: FormBuilder,
     private readonly route: ActivatedRoute,
@@ -415,6 +421,43 @@ export class ProfileComponent implements OnInit, OnDestroy {
       .subscribe((confirmed) => {
         if (confirmed === true) {
           this.logoutAppUser();
+        }
+      });
+  }
+
+  openPrivacyPolicyDialog(): void {
+    if (!this.privacyPolicyDialog || this.privacyPolicyLoading) {
+      return;
+    }
+
+    const language = this.language;
+    this.privacyPolicyDialogLanguage = language;
+    this.privacyPolicyHtml = '';
+    this.privacyPolicyLoading = true;
+
+    this.dialog.open(this.privacyPolicyDialog, {
+      autoFocus: false,
+      restoreFocus: true,
+      width: '92vw',
+      maxWidth: '760px'
+    });
+
+    this.privacyPolicyService
+      .getPrivacyPolicy(language)
+      .pipe(
+        finalize(() => {
+          this.privacyPolicyLoading = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response) => {
+          this.privacyPolicyDialogLanguage = response.language;
+          this.privacyPolicyHtml = response.contentHtml || '';
+        },
+        error: () => {
+          this.privacyPolicyHtml = '';
+          this.snackBar.open(this.i18n.t('profile.privacyLoadError'), this.i18n.t('common.close'), { duration: 3000 });
         }
       });
   }

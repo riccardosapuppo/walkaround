@@ -25,6 +25,7 @@ async function createSchema(client) {
       bundle_price NUMERIC(10,2) NOT NULL,
       hero_image TEXT NOT NULL,
       is_default BOOLEAN NOT NULL DEFAULT FALSE,
+      publication_status TEXT NOT NULL DEFAULT 'published',
       translations JSONB NOT NULL DEFAULT '{}'::jsonb
     );
   `);
@@ -44,6 +45,7 @@ async function createSchema(client) {
       audio_url TEXT NOT NULL,
       price_single NUMERIC(10,2) NOT NULL,
       duration_sec INTEGER NOT NULL,
+      publication_status TEXT NOT NULL DEFAULT 'published',
       translations JSONB NOT NULL DEFAULT '{}'::jsonb
     );
   `);
@@ -64,6 +66,32 @@ async function createSchema(client) {
   await client.query(`
     ALTER TABLE cities
     ALTER COLUMN translations SET NOT NULL;
+  `);
+  await client.query(`
+    ALTER TABLE cities
+    ADD COLUMN IF NOT EXISTS publication_status TEXT;
+  `);
+  await client.query(`
+    UPDATE cities
+    SET publication_status = 'published'
+    WHERE publication_status IS NULL
+      OR publication_status NOT IN ('published', 'draft');
+  `);
+  await client.query(`
+    ALTER TABLE cities
+    ALTER COLUMN publication_status SET DEFAULT 'published';
+  `);
+  await client.query(`
+    ALTER TABLE cities
+    ALTER COLUMN publication_status SET NOT NULL;
+  `);
+  await client.query(`
+    ALTER TABLE cities
+    DROP CONSTRAINT IF EXISTS cities_publication_status_check;
+  `);
+  await client.query(`
+    ALTER TABLE cities
+    ADD CONSTRAINT cities_publication_status_check CHECK (publication_status IN ('published', 'draft'));
   `);
 
   await client.query(`
@@ -100,6 +128,32 @@ async function createSchema(client) {
   await client.query(`
     ALTER TABLE pois
     ALTER COLUMN translations SET NOT NULL;
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ADD COLUMN IF NOT EXISTS publication_status TEXT;
+  `);
+  await client.query(`
+    UPDATE pois
+    SET publication_status = 'published'
+    WHERE publication_status IS NULL
+      OR publication_status NOT IN ('published', 'draft');
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ALTER COLUMN publication_status SET DEFAULT 'published';
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ALTER COLUMN publication_status SET NOT NULL;
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    DROP CONSTRAINT IF EXISTS pois_publication_status_check;
+  `);
+  await client.query(`
+    ALTER TABLE pois
+    ADD CONSTRAINT pois_publication_status_check CHECK (publication_status IN ('published', 'draft'));
   `);
 
   await client.query(`
@@ -172,6 +226,7 @@ async function createSchema(client) {
       user_discount_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
       structure_share_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
       structure_fixed_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+      deleted SMALLINT NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
@@ -216,6 +271,18 @@ async function createSchema(client) {
   await client.query(`
     ALTER TABLE dashboard_structures
     ADD COLUMN IF NOT EXISTS invite_code TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_structures
+    ADD COLUMN IF NOT EXISTS deleted SMALLINT;
+  `);
+  await client.query(`UPDATE dashboard_structures SET deleted = 0 WHERE deleted IS NULL;`);
+  await client.query(`ALTER TABLE dashboard_structures ALTER COLUMN deleted SET DEFAULT 0;`);
+  await client.query(`ALTER TABLE dashboard_structures ALTER COLUMN deleted SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_structures DROP CONSTRAINT IF EXISTS dashboard_structures_deleted_check;`);
+  await client.query(`
+    ALTER TABLE dashboard_structures
+    ADD CONSTRAINT dashboard_structures_deleted_check CHECK (deleted IN (0, 1));
   `);
   await client.query(`
     UPDATE dashboard_structures
@@ -654,6 +721,7 @@ async function createSchema(client) {
       role TEXT NOT NULL,
       is_registered BOOLEAN NOT NULL DEFAULT TRUE,
       invited_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      deleted SMALLINT NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
@@ -697,6 +765,18 @@ async function createSchema(client) {
   await client.query(`
     ALTER TABLE dashboard_users
     ADD COLUMN IF NOT EXISTS structure_id TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_users
+    ADD COLUMN IF NOT EXISTS deleted SMALLINT;
+  `);
+  await client.query(`UPDATE dashboard_users SET deleted = 0 WHERE deleted IS NULL;`);
+  await client.query(`ALTER TABLE dashboard_users ALTER COLUMN deleted SET DEFAULT 0;`);
+  await client.query(`ALTER TABLE dashboard_users ALTER COLUMN deleted SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_users DROP CONSTRAINT IF EXISTS dashboard_users_deleted_check;`);
+  await client.query(`
+    ALTER TABLE dashboard_users
+    ADD CONSTRAINT dashboard_users_deleted_check CHECK (deleted IN (0, 1));
   `);
   await client.query(`ALTER TABLE dashboard_users DROP CONSTRAINT IF EXISTS dashboard_users_structure_id_fkey;`);
   await client.query(`
@@ -751,10 +831,25 @@ async function createSchema(client) {
       id SMALLINT PRIMARY KEY,
       api_key TEXT,
       model TEXT NOT NULL DEFAULT 'gpt-4o-mini',
+      tts_model TEXT NOT NULL DEFAULT 'gpt-4o-mini-tts',
+      tts_voice TEXT NOT NULL DEFAULT 'alloy',
+      tts_instructions TEXT NOT NULL DEFAULT 'Narrazione chiara, naturale e professionale per una audioguida turistica. Ritmo medio, tono coinvolgente e pronuncia curata dei nomi propri italiani.',
       updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_openai_translation_settings
+    ADD COLUMN IF NOT EXISTS tts_model TEXT NOT NULL DEFAULT 'gpt-4o-mini-tts';
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_openai_translation_settings
+    ADD COLUMN IF NOT EXISTS tts_voice TEXT NOT NULL DEFAULT 'alloy';
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_openai_translation_settings
+    ADD COLUMN IF NOT EXISTS tts_instructions TEXT NOT NULL DEFAULT 'Narrazione chiara, naturale e professionale per una audioguida turistica. Ritmo medio, tono coinvolgente e pronuncia curata dei nomi propri italiani.';
   `);
   await client.query(`
     ALTER TABLE dashboard_openai_translation_settings
@@ -767,6 +862,29 @@ async function createSchema(client) {
   await client.query(`
     INSERT INTO dashboard_openai_translation_settings (id, model)
     VALUES (1, 'gpt-4o-mini')
+    ON CONFLICT (id) DO NOTHING;
+  `);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_app_cache_settings (
+      id SMALLINT PRIMARY KEY,
+      cache_version TEXT NOT NULL DEFAULT '1',
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_app_cache_settings
+    DROP CONSTRAINT IF EXISTS dashboard_app_cache_settings_singleton;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_app_cache_settings
+    ADD CONSTRAINT dashboard_app_cache_settings_singleton CHECK (id = 1);
+  `);
+  await client.query(`
+    INSERT INTO dashboard_app_cache_settings (id, cache_version)
+    VALUES (1, '1')
     ON CONFLICT (id) DO NOTHING;
   `);
 
@@ -809,6 +927,29 @@ async function createSchema(client) {
       DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
     ]
   );
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_privacy_policy_settings (
+      id SMALLINT PRIMARY KEY,
+      translations JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_privacy_policy_settings
+    DROP CONSTRAINT IF EXISTS dashboard_privacy_policy_settings_singleton;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_privacy_policy_settings
+    ADD CONSTRAINT dashboard_privacy_policy_settings_singleton CHECK (id = 1);
+  `);
+  await client.query(`
+    INSERT INTO dashboard_privacy_policy_settings (id, translations)
+    VALUES (1, '{}'::jsonb)
+    ON CONFLICT (id) DO NOTHING;
+  `);
 
   await client.query(`
     CREATE TABLE IF NOT EXISTS dashboard_invites (
@@ -1068,6 +1209,8 @@ async function createSchema(client) {
   `);
 
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_user_id ON purchases(user_id);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_cities_publication_status ON cities(publication_status);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_pois_city_publication_status ON pois(city_id, publication_status);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_city_id ON purchases(city_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_poi_id ON purchases(poi_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_structure_id ON purchases(structure_id);`);
@@ -1083,7 +1226,9 @@ async function createSchema(client) {
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_password_resets_user_id ON app_password_resets(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_password_resets_expires_at ON app_password_resets(expires_at);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_users_structure_id ON dashboard_users(structure_id);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_users_deleted ON dashboard_users(deleted);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_structures_created_at ON dashboard_structures(created_at);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_structures_deleted ON dashboard_structures(deleted);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_user_structure_links_structure_id ON app_user_structure_links(structure_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_user_structure_links_discount_code_id ON app_user_structure_links(discount_code_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_user_discount_code_uses_user_id ON app_user_discount_code_uses(user_id);`);
@@ -1099,7 +1244,13 @@ async function createSchema(client) {
     `CREATE INDEX IF NOT EXISTS idx_dashboard_openai_translation_settings_updated_by ON dashboard_openai_translation_settings(updated_by);`
   );
   await client.query(
+    `CREATE INDEX IF NOT EXISTS idx_dashboard_app_cache_settings_updated_by ON dashboard_app_cache_settings(updated_by);`
+  );
+  await client.query(
     `CREATE INDEX IF NOT EXISTS idx_dashboard_partner_email_settings_updated_by ON dashboard_partner_email_settings(updated_by);`
+  );
+  await client.query(
+    `CREATE INDEX IF NOT EXISTS idx_dashboard_privacy_policy_settings_updated_by ON dashboard_privacy_policy_settings(updated_by);`
   );
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_user_id ON paypal_checkout_orders(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_status ON paypal_checkout_orders(status);`);

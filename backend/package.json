@@ -8,7 +8,11 @@
     "start": "node src/server.js",
     "db:init": "node scripts/init-db.js",
     "translate:missing": "node scripts/translate-missing-pois.js",
-    "translate:missing:dry-run": "node scripts/translate-missing-pois.js --dry-run"
+    "translate:missing:dry-run": "node scripts/translate-missing-pois.js --dry-run",
+    "audio:missing": "node scripts/generate-missing-poi-audios.js",
+    "audio:missing:dry-run": "node scripts/generate-missing-poi-audios.js --dry-run",
+    "audio:apply-manifest": "node scripts/apply-poi-audio-manifest.js",
+    "audio:apply-manifest:dry-run": "node scripts/apply-poi-audio-manifest.js --dry-run"
   },
   "dependencies": {
     "cors": "^2.8.5",

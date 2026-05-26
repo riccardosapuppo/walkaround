@@ -12,6 +12,10 @@ import {
 } from '../services/paypal.js';
 
 const router = express.Router();
+const privacyPolicyLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
+const privacyPolicyQuerySchema = z.object({
+  language: z.enum(privacyPolicyLanguages).optional().default('it')
+});
 
 async function requireCheckoutAppUser(req, userId) {
   const session = await resolveAppSessionUser(req);
@@ -182,6 +186,34 @@ function sanitizeTranslations(value, allowedFields) {
   });
 
   return sanitized;
+}
+
+function sanitizePrivacyPolicyTranslations(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const sanitized = {};
+  privacyPolicyLanguages.forEach((language) => {
+    const html = stripUnsafePrivacyHtml(value?.[language]);
+    if (html) {
+      sanitized[language] = html;
+    }
+  });
+  return sanitized;
+}
+
+function stripUnsafePrivacyHtml(value) {
+  return String(value || '')
+    .trim()
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta|base)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta|base)[^>]*\/?\s*>/gi, '')
+    .replace(/\s+on[a-z]+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\s+on[a-z]+\s*=\s*'[^']*'/gi, '')
+    .replace(/\s+on[a-z]+\s*=\s*[^\s>]+/gi, '')
+    .replace(/\s+(href|src)\s*=\s*"javascript:[^"]*"/gi, ' $1="#"')
+    .replace(/\s+(href|src)\s*=\s*'javascript:[^']*'/gi, " $1='#'")
+    .replace(/\s+(href|src)\s*=\s*javascript:[^\s>]+/gi, ' $1="#"');
 }
 
 const purchaseSchema = z.discriminatedUnion('type', [
@@ -405,7 +437,7 @@ async function fetchUserStructurePricingContext(userId, purchaseType, targetCity
         d.apply_to,
         d.city_id,
         legacy_city.name AS city_name,
-        COALESCE(city_links.city_ids, CASE WHEN d.city_id IS NOT NULL THEN ARRAY[d.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
+        COALESCE(city_links.city_ids, CASE WHEN legacy_city.id IS NOT NULL THEN ARRAY[d.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
         COALESCE(city_links.city_names, CASE WHEN legacy_city.name IS NOT NULL THEN ARRAY[legacy_city.name] ELSE ARRAY[]::TEXT[] END) AS city_names,
         d.user_discount_percent,
         d.user_discount_percent_single,
@@ -415,13 +447,13 @@ async function fetchUserStructurePricingContext(userId, purchaseType, targetCity
         d.structure_fixed_amount_bundle,
         d.updated_at
       FROM dashboard_structure_discount_codes d
-      LEFT JOIN cities legacy_city ON legacy_city.id = d.city_id
+      LEFT JOIN cities legacy_city ON legacy_city.id = d.city_id AND legacy_city.publication_status = 'published'
       LEFT JOIN LATERAL (
         SELECT
           ARRAY_AGG(DISTINCT dcc.city_id ORDER BY dcc.city_id) AS city_ids,
           ARRAY_AGG(DISTINCT c.name ORDER BY c.name) AS city_names
         FROM dashboard_structure_discount_code_cities dcc
-        JOIN cities c ON c.id = dcc.city_id
+        JOIN cities c ON c.id = dcc.city_id AND c.publication_status = 'published'
         WHERE dcc.discount_code_id = d.id
       ) city_links ON TRUE
       WHERE (
@@ -635,6 +667,7 @@ async function buildPayPalCheckoutPreview(payload, client) {
         SELECT id, name, bundle_price
         FROM cities
         WHERE id = $1
+          AND publication_status = 'published'
         LIMIT 1
       `,
       [payload.cityId]
@@ -710,6 +743,8 @@ async function buildPayPalCheckoutPreview(payload, client) {
         FROM pois p
         JOIN cities c ON c.id = p.city_id
         WHERE p.id = $1
+          AND p.publication_status = 'published'
+          AND c.publication_status = 'published'
         LIMIT 1
       `,
       [payload.poiId]
@@ -799,6 +834,8 @@ async function buildPayPalCheckoutPreview(payload, client) {
       FROM pois p
       JOIN cities c ON c.id = p.city_id
       WHERE p.id = ANY($1::TEXT[])
+        AND p.publication_status = 'published'
+        AND c.publication_status = 'published'
     `,
     [requestedPoiIds]
   );
@@ -1016,13 +1053,70 @@ router.post('/partner-registration-requests', async (req, res, next) => {
   }
 });
 
+router.get('/privacy-policy', async (req, res, next) => {
+  const parsed = privacyPolicyQuerySchema.safeParse(req.query || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Lingua non valida', errors: parsed.error.flatten() });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+        SELECT translations, updated_at
+        FROM dashboard_privacy_policy_settings
+        WHERE id = 1
+        LIMIT 1
+      `
+    );
+    const row = result.rows[0] || {};
+    const translations = sanitizePrivacyPolicyTranslations(row.translations);
+    const requestedLanguage = parsed.data.language;
+    const fallbackLanguage = translations[requestedLanguage]
+      ? requestedLanguage
+      : translations.it
+      ? 'it'
+      : privacyPolicyLanguages.find((language) => translations[language]) || requestedLanguage;
+
+    return res.json({
+      language: fallbackLanguage,
+      requestedLanguage,
+      contentHtml: translations[fallbackLanguage] || '',
+      updatedAt: row.updated_at || null
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/app-cache-settings', async (_req, res, next) => {
+  try {
+    const result = await pool.query(
+      `
+        SELECT cache_version, updated_at
+        FROM dashboard_app_cache_settings
+        WHERE id = 1
+        LIMIT 1
+      `
+    );
+    const row = result.rows[0] || {};
+    res.set('Cache-Control', 'no-store');
+    return res.json({
+      cacheVersion: String(row.cache_version || '1'),
+      updatedAt: row.updated_at || null
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get('/cities', async (_req, res, next) => {
   try {
     const result = await queryWithRetry(
       `
       SELECT c.*, COUNT(p.id)::int AS poi_count
       FROM cities c
-      LEFT JOIN pois p ON p.city_id = c.id
+      LEFT JOIN pois p ON p.city_id = c.id AND p.publication_status = 'published'
+      WHERE c.publication_status = 'published'
       GROUP BY c.id
       ORDER BY c.is_default DESC, c.name ASC
       `,
@@ -1048,9 +1142,16 @@ router.get('/cities/:cityId/pois', async (req, res, next) => {
     const result = await queryWithRetry(
       `
       SELECT *
-      FROM pois
-      WHERE city_id = $1
-      ORDER BY name ASC
+      FROM pois p
+      WHERE p.city_id = $1
+        AND p.publication_status = 'published'
+        AND EXISTS (
+          SELECT 1
+          FROM cities c
+          WHERE c.id = p.city_id
+            AND c.publication_status = 'published'
+        )
+      ORDER BY p.name ASC
       `,
       [cityId],
       { label: 'public city pois list' }
@@ -1066,9 +1167,19 @@ router.get('/pois/:poiId', async (req, res, next) => {
   const { poiId } = req.params;
 
   try {
-    const result = await queryWithRetry('SELECT * FROM pois WHERE id = $1 LIMIT 1', [poiId], {
-      label: 'public poi detail'
-    });
+    const result = await queryWithRetry(
+      `
+      SELECT p.*
+      FROM pois p
+      JOIN cities c ON c.id = p.city_id
+      WHERE p.id = $1
+        AND p.publication_status = 'published'
+        AND c.publication_status = 'published'
+      LIMIT 1
+      `,
+      [poiId],
+      { label: 'public poi detail' }
+    );
     if (!result.rowCount) {
       return res.status(404).json({ message: 'POI not found' });
     }
@@ -1095,7 +1206,16 @@ router.post('/unlock/validate', async (req, res, next) => {
 
   try {
     if (payload.type === 'bundle') {
-      const cityResult = await pool.query('SELECT id, name, bundle_price FROM cities WHERE id = $1 LIMIT 1', [payload.cityId]);
+      const cityResult = await pool.query(
+        `
+        SELECT id, name, bundle_price
+        FROM cities
+        WHERE id = $1
+          AND publication_status = 'published'
+        LIMIT 1
+        `,
+        [payload.cityId]
+      );
       if (!cityResult.rowCount) {
         return res.status(404).json({ valid: false, message: 'City not found' });
       }
@@ -1112,7 +1232,18 @@ router.post('/unlock/validate', async (req, res, next) => {
       });
     }
 
-    const poiResult = await pool.query('SELECT id, city_id, name, price_single FROM pois WHERE id = $1 LIMIT 1', [payload.poiId]);
+    const poiResult = await pool.query(
+      `
+      SELECT p.id, p.city_id, p.name, p.price_single
+      FROM pois p
+      JOIN cities c ON c.id = p.city_id
+      WHERE p.id = $1
+        AND p.publication_status = 'published'
+        AND c.publication_status = 'published'
+      LIMIT 1
+      `,
+      [payload.poiId]
+    );
     if (!poiResult.rowCount) {
       return res.status(404).json({ valid: false, message: 'POI not found' });
     }
@@ -1650,6 +1781,7 @@ router.get('/me/purchases', async (req, res, next) => {
           `
           SELECT id
           FROM cities
+          WHERE publication_status = 'published'
           ORDER BY name ASC
           `,
           [],
@@ -1661,24 +1793,26 @@ router.get('/me/purchases', async (req, res, next) => {
       queryWithRetry(
         `
         SELECT
-          id,
-          user_id,
-          type,
-          city_id,
-          poi_id,
-          amount,
-          base_amount,
-          discount_percent,
-          discount_amount,
-          final_amount,
-          structure_id,
-          invite_code,
-          structure_fixed_amount,
-          structure_earning_amount,
-          purchased_at
-        FROM purchases
-        WHERE user_id = $1
-        ORDER BY purchased_at DESC
+          pu.id,
+          pu.user_id,
+          pu.type,
+          pu.city_id,
+          pu.poi_id,
+          pu.amount,
+          pu.base_amount,
+          pu.discount_percent,
+          pu.discount_amount,
+          pu.final_amount,
+          pu.structure_id,
+          pu.invite_code,
+          pu.structure_fixed_amount,
+          pu.structure_earning_amount,
+          pu.purchased_at,
+          c.publication_status AS city_publication_status
+        FROM purchases pu
+        LEFT JOIN cities c ON c.id = pu.city_id
+        WHERE pu.user_id = $1
+        ORDER BY pu.purchased_at DESC
         `,
         [userId],
         { label: 'user purchases list' }
@@ -1687,18 +1821,25 @@ router.get('/me/purchases', async (req, res, next) => {
         `
         SELECT DISTINCT poi_id AS id
         FROM purchases
+        JOIN pois single_poi ON single_poi.id = purchases.poi_id
+        JOIN cities single_city ON single_city.id = single_poi.city_id
         WHERE user_id = $1
           AND type = 'single'
           AND poi_id IS NOT NULL
           AND (purchased_at + INTERVAL '3 months') > NOW()
+          AND single_poi.publication_status = 'published'
+          AND single_city.publication_status = 'published'
         UNION
         SELECT DISTINCT p.id
         FROM pois p
+        JOIN cities c ON c.id = p.city_id
         JOIN purchases b
           ON b.user_id = $1
          AND b.type = 'bundle'
          AND b.city_id = p.city_id
          AND (b.purchased_at + INTERVAL '3 months') > NOW()
+        WHERE p.publication_status = 'published'
+          AND c.publication_status = 'published'
         `,
         [userId],
         { label: 'user unlocked pois list' }
@@ -1728,7 +1869,15 @@ router.get('/me/purchases', async (req, res, next) => {
     }));
 
     const unlockedPoiIds = unlockedPois.rows.map((row) => row.id);
-    const purchasedCityIds = raw.filter((item) => item.type === 'bundle' && item.isActive).map((item) => item.cityId);
+    const purchasedCityIds = purchases.rows
+      .filter(
+        (row) =>
+          row.type === 'bundle' &&
+          row.city_id &&
+          row.city_publication_status === 'published' &&
+          isPurchaseStillActive(row.purchased_at, now)
+      )
+      .map((row) => row.city_id);
     const simulatedCityIds = adminUnlockSimulation ? simulatedUnlockedCities.rows.map((row) => row.id) : [];
     const unlockedCityIds = Array.from(new Set([...purchasedCityIds, ...simulatedCityIds].filter(Boolean)));
 
@@ -1813,7 +1962,7 @@ router.post('/hotel/validate', async (req, res, next) => {
         dc.apply_to,
         dc.city_id,
         legacy_city.name AS city_name,
-        COALESCE(city_links.city_ids, CASE WHEN dc.city_id IS NOT NULL THEN ARRAY[dc.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
+        COALESCE(city_links.city_ids, CASE WHEN legacy_city.id IS NOT NULL THEN ARRAY[dc.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
         COALESCE(city_links.city_names, CASE WHEN legacy_city.name IS NOT NULL THEN ARRAY[legacy_city.name] ELSE ARRAY[]::TEXT[] END) AS city_names,
         dc.user_discount_percent,
         dc.user_discount_percent_single,
@@ -1827,14 +1976,14 @@ router.post('/hotel/validate', async (req, res, next) => {
         s.name AS structure_name,
         s.address AS structure_address
       FROM dashboard_structure_discount_codes dc
-      JOIN dashboard_structures s ON s.id = dc.structure_id
-      LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id
+      JOIN dashboard_structures s ON s.id = dc.structure_id AND s.deleted = 0
+      LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id AND legacy_city.publication_status = 'published'
       LEFT JOIN LATERAL (
         SELECT
           ARRAY_AGG(DISTINCT dcc.city_id ORDER BY dcc.city_id) AS city_ids,
           ARRAY_AGG(DISTINCT c.name ORDER BY c.name) AS city_names
         FROM dashboard_structure_discount_code_cities dcc
-        JOIN cities c ON c.id = dcc.city_id
+        JOIN cities c ON c.id = dcc.city_id AND c.publication_status = 'published'
         WHERE dcc.discount_code_id = dc.id
       ) city_links ON TRUE
       WHERE UPPER(dc.code) = $1
@@ -1991,7 +2140,7 @@ router.get('/me/hotel-association', async (req, res, next) => {
         l.associated_at,
         l.updated_at
       FROM app_user_structure_links l
-      JOIN dashboard_structures s ON s.id = l.structure_id
+      JOIN dashboard_structures s ON s.id = l.structure_id AND s.deleted = 0
       LEFT JOIN LATERAL (
         SELECT
           d.id,
@@ -1999,7 +2148,7 @@ router.get('/me/hotel-association', async (req, res, next) => {
           d.apply_to,
           d.city_id,
           legacy_city.name AS city_name,
-          COALESCE(city_links.city_ids, CASE WHEN d.city_id IS NOT NULL THEN ARRAY[d.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
+          COALESCE(city_links.city_ids, CASE WHEN legacy_city.id IS NOT NULL THEN ARRAY[d.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
           COALESCE(city_links.city_names, CASE WHEN legacy_city.name IS NOT NULL THEN ARRAY[legacy_city.name] ELSE ARRAY[]::TEXT[] END) AS city_names,
           d.user_discount_percent,
           d.user_discount_percent_single,
@@ -2010,13 +2159,13 @@ router.get('/me/hotel-association', async (req, res, next) => {
           d.expires_at,
           d.updated_at
         FROM dashboard_structure_discount_codes d
-        LEFT JOIN cities legacy_city ON legacy_city.id = d.city_id
+        LEFT JOIN cities legacy_city ON legacy_city.id = d.city_id AND legacy_city.publication_status = 'published'
         LEFT JOIN LATERAL (
           SELECT
             ARRAY_AGG(DISTINCT dcc.city_id ORDER BY dcc.city_id) AS city_ids,
             ARRAY_AGG(DISTINCT c.name ORDER BY c.name) AS city_names
           FROM dashboard_structure_discount_code_cities dcc
-          JOIN cities c ON c.id = dcc.city_id
+          JOIN cities c ON c.id = dcc.city_id AND c.publication_status = 'published'
           WHERE dcc.discount_code_id = d.id
         ) city_links ON TRUE
         WHERE (
@@ -2052,7 +2201,7 @@ router.get('/me/hotel-association', async (req, res, next) => {
         COALESCE(s.address, ds.address) AS structure_address,
         dc.apply_to,
         dc.city_id,
-        COALESCE(code_city_links.city_ids, CASE WHEN dc.city_id IS NOT NULL THEN ARRAY[dc.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
+        COALESCE(code_city_links.city_ids, CASE WHEN legacy_city.id IS NOT NULL THEN ARRAY[dc.city_id] ELSE ARRAY[]::TEXT[] END) AS city_ids,
         COALESCE(code_city_links.city_names, CASE WHEN legacy_city.name IS NOT NULL THEN ARRAY[legacy_city.name] ELSE ARRAY[]::TEXT[] END) AS city_names,
         legacy_city.name AS city_name,
         dc.expires_at,
@@ -2061,13 +2210,13 @@ router.get('/me/hotel-association', async (req, res, next) => {
       LEFT JOIN dashboard_structure_discount_codes dc ON dc.id = u.discount_code_id
       LEFT JOIN dashboard_structures s ON s.id = u.structure_id
       LEFT JOIN dashboard_structures ds ON ds.id = dc.structure_id
-      LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id
+      LEFT JOIN cities legacy_city ON legacy_city.id = dc.city_id AND legacy_city.publication_status = 'published'
       LEFT JOIN LATERAL (
         SELECT
           ARRAY_AGG(DISTINCT dcc.city_id ORDER BY dcc.city_id) AS city_ids,
           ARRAY_AGG(DISTINCT c.name ORDER BY c.name) AS city_names
         FROM dashboard_structure_discount_code_cities dcc
-        JOIN cities c ON c.id = dcc.city_id
+        JOIN cities c ON c.id = dcc.city_id AND c.publication_status = 'published'
         WHERE dcc.discount_code_id = dc.id
       ) code_city_links ON TRUE
       WHERE u.user_id = $1

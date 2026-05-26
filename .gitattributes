@@ -1,5 +1,4 @@
 * text=auto eol=lf
-
 *.js text working-tree-encoding=UTF-8
 *.ts text working-tree-encoding=UTF-8
 *.json text working-tree-encoding=UTF-8
@@ -10,7 +9,6 @@
 *.yml text working-tree-encoding=UTF-8
 *.yaml text working-tree-encoding=UTF-8
 *.env text working-tree-encoding=UTF-8
-
 *.mp3 binary
 *.png binary
 *.jpg binary
@@ -19,3 +17,4 @@
 *.ico binary
 *.pdf binary
 *.zip binary
+backend/public/audio/**/*.mp3 filter=lfs diff=lfs merge=lfs -text

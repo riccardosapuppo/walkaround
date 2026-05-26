@@ -211,8 +211,51 @@
 }
 
 .links {
+  align-items: start;
+
   a {
     color: #1769aa;
     font-weight: 600;
+  }
+
+  button {
+    justify-self: start;
+    padding: 0;
+    min-width: 0;
+    color: #1769aa;
+    font-weight: 600;
+  }
+}
+
+.privacy-dialog-body {
+  display: grid;
+  gap: 12px;
+  color: #2d405d;
+  max-height: min(68vh, 620px);
+  overflow: auto;
+}
+
+.privacy-dialog-loading {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  color: #677790;
+}
+
+.privacy-policy-content {
+  line-height: 1.58;
+
+  h1,
+  h2,
+  h3 {
+    margin: 0.9em 0 0.35em;
+    color: #17345b;
+  }
+
+  p,
+  ul,
+  ol {
+    margin: 0 0 0.85em;
   }
 }

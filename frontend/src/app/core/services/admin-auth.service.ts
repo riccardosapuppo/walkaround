@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AppLanguage } from '../i18n/app-language';
 import { CityTranslations, PoiTranslationFields, PoiTranslations } from '../models/localized-content.model';
 
 const ADMIN_SESSION_KEY = 'walkaround.dashboard.session';
@@ -151,6 +152,8 @@ export interface DashboardDiscountCode {
   updatedAt: string;
 }
 
+export type CatalogPublicationStatus = 'published' | 'draft';
+
 export interface DashboardCatalogCity {
   id: string;
   name: string;
@@ -158,6 +161,7 @@ export interface DashboardCatalogCity {
   bundlePrice: number;
   heroImage: string;
   isDefault: boolean;
+  publicationStatus: CatalogPublicationStatus;
   translations?: CityTranslations;
   poiCount: number;
   createdAt?: string | null;
@@ -179,6 +183,7 @@ export interface DashboardCatalogPoi {
   audioUrl: string;
   priceSingle: number;
   durationSec: number;
+  publicationStatus: CatalogPublicationStatus;
   translations?: PoiTranslations;
 }
 
@@ -188,6 +193,7 @@ export interface CatalogCityInput {
   bundlePrice: number;
   heroImage: string;
   isDefault: boolean;
+  publicationStatus: CatalogPublicationStatus;
   translations?: CityTranslations;
 }
 
@@ -204,6 +210,7 @@ export interface CatalogPoiInput {
   audioUrl: string;
   priceSingle: number;
   durationSec: number;
+  publicationStatus: CatalogPublicationStatus;
   translations?: PoiTranslations;
 }
 
@@ -213,6 +220,9 @@ export interface OpenAiTranslationSettings {
   hasApiKey: boolean;
   maskedApiKey: string | null;
   model: string;
+  ttsModel: string;
+  ttsVoice: string;
+  ttsInstructions: string;
   updatedAt: string | null;
   updatedBy: string | null;
 }
@@ -220,7 +230,17 @@ export interface OpenAiTranslationSettings {
 export interface OpenAiTranslationSettingsInput {
   apiKey?: string;
   model: string;
+  ttsModel: string;
+  ttsVoice: string;
+  ttsInstructions: string;
   clearApiKey?: boolean;
+}
+
+export interface OpenAiVoicePreviewInput {
+  ttsModel: string;
+  ttsVoice: string;
+  ttsInstructions: string;
+  previewText?: string;
 }
 
 export interface OpenAiTranslationUsage {
@@ -236,8 +256,30 @@ export interface OpenAiPoiTranslationStatus {
   name: string;
   targetLanguage: OpenAiTranslationTargetLanguage;
   isComplete: boolean;
+  textComplete?: boolean;
+  hasAudio?: boolean;
+  audioUrl?: string;
   missingFields: string[];
   translation: PoiTranslationFields;
+}
+
+export interface OpenAiPoiTranslationSummaryCounts {
+  totalPois: number;
+  textMissingPois: number;
+  textCompletePois: number;
+  audioMissingPois: number;
+  audioGenerableMissingPois: number;
+  audioReadyPois: number;
+}
+
+export interface OpenAiPoiTranslationCitySummary extends OpenAiPoiTranslationSummaryCounts {
+  cityId: string;
+  cityName: string | null;
+}
+
+export interface OpenAiPoiTranslationSummary extends OpenAiPoiTranslationSummaryCounts {
+  targetLanguage: OpenAiTranslationTargetLanguage;
+  cities: OpenAiPoiTranslationCitySummary[];
 }
 
 export interface OpenAiTranslatePoiInput {
@@ -251,6 +293,43 @@ export interface OpenAiTranslatePoiResponse {
   translation: PoiTranslationFields;
   usage: OpenAiTranslationUsage;
   skipped?: boolean;
+}
+
+export interface OpenAiGeneratePoiAudioResponse {
+  poi: DashboardCatalogPoi;
+  audioUrl: string;
+  skipped?: boolean;
+}
+
+export type PrivacyPolicyTranslations = Partial<Record<AppLanguage, string>>;
+
+export interface DashboardPrivacyPolicySettings {
+  translations: PrivacyPolicyTranslations;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface DashboardAppCacheSettings {
+  cacheVersion: string;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface PrivacyPolicySettingsInput {
+  translations: PrivacyPolicyTranslations;
+}
+
+export interface PrivacyPolicyTranslationInput {
+  sourceLanguage?: 'it';
+  targetLanguages?: OpenAiTranslationTargetLanguage[];
+  overwrite?: boolean;
+}
+
+export interface PrivacyPolicyTranslationResponse {
+  settings: DashboardPrivacyPolicySettings;
+  translatedLanguages: OpenAiTranslationTargetLanguage[];
+  skippedLanguages: OpenAiTranslationTargetLanguage[];
+  usage: OpenAiTranslationUsage;
 }
 
 export interface CatalogMediaTarget {
@@ -598,6 +677,18 @@ export class AdminAuthService {
     });
   }
 
+  deleteStructure(structureId: string): Observable<{ deleted: boolean; structureId: string }> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.delete<{ deleted: boolean; structureId: string }>(
+      `${environment.apiBaseUrl}/admin/structures/${encodeURIComponent(structureId)}`,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
   listCatalogCities(): Observable<DashboardCatalogCity[]> {
     const token = this.sessionSubject.value?.token;
     if (!token) {
@@ -717,6 +808,22 @@ export class AdminAuthService {
     );
   }
 
+  previewOpenAiTranslationVoice(payload: OpenAiVoicePreviewInput): Observable<Blob> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post(
+      `${environment.apiBaseUrl}/admin/openai-translations/audio-preview`,
+      payload,
+      {
+        headers: this.authHeaders(token),
+        responseType: 'blob'
+      }
+    );
+  }
+
   listOpenAiPoiTranslationStatus(
     cityId: string,
     targetLanguage: OpenAiTranslationTargetLanguage
@@ -733,6 +840,19 @@ export class AdminAuthService {
     );
   }
 
+  getOpenAiPoiTranslationSummary(targetLanguage: OpenAiTranslationTargetLanguage): Observable<OpenAiPoiTranslationSummary> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    const query = `?targetLanguage=${encodeURIComponent(targetLanguage)}`;
+    return this.http.get<OpenAiPoiTranslationSummary>(
+      `${environment.apiBaseUrl}/admin/openai-translations/status-summary${query}`,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
   translateCatalogPoiWithOpenAi(
     poiId: string,
     payload: OpenAiTranslatePoiInput
@@ -744,6 +864,22 @@ export class AdminAuthService {
 
     return this.http.post<OpenAiTranslatePoiResponse>(
       `${environment.apiBaseUrl}/admin/openai-translations/pois/${encodeURIComponent(poiId)}/translate`,
+      payload,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  generateCatalogPoiAudioWithOpenAi(
+    poiId: string,
+    payload: OpenAiTranslatePoiInput
+  ): Observable<OpenAiGeneratePoiAudioResponse> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<OpenAiGeneratePoiAudioResponse>(
+      `${environment.apiBaseUrl}/admin/openai-translations/pois/${encodeURIComponent(poiId)}/audio`,
       payload,
       { headers: this.authHeaders(token) }
     );
@@ -1027,6 +1163,65 @@ export class AdminAuthService {
     return this.http.put<DashboardPartnerEmailSettings>(`${environment.apiBaseUrl}/admin/partner-email-settings`, payload, {
       headers: this.authHeaders(token)
     });
+  }
+
+  getPrivacyPolicySettings(): Observable<DashboardPrivacyPolicySettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardPrivacyPolicySettings>(`${environment.apiBaseUrl}/admin/privacy-policy`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  updatePrivacyPolicySettings(payload: PrivacyPolicySettingsInput): Observable<DashboardPrivacyPolicySettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.put<DashboardPrivacyPolicySettings>(`${environment.apiBaseUrl}/admin/privacy-policy`, payload, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  translatePrivacyPolicy(payload: PrivacyPolicyTranslationInput): Observable<PrivacyPolicyTranslationResponse> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<PrivacyPolicyTranslationResponse>(
+      `${environment.apiBaseUrl}/admin/privacy-policy/translate`,
+      payload,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  getAppCacheSettings(): Observable<DashboardAppCacheSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardAppCacheSettings>(`${environment.apiBaseUrl}/admin/app-cache-settings`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  bumpAppCacheVersion(): Observable<DashboardAppCacheSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<DashboardAppCacheSettings>(
+      `${environment.apiBaseUrl}/admin/app-cache-settings/bump`,
+      {},
+      { headers: this.authHeaders(token) }
+    );
   }
 
   listPartnerRequests(): Observable<DashboardPartnerRequest[]> {

@@ -18,10 +18,10 @@ const SESSION_BY_TOKEN_QUERY = `
     ibs.name AS impersonated_by_structure_name,
     ib.email AS impersonated_by_email
   FROM dashboard_sessions s
-  JOIN dashboard_users u ON u.id = s.user_id
-  LEFT JOIN dashboard_structures us ON us.id = u.structure_id
-  LEFT JOIN dashboard_users ib ON ib.id = s.impersonated_by_user_id
-  LEFT JOIN dashboard_structures ibs ON ibs.id = ib.structure_id
+  JOIN dashboard_users u ON u.id = s.user_id AND u.deleted = 0
+  LEFT JOIN dashboard_structures us ON us.id = u.structure_id AND us.deleted = 0
+  LEFT JOIN dashboard_users ib ON ib.id = s.impersonated_by_user_id AND ib.deleted = 0
+  LEFT JOIN dashboard_structures ibs ON ibs.id = ib.structure_id AND ibs.deleted = 0
   WHERE s.token_hash = $1
     AND s.expires_at > NOW()
   LIMIT 1

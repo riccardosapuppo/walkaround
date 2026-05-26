@@ -52,14 +52,6 @@ function approximateTextWidth(value, fontSize) {
   return sanitizePdfText(value).length * fontSize * 0.52;
 }
 
-function formatEuro(value) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) {
-    return null;
-  }
-  return `EUR ${numericValue.toFixed(2)}`;
-}
-
 function formatDateTime(value) {
   if (!value) {
     return null;
@@ -131,6 +123,17 @@ function pushRectangle(commands, x, y, width, height, options = {}) {
   commands.push('Q');
 }
 
+function pushLine(commands, x1, y1, x2, y2, options = {}) {
+  const color = Array.isArray(options.color) ? options.color : [0, 0, 0];
+  const lineWidth = Number.isFinite(options.lineWidth) ? options.lineWidth : 1;
+
+  commands.push('q');
+  commands.push(`${color[0]} ${color[1]} ${color[2]} RG`);
+  commands.push(`${lineWidth} w`);
+  commands.push(`${x1} ${y1} m ${x2} ${y2} l S`);
+  commands.push('Q');
+}
+
 function pushText(commands, text, x, y, options = {}) {
   const font = options.font || 'F1';
   const fontSize = Number.isFinite(options.fontSize) ? options.fontSize : 12;
@@ -157,6 +160,20 @@ function pushText(commands, text, x, y, options = {}) {
   commands.push('ET');
 }
 
+function pushWrappedText(commands, text, x, y, maxChars, options = {}) {
+  const lineHeight = Number.isFinite(options.lineHeight) ? options.lineHeight : 13;
+  const maxLines = Number.isFinite(options.maxLines) ? options.maxLines : Infinity;
+  const lines = wrapPdfText(text, maxChars).slice(0, maxLines);
+  let currentY = y;
+
+  lines.forEach((line) => {
+    pushText(commands, line, x, currentY, options);
+    currentY -= lineHeight;
+  });
+
+  return currentY;
+}
+
 function buildAddressLine(data) {
   const parts = [];
   const firstLine = [data.addressStreet, data.addressNumber].filter(Boolean).join(' ');
@@ -172,6 +189,211 @@ function buildAddressLine(data) {
     parts.push(thirdLine);
   }
   return parts.join(' - ');
+}
+
+function formatDiscountPercentLabel(value) {
+  const numericValue = Number(value);
+  const safeValue = Number.isFinite(numericValue) && numericValue > 0 ? numericValue : 20;
+  const roundedValue = Number(safeValue.toFixed(2));
+  return `${roundedValue}%`;
+}
+
+function buildDiscountRows(cityNames, discountCode) {
+  const cities = cityNames.length ? cityNames : ['Tutte le citta'];
+  const rows = cities.map((cityName) => ({
+    cityName: sanitizePdfText(cityName).toUpperCase(),
+    discountCode
+  }));
+
+  if (rows.length <= 5) {
+    return rows;
+  }
+
+  return [
+    ...rows.slice(0, 4),
+    {
+      cityName: `ALTRE ${rows.length - 4} CITTA`,
+      discountCode
+    }
+  ];
+}
+
+function pushPromoPanel(commands, panel) {
+  const { x, y, width, height, languageLabel, title, paragraphs, discountText, footerText } = panel;
+  const darkBlue = [0.05, 0.19, 0.33];
+  const mutedBlue = [0.27, 0.36, 0.48];
+  const red = [0.88, 0.18, 0.18];
+  const badgeWidth = 132;
+  const badgeHeight = 34;
+  const badgeX = x + (width - badgeWidth) / 2;
+  const badgeY = y + height - 108;
+
+  pushRectangle(commands, x, y, width, height, {
+    fillColor: [1, 1, 1],
+    strokeColor: [0.83, 0.88, 0.93],
+    lineWidth: 1
+  });
+  pushRectangle(commands, x, y + height - 32, width, 32, { fillColor: [0.93, 0.96, 0.99] });
+  pushText(commands, languageLabel, x + 14, y + height - 21, {
+    font: 'F2',
+    fontSize: 8.5,
+    color: [0.38, 0.47, 0.59]
+  });
+  pushText(commands, title, x + width / 2, y + height - 58, {
+    font: 'F2',
+    fontSize: 14,
+    color: darkBlue,
+    align: 'center'
+  });
+
+  pushRectangle(commands, badgeX, badgeY, badgeWidth, badgeHeight, {
+    fillColor: red,
+    strokeColor: red,
+    lineWidth: 1
+  });
+  pushText(commands, discountText, x + width / 2, badgeY + 11, {
+    font: 'F2',
+    fontSize: 17,
+    color: [1, 1, 1],
+    align: 'center'
+  });
+
+  let textY = badgeY - 17;
+  paragraphs.forEach((paragraph) => {
+    textY = pushWrappedText(commands, paragraph, x + 18, textY, 36, {
+      font: 'F1',
+      fontSize: 8.8,
+      color: mutedBlue,
+      lineHeight: 10,
+      maxLines: 3
+    });
+    textY -= 2;
+  });
+
+  pushWrappedText(commands, footerText, x + 18, y + 14, 36, {
+    font: 'F1',
+    fontSize: 7.7,
+    color: mutedBlue,
+    lineHeight: 8.5,
+    maxLines: 2
+  });
+}
+
+function pushActivationStep(commands, x, y, width, number, lines) {
+  pushRectangle(commands, x, y, width, 70, {
+    fillColor: [1, 1, 1],
+    strokeColor: [0.82, 0.88, 0.93],
+    lineWidth: 1
+  });
+  pushRectangle(commands, x + 12, y + 43, 20, 20, {
+    fillColor: [0.07, 0.25, 0.43],
+    strokeColor: [0.07, 0.25, 0.43],
+    lineWidth: 1
+  });
+  pushText(commands, String(number), x + 22, y + 49, {
+    font: 'F2',
+    fontSize: 10,
+    color: [1, 1, 1],
+    align: 'center'
+  });
+
+  let textY = y + 51;
+  lines.forEach((line, index) => {
+    const fontSize = index === 0 ? 9.5 : 8.4;
+    pushWrappedText(commands, line, x + 40, textY, 17, {
+      font: index === 0 ? 'F2' : 'F1',
+      fontSize,
+      color: index === 0 ? [0.08, 0.22, 0.36] : [0.32, 0.4, 0.5],
+      lineHeight: fontSize + 2,
+      maxLines: index === 0 ? 2 : 1
+    });
+    textY -= index === 0 ? 26 : 12;
+  });
+}
+
+function pushQrPlaceholder(commands, x, y, size, title, subtitle) {
+  pushRectangle(commands, x, y, size, size, {
+    fillColor: [1, 1, 1],
+    strokeColor: [0.18, 0.27, 0.38],
+    lineWidth: 1.4
+  });
+  pushRectangle(commands, x + 8, y + 8, size - 16, size - 16, {
+    strokeColor: [0.78, 0.84, 0.9],
+    lineWidth: 1
+  });
+  pushText(commands, 'QR', x + size / 2, y + size / 2 + 3, {
+    font: 'F2',
+    fontSize: 18,
+    color: [0.18, 0.27, 0.38],
+    align: 'center'
+  });
+  pushText(commands, 'CODE', x + size / 2, y + size / 2 - 13, {
+    font: 'F2',
+    fontSize: 9,
+    color: [0.18, 0.27, 0.38],
+    align: 'center'
+  });
+
+  pushText(commands, title, x + size / 2, y - 16, {
+    font: 'F2',
+    fontSize: 8.5,
+    color: [0.08, 0.22, 0.36],
+    align: 'center'
+  });
+  pushText(commands, subtitle, x + size / 2, y - 28, {
+    font: 'F1',
+    fontSize: 7.5,
+    color: [0.39, 0.46, 0.56],
+    align: 'center'
+  });
+}
+
+function pushDiscountCodesTable(commands, x, y, width, rows) {
+  const headerHeight = 26;
+  const rowHeight = 20;
+  const height = headerHeight + rows.length * rowHeight;
+  const codeColumnWidth = 145;
+  const cityColumnWidth = width - codeColumnWidth;
+
+  pushRectangle(commands, x, y, width, height, {
+    fillColor: [1, 1, 1],
+    strokeColor: [0.78, 0.84, 0.9],
+    lineWidth: 1
+  });
+  pushRectangle(commands, x, y + height - headerHeight, width, headerHeight, {
+    fillColor: [0.06, 0.24, 0.42],
+    strokeColor: [0.06, 0.24, 0.42],
+    lineWidth: 1
+  });
+  pushText(commands, 'CODICI SCONTO / DISCOUNT CODES', x + width / 2, y + height - 17, {
+    font: 'F2',
+    fontSize: 11.5,
+    color: [1, 1, 1],
+    align: 'center'
+  });
+
+  rows.forEach((row, index) => {
+    const rowY = y + height - headerHeight - (index + 1) * rowHeight;
+    pushRectangle(commands, x, rowY, width, rowHeight, {
+      fillColor: index % 2 === 0 ? [0.97, 0.985, 1] : [1, 1, 1]
+    });
+    pushLine(commands, x, rowY, x + width, rowY, { color: [0.86, 0.9, 0.94], lineWidth: 0.7 });
+    pushLine(commands, x + cityColumnWidth, rowY, x + cityColumnWidth, rowY + rowHeight, {
+      color: [0.86, 0.9, 0.94],
+      lineWidth: 0.7
+    });
+    pushText(commands, row.cityName.slice(0, 30), x + 14, rowY + 7, {
+      font: 'F2',
+      fontSize: 9.5,
+      color: [0.13, 0.23, 0.34]
+    });
+    pushText(commands, row.discountCode, x + cityColumnWidth + codeColumnWidth / 2, rowY + 7, {
+      font: 'F2',
+      fontSize: 10.5,
+      color: [0.88, 0.18, 0.18],
+      align: 'center'
+    });
+  });
 }
 
 export function buildPartnerPromotionFileName(structureName, code) {
@@ -194,163 +416,146 @@ export function buildPartnerPromotionPdf(data) {
     : [];
   const validCitiesLabel = cityNames.length ? cityNames.join(', ') : 'Disponibile sui contenuti Walk Around associati';
   const expiryLabel = formatDateTime(data?.expiresAt);
-  const userDiscountLabel = Number(data?.userDiscountPercent) > 0 ? `${Number(data.userDiscountPercent).toFixed(2)}%` : null;
-  const structureValueLabel = Number(data?.structureFixedAmount) > 0 ? formatEuro(data.structureFixedAmount) : null;
-  const contactName = sanitizePdfText(data?.contactName || '');
+  const userDiscountLabel = formatDiscountPercentLabel(data?.userDiscountPercent);
   const website = sanitizePdfText(data?.website || '');
   const contactEmail = sanitizePdfText(data?.contactEmail || '');
   const contactPhone = sanitizePdfText(data?.contactPhone || '');
-  const footerLines = [
-    structureType ? `Tipologia: ${structureType}` : null,
-    addressLine ? `Indirizzo: ${addressLine}` : null,
-    website ? `Sito web: ${website}` : null,
-    contactPhone ? `Telefono: ${contactPhone}` : null,
-    contactEmail ? `Email: ${contactEmail}` : null
+  const discountRows = buildDiscountRows(cityNames, discountCode);
+  const partnerMeta = [
+    structureType ? `${structureName} - ${structureType}` : structureName,
+    expiryLabel ? `Valido fino al ${expiryLabel}` : null
   ].filter(Boolean);
-  const summaryLines = [
-    `Codice promozionale: ${discountCode}`,
-    `Valido per: ${validCitiesLabel}`,
-    expiryLabel ? `Scadenza: ${expiryLabel}` : null,
-    userDiscountLabel ? `Sconto turista: ${userDiscountLabel}` : null,
-    structureValueLabel ? `Valore struttura: ${structureValueLabel}` : null
+  const contactMeta = [
+    addressLine,
+    website,
+    contactPhone ? `Tel. ${contactPhone}` : null,
+    contactEmail
   ].filter(Boolean);
-  const stepsLines = [
-    '1. Scarica l app Walk Around.',
-    `2. Inserisci il codice ${discountCode} nella sezione dedicata.`,
-    '3. Sblocca il tour e ascolta le audioguide della città.'
-  ];
 
   const commands = [];
+  const darkBlue = [0.05, 0.19, 0.33];
+  const accentBlue = [0.06, 0.24, 0.42];
+  const red = [0.88, 0.18, 0.18];
 
-  pushRectangle(commands, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, { fillColor: [0.97, 0.985, 1] });
-  pushRectangle(commands, 0, PAGE_HEIGHT - 154, PAGE_WIDTH, 154, { fillColor: [0.11, 0.32, 0.63] });
-  pushRectangle(commands, 0, PAGE_HEIGHT - 166, PAGE_WIDTH, 12, { fillColor: [0.13, 0.53, 0.38] });
+  pushRectangle(commands, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, { fillColor: [0.985, 0.991, 1] });
+  pushRectangle(commands, 0, PAGE_HEIGHT - 92, PAGE_WIDTH, 92, { fillColor: accentBlue });
+  pushRectangle(commands, 0, PAGE_HEIGHT - 104, PAGE_WIDTH, 12, { fillColor: red });
 
-  pushText(commands, 'WALK AROUND PARTNER', PAGE_WIDTH / 2, PAGE_HEIGHT - 62, {
-    font: 'F2',
-    fontSize: 22,
-    color: [1, 1, 1],
-    align: 'center'
-  });
-  pushText(commands, structureName, PAGE_WIDTH / 2, PAGE_HEIGHT - 95, {
-    font: 'F2',
-    fontSize: 20,
-    color: [1, 1, 1],
-    align: 'center'
-  });
-  pushText(commands, 'Mostra questo flyer ai tuoi ospiti per attivare il codice.', PAGE_WIDTH / 2, PAGE_HEIGHT - 121, {
-    font: 'F1',
-    fontSize: 11,
-    color: [0.92, 0.96, 1],
-    align: 'center'
-  });
-
-  pushRectangle(commands, PAGE_MARGIN, PAGE_HEIGHT - 262, PAGE_WIDTH - PAGE_MARGIN * 2, 66, {
-    fillColor: [1, 1, 1],
-    strokeColor: [0.82, 0.88, 0.96],
-    lineWidth: 1.2
-  });
-  pushText(commands, 'Struttura partner approvata', PAGE_MARGIN + 16, PAGE_HEIGHT - 225, {
-    font: 'F2',
-    fontSize: 15,
-    color: [0.1, 0.23, 0.38]
-  });
-  pushText(commands, contactName ? `Referente: ${contactName}` : 'Referente registrato nella richiesta partner', PAGE_MARGIN + 16, PAGE_HEIGHT - 247, {
-    font: 'F1',
-    fontSize: 10.5,
-    color: [0.34, 0.42, 0.55]
-  });
-
-  pushRectangle(commands, PAGE_MARGIN, PAGE_HEIGHT - 410, PAGE_WIDTH - PAGE_MARGIN * 2, 116, {
-    fillColor: [0.94, 0.97, 1],
-    strokeColor: [0.7, 0.8, 0.93],
-    lineWidth: 1.6
-  });
-  pushText(commands, 'CODICE SCONTO', PAGE_WIDTH / 2, PAGE_HEIGHT - 340, {
-    font: 'F1',
-    fontSize: 11,
-    color: [0.25, 0.39, 0.56],
-    align: 'center'
-  });
-  pushText(commands, discountCode, PAGE_WIDTH / 2, PAGE_HEIGHT - 378, {
+  pushText(commands, 'WALK AROUND', PAGE_WIDTH / 2, PAGE_HEIGHT - 48, {
     font: 'F2',
     fontSize: 28,
-    color: [0.11, 0.32, 0.63],
+    color: [1, 1, 1],
+    align: 'center'
+  });
+  pushText(commands, 'Cammina.Ascolta.Esplora.', PAGE_WIDTH / 2, PAGE_HEIGHT - 70, {
+    font: 'F1',
+    fontSize: 10.5,
+    color: [0.9, 0.96, 1],
+    align: 'center'
+  });
+  pushText(commands, 'PROMO PARTNER', PAGE_WIDTH / 2, PAGE_HEIGHT - 98, {
+    font: 'F2',
+    fontSize: 10,
+    color: [1, 1, 1],
     align: 'center'
   });
 
-  pushRectangle(commands, PAGE_MARGIN, PAGE_HEIGHT - 646, 240, 196, {
-    fillColor: [1, 1, 1],
-    strokeColor: [0.84, 0.89, 0.96],
-    lineWidth: 1
-  });
-  pushRectangle(commands, PAGE_WIDTH - PAGE_MARGIN - 240, PAGE_HEIGHT - 646, 240, 196, {
-    fillColor: [1, 1, 1],
-    strokeColor: [0.84, 0.89, 0.96],
-    lineWidth: 1
-  });
-
-  pushText(commands, 'Dettagli promozione', PAGE_MARGIN + 16, PAGE_HEIGHT - 474, {
+  pushText(commands, structureName, PAGE_WIDTH / 2, 716, {
     font: 'F2',
-    fontSize: 13,
-    color: [0.1, 0.23, 0.38]
+    fontSize: 14,
+    color: darkBlue,
+    align: 'center'
   });
-  let detailY = PAGE_HEIGHT - 498;
-  summaryLines.forEach((line) => {
-    wrapPdfText(line, 33).forEach((wrappedLine) => {
-      pushText(commands, wrappedLine, PAGE_MARGIN + 16, detailY, {
-        font: 'F1',
-        fontSize: 10.5,
-        color: [0.31, 0.39, 0.51]
-      });
-      detailY -= 16;
-    });
+  pushWrappedText(commands, `Codice ${discountCode} valido per ${validCitiesLabel}`, PAGE_WIDTH / 2, 699, 74, {
+    font: 'F1',
+    fontSize: 9.5,
+    color: [0.35, 0.43, 0.53],
+    align: 'center',
+    lineHeight: 11,
+    maxLines: 2
   });
 
-  pushText(commands, 'Come usarlo', PAGE_WIDTH - PAGE_MARGIN - 224, PAGE_HEIGHT - 474, {
-    font: 'F2',
-    fontSize: 13,
-    color: [0.1, 0.23, 0.38]
+  pushPromoPanel(commands, {
+    x: PAGE_MARGIN,
+    y: 472,
+    width: 242,
+    height: 210,
+    languageLabel: 'ENGLISH',
+    title: 'Explore the city',
+    paragraphs: [
+      'Explore the city through stories, legends, and details that often escape the eye.',
+      'WALK AROUND offers an immersive and authentic experience directly from your smartphone.'
+    ],
+    discountText: `${userDiscountLabel} OFF`,
+    footerText: 'Thanks to this partner, the code unlocks the discount on all audio guide packages in the app.'
   });
-  let stepsY = PAGE_HEIGHT - 498;
-  stepsLines.forEach((line) => {
-    wrapPdfText(line, 35).forEach((wrappedLine) => {
-      pushText(commands, wrappedLine, PAGE_WIDTH - PAGE_MARGIN - 224, stepsY, {
-        font: 'F1',
-        fontSize: 10.5,
-        color: [0.31, 0.39, 0.51]
-      });
-      stepsY -= 16;
-    });
+  pushPromoPanel(commands, {
+    x: PAGE_WIDTH - PAGE_MARGIN - 242,
+    y: 472,
+    width: 242,
+    height: 210,
+    languageLabel: 'ITALIANO',
+    title: 'Esplora la citta',
+    paragraphs: [
+      'Esplora la citta attraverso racconti, leggende e dettagli che spesso sfuggono allo sguardo.',
+      'WALK AROUND ti offre un esperienza coinvolgente e autentica direttamente dal tuo smartphone.'
+    ],
+    discountText: `${userDiscountLabel} OFF`,
+    footerText: 'Grazie a questa struttura hai diritto allo sconto su tutti i pacchetti di audioguide nell app.'
   });
 
-  pushRectangle(commands, PAGE_MARGIN, 54, PAGE_WIDTH - PAGE_MARGIN * 2, 88, {
-    fillColor: [0.96, 0.98, 1],
-    strokeColor: [0.85, 0.9, 0.97],
+  pushRectangle(commands, PAGE_MARGIN, 366, PAGE_WIDTH - PAGE_MARGIN * 2, 96, {
+    fillColor: [0.94, 0.97, 1],
+    strokeColor: [0.77, 0.84, 0.91],
     lineWidth: 1
   });
-  pushText(commands, 'Riferimenti struttura', PAGE_MARGIN + 16, 118, {
+  pushText(commands, 'COME ATTIVARE / HOW TO USE', PAGE_WIDTH / 2, 438, {
     font: 'F2',
     fontSize: 12,
-    color: [0.1, 0.23, 0.38]
+    color: darkBlue,
+    align: 'center'
+  });
+  pushActivationStep(commands, PAGE_MARGIN + 14, 377, 150, 1, ['SCARICA L APP', 'DOWNLOAD THE APP']);
+  pushActivationStep(commands, PAGE_MARGIN + 179, 377, 150, 2, ['INSERISCI IL CODICE', discountCode]);
+  pushActivationStep(commands, PAGE_MARGIN + 344, 377, 150, 3, ['SBLOCCA LA CITTA', 'START EXPLORING']);
+
+  pushText(commands, 'Inquadra il QR oppure cerca Walk Around sullo store.', PAGE_WIDTH / 2, 340, {
+    font: 'F1',
+    fontSize: 9.2,
+    color: [0.35, 0.43, 0.53],
+    align: 'center'
   });
 
-  let footerY = 96;
-  footerLines.forEach((line) => {
-    wrapPdfText(line, 70).forEach((wrappedLine) => {
-      pushText(commands, wrappedLine, PAGE_MARGIN + 16, footerY, {
-        font: 'F1',
-        fontSize: 9.5,
-        color: [0.35, 0.44, 0.57]
-      });
-      footerY -= 14;
+  pushQrPlaceholder(commands, 154, 249, 62, 'QR APP', 'Download app');
+  pushQrPlaceholder(commands, 380, 249, 62, 'QR CODE', 'Codice sconto');
+
+  pushDiscountCodesTable(commands, 90, 89, 415, discountRows);
+
+  let footerY = 57;
+  partnerMeta.forEach((line) => {
+    pushWrappedText(commands, line, PAGE_MARGIN, footerY, 72, {
+      font: 'F1',
+      fontSize: 7.8,
+      color: [0.39, 0.46, 0.56],
+      lineHeight: 9,
+      maxLines: 1
     });
+    footerY -= 9;
   });
 
-  pushText(commands, 'www.walkaround.it', PAGE_WIDTH - PAGE_MARGIN, 34, {
+  if (contactMeta.length) {
+    pushWrappedText(commands, contactMeta.join(' | '), PAGE_MARGIN, 24, 85, {
+      font: 'F1',
+      fontSize: 7.3,
+      color: [0.5, 0.56, 0.64],
+      lineHeight: 8,
+      maxLines: 1
+    });
+  }
+  pushText(commands, 'WALK AROUND', PAGE_WIDTH - PAGE_MARGIN, 24, {
     font: 'F2',
-    fontSize: 10,
-    color: [0.12, 0.32, 0.63],
+    fontSize: 8.4,
+    color: accentBlue,
     align: 'right'
   });
 
