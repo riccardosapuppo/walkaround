@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "git": "node scripts/git-quick.js"
+    "git": "node scripts/git-quick.js",
+    "deploy:prod": "node scripts/deploy-production.js"
   }
 }

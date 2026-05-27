@@ -215,6 +215,7 @@ export interface CatalogPoiInput {
 }
 
 export type OpenAiTranslationTargetLanguage = 'en' | 'fr' | 'es' | 'de' | 'pl';
+export type OpenAiAudioTargetLanguage = 'it' | OpenAiTranslationTargetLanguage;
 
 export interface OpenAiTranslationSettings {
   hasApiKey: boolean;
@@ -254,7 +255,7 @@ export interface OpenAiPoiTranslationStatus {
   cityId: string;
   cityName: string | null;
   name: string;
-  targetLanguage: OpenAiTranslationTargetLanguage;
+  targetLanguage: OpenAiAudioTargetLanguage;
   isComplete: boolean;
   textComplete?: boolean;
   hasAudio?: boolean;
@@ -278,13 +279,19 @@ export interface OpenAiPoiTranslationCitySummary extends OpenAiPoiTranslationSum
 }
 
 export interface OpenAiPoiTranslationSummary extends OpenAiPoiTranslationSummaryCounts {
-  targetLanguage: OpenAiTranslationTargetLanguage;
+  targetLanguage: OpenAiAudioTargetLanguage;
   cities: OpenAiPoiTranslationCitySummary[];
 }
 
 export interface OpenAiTranslatePoiInput {
   cityId?: string;
   targetLanguage: OpenAiTranslationTargetLanguage;
+  overwrite?: boolean;
+}
+
+export interface OpenAiGeneratePoiAudioInput {
+  cityId?: string;
+  targetLanguage: OpenAiAudioTargetLanguage;
   overwrite?: boolean;
 }
 
@@ -841,7 +848,7 @@ export class AdminAuthService {
 
   listOpenAiPoiTranslationStatus(
     cityId: string,
-    targetLanguage: OpenAiTranslationTargetLanguage
+    targetLanguage: OpenAiAudioTargetLanguage
   ): Observable<OpenAiPoiTranslationStatus[]> {
     const token = this.sessionSubject.value?.token;
     if (!token) {
@@ -855,7 +862,7 @@ export class AdminAuthService {
     );
   }
 
-  getOpenAiPoiTranslationSummary(targetLanguage: OpenAiTranslationTargetLanguage): Observable<OpenAiPoiTranslationSummary> {
+  getOpenAiPoiTranslationSummary(targetLanguage: OpenAiAudioTargetLanguage): Observable<OpenAiPoiTranslationSummary> {
     const token = this.sessionSubject.value?.token;
     if (!token) {
       return throwError(() => new Error('Sessione dashboard non valida'));
@@ -886,7 +893,7 @@ export class AdminAuthService {
 
   generateCatalogPoiAudioWithOpenAi(
     poiId: string,
-    payload: OpenAiTranslatePoiInput
+    payload: OpenAiGeneratePoiAudioInput
   ): Observable<OpenAiGeneratePoiAudioResponse> {
     const token = this.sessionSubject.value?.token;
     if (!token) {

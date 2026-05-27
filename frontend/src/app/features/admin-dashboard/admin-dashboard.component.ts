@@ -30,6 +30,7 @@ import {
   StructureAssociatedUserRow,
   DashboardUserRow,
   InviteResponse,
+  OpenAiAudioTargetLanguage,
   OpenAiGeneratePoiAudioResponse,
   OpenAiPoiTranslationSummary,
   OpenAiPoiTranslationStatus,
@@ -53,8 +54,10 @@ type DashboardSection =
   | 'catalog';
 type CatalogTab = 'cities' | 'pois';
 type GlobalSettingsTab = 'privacyPolicy' | 'appCache';
+type GptTranslationsTab = 'texts' | 'audio' | 'settings';
 type PoiMapPickerTarget = 'create' | 'edit';
 type ContentEditorLanguage = 'en' | 'fr' | 'es' | 'de' | 'pl';
+type AudioEditorLanguage = OpenAiAudioTargetLanguage;
 type PrivacyPolicyLanguage = 'it' | ContentEditorLanguage;
 type PoiMapSearchResult = {
   displayName: string;
@@ -136,6 +139,10 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     { code: 'de', label: 'Tedesco' },
     { code: 'pl', label: 'Polacco' }
   ];
+  readonly audioLanguages: ReadonlyArray<{ code: AudioEditorLanguage; label: string }> = [
+    { code: 'it', label: 'Italiano' },
+    ...this.contentLanguages
+  ];
   readonly ttsVoiceOptions: ReadonlyArray<{ value: string; label: string }> = [
     { value: 'alloy', label: 'Alloy' },
     { value: 'ash', label: 'Ash' },
@@ -195,6 +202,11 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     { id: 'privacyPolicy', label: 'Privacy policy' },
     { id: 'appCache', label: 'Cache e aggiornamenti' }
   ];
+  readonly gptTranslationsTabs: Array<{ id: GptTranslationsTab; label: string }> = [
+    { id: 'texts', label: 'Testi tradotti' },
+    { id: 'audio', label: 'Audio guide' },
+    { id: 'settings', label: 'Impostazioni' }
+  ];
 
   authChecked = false;
   isAuthenticated = false;
@@ -207,6 +219,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   editingStructureId: string | null = null;
   catalogTab: CatalogTab = 'cities';
   activeGlobalSettingsTab: GlobalSettingsTab = 'privacyPolicy';
+  activeGptTranslationsTab: GptTranslationsTab = 'texts';
 
   loggingIn = false;
   showLoginPassword = false;
@@ -347,6 +360,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   private gptTranslationRunToken = 0;
   private confirmedGptTranslationLanguage: ContentEditorLanguage = 'en';
   private confirmedGptTranslationOverwrite = false;
+  private confirmedGptAudioLanguage: AudioEditorLanguage = 'it';
+  private confirmedGptAudioOverwrite = false;
   private openAiVoicePreviewAudio: HTMLAudioElement | null = null;
   private openAiVoicePreviewUrl: string | null = null;
   private openAiVoicePreviewRequestToken = 0;
@@ -490,6 +505,13 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   readonly gptTranslationForm = this.formBuilder.nonNullable.group({
     cityId: ['', [Validators.required]],
     targetLanguage: ['en' as ContentEditorLanguage, [Validators.required]],
+    poiId: [''],
+    overwrite: [false]
+  });
+
+  readonly gptAudioForm = this.formBuilder.nonNullable.group({
+    cityId: ['', [Validators.required]],
+    targetLanguage: ['it' as AudioEditorLanguage, [Validators.required]],
     poiId: [''],
     overwrite: [false]
   });
@@ -780,8 +802,29 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return this.contentLanguages.find((language) => language.code === selected)?.label || selected.toUpperCase();
   }
 
+  get selectedGptAudioLanguageLabel(): string {
+    const selected = this.gptAudioForm.controls.targetLanguage.value;
+    return this.audioLanguages.find((language) => language.code === selected)?.label || selected.toUpperCase();
+  }
+
+  get selectedGptStatusLanguage(): AudioEditorLanguage {
+    return this.activeGptTranslationsTab === 'audio'
+      ? this.gptAudioForm.controls.targetLanguage.value
+      : this.gptTranslationForm.controls.targetLanguage.value;
+  }
+
+  get selectedGptStatusLanguageLabel(): string {
+    return this.activeGptTranslationsTab === 'audio' ? this.selectedGptAudioLanguageLabel : this.selectedGptTranslationLanguageLabel;
+  }
+
+  get selectedGptStatusCityId(): string {
+    return this.activeGptTranslationsTab === 'audio'
+      ? this.gptAudioForm.controls.cityId.value || this.selectedCatalogCityId
+      : this.gptTranslationForm.controls.cityId.value || this.selectedCatalogCityId;
+  }
+
   get selectedGptTranslationCityLabel(): string {
-    const cityId = this.gptTranslationForm.controls.cityId.value || this.selectedCatalogCityId;
+    const cityId = this.selectedGptStatusCityId;
     return this.catalogCities.find((city) => city.id === cityId)?.name || 'nessuna citta selezionata';
   }
 
@@ -848,7 +891,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   get selectedGptTranslationPoi(): DashboardCatalogPoi | null {
-    const selectedPoiId = this.gptTranslationForm.controls.poiId.value || this.selectedGptTranslationPoiId;
+    const selectedPoiId =
+      (this.activeGptTranslationsTab === 'audio' ? this.gptAudioForm.controls.poiId.value : this.gptTranslationForm.controls.poiId.value) ||
+      this.selectedGptTranslationPoiId;
     if (!selectedPoiId) {
       return null;
     }
@@ -857,7 +902,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   get selectedGptTranslationPoiTargetFields(): PoiTranslationFields {
     const poi = this.selectedGptTranslationPoi;
-    const language = this.gptTranslationForm.controls.targetLanguage.value;
+    const language = this.selectedGptStatusLanguage;
+    if (poi && language === 'it') {
+      return {
+        descriptionShort: poi.descriptionShort,
+        descriptionLong: poi.descriptionLong,
+        audioUrl: poi.audioUrl
+      };
+    }
     return poi?.translations?.[language] || {};
   }
 
@@ -872,6 +924,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   get canTranslateSelectedGptPoi(): boolean {
     return (
       this.canManageGptTranslations &&
+      this.activeGptTranslationsTab === 'texts' &&
       Boolean(this.openAiTranslationSettings?.hasApiKey) &&
       Boolean(this.selectedGptTranslationPoi) &&
       !this.loadingCatalogPois &&
@@ -890,6 +943,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   get canTranslateMissingGptPois(): boolean {
     return (
       this.canManageGptTranslations &&
+      this.activeGptTranslationsTab === 'texts' &&
       Boolean(this.openAiTranslationSettings?.hasApiKey) &&
       Boolean(this.gptTranslationForm.controls.cityId.value) &&
       this.gptTranslationMissingCount > 0 &&
@@ -905,10 +959,11 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   get canGenerateSelectedGptPoiAudio(): boolean {
     return (
       this.canManageGptTranslations &&
+      this.activeGptTranslationsTab === 'audio' &&
       Boolean(this.openAiTranslationSettings?.hasApiKey) &&
       Boolean(this.selectedGptTranslationPoi) &&
       this.selectedGptTranslationPoiHasText &&
-      (!this.selectedGptTranslationPoiAudioUrl || this.gptTranslationForm.controls.overwrite.value) &&
+      (!this.selectedGptTranslationPoiAudioUrl || this.gptAudioForm.controls.overwrite.value) &&
       !this.loadingCatalogPois &&
       !this.loadingOpenAiTranslationStatus &&
       !this.bulkTranslatingPois &&
@@ -919,7 +974,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   get gptAudioRowsToGenerate(): OpenAiPoiTranslationStatus[] {
-    const overwrite = this.gptTranslationForm.controls.overwrite.value;
+    const overwrite = this.gptAudioForm.controls.overwrite.value;
     return this.openAiTranslationStatusRows.filter((row) => {
       return this.isPoiTranslationTextReady(row.translation) && (overwrite || !row.hasAudio);
     });
@@ -932,11 +987,43 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   get canGenerateMissingGptPoiAudios(): boolean {
     return (
       this.canManageGptTranslations &&
+      this.activeGptTranslationsTab === 'audio' &&
       Boolean(this.openAiTranslationSettings?.hasApiKey) &&
-      Boolean(this.gptTranslationForm.controls.cityId.value) &&
+      Boolean(this.gptAudioForm.controls.cityId.value) &&
       this.gptAudioRowsToGenerate.length > 0 &&
       !this.loadingOpenAiTranslationStatus &&
       !this.loadingCatalogPois &&
+      !this.bulkTranslatingPois &&
+      !this.bulkGeneratingPoiAudios &&
+      !this.translatingPoiId &&
+      !this.generatingPoiAudioId
+    );
+  }
+
+  get canGenerateCatalogGptPoiAudios(): boolean {
+    const availableCount = this.gptAudioForm.controls.overwrite.value ? this.gptGlobalTotalPoisCount : this.gptGlobalAudioGenerableMissingCount;
+    return (
+      this.canManageGptTranslations &&
+      this.activeGptTranslationsTab === 'audio' &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      this.catalogCities.length > 0 &&
+      availableCount > 0 &&
+      !this.loadingOpenAiTranslationSummary &&
+      !this.loadingCatalogCities &&
+      !this.bulkTranslatingPois &&
+      !this.bulkGeneratingPoiAudios &&
+      !this.translatingPoiId &&
+      !this.generatingPoiAudioId
+    );
+  }
+
+  get canGenerateAllGptPoiAudios(): boolean {
+    return (
+      this.canManageGptTranslations &&
+      this.activeGptTranslationsTab === 'audio' &&
+      Boolean(this.openAiTranslationSettings?.hasApiKey) &&
+      this.catalogCities.length > 0 &&
+      !this.loadingCatalogCities &&
       !this.bulkTranslatingPois &&
       !this.bulkGeneratingPoiAudios &&
       !this.translatingPoiId &&
@@ -2464,7 +2551,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return;
     }
 
-    const cityId = this.ensureGptTranslationCitySelection();
+    const cityId = this.ensureActiveGptCitySelection();
     if (cityId) {
       this.loadCatalogPois(cityId);
       this.loadOpenAiTranslationStatus();
@@ -2575,8 +2662,36 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       });
   }
 
+  async selectGptTranslationsTab(tab: GptTranslationsTab): Promise<void> {
+    if (tab === this.activeGptTranslationsTab) {
+      return;
+    }
+    if (!(await this.confirmGptTranslationContextChange())) {
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
+    this.activeGptTranslationsTab = tab;
+    this.selectedGptTranslationPoiId = '';
+    this.openAiTranslationStatusRows = [];
+    this.resetGptTranslationProgress();
+    this.resetGptAudioProgress();
+
+    if (tab === 'settings') {
+      this.loadOpenAiTranslationSettings();
+      return;
+    }
+
+    const cityId = this.ensureActiveGptCitySelection();
+    if (cityId) {
+      this.loadCatalogPois(cityId);
+    }
+    this.loadOpenAiTranslationSummary();
+    this.loadOpenAiTranslationStatus();
+  }
+
   async onGptTranslationCityChanged(cityId: string): Promise<void> {
-    const previousCityId = this.selectedCatalogCityId || this.gptTranslationForm.controls.cityId.value;
+    const previousCityId = this.gptTranslationForm.controls.cityId.value || this.selectedCatalogCityId;
     if (!(await this.confirmGptTranslationContextChange())) {
       this.gptTranslationForm.controls.cityId.setValue(previousCityId, { emitEvent: false });
       return;
@@ -2587,6 +2702,29 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.gptTranslationForm.controls.poiId.setValue('', { emitEvent: false });
     this.selectedGptTranslationPoiId = '';
     this.resetGptTranslationProgress();
+    this.resetGptAudioProgress();
+
+    if (!cityId) {
+      this.openAiTranslationStatusRows = [];
+      this.catalogPois = [];
+      return;
+    }
+
+    this.onCatalogCityFilterChange(cityId, { force: true });
+    this.loadOpenAiTranslationStatus();
+  }
+
+  async onGptAudioCityChanged(cityId: string): Promise<void> {
+    const previousCityId = this.gptAudioForm.controls.cityId.value || this.selectedCatalogCityId;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptAudioForm.controls.cityId.setValue(previousCityId, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
+    this.gptAudioForm.controls.cityId.setValue(cityId, { emitEvent: false });
+    this.gptAudioForm.controls.poiId.setValue('', { emitEvent: false });
+    this.selectedGptTranslationPoiId = '';
     this.resetGptAudioProgress();
 
     if (!cityId) {
@@ -2615,6 +2753,21 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.loadOpenAiTranslationStatus();
   }
 
+  async onGptAudioLanguageChanged(language: AudioEditorLanguage): Promise<void> {
+    const previousLanguage = this.confirmedGptAudioLanguage;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptAudioForm.controls.targetLanguage.setValue(previousLanguage, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
+    this.confirmedGptAudioLanguage = language;
+    this.gptAudioForm.controls.targetLanguage.setValue(language, { emitEvent: false });
+    this.resetGptAudioProgress();
+    this.loadOpenAiTranslationSummary();
+    this.loadOpenAiTranslationStatus();
+  }
+
   async onGptTranslationPoiChanged(poiId: string): Promise<void> {
     const previousPoiId = this.selectedGptTranslationPoiId || this.gptTranslationForm.controls.poiId.value;
     if (!(await this.confirmGptTranslationContextChange())) {
@@ -2625,6 +2778,18 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
     this.selectedGptTranslationPoiId = poiId;
     this.gptTranslationForm.controls.poiId.setValue(poiId, { emitEvent: false });
+  }
+
+  async onGptAudioPoiChanged(poiId: string): Promise<void> {
+    const previousPoiId = this.selectedGptTranslationPoiId || this.gptAudioForm.controls.poiId.value;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptAudioForm.controls.poiId.setValue(previousPoiId, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
+    this.selectedGptTranslationPoiId = poiId;
+    this.gptAudioForm.controls.poiId.setValue(poiId, { emitEvent: false });
   }
 
   async onGptTranslationOverwriteChanged(overwrite: boolean): Promise<void> {
@@ -2640,13 +2805,26 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.resetGptAudioProgress();
   }
 
+  async onGptAudioOverwriteChanged(overwrite: boolean): Promise<void> {
+    const previousOverwrite = this.confirmedGptAudioOverwrite;
+    if (!(await this.confirmGptTranslationContextChange())) {
+      this.gptAudioForm.controls.overwrite.setValue(previousOverwrite, { emitEvent: false });
+      return;
+    }
+    this.cancelActiveGptTranslationForContextChange();
+
+    this.confirmedGptAudioOverwrite = overwrite;
+    this.gptAudioForm.controls.overwrite.setValue(overwrite, { emitEvent: false });
+    this.resetGptAudioProgress();
+  }
+
   loadOpenAiTranslationStatus(): void {
     if (!this.canManageGptTranslations) {
       return;
     }
 
-    const cityId = this.gptTranslationForm.controls.cityId.value || this.ensureGptTranslationCitySelection();
-    const targetLanguage = this.gptTranslationForm.controls.targetLanguage.value;
+    const cityId = this.ensureActiveGptCitySelection();
+    const targetLanguage = this.selectedGptStatusLanguage;
     if (!cityId || !targetLanguage) {
       this.openAiTranslationStatusRows = [];
       return;
@@ -2679,7 +2857,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return;
     }
 
-    const targetLanguage = this.gptTranslationForm.controls.targetLanguage.value;
+    const targetLanguage = this.selectedGptStatusLanguage;
     if (!targetLanguage) {
       this.openAiTranslationSummary = null;
       return;
@@ -2816,9 +2994,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.generatingPoiAudioId = poi.id;
     this.auth
       .generateCatalogPoiAudioWithOpenAi(poi.id, {
-        cityId: this.gptTranslationForm.controls.cityId.value,
-        targetLanguage: this.gptTranslationForm.controls.targetLanguage.value,
-        overwrite: this.gptTranslationForm.controls.overwrite.value
+        cityId: this.gptAudioForm.controls.cityId.value,
+        targetLanguage: this.gptAudioForm.controls.targetLanguage.value,
+        overwrite: this.gptAudioForm.controls.overwrite.value
       })
       .subscribe({
         next: (response) => {
@@ -2848,9 +3026,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return;
     }
 
-    const cityId = this.gptTranslationForm.controls.cityId.value;
-    const targetLanguage = this.gptTranslationForm.controls.targetLanguage.value;
-    const overwrite = this.gptTranslationForm.controls.overwrite.value;
+    const cityId = this.gptAudioForm.controls.cityId.value;
+    const targetLanguage = this.gptAudioForm.controls.targetLanguage.value;
+    const overwrite = this.gptAudioForm.controls.overwrite.value;
     const rowsToGenerate = this.gptAudioRowsToGenerate;
     if (!cityId || !rowsToGenerate.length) {
       return;
@@ -2898,6 +3076,159 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.loadOpenAiTranslationStatus();
     this.loadOpenAiTranslationSummary();
     this.snackBar.open('Generazione audio terminata', 'OK', { duration: 2600 });
+  }
+
+  async generateMissingGptPoiAudiosForCatalog(): Promise<void> {
+    if (!this.canGenerateCatalogGptPoiAudios) {
+      return;
+    }
+
+    const targetLanguage = this.gptAudioForm.controls.targetLanguage.value;
+    const overwrite = this.gptAudioForm.controls.overwrite.value;
+    const runToken = ++this.gptTranslationRunToken;
+    this.bulkGeneratingPoiAudios = true;
+    this.resetGptAudioProgress();
+    this.gptAudioLog = [];
+
+    const jobs: Array<{ cityId: string; row: OpenAiPoiTranslationStatus }> = [];
+    for (const city of this.catalogCities) {
+      if (runToken !== this.gptTranslationRunToken) {
+        return;
+      }
+      try {
+        const rows = await firstValueFrom(this.auth.listOpenAiPoiTranslationStatus(city.id, targetLanguage));
+        rows
+          .filter((row) => this.isPoiTranslationTextReady(row.translation) && (overwrite || !row.hasAudio))
+          .forEach((row) => jobs.push({ cityId: city.id, row }));
+      } catch (error) {
+        const message = this.dashboardErrorMessage(error, 'Impossibile leggere lo stato audio del catalogo');
+        this.bulkGeneratingPoiAudios = false;
+        this.snackBar.open(message, 'Chiudi', { duration: 4500 });
+        return;
+      }
+    }
+
+    if (!jobs.length) {
+      this.bulkGeneratingPoiAudios = false;
+      this.snackBar.open('Nessun audio generabile per la lingua selezionata', 'OK', { duration: 3000 });
+      return;
+    }
+
+    this.resetGptAudioProgress(jobs.length);
+    for (const job of jobs) {
+      if (runToken !== this.gptTranslationRunToken) {
+        return;
+      }
+      this.generatingPoiAudioId = job.row.poiId;
+      try {
+        const response = await firstValueFrom(
+          this.auth.generateCatalogPoiAudioWithOpenAi(job.row.poiId, {
+            cityId: job.cityId,
+            targetLanguage,
+            overwrite
+          })
+        );
+        if (runToken !== this.gptTranslationRunToken) {
+          return;
+        }
+        this.applyOpenAiAudioResponse(response);
+        this.gptAudioProgressDone += 1;
+        this.gptAudioLog = [`${job.row.name}: ${response.skipped ? 'audio gia presente' : 'audio generato'}`, ...this.gptAudioLog].slice(0, 8);
+      } catch (error) {
+        const message = this.dashboardErrorMessage(error, 'Generazione audio catalogo interrotta');
+        this.gptAudioLog = [`${job.row.name}: ${message}`, ...this.gptAudioLog].slice(0, 8);
+        this.snackBar.open(message, 'Chiudi', { duration: 4500 });
+        break;
+      }
+    }
+
+    if (runToken !== this.gptTranslationRunToken) {
+      return;
+    }
+    this.bulkGeneratingPoiAudios = false;
+    this.generatingPoiAudioId = null;
+    this.loadOpenAiTranslationStatus();
+    this.loadOpenAiTranslationSummary();
+    this.snackBar.open('Generazione audio catalogo terminata', 'OK', { duration: 2800 });
+  }
+
+  async generateAllMissingGptPoiAudios(): Promise<void> {
+    if (!this.canGenerateAllGptPoiAudios) {
+      return;
+    }
+
+    const overwrite = this.gptAudioForm.controls.overwrite.value;
+    const runToken = ++this.gptTranslationRunToken;
+    this.bulkGeneratingPoiAudios = true;
+    this.resetGptAudioProgress();
+    this.gptAudioLog = [];
+
+    const jobs: Array<{ cityId: string; language: AudioEditorLanguage; row: OpenAiPoiTranslationStatus }> = [];
+    for (const language of this.audioLanguages.map((item) => item.code)) {
+      for (const city of this.catalogCities) {
+        if (runToken !== this.gptTranslationRunToken) {
+          return;
+        }
+        try {
+          const rows = await firstValueFrom(this.auth.listOpenAiPoiTranslationStatus(city.id, language));
+          rows
+            .filter((row) => this.isPoiTranslationTextReady(row.translation) && (overwrite || !row.hasAudio))
+            .forEach((row) => jobs.push({ cityId: city.id, language, row }));
+        } catch (error) {
+          const message = this.dashboardErrorMessage(error, 'Impossibile leggere lo stato audio completo');
+          this.bulkGeneratingPoiAudios = false;
+          this.snackBar.open(message, 'Chiudi', { duration: 4500 });
+          return;
+        }
+      }
+    }
+
+    if (!jobs.length) {
+      this.bulkGeneratingPoiAudios = false;
+      this.snackBar.open('Nessun audio generabile nel catalogo', 'OK', { duration: 3000 });
+      return;
+    }
+
+    this.resetGptAudioProgress(jobs.length);
+    for (const job of jobs) {
+      if (runToken !== this.gptTranslationRunToken) {
+        return;
+      }
+      this.generatingPoiAudioId = job.row.poiId;
+      try {
+        const response = await firstValueFrom(
+          this.auth.generateCatalogPoiAudioWithOpenAi(job.row.poiId, {
+            cityId: job.cityId,
+            targetLanguage: job.language,
+            overwrite
+          })
+        );
+        if (runToken !== this.gptTranslationRunToken) {
+          return;
+        }
+        this.applyOpenAiAudioResponse(response);
+        this.gptAudioProgressDone += 1;
+        const languageLabel = this.audioLanguages.find((item) => item.code === job.language)?.label || job.language.toUpperCase();
+        this.gptAudioLog = [
+          `${job.row.name} (${languageLabel}): ${response.skipped ? 'audio gia presente' : 'audio generato'}`,
+          ...this.gptAudioLog
+        ].slice(0, 8);
+      } catch (error) {
+        const message = this.dashboardErrorMessage(error, 'Generazione audio completa interrotta');
+        this.gptAudioLog = [`${job.row.name}: ${message}`, ...this.gptAudioLog].slice(0, 8);
+        this.snackBar.open(message, 'Chiudi', { duration: 4500 });
+        break;
+      }
+    }
+
+    if (runToken !== this.gptTranslationRunToken) {
+      return;
+    }
+    this.bulkGeneratingPoiAudios = false;
+    this.generatingPoiAudioId = null;
+    this.loadOpenAiTranslationStatus();
+    this.loadOpenAiTranslationSummary();
+    this.snackBar.open('Generazione audio completa terminata', 'OK', { duration: 2800 });
   }
 
   gptMissingFieldsLabel(fields: string[] | null | undefined): string {
@@ -3405,7 +3736,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
           this.loadCatalogPois(this.selectedCatalogCityId, { force: true });
         }
         if (this.activeSection === 'gptTranslations') {
-          this.ensureGptTranslationCitySelection();
+          this.ensureActiveGptCitySelection();
           this.loadOpenAiTranslationStatus();
         }
       },
@@ -4239,6 +4570,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.privacyPolicySelectedLanguage = 'it';
       this.privacyPolicyTranslateOverwrite = false;
       this.activeGlobalSettingsTab = 'privacyPolicy';
+      this.activeGptTranslationsTab = 'texts';
       this.privacyPolicyTranslationUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
       this.privacyPolicyTranslationLog = [];
       this.selectedGptTranslationPoiId = '';
@@ -4258,6 +4590,10 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.catalogPoisRequestToken = 0;
       this.openAiTranslationStatusRequestToken = 0;
       this.openAiTranslationSummaryRequestToken = 0;
+      this.confirmedGptTranslationLanguage = 'en';
+      this.confirmedGptTranslationOverwrite = false;
+      this.confirmedGptAudioLanguage = 'it';
+      this.confirmedGptAudioOverwrite = false;
       this.catalogTab = 'cities';
       this.editingCatalogCityId = null;
       this.editingCatalogPoiId = null;
@@ -4440,6 +4776,12 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.gptTranslationForm.reset({
         cityId: '',
         targetLanguage: 'en',
+        poiId: '',
+        overwrite: false
+      });
+      this.gptAudioForm.reset({
+        cityId: '',
+        targetLanguage: 'it',
         poiId: '',
         overwrite: false
       });
@@ -5070,12 +5412,25 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   private ensureGptTranslationCitySelection(): string {
+    return this.ensureGptCitySelection('texts');
+  }
+
+  private ensureGptAudioCitySelection(): string {
+    return this.ensureGptCitySelection('audio');
+  }
+
+  private ensureActiveGptCitySelection(): string {
+    return this.activeGptTranslationsTab === 'audio' ? this.ensureGptAudioCitySelection() : this.ensureGptTranslationCitySelection();
+  }
+
+  private ensureGptCitySelection(tab: 'texts' | 'audio'): string {
+    const form = tab === 'audio' ? this.gptAudioForm : this.gptTranslationForm;
     if (!this.catalogCities.length) {
-      this.gptTranslationForm.controls.cityId.setValue('', { emitEvent: false });
+      form.controls.cityId.setValue('', { emitEvent: false });
       return '';
     }
 
-    const currentCityId = this.gptTranslationForm.controls.cityId.value;
+    const currentCityId = form.controls.cityId.value;
     const currentIsValid = Boolean(currentCityId && this.catalogCities.some((city) => city.id === currentCityId));
     const selectedCatalogCityIsValid = Boolean(
       this.selectedCatalogCityId && this.catalogCities.some((city) => city.id === this.selectedCatalogCityId)
@@ -5087,7 +5442,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       : this.catalogCities[0]?.id || '';
 
     if (nextCityId !== currentCityId) {
-      this.gptTranslationForm.controls.cityId.setValue(nextCityId, { emitEvent: false });
+      form.controls.cityId.setValue(nextCityId, { emitEvent: false });
     }
     if (nextCityId && this.selectedCatalogCityId !== nextCityId) {
       this.selectedCatalogCityId = nextCityId;
@@ -5097,7 +5452,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   private ensureSelectedGptTranslationPoi(): void {
-    const selectedPoiId = this.gptTranslationForm.controls.poiId.value;
+    const form = this.activeGptTranslationsTab === 'audio' ? this.gptAudioForm : this.gptTranslationForm;
+    const selectedPoiId = form.controls.poiId.value;
     const selectedStillExists = Boolean(selectedPoiId && this.openAiTranslationStatusRows.some((row) => row.poiId === selectedPoiId));
     if (selectedStillExists) {
       this.selectedGptTranslationPoiId = selectedPoiId;
@@ -5107,7 +5463,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     const firstMissing = this.openAiTranslationStatusRows.find((row) => !row.isComplete);
     const nextPoiId = firstMissing?.poiId || this.openAiTranslationStatusRows[0]?.poiId || '';
     this.selectedGptTranslationPoiId = nextPoiId;
-    this.gptTranslationForm.controls.poiId.setValue(nextPoiId, { emitEvent: false });
+    form.controls.poiId.setValue(nextPoiId, { emitEvent: false });
   }
 
   private resetGptTranslationProgress(total = 0): void {

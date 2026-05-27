@@ -185,6 +185,7 @@ const paypalSettingsSchema = z.object({
 });
 
 const openAiTranslationTargetLanguageSchema = z.enum(['en', 'fr', 'es', 'de', 'pl']);
+const openAiAudioTargetLanguageSchema = z.enum(['it', 'en', 'fr', 'es', 'de', 'pl']);
 const openAiTtsVoiceSchema = z.enum(['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer', 'verse', 'marin', 'cedar']);
 const openAiTranslationSettingsSchema = z.object({
   apiKey: z.string().trim().max(500).optional().default(''),
@@ -203,7 +204,7 @@ const openAiAudioPreviewSchema = z.object({
   )
 });
 const openAiTranslationStatusQuerySchema = z.object({
-  targetLanguage: openAiTranslationTargetLanguageSchema
+  targetLanguage: openAiAudioTargetLanguageSchema
 });
 const openAiPoiTranslationSchema = z.object({
   cityId: z.string().trim().min(1, 'Città obbligatoria').optional(),
@@ -212,7 +213,7 @@ const openAiPoiTranslationSchema = z.object({
 });
 const openAiPoiAudioGenerationSchema = z.object({
   cityId: z.string().trim().min(1, 'CittÃ  obbligatoria').optional(),
-  targetLanguage: openAiTranslationTargetLanguageSchema,
+  targetLanguage: openAiAudioTargetLanguageSchema,
   overwrite: z.boolean().optional().default(false)
 });
 
@@ -1025,7 +1026,14 @@ function maskOpenAiApiKey(value) {
 
 function buildPoiTranslationStatus(row, targetLanguage) {
   const translations = sanitizeCatalogPoiTranslations(row?.translations);
-  const translation = translations[targetLanguage] || {};
+  const translation =
+    targetLanguage === 'it'
+      ? {
+          descriptionShort: sanitizeCatalogText(row?.description_short),
+          descriptionLong: sanitizeCatalogText(row?.description_long),
+          audioUrl: String(row?.audio_url || '').trim()
+        }
+      : translations[targetLanguage] || {};
   const missingFields = ['descriptionShort', 'descriptionLong'].filter((field) => {
     return !String(translation?.[field] || '').trim();
   });
@@ -1078,6 +1086,8 @@ function buildPoiTranslationSummary(rows, targetLanguage) {
     summary.totalPois += 1;
     citySummary.totalPois += 1;
 
+    const canGenerateAudio = Boolean(buildTranslatedPoiSpeechInput(status.translation));
+
     if (status.hasAudio) {
       summary.audioReadyPois += 1;
       citySummary.audioReadyPois += 1;
@@ -1086,13 +1096,14 @@ function buildPoiTranslationSummary(rows, targetLanguage) {
       citySummary.audioMissingPois += 1;
     }
 
+    if (!status.hasAudio && canGenerateAudio) {
+      summary.audioGenerableMissingPois += 1;
+      citySummary.audioGenerableMissingPois += 1;
+    }
+
     if (status.isComplete) {
       summary.textCompletePois += 1;
       citySummary.textCompletePois += 1;
-      if (!status.hasAudio) {
-        summary.audioGenerableMissingPois += 1;
-        citySummary.audioGenerableMissingPois += 1;
-      }
     } else {
       summary.textMissingPois += 1;
       citySummary.textMissingPois += 1;
@@ -3871,6 +3882,9 @@ router.get('/openai-translations/status-summary', requireAuth, requireAdmin, asy
           p.city_id,
           c.name AS city_name,
           p.name,
+          p.description_short,
+          p.description_long,
+          p.audio_url,
           p.translations
         FROM pois p
         JOIN cities c ON c.id = p.city_id
@@ -3908,6 +3922,9 @@ router.get('/openai-translations/cities/:cityId/status', requireAuth, requireAdm
           p.city_id,
           c.name AS city_name,
           p.name,
+          p.description_short,
+          p.description_long,
+          p.audio_url,
           p.translations
         FROM pois p
         JOIN cities c ON c.id = p.city_id
@@ -4019,9 +4036,16 @@ router.post('/openai-translations/pois/:poiId/audio', requireAuth, requireAdmin,
       return res.status(400).json({ message: 'Il POI non appartiene alla cittÃ  selezionata' });
     }
 
+    const isItalianAudio = payload.targetLanguage === 'it';
     const translations = sanitizeCatalogPoiTranslations(poi.translations);
-    const translation = translations[payload.targetLanguage] || {};
-    const existingAudioUrl = String(translation.audioUrl || '').trim();
+    const translation = isItalianAudio
+      ? {
+          descriptionShort: sanitizeCatalogText(poi.description_short),
+          descriptionLong: sanitizeCatalogText(poi.description_long),
+          audioUrl: String(poi.audio_url || '').trim()
+        }
+      : translations[payload.targetLanguage] || {};
+    const existingAudioUrl = String(isItalianAudio ? poi.audio_url : translation.audioUrl || '').trim();
     if (existingAudioUrl && !payload.overwrite) {
       return res.json({
         poi: mapCatalogPoiRow(poi),
@@ -4032,7 +4056,9 @@ router.post('/openai-translations/pois/:poiId/audio', requireAuth, requireAdmin,
 
     const speechInput = buildTranslatedPoiSpeechInput(translation);
     if (!speechInput) {
-      return res.status(400).json({ message: 'Genera prima il testo tradotto per questa lingua.' });
+      return res.status(400).json({
+        message: isItalianAudio ? 'Inserisci prima la descrizione italiana del POI.' : 'Genera prima il testo tradotto per questa lingua.'
+      });
     }
 
     const settings = await getOpenAiTranslationSettings();
@@ -4055,16 +4081,25 @@ router.post('/openai-translations/pois/:poiId/audio', requireAuth, requireAdmin,
     }
 
     const latestPoi = (await fetchPoiById(poiId)) || poi;
-    const mergedTranslations = mergePoiTranslationFields(latestPoi.translations, payload.targetLanguage, { audioUrl }, { overwrite: true });
+    const mergedTranslations = isItalianAudio
+      ? null
+      : mergePoiTranslationFields(latestPoi.translations, payload.targetLanguage, { audioUrl }, { overwrite: true });
 
     const updated = await pool.query(
-      `
-        UPDATE pois
-        SET translations = $1::jsonb
-        WHERE id = $2
-        RETURNING id
-      `,
-      [JSON.stringify(mergedTranslations), poiId]
+      isItalianAudio
+        ? `
+          UPDATE pois
+          SET audio_url = $1
+          WHERE id = $2
+          RETURNING id
+        `
+        : `
+          UPDATE pois
+          SET translations = $1::jsonb
+          WHERE id = $2
+          RETURNING id
+        `,
+      isItalianAudio ? [audioUrl, poiId] : [JSON.stringify(mergedTranslations), poiId]
     );
     if (!updated.rowCount) {
       return res.status(404).json({ message: 'POI non trovato' });

@@ -10,6 +10,8 @@ modifiche da fare/
 
 # Env
 backend/.env
+.env.deploy
+.env.deploy.local
 connections.txt
 comandi utili.txt
 

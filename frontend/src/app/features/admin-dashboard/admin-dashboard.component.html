@@ -1217,15 +1217,35 @@
       </ng-container>
 
       <ng-container *ngIf="canManageGptTranslations && activeSection === 'gptTranslations'">
-        <section class="gpt-stats-section">
+        <mat-card class="card table-card gpt-nav-card">
+          <div class="table-head">
+            <div>
+              <h2>Traduzioni GPT e audio</h2>
+              <p class="table-subtitle">Gestisci separatamente testi tradotti, MP3 delle audioguide e impostazioni OpenAI.</p>
+            </div>
+          </div>
+          <div class="catalog-tabs gpt-tabs" role="tablist" aria-label="Sezioni GPT">
+            <button
+              type="button"
+              class="catalog-tab"
+              *ngFor="let tab of gptTranslationsTabs"
+              [class.active]="activeGptTranslationsTab === tab.id"
+              (click)="selectGptTranslationsTab(tab.id)"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </mat-card>
+
+        <section class="gpt-stats-section" *ngIf="activeGptTranslationsTab !== 'settings'">
           <div class="gpt-stats-title">
             <div>
-              <h2>Citta selezionata</h2>
-              <p>{{ selectedGptTranslationCityLabel }} - {{ selectedGptTranslationLanguageLabel }}</p>
+              <h2>Città selezionata: {{ selectedGptTranslationCityLabel }}</h2>
+              <p>{{ activeGptTranslationsTab === 'texts' ? 'Testi tradotti' : 'Audio guide' }} - {{ selectedGptStatusLanguageLabel }}</p>
             </div>
           </div>
           <div class="stats-grid">
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'texts'">
               <span>Da tradurre</span>
               <strong *ngIf="!loadingOpenAiTranslationStatus; else gptMissingLoading">{{ gptTranslationMissingCount }}</strong>
               <ng-template #gptMissingLoading>
@@ -1234,7 +1254,7 @@
                 </div>
               </ng-template>
             </mat-card>
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'texts'">
               <span>Completi</span>
               <strong *ngIf="!loadingOpenAiTranslationStatus; else gptCompleteLoading">{{ gptTranslationCompleteCount }}</strong>
               <ng-template #gptCompleteLoading>
@@ -1243,7 +1263,7 @@
                 </div>
               </ng-template>
             </mat-card>
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'audio'">
               <span>Audio mancanti</span>
               <strong *ngIf="!loadingOpenAiTranslationStatus; else gptAudioMissingLoading">{{ gptAudioMissingCount }}</strong>
               <small *ngIf="!loadingOpenAiTranslationStatus">{{ gptAudioGenerableMissingCount }} generabili</small>
@@ -1253,7 +1273,7 @@
                 </div>
               </ng-template>
             </mat-card>
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'audio'">
               <span>Audio pronti</span>
               <strong *ngIf="!loadingOpenAiTranslationStatus; else gptAudioReadyLoading">{{ gptAudioReadyCount }}</strong>
               <ng-template #gptAudioReadyLoading>
@@ -1265,11 +1285,11 @@
           </div>
         </section>
 
-        <section class="gpt-stats-section global">
+        <section class="gpt-stats-section global" *ngIf="activeGptTranslationsTab !== 'settings'">
           <div class="gpt-stats-title">
             <div>
               <h2>Totale catalogo</h2>
-              <p>Tutte le citta - {{ selectedGptTranslationLanguageLabel }}</p>
+              <p>Tutte le città - {{ selectedGptStatusLanguageLabel }}</p>
             </div>
           </div>
           <div class="stats-grid global-stats-grid">
@@ -1282,7 +1302,7 @@
                 </div>
               </ng-template>
             </mat-card>
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'texts'">
               <span>Da tradurre</span>
               <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalMissingLoading">{{ gptGlobalTranslationMissingCount }}</strong>
               <ng-template #gptGlobalMissingLoading>
@@ -1291,7 +1311,7 @@
                 </div>
               </ng-template>
             </mat-card>
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'texts'">
               <span>Completi</span>
               <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalCompleteLoading">{{ gptGlobalTranslationCompleteCount }}</strong>
               <ng-template #gptGlobalCompleteLoading>
@@ -1300,7 +1320,7 @@
                 </div>
               </ng-template>
             </mat-card>
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'audio'">
               <span>Audio mancanti</span>
               <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalAudioMissingLoading">{{ gptGlobalAudioMissingCount }}</strong>
               <small *ngIf="!loadingOpenAiTranslationSummary">{{ gptGlobalAudioGenerableMissingCount }} generabili</small>
@@ -1310,7 +1330,7 @@
                 </div>
               </ng-template>
             </mat-card>
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" *ngIf="activeGptTranslationsTab === 'audio'">
               <span>Audio pronti</span>
               <strong *ngIf="!loadingOpenAiTranslationSummary; else gptGlobalAudioReadyLoading">{{ gptGlobalAudioReadyCount }}</strong>
               <ng-template #gptGlobalAudioReadyLoading>
@@ -1322,7 +1342,7 @@
           </div>
         </section>
 
-        <mat-card class="card table-card">
+        <mat-card class="card table-card" *ngIf="activeGptTranslationsTab === 'settings'">
           <div class="table-head">
             <div>
               <h2>Configurazione OpenAI</h2>
@@ -1396,14 +1416,21 @@
           </form>
         </mat-card>
 
-        <mat-card class="card table-card">
+        <mat-card class="card table-card" *ngIf="activeGptTranslationsTab !== 'settings'">
           <div class="table-head">
             <div>
-              <h2>Traduzioni luoghi di interesse</h2>
-              <p class="table-subtitle">Seleziona una città e traduci un singolo punto oppure tutti quelli incompleti.</p>
+              <h2>{{ activeGptTranslationsTab === 'texts' ? 'Traduzioni testi' : 'Generazione audio guide' }}</h2>
+              <p class="table-subtitle">
+                {{
+                  activeGptTranslationsTab === 'texts'
+                    ? 'Seleziona una città e traduci un singolo punto oppure tutti quelli incompleti.'
+                    : 'Ambiti: città selezionata, catalogo nella lingua selezionata, catalogo in tutte le lingue audio.'
+                }}
+              </p>
             </div>
             <div class="table-actions">
               <button
+                *ngIf="activeGptTranslationsTab === 'texts'"
                 mat-flat-button
                 color="primary"
                 type="button"
@@ -1414,14 +1441,40 @@
                 {{ bulkTranslatingPois ? 'Traduco...' : 'Traduci testi mancanti' }}
               </button>
               <button
+                *ngIf="activeGptTranslationsTab === 'audio'"
                 mat-stroked-button
                 color="primary"
+                class="gpt-audio-action-button"
                 type="button"
                 (click)="generateMissingGptPoiAudiosForCity()"
                 [disabled]="!canGenerateMissingGptPoiAudios"
               >
                 <mat-icon fontSet="material-icons-round">graphic_eq</mat-icon>
-                {{ bulkGeneratingPoiAudios ? 'Genero audio...' : gptTranslationForm.controls.overwrite.value ? 'Rigenera audio città' : 'Genera audio mancanti' }}
+                {{ bulkGeneratingPoiAudios ? 'Genero audio...' : gptAudioForm.controls.overwrite.value ? 'Rigenera: città selezionata' : 'Mancanti: città selezionata' }}
+              </button>
+              <button
+                *ngIf="activeGptTranslationsTab === 'audio'"
+                mat-stroked-button
+                color="primary"
+                class="gpt-audio-action-button"
+                type="button"
+                (click)="generateMissingGptPoiAudiosForCatalog()"
+                [disabled]="!canGenerateCatalogGptPoiAudios"
+              >
+                <mat-icon fontSet="material-icons-round">library_music</mat-icon>
+                {{ gptAudioForm.controls.overwrite.value ? 'Rigenera: intero catalogo ' + selectedGptAudioLanguageLabel : 'Mancanti: intero catalogo ' + selectedGptAudioLanguageLabel }}
+              </button>
+              <button
+                *ngIf="activeGptTranslationsTab === 'audio'"
+                mat-flat-button
+                color="primary"
+                class="gpt-audio-action-button"
+                type="button"
+                (click)="generateAllMissingGptPoiAudios()"
+                [disabled]="!canGenerateAllGptPoiAudios"
+              >
+                <mat-icon fontSet="material-icons-round">auto_awesome</mat-icon>
+                {{ gptAudioForm.controls.overwrite.value ? 'Rigenera: intero catalogo tutte lingue' : 'Mancanti: intero catalogo tutte lingue' }}
               </button>
             </div>
           </div>
@@ -1430,7 +1483,7 @@
             Salva una API key OpenAI prima di avviare le traduzioni.
           </p>
 
-          <form class="gpt-controls-grid" [formGroup]="gptTranslationForm">
+          <form class="gpt-controls-grid" [formGroup]="gptTranslationForm" *ngIf="activeGptTranslationsTab === 'texts'">
             <mat-form-field appearance="outline">
               <mat-label>Città</mat-label>
               <mat-select formControlName="cityId" (selectionChange)="onGptTranslationCityChanged($event.value)">
@@ -1456,11 +1509,41 @@
             </mat-form-field>
 
             <mat-slide-toggle formControlName="overwrite" (change)="onGptTranslationOverwriteChanged($event.checked)">
-              Sovrascrivi testi/audio esistenti
+              Sovrascrivi testi esistenti
             </mat-slide-toggle>
           </form>
 
-          <div class="gpt-progress-panel" *ngIf="gptTranslationProgressTotal">
+          <form class="gpt-controls-grid" [formGroup]="gptAudioForm" *ngIf="activeGptTranslationsTab === 'audio'">
+            <mat-form-field appearance="outline">
+              <mat-label>Città</mat-label>
+              <mat-select formControlName="cityId" (selectionChange)="onGptAudioCityChanged($event.value)">
+                <mat-option *ngFor="let city of catalogCities" [value]="city.id">{{ city.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Lingua audio</mat-label>
+              <mat-select formControlName="targetLanguage" (selectionChange)="onGptAudioLanguageChanged($event.value)">
+                <mat-option *ngFor="let language of audioLanguages" [value]="language.code">{{ language.label }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Luogo singolo</mat-label>
+              <mat-select formControlName="poiId" (selectionChange)="onGptAudioPoiChanged($event.value)">
+                <mat-option value="">Seleziona un luogo</mat-option>
+                <mat-option *ngFor="let poi of catalogPois; trackBy: trackByCatalogPoiId" [value]="poi.id">
+                  {{ poi.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-slide-toggle formControlName="overwrite" (change)="onGptAudioOverwriteChanged($event.checked)">
+              Rigenera anche gli audio già presenti
+            </mat-slide-toggle>
+          </form>
+
+          <div class="gpt-progress-panel" *ngIf="activeGptTranslationsTab === 'texts' && gptTranslationProgressTotal">
             <div class="gpt-progress-head">
               <strong>{{ gptTranslationProgressDone }} / {{ gptTranslationProgressTotal }}</strong>
               <span>{{ gptTranslationProgressPercent }}%</span>
@@ -1478,7 +1561,7 @@
             </div>
           </div>
 
-          <div class="gpt-progress-panel gpt-audio-progress-panel" *ngIf="gptAudioProgressTotal">
+          <div class="gpt-progress-panel gpt-audio-progress-panel" *ngIf="activeGptTranslationsTab === 'audio' && gptAudioProgressTotal">
             <div class="gpt-progress-head">
               <strong>Audio {{ gptAudioProgressDone }} / {{ gptAudioProgressTotal }}</strong>
               <span>{{ gptAudioProgressPercent }}%</span>
@@ -1496,21 +1579,21 @@
           </div>
 
           <div class="gpt-preview-grid" *ngIf="selectedGptTranslationPoi as poi">
-            <section class="translation-card">
-              <h3>Italiano</h3>
+            <section class="translation-card" *ngIf="!(activeGptTranslationsTab === 'audio' && gptAudioForm.controls.targetLanguage.value === 'it')">
+              <h3>Italiano base</h3>
               <strong>{{ poi.name }}</strong>
               <p>{{ poi.descriptionShort }}</p>
               <p>{{ poi.descriptionLong }}</p>
             </section>
 
             <section class="translation-card">
-              <h3>{{ selectedGptTranslationLanguageLabel }}</h3>
+              <h3>{{ selectedGptStatusLanguageLabel }}</h3>
               <strong>{{ poi.name }}</strong>
               <p>{{ selectedGptTranslationPoiTargetFields.descriptionShort || 'Descrizione breve mancante' }}</p>
               <p>{{ selectedGptTranslationPoiTargetFields.descriptionLong || 'Descrizione lunga mancante' }}</p>
-              <div class="gpt-audio-preview">
+              <div class="gpt-audio-preview" *ngIf="activeGptTranslationsTab === 'audio'">
                 <div class="gpt-audio-preview-head">
-                  <span>Audio tradotto</span>
+                  <span>Audio {{ selectedGptAudioLanguageLabel }}</span>
                   <strong>{{ selectedGptTranslationPoiAudioUrl ? 'Pronto' : selectedGptTranslationPoiHasText ? 'Da generare' : 'Testo richiesto' }}</strong>
                 </div>
                 <div class="audio-file-pill" *ngIf="selectedGptTranslationPoiAudioUrl; else selectedGptAudioEmpty">
@@ -1520,13 +1603,14 @@
                 <ng-template #selectedGptAudioEmpty>
                   <div class="audio-file-pill muted">
                     <span class="audio-file-label">MP3</span>
-                    <strong>{{ selectedGptTranslationPoiHasText ? 'Audio non ancora generato' : 'Genera prima il testo tradotto' }}</strong>
+                    <strong>{{ selectedGptTranslationPoiHasText ? 'Audio non ancora generato' : 'Testo non disponibile' }}</strong>
                   </div>
                 </ng-template>
                 <audio *ngIf="selectedGptTranslationPoiAudioUrl" class="media-player" controls [src]="selectedGptTranslationPoiAudioUrl"></audio>
               </div>
               <div class="gpt-preview-actions">
                 <button
+                  *ngIf="activeGptTranslationsTab === 'texts'"
                   mat-flat-button
                   color="primary"
                   type="button"
@@ -1537,6 +1621,7 @@
                   {{ translatingPoiId === poi.id ? 'Traduco...' : 'Traduci testo' }}
                 </button>
                 <button
+                  *ngIf="activeGptTranslationsTab === 'audio'"
                   mat-stroked-button
                   color="primary"
                   type="button"
@@ -1555,14 +1640,14 @@
               <thead>
                 <tr>
                   <th>Luogo</th>
-                  <th>Stato</th>
-                  <th>Audio</th>
+                  <th>{{ activeGptTranslationsTab === 'texts' ? 'Stato testo' : 'Testo sorgente' }}</th>
+                  <th *ngIf="activeGptTranslationsTab === 'audio'">Audio</th>
                   <th>Campi mancanti</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngIf="!loadingOpenAiTranslationStatus && !openAiTranslationStatusRows.length">
-                  <td colspan="4" class="empty-cell">Nessun luogo disponibile per la città selezionata.</td>
+                  <td [attr.colspan]="activeGptTranslationsTab === 'audio' ? 4 : 3" class="empty-cell">Nessun luogo disponibile per la città selezionata.</td>
                 </tr>
                 <tr *ngFor="let row of openAiTranslationStatusRows">
                   <td>
@@ -1574,7 +1659,7 @@
                       {{ row.isComplete ? 'Completa' : 'Incompleta' }}
                     </span>
                   </td>
-                  <td>
+                  <td *ngIf="activeGptTranslationsTab === 'audio'">
                     <span class="association-status" [class.association-status-active]="row.hasAudio" [class.association-status-used]="!row.hasAudio && row.isComplete" [class.association-status-invalid]="!row.isComplete">
                       {{ row.hasAudio ? 'Audio pronto' : row.isComplete ? 'Audio mancante' : 'Testo mancante' }}
                     </span>

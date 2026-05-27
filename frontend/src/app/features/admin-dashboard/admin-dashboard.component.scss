@@ -119,6 +119,16 @@
   gap: 14px;
 }
 
+.gpt-nav-card {
+  display: grid;
+  gap: 10px;
+}
+
+.gpt-tabs {
+  margin-bottom: 0;
+  width: fit-content;
+}
+
 .gpt-voice-preview-actions {
   min-height: 56px;
   display: flex;
@@ -307,6 +317,18 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.table-actions .gpt-audio-action-button {
+  min-height: 44px;
+  height: auto;
+  padding: 10px 16px;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.table-actions .gpt-audio-action-button mat-icon {
+  flex: 0 0 auto;
 }
 
 .global-settings-nav-card {
