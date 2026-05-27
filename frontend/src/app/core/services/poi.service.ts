@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of, shareReplay, tap } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { City } from '../models/city.model';
 import { Poi } from '../models/poi.model';
@@ -8,17 +8,12 @@ import { Poi } from '../models/poi.model';
 @Injectable({ providedIn: 'root' })
 export class PoiService {
   private readonly citiesUrl = `${environment.apiBaseUrl}/cities`;
-  private citiesRequest$?: Observable<City[]>;
   private poisByCityCache = new Map<string, Poi[]>();
 
   constructor(private readonly http: HttpClient) {}
 
   getCities(): Observable<City[]> {
-    if (!this.citiesRequest$) {
-      this.citiesRequest$ = this.http.get<City[]>(this.citiesUrl).pipe(shareReplay(1));
-    }
-
-    return this.citiesRequest$;
+    return this.http.get<City[]>(this.citiesUrl);
   }
 
   getPoisByCity(cityId: string, forceRefresh = false): Observable<Poi[]> {

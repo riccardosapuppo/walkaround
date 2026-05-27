@@ -53,7 +53,7 @@
 
   <div class="city-unlock-wrap" *ngIf="!isCityBundleUnlocked(activeCityId)">
     <button mat-flat-button color="primary" class="big-cta city-unlock-btn" (click)="purchaseCity(activeCityId)">
-      {{ 'home.unlockCity' | t:{ city: currentCityName(), price: i18n.formatCurrency(cityUnlockPrice) } }}
+      {{ 'home.unlockCity' | t:{ city: currentCityName(), price: i18n.formatCurrency(cityBundlePrice(activeCityId)) } }}
     </button>
   </div>
 

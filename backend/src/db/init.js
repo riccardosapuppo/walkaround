@@ -198,6 +198,7 @@ async function createSchema(client) {
       notes TEXT,
       status TEXT NOT NULL DEFAULT 'pending',
       pdf_release_status TEXT NOT NULL DEFAULT 'pending',
+      deleted SMALLINT NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
@@ -546,6 +547,18 @@ async function createSchema(client) {
   await client.query(`
     ALTER TABLE partner_registration_requests
     ADD COLUMN IF NOT EXISTS approval_email_sent_at TIMESTAMPTZ;
+  `);
+  await client.query(`
+    ALTER TABLE partner_registration_requests
+    ADD COLUMN IF NOT EXISTS deleted SMALLINT;
+  `);
+  await client.query(`UPDATE partner_registration_requests SET deleted = 0 WHERE deleted IS NULL;`);
+  await client.query(`ALTER TABLE partner_registration_requests ALTER COLUMN deleted SET DEFAULT 0;`);
+  await client.query(`ALTER TABLE partner_registration_requests ALTER COLUMN deleted SET NOT NULL;`);
+  await client.query(`ALTER TABLE partner_registration_requests DROP CONSTRAINT IF EXISTS partner_registration_requests_deleted_check;`);
+  await client.query(`
+    ALTER TABLE partner_registration_requests
+    ADD CONSTRAINT partner_registration_requests_deleted_check CHECK (deleted IN (0, 1));
   `);
   await client.query(`
     INSERT INTO dashboard_structure_discount_codes (
@@ -1229,6 +1242,7 @@ async function createSchema(client) {
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_users_deleted ON dashboard_users(deleted);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_structures_created_at ON dashboard_structures(created_at);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_structures_deleted ON dashboard_structures(deleted);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_partner_registration_requests_deleted ON partner_registration_requests(deleted);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_user_structure_links_structure_id ON app_user_structure_links(structure_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_user_structure_links_discount_code_id ON app_user_structure_links(discount_code_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_app_user_discount_code_uses_user_id ON app_user_discount_code_uses(user_id);`);
@@ -1266,7 +1280,6 @@ async function seedCities(client) {
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name,
           region = EXCLUDED.region,
-          bundle_price = EXCLUDED.bundle_price,
           hero_image = EXCLUDED.hero_image,
           is_default = EXCLUDED.is_default
       `,
@@ -1319,7 +1332,6 @@ async function seedPois(client) {
           description_long = EXCLUDED.description_long,
           image_url = EXCLUDED.image_url,
           audio_url = EXCLUDED.audio_url,
-          price_single = EXCLUDED.price_single,
           duration_sec = EXCLUDED.duration_sec
       `,
       [

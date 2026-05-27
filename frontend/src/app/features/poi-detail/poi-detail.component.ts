@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { City } from '../../core/models/city.model';
 import { Poi } from '../../core/models/poi.model';
 import { AppStateService } from '../../core/services/app-state.service';
 import { CartService } from '../../core/services/cart.service';
@@ -14,6 +15,7 @@ import { PurchaseService } from '../../core/services/purchase.service';
 import { formatCityLabel } from '../../core/utils/city-label.util';
 
 const descriptionPreviewLength = 260;
+const defaultCityUnlockPrice = 15;
 
 @Component({
   standalone: false,
@@ -30,7 +32,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   loadError = false;
   descriptionExpanded = false;
   previewLimitReached = false;
-  readonly cityUnlockPrice = 15;
+  cities: City[] = [];
   readonly previewSeconds = environment.previewSeconds;
 
   private readonly destroy$ = new Subject<void>();
@@ -50,6 +52,17 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.purchaseService.refresh();
+    this.poiService
+      .getCities()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cities) => {
+          this.cities = Array.isArray(cities) ? cities : [];
+        },
+        error: () => {
+          this.cities = [];
+        }
+      });
 
     this.route.paramMap
       .pipe(
@@ -155,7 +168,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.purchaseService.purchaseCityBundle(this.poi.cityId, this.cityName(this.poi.cityId), this.cityUnlockPrice).subscribe({
+    this.purchaseService.purchaseCityBundle(this.poi.cityId, this.cityName(this.poi.cityId), this.cityBundlePrice(this.poi.cityId)).subscribe({
       next: (result) => {
         if (result?.action === 'paid') {
           this.unlocked = true;
@@ -177,7 +190,14 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   }
 
   cityName(cityId: string): string {
-    return formatCityLabel(cityId, [], this.i18n.language);
+    return formatCityLabel(cityId, this.cities, this.i18n.language);
+  }
+
+  cityBundlePrice(cityId: string): number {
+    const normalizedCityId = String(cityId || '').trim().toLowerCase();
+    const city = this.cities.find((item) => String(item.id || '').trim().toLowerCase() === normalizedCityId);
+    const price = Number(city?.bundlePrice);
+    return Number.isFinite(price) && price >= 0 ? price : defaultCityUnlockPrice;
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {

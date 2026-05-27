@@ -18,6 +18,7 @@ import {
   type Marker
 } from 'leaflet';
 import { environment } from '../../../environments/environment';
+import { City } from '../../core/models/city.model';
 import { Poi } from '../../core/models/poi.model';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { CartService } from '../../core/services/cart.service';
@@ -56,6 +57,7 @@ const ARRIVAL_THRESHOLD_METERS = 35;
 const ROUTE_REFRESH_MIN_INTERVAL_MS = 12_000;
 const ROUTE_RECALC_MIN_MOVEMENT_METERS = 18;
 const MIN_NAV_DURATION_SEC = 30;
+const defaultCityUnlockPrice = 15;
 
 @Component({
   standalone: false,
@@ -64,7 +66,6 @@ const MIN_NAV_DURATION_SEC = 30;
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit, OnDestroy {
-  readonly cityUnlockPrice = 15;
   readonly mapOptions = {
     layers: [
       tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -93,6 +94,7 @@ export class MapComponent implements OnInit, OnDestroy {
   navigationProvider: 'osrm' | 'fallback' | null = null;
   isRouting = false;
   activeCityId = 'catania';
+  cities: City[] = [];
   associatedStructure: HotelAssociation | null = null;
   associatedStructureCoords: Coordinates | null = null;
   resolvingAssociatedStructure = false;
@@ -163,6 +165,17 @@ export class MapComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.purchaseService.refresh();
     void this.geoService.requestPermissionAndTrack();
+    this.poiService
+      .getCities()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (cities) => {
+          this.cities = Array.isArray(cities) ? cities : [];
+        },
+        error: () => {
+          this.cities = [];
+        }
+      });
 
     this.appState.hotelAssociation$
       .pipe(
@@ -365,7 +378,9 @@ export class MapComponent implements OnInit, OnDestroy {
           unlocked: poi.unlocked,
           isNavigating: this.navigationTarget?.id === poi.id,
           isFavorite: this.appState.isFavorite(poi.id),
-          inCart: this.cartService.isPoiInCart(poi.id)
+          inCart: this.cartService.isPoiInCart(poi.id),
+          cityName: this.cityName(poi.cityId),
+          cityBundlePrice: this.cityBundlePrice(poi.cityId)
         }
       });
 
@@ -423,7 +438,7 @@ export class MapComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.purchaseService.purchaseCityBundle(result.cityId, this.cityName(result.cityId), this.cityUnlockPrice).subscribe({
+        this.purchaseService.purchaseCityBundle(result.cityId, this.cityName(result.cityId), this.cityBundlePrice(result.cityId)).subscribe({
           next: (dialogResult) => {
             if (dialogResult?.action === 'paid') {
               this.snackBar.open(
@@ -843,7 +858,14 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private cityName(cityId: string): string {
-    return formatCityLabel(cityId, [], this.i18n.language);
+    return formatCityLabel(cityId, this.cities, this.i18n.language);
+  }
+
+  private cityBundlePrice(cityId: string): number {
+    const normalizedCityId = String(cityId || '').trim().toLowerCase();
+    const city = this.cities.find((item) => String(item.id || '').trim().toLowerCase() === normalizedCityId);
+    const price = Number(city?.bundlePrice);
+    return Number.isFinite(price) && price >= 0 ? price : defaultCityUnlockPrice;
   }
 
   private associationCityIds(association: HotelAssociation): string[] {

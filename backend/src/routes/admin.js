@@ -1448,6 +1448,7 @@ async function fetchStructureById(structureId, client = pool) {
 
 async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
   const lockSql = options.forUpdate ? 'FOR UPDATE OF pr' : '';
+  const deletedFilterSql = options.includeDeleted ? '' : 'AND pr.deleted = 0';
   const result = await client.query(
     `
       SELECT
@@ -1471,6 +1472,7 @@ async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
         pr.notes,
         pr.status,
         pr.pdf_release_status,
+        pr.deleted,
         pr.approved_structure_id,
         pr.approved_discount_code_id,
         pr.approval_email_sent_at,
@@ -1501,6 +1503,7 @@ async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
         WHERE dcc.discount_code_id = dc.id
       ) city_links ON TRUE
       WHERE pr.id = $1
+        ${deletedFilterSql}
       LIMIT 1
       ${lockSql}
     `,
@@ -4326,6 +4329,7 @@ router.get('/partner-requests', requireAuth, requireAdmin, async (_req, res, nex
           JOIN cities c ON c.id = dcc.city_id
           WHERE dcc.discount_code_id = dc.id
         ) city_links ON TRUE
+        WHERE pr.deleted = 0
         ORDER BY
           CASE
             WHEN pr.status = 'pending' THEN 0
@@ -4480,6 +4484,46 @@ router.post('/partner-requests/:requestId/reject', requireAuth, requireAdmin, as
         discount_code: current.discount_code || null
       })
     );
+  } catch (error) {
+    await client.query('ROLLBACK');
+    return next(error);
+  } finally {
+    client.release();
+  }
+});
+
+router.delete('/partner-requests/:requestId', requireAuth, requireAdmin, async (req, res, next) => {
+  const requestId = Number(req.params.requestId);
+  if (!Number.isInteger(requestId) || requestId <= 0) {
+    return res.status(400).json({ message: 'Richiesta partner non valida' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const current = await fetchPartnerRequestById(requestId, client, { forUpdate: true, includeDeleted: true });
+    if (!current || Number(current.deleted || 0) === 1) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'Richiesta partner non trovata' });
+    }
+
+    if (normalizePartnerRequestStatus(current.status) === 'approved') {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'Le richieste partner approvate non possono essere eliminate' });
+    }
+
+    await client.query(
+      `
+        UPDATE partner_registration_requests
+        SET deleted = 1,
+            updated_at = NOW()
+        WHERE id = $1
+      `,
+      [requestId]
+    );
+
+    await client.query('COMMIT');
+    return res.json({ deleted: true, requestId });
   } catch (error) {
     await client.query('ROLLBACK');
     return next(error);

@@ -1310,6 +1310,18 @@ export class AdminAuthService {
     );
   }
 
+  deletePartnerRequest(requestId: number): Observable<{ deleted: boolean; requestId: number }> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.delete<{ deleted: boolean; requestId: number }>(
+      `${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}`,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
   updateUserRole(userId: string, role: UserRole): Observable<DashboardUserRow> {
     const token = this.sessionSubject.value?.token;
     if (!token) {

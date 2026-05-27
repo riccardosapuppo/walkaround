@@ -1135,6 +1135,7 @@ router.get('/cities', async (_req, res, next) => {
       poiCount: row.poi_count
     }));
 
+    res.set('Cache-Control', 'no-store');
     res.json(data);
   } catch (error) {
     next(error);

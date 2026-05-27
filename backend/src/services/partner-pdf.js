@@ -7,6 +7,7 @@ const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
 const PAGE_MARGIN = 44;
 const PARTNER_LANDING_URL = 'https://www.walkaround.cloud/';
+const COMPANY_VAT_LABEL = 'P.IVA 05942200873';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let officialLogoCacheLoaded = false;
@@ -269,17 +270,50 @@ function pushImage(commands, name, x, y, width, height) {
   commands.push('Q');
 }
 
+function isExistingFile(filePath) {
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+}
+
 function resolveOfficialLogoPath() {
+  const configuredLogoPath = process.env.PARTNER_PDF_LOGO_PATH || process.env.WALKAROUND_LOGO_PATH || '';
+  const configuredCandidates = configuredLogoPath
+    ? [
+        path.isAbsolute(configuredLogoPath)
+          ? configuredLogoPath
+          : path.resolve(process.cwd(), configuredLogoPath),
+        path.resolve(configuredLogoPath)
+      ]
+    : [];
   const candidates = [
+    ...configuredCandidates,
+    path.resolve(__dirname, '../../public/assets/logo.png'),
+    path.resolve(__dirname, '../../assets/logo.png'),
+    path.resolve(__dirname, '../assets/logo.png'),
     path.resolve(__dirname, '../../../frontend/src/assets/logo.png'),
     path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/browser/assets/logo.png'),
     path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/assets/logo.png'),
+    path.resolve(__dirname, '../../../public/assets/logo.png'),
+    path.resolve(process.cwd(), 'public/assets/logo.png'),
+    path.resolve(process.cwd(), 'backend/public/assets/logo.png'),
+    path.resolve(process.cwd(), 'backend/assets/logo.png'),
     path.resolve(process.cwd(), 'frontend/src/assets/logo.png'),
     path.resolve(process.cwd(), 'src/assets/logo.png'),
     path.resolve(process.cwd(), 'assets/logo.png')
   ];
 
-  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
+  const seen = new Set();
+  return candidates.find((candidate) => {
+    const normalizedCandidate = path.normalize(candidate);
+    if (seen.has(normalizedCandidate)) {
+      return false;
+    }
+    seen.add(normalizedCandidate);
+    return isExistingFile(normalizedCandidate);
+  }) || null;
 }
 
 function paethPredictor(left, up, upperLeft) {
@@ -402,6 +436,7 @@ function loadOfficialLogoImage() {
   officialLogoCacheLoaded = true;
   const logoPath = resolveOfficialLogoPath();
   if (!logoPath) {
+    console.warn('[partner-pdf] Official logo not found. Set PARTNER_PDF_LOGO_PATH or include public/assets/logo.png in the backend deploy.');
     officialLogoCache = null;
     return officialLogoCache;
   }
@@ -410,6 +445,9 @@ function loadOfficialLogoImage() {
     officialLogoCache = decodePngImage(fs.readFileSync(logoPath));
   } catch {
     officialLogoCache = null;
+  }
+  if (!officialLogoCache) {
+    console.warn(`[partner-pdf] Official logo could not be decoded as PNG: ${logoPath}`);
   }
   return officialLogoCache;
 }
@@ -857,13 +895,16 @@ function pushPromoPanel(commands, panel) {
       align: 'center'
     });
     textY -= 22;
-    pushWrappedText(commands, discountOutro, centerX, textY, 36, {
+    const outroMaxChars = discountOutro.length > 92 ? 40 : 36;
+    const outroLineCount = wrapPdfText(discountOutro, outroMaxChars).length;
+    const compressedOutro = outroLineCount > 3;
+    pushWrappedText(commands, discountOutro, centerX, textY, outroMaxChars, {
       font: 'F2',
-      fontSize: 11.2,
+      fontSize: compressedOutro ? 9.8 : 10.8,
       color: darkBlue,
       align: 'center',
-      lineHeight: 13,
-      maxLines: 3
+      lineHeight: compressedOutro ? 10.5 : 12,
+      maxLines: compressedOutro ? 5 : 4
     });
     return;
   }
@@ -1130,7 +1171,6 @@ export function buildPartnerPromotionPdf(data) {
   const website = sanitizePdfText(data?.website || '');
   const contactEmail = sanitizePdfText(data?.contactEmail || '');
   const contactPhone = sanitizePdfText(data?.contactPhone || '');
-  const discountRows = buildDiscountRows(cityNames, discountCode, applyTo);
   const discountOutroLabels = buildDiscountOutroLabels(applyTo, cityNames);
   const scope = applyTo === 'single'
     ? {
@@ -1256,33 +1296,34 @@ export function buildPartnerPromotionPdf(data) {
       : 'The discount code has not been assigned yet.'
   });
 
-  pushLine(commands, 57, 418, PAGE_WIDTH - 57, 418, { color: [0.9, 0.92, 0.94], lineWidth: 0.8 });
-  pushText(commands, 'COME USARE LO SCONTO / HOW TO USE', PAGE_WIDTH / 2, 398, {
+  pushLine(commands, 57, 388, PAGE_WIDTH - 57, 388, { color: [0.9, 0.92, 0.94], lineWidth: 0.8 });
+  pushText(commands, 'COME USARE LO SCONTO / HOW TO USE', PAGE_WIDTH / 2, 368, {
     font: 'F2',
     fontSize: 10.5,
     color: darkBlue,
     align: 'center'
   });
-  pushActivationStep(commands, 64, 320, 136, 1, ['INQUADRA IL QR O APRI IL LINK', 'SCAN QR OR OPEN LINK']);
-  pushActivationStep(commands, 230, 320, 136, 2, [
+  pushActivationStep(commands, 64, 276, 136, 1, ['INQUADRA IL QR O APRI IL LINK', 'SCAN QR OR OPEN LINK']);
+  pushActivationStep(commands, 230, 276, 136, 2, [
     discountCode ? 'CONFERMA IL CODICE' : 'INSERISCI IL CODICE',
     discountCode ? 'CONFIRM THE CODE' : 'ENTER THE CODE'
   ]);
-  pushActivationStep(commands, 396, 320, 136, 3, [scope.itUnlock, 'START EXPLORING']);
+  pushActivationStep(commands, 396, 276, 136, 3, [scope.itUnlock, 'START EXPLORING']);
 
   const activationInfoLines = discountCode
     ? [
-        `Link diretto / Direct link: ${partnerLandingUrl}`,
-        `Manuale / Manual: www.walkaround.cloud + codice/code ${discountCode}`
+        'Scansiona il QR: il codice si compila automaticamente.',
+        'Oppure vai su www.walkaround.cloud e inserisci il codice qui sotto.',
+        'Scan the QR: code prefilled, or open the website and enter this code.'
       ]
     : [
         'Quando il codice sarà assegnato, usa QR Code, link diretto o inserimento manuale.',
-        'Once the code is assigned, use QR Code, direct link or manual entry.'
+        'Once the code is assigned, QR Code and discount code will appear here.'
   ];
   activationInfoLines.forEach((line, index) => {
-    pushText(commands, line, PAGE_WIDTH / 2, 321 - index * 10, {
+    pushText(commands, line, PAGE_WIDTH / 2, 248 - index * 9, {
       font: 'F1',
-      fontSize: 7.3,
+      fontSize: 7.1,
       color: [0.35, 0.43, 0.53],
       align: 'center'
     });
@@ -1290,17 +1331,31 @@ export function buildPartnerPromotionPdf(data) {
 
   const qrSize = 123;
   const qrX = Math.round((PAGE_WIDTH - qrSize) / 2);
-  const qrY = 177;
+  const qrY = discountCode ? 50 : 84;
   if (discountCode) {
+    const codeBoxWidth = Math.max(132, approximateTextWidth(discountCode, 17, 'F2') + 46);
+    const codeBoxX = (PAGE_WIDTH - codeBoxWidth) / 2;
+    pushRectangle(commands, codeBoxX, 187, codeBoxWidth, 30, {
+      fillColor: [0.972, 0.976, 0.98],
+      strokeColor: [0.78, 0.82, 0.87],
+      lineWidth: 0.8
+    });
+    pushText(commands, 'CODICE SCONTO / DISCOUNT CODE', PAGE_WIDTH / 2, 207, {
+      font: 'F2',
+      fontSize: 7.1,
+      color: [0.35, 0.43, 0.53],
+      align: 'center'
+    });
+    pushText(commands, discountCode, PAGE_WIDTH / 2, 191.5, {
+      font: 'F2',
+      fontSize: 17,
+      color: darkBlue,
+      align: 'center'
+    });
     pushQrCode(commands, partnerLandingUrl, qrX, qrY, qrSize, '', '');
   } else {
     pushQrPlaceholder(commands, qrX, qrY, qrSize, '', '');
-  }
-
-  if (discountRows.length) {
-    pushDiscountCodesTable(commands, 57, 34, 481, discountRows);
-  } else {
-    pushText(commands, 'Codice sconto non ancora assegnato', PAGE_WIDTH / 2, 136, {
+    pushText(commands, 'Codice sconto non ancora assegnato', PAGE_WIDTH / 2, 66, {
       font: 'F2',
       fontSize: 10,
       color: [0.35, 0.43, 0.53],
@@ -1324,10 +1379,16 @@ export function buildPartnerPromotionPdf(data) {
     footerY -= 7;
   });
 
-  pushText(commands, 'www.walkaround.cloud', PAGE_WIDTH - PAGE_MARGIN, 11, {
+  pushText(commands, 'www.walkaround.cloud', PAGE_WIDTH - PAGE_MARGIN, 22, {
     font: 'F2',
     fontSize: 8.4,
     color: accentBlue,
+    align: 'right'
+  });
+  pushText(commands, COMPANY_VAT_LABEL, PAGE_WIDTH - PAGE_MARGIN, 11, {
+    font: 'F1',
+    fontSize: 7.2,
+    color: [0.39, 0.46, 0.56],
     align: 'right'
   });
 

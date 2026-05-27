@@ -330,6 +330,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   partnerRequestApprovalTarget: DashboardPartnerRequest | null = null;
   approvingPartnerRequestId: number | null = null;
   rejectingPartnerRequestId: number | null = null;
+  deletingPartnerRequestId: number | null = null;
   previewingPartnerRequestId: number | null = null;
   private lastLoadedCatalogPoisCityId = '';
   private catalogPoisRequestToken = 0;
@@ -521,7 +522,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     region: [{ value: this.fixedCreateCityRegion, disabled: true }, [Validators.required, Validators.maxLength(120)]],
     bundlePrice: [0, [Validators.required, Validators.min(0), Validators.max(10000)]],
     heroImage: ['', [Validators.required, Validators.maxLength(500)]],
-    isPublished: [false],
+    isPublished: [true],
     translations: this.formBuilder.nonNullable.group({})
   });
 
@@ -1281,6 +1282,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     if (section !== 'partnerRequests') {
       this.closePartnerRequestApprovalDialog();
       this.rejectingPartnerRequestId = null;
+      this.deletingPartnerRequestId = null;
       this.previewingPartnerRequestId = null;
     }
     if (section !== 'catalog') {
@@ -2359,10 +2361,38 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     });
   }
 
+  deletePartnerRequest(request: DashboardPartnerRequest): void {
+    if (!this.canManageUsers || this.deletingPartnerRequestId !== null || request.status === 'approved') {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Eliminare la richiesta partner per "${request.structureName}"? Rimarra nel database ma non sara piu visibile in dashboard.`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingPartnerRequestId = request.id;
+    this.auth.deletePartnerRequest(request.id).subscribe({
+      next: () => {
+        this.deletingPartnerRequestId = null;
+        this.partnerRequests = this.partnerRequests.filter((item) => item.id !== request.id);
+        this.snackBar.open(`Richiesta ${request.structureName} eliminata`, 'OK', { duration: 2800 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.deletingPartnerRequestId = null;
+        const message = error?.error?.message || 'Errore eliminazione richiesta partner';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
   isPartnerRequestBusy(request: DashboardPartnerRequest): boolean {
     return (
       this.approvingPartnerRequestId === request.id ||
       this.rejectingPartnerRequestId === request.id ||
+      this.deletingPartnerRequestId === request.id ||
       this.previewingPartnerRequestId === request.id
     );
   }
@@ -3811,7 +3841,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       region: this.fixedCreateCityRegion,
       bundlePrice: 0,
       heroImage: '',
-      isPublished: false,
+      isPublished: true,
       translations: {}
     });
     this.catalogCityForm.controls.region.disable({ emitEvent: false });
@@ -4674,6 +4704,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.partnerRequestApprovalTarget = null;
       this.approvingPartnerRequestId = null;
       this.rejectingPartnerRequestId = null;
+      this.deletingPartnerRequestId = null;
       this.previewingPartnerRequestId = null;
       this.savingUserId = null;
       this.savingDiscountCodeId = null;
@@ -4737,6 +4768,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
         region: this.fixedCreateCityRegion,
         bundlePrice: 0,
         heroImage: '',
+        isPublished: true,
         translations: {}
       });
       this.catalogCityForm.controls.region.disable({ emitEvent: false });

@@ -33,7 +33,7 @@
       </button>
 
       <button mat-stroked-button color="primary" (click)="purchaseCity()">
-        {{ 'mapSheet.unlockCity' | t:{ city: cityName(data.poi.cityId), price: i18n.formatCurrency(cityUnlockPrice) } }}
+        {{ 'mapSheet.unlockCity' | t:{ city: cityName(data.poi.cityId), price: formatPrice(data.cityBundlePrice) } }}
       </button>
     </ng-template>
 

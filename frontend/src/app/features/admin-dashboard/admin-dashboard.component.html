@@ -862,6 +862,16 @@
                         >
                           {{ rejectingPartnerRequestId === request.id ? 'Nego...' : 'Nega' }}
                         </button>
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          type="button"
+                          *ngIf="request.status !== 'approved'"
+                          (click)="deletePartnerRequest(request)"
+                          [disabled]="isPartnerRequestBusy(request)"
+                        >
+                          {{ deletingPartnerRequestId === request.id ? 'Elimino...' : 'Elimina' }}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1898,7 +1908,6 @@
             <div class="cache-update-panel">
               <strong>Effetto sugli utenti</strong>
               <p>Al prossimo avvio o controllo periodico, l'app elimina Cache Storage, service worker e download offline salvati, poi ricarica la pagina.</p>
-              <p class="inline-note">Usalo dopo deploy, modifiche a file statici o aggiornamenti importanti di immagini/audio già cacheati.</p>
             </div>
           </mat-card>
         </ng-container>

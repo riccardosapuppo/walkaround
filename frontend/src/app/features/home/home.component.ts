@@ -38,6 +38,7 @@ const cityFallbackMap: Record<string, Coordinates> = {
 
 const homeScrollStorageKey = 'walkaround.home.scrollY';
 const citySummaryMaxLength = 160;
+const defaultCityUnlockPrice = 15;
 
 @Component({
   standalone: false,
@@ -48,7 +49,6 @@ const citySummaryMaxLength = 160;
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   apiErrorMessage: string | null = null;
   loading = true;
-  readonly cityUnlockPrice = 15;
   activeCityId = 'catania';
   associatedStructure: HotelAssociation | null = null;
   citySwitching = false;
@@ -288,7 +288,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   purchaseCity(cityId: string): void {
-    this.purchaseService.purchaseCityBundle(cityId, this.cityName(cityId), this.cityUnlockPrice).subscribe({
+    this.purchaseService.purchaseCityBundle(cityId, this.cityName(cityId), this.cityBundlePrice(cityId)).subscribe({
       next: (result) => {
         if (result?.action === 'paid') {
           this.toast(this.i18n.t('map.cityUnlocked', { city: this.cityName(cityId) }));
@@ -415,6 +415,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cityName(cityId: string): string {
     return formatCityLabel(cityId, this.cities, this.i18n.language);
+  }
+
+  cityBundlePrice(cityId: string): number {
+    const normalizedCityId = String(cityId || '').trim().toLowerCase();
+    const city = this.cities.find((item) => String(item.id || '').trim().toLowerCase() === normalizedCityId);
+    const price = Number(city?.bundlePrice);
+    return Number.isFinite(price) && price >= 0 ? price : defaultCityUnlockPrice;
   }
 
   resumePlayback(): void {

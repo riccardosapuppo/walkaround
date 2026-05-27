@@ -29,14 +29,14 @@ export function formatCityLabel(cityId: string, cities: CityLike[] = [], languag
   }
 
   const normalizedCityId = rawCityId.toLowerCase();
-  if (cityNameMap[normalizedCityId]) {
-    return cityNameMap[normalizedCityId];
-  }
-
   const matchedCity = cities.find((city) => String(city?.id || '').trim().toLowerCase() === normalizedCityId);
   const matchedName = String(matchedCity?.name || '').trim();
   if (matchedName) {
     return matchedName;
+  }
+
+  if (cityNameMap[normalizedCityId]) {
+    return cityNameMap[normalizedCityId];
   }
 
   const withoutGeneratedSuffix = rawCityId.replace(/-[a-z0-9]{6,}$/i, '');

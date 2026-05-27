@@ -11,6 +11,8 @@ export interface PoiMapSheetData {
   isNavigating: boolean;
   isFavorite: boolean;
   inCart: boolean;
+  cityName: string;
+  cityBundlePrice: number;
 }
 
 export type PoiMapSheetAction =
@@ -27,8 +29,6 @@ export type PoiMapSheetAction =
   styleUrls: ['./poi-map-sheet.component.scss']
 })
 export class PoiMapSheetComponent {
-  readonly cityUnlockPrice = 15;
-
   constructor(
     @Inject(MAT_BOTTOM_SHEET_DATA) readonly data: PoiMapSheetData,
     private readonly bottomSheetRef: MatBottomSheetRef<PoiMapSheetComponent>,
@@ -77,6 +77,13 @@ export class PoiMapSheetComponent {
   }
 
   cityName(cityId: string): string {
+    if (cityId === this.data.poi.cityId) {
+      const providedName = String(this.data.cityName || '').trim();
+      if (providedName) {
+        return providedName;
+      }
+    }
+
     return formatCityLabel(cityId, [], this.i18n.language);
   }
 

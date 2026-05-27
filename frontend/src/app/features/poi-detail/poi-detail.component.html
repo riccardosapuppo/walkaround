@@ -53,7 +53,7 @@
     </button>
 
     <button mat-stroked-button color="primary" class="big-cta" *ngIf="!unlocked" (click)="purchaseCity()">
-      {{ 'poiDetail.unlockCity' | t:{ city: cityName(currentPoi.cityId), price: i18n.formatCurrency(cityUnlockPrice) } }}
+      {{ 'poiDetail.unlockCity' | t:{ city: cityName(currentPoi.cityId), price: formatPrice(cityBundlePrice(currentPoi.cityId)) } }}
     </button>
 
     <button mat-flat-button color="primary" class="big-cta" *ngIf="unlocked" (click)="openFullPlayer()">
