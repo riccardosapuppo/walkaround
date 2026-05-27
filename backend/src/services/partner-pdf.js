@@ -10,8 +10,10 @@ const PARTNER_LANDING_URL = 'https://www.walkaround.cloud/';
 const COMPANY_VAT_LABEL = 'P.IVA 05942200873';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-let officialLogoCacheLoaded = false;
 let officialLogoCache = null;
+let officialLogoCacheKey = '';
+let officialLogoLoadedInfoKey = '';
+let officialLogoWarningKey = '';
 
 function sanitizePdfText(value) {
   return String(value ?? '')
@@ -290,6 +292,7 @@ function resolveOfficialLogoPath() {
     : [];
   const candidates = [
     ...configuredCandidates,
+    path.resolve(__dirname, '../../public-seed/assets/logo.png'),
     path.resolve(__dirname, '../../public/assets/logo.png'),
     path.resolve(__dirname, '../../assets/logo.png'),
     path.resolve(__dirname, '../assets/logo.png'),
@@ -297,7 +300,9 @@ function resolveOfficialLogoPath() {
     path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/browser/assets/logo.png'),
     path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/assets/logo.png'),
     path.resolve(__dirname, '../../../public/assets/logo.png'),
+    path.resolve(process.cwd(), 'public-seed/assets/logo.png'),
     path.resolve(process.cwd(), 'public/assets/logo.png'),
+    path.resolve(process.cwd(), 'backend/public-seed/assets/logo.png'),
     path.resolve(process.cwd(), 'backend/public/assets/logo.png'),
     path.resolve(process.cwd(), 'backend/assets/logo.png'),
     path.resolve(process.cwd(), 'frontend/src/assets/logo.png'),
@@ -428,16 +433,38 @@ function decodePngImage(buffer) {
   };
 }
 
+function warnOfficialLogoOnce(key, message) {
+  if (officialLogoWarningKey === key) {
+    return;
+  }
+  officialLogoWarningKey = key;
+  console.warn(message);
+}
+
 function loadOfficialLogoImage() {
-  if (officialLogoCacheLoaded) {
+  const logoPath = resolveOfficialLogoPath();
+  if (!logoPath) {
+    warnOfficialLogoOnce(
+      'missing',
+      '[partner-pdf] Official logo not found. Set PARTNER_PDF_LOGO_PATH or include public-seed/assets/logo.png in the backend deploy.'
+    );
+    officialLogoCache = null;
+    officialLogoCacheKey = '';
     return officialLogoCache;
   }
 
-  officialLogoCacheLoaded = true;
-  const logoPath = resolveOfficialLogoPath();
-  if (!logoPath) {
-    console.warn('[partner-pdf] Official logo not found. Set PARTNER_PDF_LOGO_PATH or include public/assets/logo.png in the backend deploy.');
+  let logoStats = null;
+  try {
+    logoStats = fs.statSync(logoPath);
+  } catch {
+    warnOfficialLogoOnce(`stat:${logoPath}`, `[partner-pdf] Official logo path is not readable: ${logoPath}`);
     officialLogoCache = null;
+    officialLogoCacheKey = '';
+    return officialLogoCache;
+  }
+
+  const cacheKey = `${logoPath}:${logoStats.size}:${logoStats.mtimeMs}`;
+  if (officialLogoCache && officialLogoCacheKey === cacheKey) {
     return officialLogoCache;
   }
 
@@ -447,7 +474,14 @@ function loadOfficialLogoImage() {
     officialLogoCache = null;
   }
   if (!officialLogoCache) {
-    console.warn(`[partner-pdf] Official logo could not be decoded as PNG: ${logoPath}`);
+    officialLogoCacheKey = '';
+    warnOfficialLogoOnce(`decode:${cacheKey}`, `[partner-pdf] Official logo could not be decoded as PNG: ${logoPath}`);
+    return officialLogoCache;
+  }
+  officialLogoCacheKey = cacheKey;
+  if (officialLogoLoadedInfoKey !== cacheKey) {
+    officialLogoLoadedInfoKey = cacheKey;
+    console.info(`[partner-pdf] Official logo loaded: ${logoPath} (${logoStats.size} bytes)`);
   }
   return officialLogoCache;
 }
