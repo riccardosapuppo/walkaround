@@ -7,6 +7,7 @@ RUN npm install --omit=dev
 
 COPY src ./src
 COPY public ./public
+RUN test -f public/assets/logo.png
 COPY scripts ./scripts
 COPY .env.example ./.env
 
