@@ -7,8 +7,8 @@ RUN npm install --omit=dev
 
 COPY src ./src
 COPY public ./public
-COPY public ./public-seed
-RUN test -f public/assets/logo.png && test -f public-seed/assets/logo.png
+COPY public/assets/logo.png ./static-assets/logo.png
+RUN test -f public/assets/logo.png && test -f static-assets/logo.png
 COPY scripts ./scripts
 COPY .env.example ./.env
 

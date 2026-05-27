@@ -292,7 +292,7 @@ function resolveOfficialLogoPath() {
     : [];
   const candidates = [
     ...configuredCandidates,
-    path.resolve(__dirname, '../../public-seed/assets/logo.png'),
+    path.resolve(__dirname, '../../static-assets/logo.png'),
     path.resolve(__dirname, '../../public/assets/logo.png'),
     path.resolve(__dirname, '../../assets/logo.png'),
     path.resolve(__dirname, '../assets/logo.png'),
@@ -300,9 +300,9 @@ function resolveOfficialLogoPath() {
     path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/browser/assets/logo.png'),
     path.resolve(__dirname, '../../../frontend/dist/tourism-audio-frontend/assets/logo.png'),
     path.resolve(__dirname, '../../../public/assets/logo.png'),
-    path.resolve(process.cwd(), 'public-seed/assets/logo.png'),
+    path.resolve(process.cwd(), 'static-assets/logo.png'),
     path.resolve(process.cwd(), 'public/assets/logo.png'),
-    path.resolve(process.cwd(), 'backend/public-seed/assets/logo.png'),
+    path.resolve(process.cwd(), 'backend/static-assets/logo.png'),
     path.resolve(process.cwd(), 'backend/public/assets/logo.png'),
     path.resolve(process.cwd(), 'backend/assets/logo.png'),
     path.resolve(process.cwd(), 'frontend/src/assets/logo.png'),
@@ -446,7 +446,7 @@ function loadOfficialLogoImage() {
   if (!logoPath) {
     warnOfficialLogoOnce(
       'missing',
-      '[partner-pdf] Official logo not found. Set PARTNER_PDF_LOGO_PATH or include public-seed/assets/logo.png in the backend deploy.'
+      '[partner-pdf] Official logo not found. Set PARTNER_PDF_LOGO_PATH or include static-assets/logo.png in the backend deploy.'
     );
     officialLogoCache = null;
     officialLogoCacheKey = '';
