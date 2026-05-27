@@ -147,8 +147,8 @@ if (commandSucceeds('docker', ['compose', 'version'])) {
   fail('Docker Compose non trovato.');
 }
 
-log('Build e riavvio container');
-run(composeCommand, [...composeArgs, 'up', '-d', '--build']);
+log('Build e riavvio container app');
+run(composeCommand, [...composeArgs, 'up', '-d', '--build', '--force-recreate', 'backend', 'frontend']);
 
 log('Stato container');
 run(composeCommand, [...composeArgs, 'ps']);
