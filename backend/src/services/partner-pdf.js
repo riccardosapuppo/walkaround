@@ -1314,14 +1314,15 @@ export function buildPartnerPromotionPdf(data) {
     ? [
         'Scansiona il QR: il codice si compila automaticamente.',
         'Oppure vai su www.walkaround.cloud e inserisci il codice qui sotto.',
-        'Scan the QR: code prefilled, or open the website and enter this code.'
+        'Scan the QR: the code is filled in automatically.',
+        'Or go to www.walkaround.cloud and enter the code below.'
       ]
     : [
         'Quando il codice sarà assegnato, usa QR Code, link diretto o inserimento manuale.',
         'Once the code is assigned, QR Code and discount code will appear here.'
   ];
   activationInfoLines.forEach((line, index) => {
-    pushText(commands, line, PAGE_WIDTH / 2, 248 - index * 9, {
+    pushText(commands, line, PAGE_WIDTH / 2, 252 - index * 9, {
       font: 'F1',
       fontSize: 7.1,
       color: [0.35, 0.43, 0.53],

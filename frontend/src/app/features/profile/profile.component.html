@@ -336,10 +336,6 @@
               <strong>{{ 'profile.paymentDate' | t }}:</strong>
               {{ paymentGroupDateLabel(group) }}
             </span>
-            <span>
-              <strong>{{ 'profile.paymentAccess' | t }}:</strong>
-              {{ paymentGroupAccessLabel(group) }}
-            </span>
             <span *ngIf="paymentGroupMethodLabel(group) as methodLabel">
               <strong>{{ 'profile.paymentMethod' | t }}:</strong>
               {{ methodLabel }}

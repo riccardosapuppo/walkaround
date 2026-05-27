@@ -23,7 +23,6 @@ interface ProfilePaymentGroup {
   amount: number;
   discountAmount: number;
   purchasedAt: string;
-  expiresAt: string | null;
 }
 
 @Component({
@@ -267,7 +266,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
       const key = String(item.paymentOrderId || `purchase-${item.id}`).trim() || `purchase-${item.id}`;
       const existing = groups.get(key);
       const purchasedAt = String(item.purchasedAt || '').trim();
-      const expiresAt = String(item.expiresAt || '').trim() || null;
 
       if (!existing) {
         groups.set(key, {
@@ -275,8 +273,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           items: [item],
           amount: this.purchasePaidAmount(item),
           discountAmount: this.purchaseDiscountAmount(item),
-          purchasedAt,
-          expiresAt
+          purchasedAt
         });
         return;
       }
@@ -285,7 +282,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
       existing.amount += this.purchasePaidAmount(item);
       existing.discountAmount += this.purchaseDiscountAmount(item);
       existing.purchasedAt = this.latestDateValue(existing.purchasedAt, purchasedAt) || existing.purchasedAt;
-      existing.expiresAt = this.latestDateValue(existing.expiresAt, expiresAt);
     });
 
     return Array.from(groups.values()).sort((a, b) => this.dateTime(b.purchasedAt) - this.dateTime(a.purchasedAt));
@@ -319,18 +315,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return this.i18n.formatDateTime(group.purchasedAt);
   }
 
-  paymentGroupAccessLabel(group: ProfilePaymentGroup): string {
-    const date = this.i18n.formatDateTime(group.expiresAt);
-    const key = this.paymentGroupActive(group) ? 'profile.paymentValidUntil' : 'profile.paymentExpiredOn';
-    return this.i18n.t(key, { date });
+  paymentGroupStatusLabel(_group: ProfilePaymentGroup): string {
+    return this.i18n.t('profile.paymentActive');
   }
 
-  paymentGroupStatusLabel(group: ProfilePaymentGroup): string {
-    return this.paymentGroupActive(group) ? this.i18n.t('profile.paymentActive') : this.i18n.t('profile.paymentExpired');
-  }
-
-  paymentGroupStatusClass(group: ProfilePaymentGroup): string {
-    return this.paymentGroupActive(group) ? 'status-chip unlocked' : 'status-chip locked';
+  paymentGroupStatusClass(_group: ProfilePaymentGroup): string {
+    return 'status-chip unlocked';
   }
 
   paymentGroupMethodLabel(group: ProfilePaymentGroup): string {
@@ -799,10 +789,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     const cityId = String(item.cityId || '').trim();
     const cityFromId = cityId ? this.cityName(cityId) : '';
     return cityFromId || String(item.cityName || '').trim() || this.i18n.t('profile.purchaseCityFallback');
-  }
-
-  private paymentGroupActive(group: ProfilePaymentGroup): boolean {
-    return group.items.some((item) => item.isActive !== false);
   }
 
   private purchasePaidAmount(item: PurchaseItem): number {

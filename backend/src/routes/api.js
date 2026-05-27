@@ -272,8 +272,6 @@ const unlockValidateSchema = z.discriminatedUnion('type', [
   })
 ]);
 
-const PURCHASE_VALIDITY_MONTHS = 3;
-
 function getDailyUnlockCode(now = new Date()) {
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/Rome',
@@ -295,12 +293,6 @@ function roundMoney(value) {
   return Math.round(numeric * 100) / 100;
 }
 
-function addMonths(date, months) {
-  const next = new Date(date.getTime());
-  next.setMonth(next.getMonth() + months);
-  return next;
-}
-
 function toIsoDateOrNull(value) {
   if (!value) {
     return null;
@@ -312,23 +304,12 @@ function toIsoDateOrNull(value) {
   return date.toISOString();
 }
 
-function purchaseExpiresAt(purchasedAt) {
-  if (!purchasedAt) {
-    return null;
-  }
-  const base = purchasedAt instanceof Date ? purchasedAt : new Date(purchasedAt);
-  if (Number.isNaN(base.getTime())) {
-    return null;
-  }
-  return addMonths(base, PURCHASE_VALIDITY_MONTHS);
+function purchaseExpiresAt() {
+  return null;
 }
 
-function isPurchaseStillActive(purchasedAt, now = new Date()) {
-  const expiresAt = purchaseExpiresAt(purchasedAt);
-  if (!expiresAt) {
-    return false;
-  }
-  return expiresAt.getTime() > now.getTime();
+function isPurchaseStillActive(purchasedAt) {
+  return Boolean(toIsoDateOrNull(purchasedAt));
 }
 
 function clamp(value, min, max) {
@@ -690,7 +671,6 @@ async function buildPayPalCheckoutPreview(payload, client) {
         WHERE user_id = $1
           AND type = 'bundle'
           AND city_id = $2
-          AND (purchased_at + INTERVAL '3 months') > NOW()
         ORDER BY purchased_at DESC, id DESC
         LIMIT 1
       `,
@@ -769,7 +749,6 @@ async function buildPayPalCheckoutPreview(payload, client) {
             (type = 'bundle' AND city_id = $2)
             OR (type = 'single' AND poi_id = $3)
           )
-          AND (purchased_at + INTERVAL '3 months') > NOW()
         ORDER BY purchased_at DESC, id DESC
         LIMIT 1
       `,
@@ -861,7 +840,6 @@ async function buildPayPalCheckoutPreview(payload, client) {
           (type = 'bundle' AND city_id = ANY($2::TEXT[]))
           OR (type = 'single' AND poi_id = ANY($3::TEXT[]))
         )
-        AND (purchased_at + INTERVAL '3 months') > NOW()
     `,
     [payload.userId, cityIds, requestedPoiIds]
   );
@@ -1871,7 +1849,6 @@ router.get('/me/purchases', async (req, res, next) => {
         WHERE user_id = $1
           AND type = 'single'
           AND poi_id IS NOT NULL
-          AND (purchased_at + INTERVAL '3 months') > NOW()
           AND single_poi.publication_status = 'published'
           AND single_city.publication_status = 'published'
         UNION
@@ -1882,7 +1859,6 @@ router.get('/me/purchases', async (req, res, next) => {
           ON b.user_id = $1
          AND b.type = 'bundle'
          AND b.city_id = p.city_id
-         AND (b.purchased_at + INTERVAL '3 months') > NOW()
         WHERE p.publication_status = 'published'
           AND c.publication_status = 'published'
         `,
@@ -1892,7 +1868,6 @@ router.get('/me/purchases', async (req, res, next) => {
       cityUnlockSimulationQuery
     ]);
 
-    const now = new Date();
     const raw = purchases.rows.map((row) => ({
       id: Number(row.id),
       userId: row.user_id,
@@ -1916,7 +1891,7 @@ router.get('/me/purchases', async (req, res, next) => {
       paymentOrderId: row.payment_order_id || null,
       purchasedAt: row.purchased_at,
       expiresAt: toIsoDateOrNull(purchaseExpiresAt(row.purchased_at)),
-      isActive: isPurchaseStillActive(row.purchased_at, now)
+      isActive: isPurchaseStillActive(row.purchased_at)
     }));
 
     const unlockedPoiIds = unlockedPois.rows.map((row) => row.id);
@@ -1926,7 +1901,7 @@ router.get('/me/purchases', async (req, res, next) => {
           row.type === 'bundle' &&
           row.city_id &&
           row.city_publication_status === 'published' &&
-          isPurchaseStillActive(row.purchased_at, now)
+          isPurchaseStillActive(row.purchased_at)
       )
       .map((row) => row.city_id);
     const simulatedCityIds = adminUnlockSimulation ? simulatedUnlockedCities.rows.map((row) => row.id) : [];
