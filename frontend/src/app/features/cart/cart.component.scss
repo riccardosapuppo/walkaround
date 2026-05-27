@@ -119,8 +119,28 @@
   font-size: 0.88rem;
 }
 
+.paypal-button-stage {
+  display: grid;
+  min-height: 52px;
+  align-items: center;
+}
+
+.paypal-button-loading,
 .paypal-buttons {
-  min-height: 44px;
+  grid-area: 1 / 1;
+}
+
+.paypal-button-loading {
+  justify-self: start;
+}
+
+.paypal-buttons {
+  min-height: 52px;
+}
+
+.paypal-buttons-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .cart-actions {

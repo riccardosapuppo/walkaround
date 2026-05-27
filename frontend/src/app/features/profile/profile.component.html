@@ -311,6 +311,55 @@
       </div>
     </mat-card>
 
+    <mat-card class="card section payment-history" *ngIf="paymentHistoryGroups.length">
+      <div class="payment-history-head">
+        <h3>{{ 'profile.paymentsTitle' | t }}</h3>
+        <p>{{ 'profile.paymentsSubtitle' | t }}</p>
+      </div>
+
+      <div class="payment-history-list">
+        <article class="payment-history-item" *ngFor="let group of paymentHistoryGroups">
+          <div class="payment-history-main">
+            <div class="payment-history-copy">
+              <h4>{{ paymentGroupTitle(group) }}</h4>
+              <p>{{ paymentGroupSubtitle(group) }}</p>
+            </div>
+            <span [class]="paymentGroupStatusClass(group)">{{ paymentGroupStatusLabel(group) }}</span>
+          </div>
+
+          <div class="payment-history-details">
+            <span>
+              <strong>{{ 'profile.paymentAmount' | t }}:</strong>
+              {{ paymentGroupAmountLabel(group) }}
+            </span>
+            <span>
+              <strong>{{ 'profile.paymentDate' | t }}:</strong>
+              {{ paymentGroupDateLabel(group) }}
+            </span>
+            <span>
+              <strong>{{ 'profile.paymentAccess' | t }}:</strong>
+              {{ paymentGroupAccessLabel(group) }}
+            </span>
+            <span *ngIf="paymentGroupMethodLabel(group) as methodLabel">
+              <strong>{{ 'profile.paymentMethod' | t }}:</strong>
+              {{ methodLabel }}
+            </span>
+          </div>
+
+          <p class="payment-discount" *ngIf="group.discountAmount > 0">
+            {{ 'profile.paymentDiscount' | t }}: {{ paymentGroupDiscountLabel(group) }}
+          </p>
+
+          <ul class="payment-content-list" *ngIf="group.items.length > 1">
+            <li *ngFor="let item of group.items">
+              <span>{{ purchaseItemTitle(item) }}</span>
+              <small>{{ purchaseItemMeta(item) }}</small>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </mat-card>
+
     <mat-card class="card section links">
       <a href="mailto:info@walkaround.cloud">{{ 'common.support' | t }}</a>
       <button mat-button color="primary" type="button" (click)="openPrivacyPolicyDialog()">{{ 'common.privacy' | t }}</button>

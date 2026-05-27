@@ -24,6 +24,9 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
   cartItems: CartItem[] = [];
   cartPaying = false;
   loadingQuote = false;
+  restoringSession = true;
+  paypalButtonsLoading = false;
+  paypalButtonsReady = false;
   paymentError = '';
   quote: PayPalQuoteResponse | null = null;
   poiById: Record<string, Poi> = {};
@@ -44,10 +47,14 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnInit(): void {
     this.purchaseService.refresh();
-    this.appAuth.restoreSession().pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.purchaseService.refresh();
-      this.loadQuote();
-    });
+    this.appAuth
+      .restoreSession()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.restoringSession = false;
+        this.purchaseService.refresh();
+        this.loadQuote();
+      });
     this.cartService.items$.pipe(takeUntil(this.destroy$)).subscribe((items) => {
       this.cartItems = items;
       this.loadItemDetails();
@@ -60,6 +67,7 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (
       !container ||
       !this.cartItems.length ||
+      this.restoringSession ||
       !this.isAppLoggedIn ||
       this.loadingQuote ||
       this.cartPaying ||
@@ -129,6 +137,18 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
     return this.appAuth.isAuthenticated;
   }
 
+  get showPayPalButtonsLoading(): boolean {
+    return Boolean(
+      !this.loadingQuote &&
+      !this.restoringSession &&
+      this.isAppLoggedIn &&
+      !this.paymentError &&
+      this.quote &&
+      !this.paypalButtonsReady &&
+      !this.cartPaying
+    );
+  }
+
   goToLogin(): void {
     void this.router.navigate(['/profile'], { queryParams: { returnUrl: this.router.url } });
   }
@@ -136,7 +156,7 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
   private loadQuote(): void {
     this.resetPayPalRenderState();
 
-    if (!this.cartItems.length) {
+    if (!this.cartItems.length || this.restoringSession) {
       this.quote = null;
       this.paymentError = '';
       return;
@@ -216,6 +236,8 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     this.paymentError = '';
+    this.paypalButtonsLoading = true;
+    this.paypalButtonsReady = false;
 
     try {
       await this.paypalCheckout.renderButtons(
@@ -259,8 +281,12 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
           }
         }
       );
+      this.paypalButtonsLoading = false;
+      this.paypalButtonsReady = true;
     } catch (error) {
       this.cartPaying = false;
+      this.paypalButtonsLoading = false;
+      this.paypalButtonsReady = false;
       this.paymentError = error instanceof Error ? error.message : this.i18n.t('paypal.loadError');
       this.clearPayPalButtons();
     }
@@ -269,6 +295,8 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
   private resetPayPalRenderState(): void {
     this.lastPayPalRenderSignature = '';
     this.cartPaying = false;
+    this.paypalButtonsLoading = false;
+    this.paypalButtonsReady = false;
     this.clearPayPalButtons();
   }
 

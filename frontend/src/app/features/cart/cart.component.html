@@ -51,17 +51,32 @@
         <span>{{ 'cart.loadingQuote' | t }}</span>
       </div>
 
-      <div class="auth-required" *ngIf="!loadingQuote && !isAppLoggedIn">
+      <div class="paypal-loading" *ngIf="!loadingQuote && restoringSession">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>{{ 'unlock.checking' | t }}</span>
+      </div>
+
+      <div class="auth-required" *ngIf="!loadingQuote && !restoringSession && !isAppLoggedIn">
         <p>{{ 'auth.checkoutRequired' | t }}</p>
         <button mat-flat-button color="primary" type="button" (click)="goToLogin()">{{ 'auth.loginOrRegister' | t }}</button>
       </div>
 
       <p class="payment-error" *ngIf="paymentError">{{ paymentError }}</p>
-      <div #paypalButtonsContainer class="paypal-buttons" *ngIf="!loadingQuote && isAppLoggedIn && !paymentError && quote"></div>
+      <div class="paypal-button-stage" *ngIf="!loadingQuote && !restoringSession && isAppLoggedIn && !paymentError && quote">
+        <div class="paypal-loading paypal-button-loading" *ngIf="showPayPalButtonsLoading">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>{{ 'unlock.paypalInit' | t }}</span>
+        </div>
+        <div
+          #paypalButtonsContainer
+          class="paypal-buttons"
+          [class.paypal-buttons-hidden]="showPayPalButtonsLoading"
+        ></div>
+      </div>
     </div>
 
     <div class="cart-actions" *ngIf="cartItems.length">
-      <button mat-stroked-button color="warn" (click)="clearCart()" [disabled]="cartPaying || loadingQuote">{{ 'cart.clear' | t }}</button>
+      <button mat-stroked-button color="warn" (click)="clearCart()" [disabled]="cartPaying || loadingQuote || restoringSession || paypalButtonsLoading">{{ 'cart.clear' | t }}</button>
     </div>
   </mat-card>
 </section>

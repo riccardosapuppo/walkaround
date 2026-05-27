@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, finalize, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { AppLanguage } from '../../core/i18n/app-language';
 import { City } from '../../core/models/city.model';
+import { PurchaseItem } from '../../core/models/purchase.model';
 import { AdminAuthService, DashboardSession, UserRole } from '../../core/services/admin-auth.service';
 import { AppAuthService, AppSession } from '../../core/services/app-auth.service';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
@@ -15,6 +16,15 @@ import { PrivacyPolicyService } from '../../core/services/privacy-policy.service
 import { HotelCodeStatusEntry, PurchaseService } from '../../core/services/purchase.service';
 import { StructureLocationService } from '../../core/services/structure-location.service';
 import { formatCityLabel } from '../../core/utils/city-label.util';
+
+interface ProfilePaymentGroup {
+  key: string;
+  items: PurchaseItem[];
+  amount: number;
+  discountAmount: number;
+  purchasedAt: string;
+  expiresAt: string | null;
+}
 
 @Component({
   standalone: false,
@@ -29,6 +39,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   hotelAssociation: HotelAssociation | null = null;
   hotelCodeEntries: HotelCodeStatusEntry[] = [];
   unlockedCityIds: string[] = [];
+  purchaseHistoryItems: PurchaseItem[] = [];
   language: AppLanguage = 'it';
   loadingCities = true;
   removingInviteCode = false;
@@ -143,6 +154,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.hotelAssociation = hotelAssociation;
         this.language = language;
         this.unlockedCityIds = purchases.unlockedCityIds;
+        this.purchaseHistoryItems = purchases.items;
         this.appSession = this.appSessionChecked ? appSession : null;
         this.dashboardSession = this.adminSessionChecked ? adminSession : null;
         this.isAdmin = this.adminSessionChecked && adminSession?.user?.role === 'admin';
@@ -246,6 +258,111 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     return this.unlockedCityIds;
+  }
+
+  get paymentHistoryGroups(): ProfilePaymentGroup[] {
+    const groups = new Map<string, ProfilePaymentGroup>();
+
+    this.purchaseHistoryItems.forEach((item) => {
+      const key = String(item.paymentOrderId || `purchase-${item.id}`).trim() || `purchase-${item.id}`;
+      const existing = groups.get(key);
+      const purchasedAt = String(item.purchasedAt || '').trim();
+      const expiresAt = String(item.expiresAt || '').trim() || null;
+
+      if (!existing) {
+        groups.set(key, {
+          key,
+          items: [item],
+          amount: this.purchasePaidAmount(item),
+          discountAmount: this.purchaseDiscountAmount(item),
+          purchasedAt,
+          expiresAt
+        });
+        return;
+      }
+
+      existing.items.push(item);
+      existing.amount += this.purchasePaidAmount(item);
+      existing.discountAmount += this.purchaseDiscountAmount(item);
+      existing.purchasedAt = this.latestDateValue(existing.purchasedAt, purchasedAt) || existing.purchasedAt;
+      existing.expiresAt = this.latestDateValue(existing.expiresAt, expiresAt);
+    });
+
+    return Array.from(groups.values()).sort((a, b) => this.dateTime(b.purchasedAt) - this.dateTime(a.purchasedAt));
+  }
+
+  paymentGroupTitle(group: ProfilePaymentGroup): string {
+    if (group.items.length === 1) {
+      return this.purchaseItemTitle(group.items[0]);
+    }
+
+    return this.i18n.t('profile.paymentGroupTitle', { count: group.items.length });
+  }
+
+  paymentGroupSubtitle(group: ProfilePaymentGroup): string {
+    if (group.items.length === 1) {
+      return this.purchaseItemMeta(group.items[0]);
+    }
+
+    return this.i18n.t('profile.paymentGroupSubtitle', { count: group.items.length });
+  }
+
+  paymentGroupAmountLabel(group: ProfilePaymentGroup): string {
+    return this.i18n.formatCurrency(group.amount);
+  }
+
+  paymentGroupDiscountLabel(group: ProfilePaymentGroup): string {
+    return this.i18n.formatCurrency(group.discountAmount);
+  }
+
+  paymentGroupDateLabel(group: ProfilePaymentGroup): string {
+    return this.i18n.formatDateTime(group.purchasedAt);
+  }
+
+  paymentGroupAccessLabel(group: ProfilePaymentGroup): string {
+    const date = this.i18n.formatDateTime(group.expiresAt);
+    const key = this.paymentGroupActive(group) ? 'profile.paymentValidUntil' : 'profile.paymentExpiredOn';
+    return this.i18n.t(key, { date });
+  }
+
+  paymentGroupStatusLabel(group: ProfilePaymentGroup): string {
+    return this.paymentGroupActive(group) ? this.i18n.t('profile.paymentActive') : this.i18n.t('profile.paymentExpired');
+  }
+
+  paymentGroupStatusClass(group: ProfilePaymentGroup): string {
+    return this.paymentGroupActive(group) ? 'status-chip unlocked' : 'status-chip locked';
+  }
+
+  paymentGroupMethodLabel(group: ProfilePaymentGroup): string {
+    const raw = group.items
+      .map((item) => String(item.paymentProvider || item.paymentMethod || '').trim())
+      .find(Boolean);
+    if (!raw) {
+      return '';
+    }
+
+    const normalized = raw.toLowerCase();
+    if (normalized.includes('paypal')) {
+      return 'PayPal';
+    }
+    if (normalized === 'legacy' || normalized.includes('non disponibile')) {
+      return '';
+    }
+    return raw;
+  }
+
+  purchaseItemTitle(item: PurchaseItem): string {
+    if (item.type === 'bundle') {
+      return this.i18n.t('profile.purchaseBundleTitle', { city: this.purchaseCityLabel(item) });
+    }
+
+    return String(item.poiName || '').trim() || this.i18n.t('profile.purchaseSingleFallback');
+  }
+
+  purchaseItemMeta(item: PurchaseItem): string {
+    const typeLabel = item.type === 'bundle' ? this.i18n.t('profile.scopeBundle') : this.i18n.t('profile.scopeSingle');
+    const city = this.purchaseCityLabel(item);
+    return city ? `${city} - ${typeLabel}` : typeLabel;
   }
 
   get inviteCodeStatusText(): string {
@@ -676,6 +793,49 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   cityName(cityId: string): string {
     return formatCityLabel(cityId, this.cities, this.i18n.language);
+  }
+
+  private purchaseCityLabel(item: PurchaseItem): string {
+    const cityId = String(item.cityId || '').trim();
+    const cityFromId = cityId ? this.cityName(cityId) : '';
+    return cityFromId || String(item.cityName || '').trim() || this.i18n.t('profile.purchaseCityFallback');
+  }
+
+  private paymentGroupActive(group: ProfilePaymentGroup): boolean {
+    return group.items.some((item) => item.isActive !== false);
+  }
+
+  private purchasePaidAmount(item: PurchaseItem): number {
+    const finalAmount = Number(item.finalAmount);
+    if (Number.isFinite(finalAmount) && finalAmount >= 0) {
+      return finalAmount;
+    }
+
+    const amount = Number(item.amount);
+    return Number.isFinite(amount) && amount >= 0 ? amount : 0;
+  }
+
+  private purchaseDiscountAmount(item: PurchaseItem): number {
+    const discountAmount = Number(item.discountAmount);
+    return Number.isFinite(discountAmount) && discountAmount > 0 ? discountAmount : 0;
+  }
+
+  private latestDateValue(first: string | null | undefined, second: string | null | undefined): string | null {
+    if (!first) {
+      return second || null;
+    }
+    if (!second) {
+      return first || null;
+    }
+    return this.dateTime(second) > this.dateTime(first) ? second : first;
+  }
+
+  private dateTime(value: string | null | undefined): number {
+    if (!value) {
+      return 0;
+    }
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 0 : date.getTime();
   }
 
   entryExpiryLabel(entry: HotelCodeStatusEntry): string {

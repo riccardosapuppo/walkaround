@@ -114,6 +114,19 @@ function parsePayPalErrorMessage(payload, fallback) {
       return payload.message.trim();
     }
 
+    const errorCode = typeof payload.error === 'string' ? payload.error.trim() : '';
+    const errorDescription =
+      typeof payload.error_description === 'string' ? payload.error_description.trim() : '';
+    if (errorCode && errorDescription) {
+      return `${errorCode}: ${errorDescription}`;
+    }
+    if (errorDescription) {
+      return errorDescription;
+    }
+    if (errorCode) {
+      return errorCode;
+    }
+
     if (Array.isArray(payload.details) && payload.details.length) {
       const firstIssue = payload.details[0];
       if (firstIssue && typeof firstIssue === 'object') {
@@ -133,6 +146,16 @@ function parsePayPalErrorMessage(payload, fallback) {
   }
 
   return fallback;
+}
+
+function normalizePayPalAccessToken(tokenPayload) {
+  if (typeof tokenPayload === 'string') {
+    return tokenPayload.trim();
+  }
+  if (tokenPayload && typeof tokenPayload === 'object' && typeof tokenPayload.access_token === 'string') {
+    return tokenPayload.access_token.trim();
+  }
+  return '';
 }
 
 async function requestPayPalAccessToken(settings) {
@@ -178,10 +201,15 @@ async function verifyPayPalConnection(settings) {
 }
 
 async function paypalApiRequest(settings, accessToken, requestPath, options = {}) {
+  const bearerToken = normalizePayPalAccessToken(accessToken);
+  if (!bearerToken) {
+    throw new PayPalConfigurationError('PayPal non ha restituito un access token valido.', 502);
+  }
+
   const response = await fetch(`${paypalApiBaseUrl(settings.mode)}${requestPath}`, {
     method: options.method || 'GET',
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${bearerToken}`,
       'Content-Type': 'application/json',
       Prefer: options.prefer || 'return=representation',
       ...(options.headers || {})

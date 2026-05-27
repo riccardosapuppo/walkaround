@@ -592,7 +592,9 @@ function purchaseRowToResponse(row) {
     alreadyPurchased: false,
     type: row.type,
     cityId: row.city_id || null,
+    cityName: row.city_name || null,
     poiId: row.poi_id || null,
+    poiName: row.poi_name || null,
     amount: Number(row.amount || 0),
     baseAmount: Number(row.base_amount || row.amount || 0),
     discountPercent: Number(row.discount_percent || 0),
@@ -602,6 +604,10 @@ function purchaseRowToResponse(row) {
     inviteCode: row.invite_code || null,
     structureFixedAmount: Number(row.structure_fixed_amount || 0),
     structureEarningAmount: Number(row.structure_earning_amount || 0),
+    paymentMethod: row.payment_method || null,
+    paymentProvider: row.payment_provider || null,
+    paymentStatus: row.payment_status || null,
+    paymentOrderId: row.payment_order_id || null,
     purchasedAt: toIsoDateOrNull(row.purchased_at),
     expiresAt: toIsoDateOrNull(purchaseExpiresAt(row.purchased_at))
   };
@@ -1828,7 +1834,9 @@ router.get('/me/purchases', async (req, res, next) => {
           pu.user_id,
           pu.type,
           pu.city_id,
+          c.name AS city_name,
           pu.poi_id,
+          p.name AS poi_name,
           pu.amount,
           pu.base_amount,
           pu.discount_percent,
@@ -1838,9 +1846,14 @@ router.get('/me/purchases', async (req, res, next) => {
           pu.invite_code,
           pu.structure_fixed_amount,
           pu.structure_earning_amount,
+          pu.payment_method,
+          pu.payment_provider,
+          pu.payment_status,
+          pu.payment_order_id,
           pu.purchased_at,
           c.publication_status AS city_publication_status
         FROM purchases pu
+        LEFT JOIN pois p ON p.id = pu.poi_id
         LEFT JOIN cities c ON c.id = pu.city_id
         WHERE pu.user_id = $1
         ORDER BY pu.purchased_at DESC
@@ -1884,7 +1897,9 @@ router.get('/me/purchases', async (req, res, next) => {
       userId: row.user_id,
       type: row.type,
       cityId: row.city_id,
+      cityName: row.city_name || null,
       poiId: row.poi_id,
+      poiName: row.poi_name || null,
       amount: Number(row.amount),
       baseAmount: Number(row.base_amount || row.amount || 0),
       discountPercent: Number(row.discount_percent || 0),
@@ -1894,6 +1909,10 @@ router.get('/me/purchases', async (req, res, next) => {
       inviteCode: row.invite_code || null,
       structureFixedAmount: Number(row.structure_fixed_amount || 0),
       structureEarningAmount: Number(row.structure_earning_amount || 0),
+      paymentMethod: row.payment_method || null,
+      paymentProvider: row.payment_provider || null,
+      paymentStatus: row.payment_status || null,
+      paymentOrderId: row.payment_order_id || null,
       purchasedAt: row.purchased_at,
       expiresAt: toIsoDateOrNull(purchaseExpiresAt(row.purchased_at)),
       isActive: isPurchaseStillActive(row.purchased_at, now)

@@ -3,7 +3,9 @@ export interface PurchaseItem {
   userId: string;
   type: 'single' | 'bundle';
   cityId: string | null;
+  cityName?: string | null;
   poiId: string | null;
+  poiName?: string | null;
   amount: number;
   baseAmount?: number;
   discountPercent?: number;
@@ -13,6 +15,10 @@ export interface PurchaseItem {
   inviteCode?: string | null;
   structureFixedAmount?: number;
   structureEarningAmount?: number;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
+  paymentStatus?: string | null;
+  paymentOrderId?: string | null;
   purchasedAt: string;
   expiresAt?: string | null;
   isActive?: boolean;

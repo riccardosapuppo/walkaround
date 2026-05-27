@@ -61,7 +61,9 @@ export interface CheckoutPurchaseResponse {
   alreadyPurchased?: boolean;
   type: 'single' | 'bundle';
   cityId?: string;
+  cityName?: string | null;
   poiId?: string;
+  poiName?: string | null;
   amount?: number;
   baseAmount?: number;
   discountPercent?: number;
@@ -71,6 +73,10 @@ export interface CheckoutPurchaseResponse {
   inviteCode?: string | null;
   structureFixedAmount?: number;
   structureEarningAmount?: number;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
+  paymentStatus?: string | null;
+  paymentOrderId?: string | null;
   purchasedAt?: string;
   expiresAt?: string | null;
 }
