@@ -1,126 +1,137 @@
-<section class="page-shell home" *ngIf="vm$ | async as vm">
-  <header class="home-brand">
-    <div class="home-brand-stage">
-      <img class="home-logo" src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
-      <div class="home-brand-footer">
-        <p class="home-slogan">{{ 'common.brandTagline' | t }}</p>
-
-        <div class="home-brand-controls">
-          <mat-form-field appearance="fill" class="city-select">
-            <mat-icon matPrefix fontSet="material-icons-round" class="city-select-icon">location_city</mat-icon>
-            <mat-select [value]="activeCityId" (selectionChange)="onCityChanged($event.value)">
-              <mat-option *ngFor="let city of cities" [value]="city.id">{{ cityName(city.id) }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
-    <p>{{ apiErrorMessage }}</p>
-    <p class="hint">{{ 'home.apiHint' | t }}</p>
-  </mat-card>
-
-  <mat-card class="card city-summary">
-    <p><strong>{{ 'home.region' | t }}:</strong> {{ currentCityRegion() }}</p>
-    <p><strong>{{ 'home.city' | t }}:</strong> {{ currentCityName() }}</p>
-    <p class="summary-description">
-      {{ citySummaryText() }}
-      <button mat-button type="button" class="expand-inline-btn" *ngIf="canExpandCitySummary()" (click)="toggleCitySummary()">
-        {{ citySummaryExpanded ? ('common.showLess' | t) : ('common.showMore' | t) }}
-      </button>
-    </p>
-    <p><strong>{{ 'home.placesOfInterest' | t }}:</strong> {{ vm.pois.length }}</p>
-  </mat-card>
-
-  <mat-card class="card structure-card" *ngIf="visibleAssociatedStructure as structure">
-    <div class="structure-head">
-      <p class="structure-kicker">{{ 'home.associatedStructure' | t }}</p>
-      <span class="status-chip unlocked">{{ 'home.structureActive' | t }}</span>
-    </div>
-    <h3>{{ structure.structureName }}</h3>
-    <p class="structure-address">{{ structure.structureAddress }}</p>
-    <button mat-stroked-button color="primary" (click)="navigateToAssociatedStructure()">{{ 'home.navigateToStructure' | t }}</button>
-  </mat-card>
-
-  <mat-card class="card continue" *ngIf="continuePoi">
-    <p class="section-label">{{ 'home.continueListening' | t }}</p>
-    <h3>{{ poiName(continuePoi) }}</h3>
-    <p>{{ 'home.resumeFrom' | t:{ time: (continueTime | durationLabel) } }}</p>
-    <button mat-stroked-button color="primary" (click)="resumePlayback()">{{ 'home.resume' | t }}</button>
-  </mat-card>
-
-  <div class="city-unlock-wrap" *ngIf="!isCityBundleUnlocked(activeCityId)">
-    <button mat-flat-button color="primary" class="big-cta city-unlock-btn" (click)="purchaseCity(activeCityId)">
-      {{ 'home.unlockCity' | t:{ city: currentCityName(), price: i18n.formatCurrency(cityBundlePrice(activeCityId)) } }}
-    </button>
-  </div>
-
-  <section class="nearby-section">
-    <h3>{{ 'home.nearYou' | t }}</h3>
-
-    <mat-card class="card city-switch-loader" *ngIf="citySwitching">
-      <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
-      <div class="city-switch-loader-copy">
-        <p class="city-switch-loader-title">{{ 'home.updatingCity' | t:{ city: currentCityName() } }}</p>
-        <p class="city-switch-loader-subtitle">{{ 'home.loadingPoi' | t }}</p>
-      </div>
-    </mat-card>
-
-    <ng-container *ngIf="!citySwitching">
-      <mat-card class="card poi-card" *ngFor="let poi of vm.pois">
-        <div class="poi-card-main">
-          <img [appImgFallback]="poi.imageUrl" [alt]="poiName(poi)" (click)="openPoi(poi.id)" />
-
-          <div class="poi-meta" (click)="openPoi(poi.id)">
-            <h4>{{ poiName(poi) }}</h4>
-            <p class="poi-address">{{ poiAddress(poi) }}</p>
-            <p class="poi-distance">{{ poi.distanceLabel }} - {{ poi.durationSec | durationLabel }}</p>
-            <p
-              #poiTeaser
-              class="poi-teaser"
-              [attr.data-poi-id]="poi.id"
-              [class.expanded]="isPoiDescriptionExpanded(poi.id)"
-            >
-              {{ poiDescription(poi) }}
-            </p>
-            <button
-              mat-button
-              type="button"
-              class="expand-inline-btn"
-              *ngIf="canExpandPoiDescription(poi)"
-              (click)="togglePoiDescription(poi.id); $event.stopPropagation()"
-            >
-              {{ isPoiDescriptionExpanded(poi.id) ? ('common.showLess' | t) : ('common.showMore' | t) }}
-            </button>
-          </div>
-
-          <div class="poi-quick-actions">
-            <button mat-icon-button color="primary" (click)="onPoiAudioAction(poi)" [disabled]="!hasPlayableAudio(poi)">
-              <mat-icon fontSet="material-icons-round">headphones</mat-icon>
-            </button>
-            <button mat-icon-button color="primary" (click)="toggleFavorite(poi.id)">
-              <mat-icon fontSet="material-icons-round">{{ isFavorite(poi.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
-            </button>
+@if (vm$ | async; as vm) {
+  <section class="page-shell home">
+    <header class="home-brand">
+      <div class="home-brand-stage">
+        <img class="home-logo" src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
+        <div class="home-brand-footer">
+          <p class="home-slogan">{{ 'common.brandTagline' | t }}</p>
+          <div class="home-brand-controls">
+            <mat-form-field appearance="fill" class="city-select">
+              <mat-icon matPrefix fontSet="material-icons-round" class="city-select-icon">location_city</mat-icon>
+              <mat-select [value]="activeCityId" (selectionChange)="onCityChanged($event.value)">
+                @for (city of cities; track city) {
+                  <mat-option [value]="city.id">{{ cityName(city.id) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
         </div>
-
-        <div class="poi-unlock-actions" *ngIf="!poi.unlocked">
-          <button mat-flat-button color="primary" class="unlock-poi-btn" (click)="addPoiToCart(poi)" [disabled]="isPoiInCart(poi.id)">
-            {{
-              isPoiInCart(poi.id)
-                ? ('home.placeAlreadyInCart' | t)
-                : ('mapSheet.unlockPlace' | t:{ price: i18n.formatCurrency(poi.priceSingle) })
-            }}
-          </button>
-        </div>
+      </div>
+    </header>
+    @if (apiErrorMessage) {
+      <mat-card class="card warning api-warning">
+        <p>{{ apiErrorMessage }}</p>
+        <p class="hint">{{ 'home.apiHint' | t }}</p>
       </mat-card>
-    </ng-container>
+    }
+    <mat-card class="card city-summary">
+      <p><strong>{{ 'home.region' | t }}:</strong> {{ currentCityRegion() }}</p>
+      <p><strong>{{ 'home.city' | t }}:</strong> {{ currentCityName() }}</p>
+      <p class="summary-description">
+        {{ citySummaryText() }}
+        @if (canExpandCitySummary()) {
+          <button mat-button type="button" class="expand-inline-btn" (click)="toggleCitySummary()">
+            {{ citySummaryExpanded ? ('common.showLess' | t) : ('common.showMore' | t) }}
+          </button>
+        }
+      </p>
+      <p><strong>{{ 'home.placesOfInterest' | t }}:</strong> {{ vm.pois.length }}</p>
+    </mat-card>
+    @if (visibleAssociatedStructure; as structure) {
+      <mat-card class="card structure-card">
+        <div class="structure-head">
+          <p class="structure-kicker">{{ 'home.associatedStructure' | t }}</p>
+          <span class="status-chip unlocked">{{ 'home.structureActive' | t }}</span>
+        </div>
+        <h3>{{ structure.structureName }}</h3>
+        <p class="structure-address">{{ structure.structureAddress }}</p>
+        <button mat-stroked-button color="primary" (click)="navigateToAssociatedStructure()">{{ 'home.navigateToStructure' | t }}</button>
+      </mat-card>
+    }
+    @if (continuePoi) {
+      <mat-card class="card continue">
+        <p class="section-label">{{ 'home.continueListening' | t }}</p>
+        <h3>{{ poiName(continuePoi) }}</h3>
+        <p>{{ 'home.resumeFrom' | t:{ time: (continueTime | durationLabel) } }}</p>
+        <button mat-stroked-button color="primary" (click)="resumePlayback()">{{ 'home.resume' | t }}</button>
+      </mat-card>
+    }
+    @if (!isCityBundleUnlocked(activeCityId)) {
+      <div class="city-unlock-wrap">
+        <button mat-flat-button color="primary" class="big-cta city-unlock-btn" (click)="purchaseCity(activeCityId)">
+          {{ 'home.unlockCity' | t:{ city: currentCityName(), price: i18n.formatCurrency(cityBundlePrice(activeCityId)) } }}
+        </button>
+      </div>
+    }
+    <section class="nearby-section">
+      <h3>{{ 'home.nearYou' | t }}</h3>
+      @if (citySwitching) {
+        <mat-card class="card city-switch-loader">
+          <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+          <div class="city-switch-loader-copy">
+            <p class="city-switch-loader-title">{{ 'home.updatingCity' | t:{ city: currentCityName() } }}</p>
+            <p class="city-switch-loader-subtitle">{{ 'home.loadingPoi' | t }}</p>
+          </div>
+        </mat-card>
+      }
+      @if (!citySwitching) {
+        @for (poi of vm.pois; track poi) {
+          <mat-card class="card poi-card">
+            <div class="poi-card-main">
+              <img [appImgFallback]="poi.imageUrl" [alt]="poiName(poi)" (click)="openPoi(poi.id)" />
+              <div class="poi-meta" (click)="openPoi(poi.id)">
+                <h4>{{ poiName(poi) }}</h4>
+                <p class="poi-address">{{ poiAddress(poi) }}</p>
+                <p class="poi-distance">{{ poi.distanceLabel }} - {{ poi.durationSec | durationLabel }}</p>
+                <p
+                  #poiTeaser
+                  class="poi-teaser"
+                  [attr.data-poi-id]="poi.id"
+                  [class.expanded]="isPoiDescriptionExpanded(poi.id)"
+                  >
+                  {{ poiDescription(poi) }}
+                </p>
+                @if (canExpandPoiDescription(poi)) {
+                  <button
+                    mat-button
+                    type="button"
+                    class="expand-inline-btn"
+                    (click)="togglePoiDescription(poi.id); $event.stopPropagation()"
+                    >
+                    {{ isPoiDescriptionExpanded(poi.id) ? ('common.showLess' | t) : ('common.showMore' | t) }}
+                  </button>
+                }
+              </div>
+              <div class="poi-quick-actions">
+                <button mat-icon-button color="primary" (click)="onPoiAudioAction(poi)" [disabled]="!hasPlayableAudio(poi)">
+                  <mat-icon fontSet="material-icons-round">headphones</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" (click)="toggleFavorite(poi.id)">
+                  <mat-icon fontSet="material-icons-round">{{ isFavorite(poi.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
+                </button>
+              </div>
+            </div>
+            @if (!poi.unlocked) {
+              <div class="poi-unlock-actions">
+                <button mat-flat-button color="primary" class="unlock-poi-btn" (click)="addPoiToCart(poi)" [disabled]="isPoiInCart(poi.id)">
+                  {{
+                  isPoiInCart(poi.id)
+                  ? ('home.placeAlreadyInCart' | t)
+                  : ('mapSheet.unlockPlace' | t:{ price: i18n.formatCurrency(poi.priceSingle) })
+                  }}
+                </button>
+              </div>
+            }
+          </mat-card>
+        }
+      }
+    </section>
   </section>
-</section>
+}
 
-<section class="page-shell home loading-state" *ngIf="loading">
-  <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-  <p>{{ 'home.loadingPoi' | t }}</p>
-</section>
+@if (loading) {
+  <section class="page-shell home loading-state">
+    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+    <p>{{ 'home.loadingPoi' | t }}</p>
+  </section>
+}

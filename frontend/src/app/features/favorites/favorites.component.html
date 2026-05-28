@@ -8,47 +8,51 @@
         loading="eager"
         decoding="sync"
         fetchpriority="high"
-      />
+        />
       <div class="brand-hero-footer">
         <p class="brand-hero-slogan">{{ 'common.brandTagline' | t }}</p>
       </div>
     </div>
   </header>
 
-  <mat-card class="card section-loading-card" *ngIf="loading">
-    <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
-    <p>{{ 'favorites.loading' | t }}</p>
-  </mat-card>
-
-  <ng-container *ngIf="!loading">
-    <mat-card class="card poi-card" *ngFor="let poi of favorites">
-      <img [appImgFallback]="poi.imageUrl" [alt]="poiName(poi)" (click)="openPoi(poi.id)" />
-
-      <div class="meta" (click)="openPoi(poi.id)">
-        <h3>{{ poiName(poi) }}</h3>
-        <p class="address">{{ poiAddress(poi) }}</p>
-        <p class="distance">{{ distanceLabel(poi.distanceMeters) }} - {{ poi.durationSec | durationLabel }}</p>
-        <p class="teaser">{{ poiDescription(poi) }}</p>
-      </div>
-
-      <div class="poi-actions">
-        <button
-          mat-icon-button
-          color="primary"
-          (click)="playAudio(poi)"
-          [disabled]="!hasPlayableAudio(poi)"
-          [attr.aria-label]="'favorites.audioAria' | t"
-        >
-          <mat-icon fontSet="material-icons-round">headphones</mat-icon>
-        </button>
-        <button mat-icon-button color="primary" (click)="toggleFavorite(poi)" [attr.aria-label]="'favorites.favoriteAria' | t">
-          <mat-icon fontSet="material-icons-round">favorite</mat-icon>
-        </button>
-      </div>
+  @if (loading) {
+    <mat-card class="card section-loading-card">
+      <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
+      <p>{{ 'favorites.loading' | t }}</p>
     </mat-card>
-  </ng-container>
+  }
 
-  <mat-card class="card empty" *ngIf="!loading && !favorites.length">
-    <p>{{ 'favorites.empty' | t }}</p>
-  </mat-card>
+  @if (!loading) {
+    @for (poi of favorites; track poi) {
+      <mat-card class="card poi-card">
+        <img [appImgFallback]="poi.imageUrl" [alt]="poiName(poi)" (click)="openPoi(poi.id)" />
+        <div class="meta" (click)="openPoi(poi.id)">
+          <h3>{{ poiName(poi) }}</h3>
+          <p class="address">{{ poiAddress(poi) }}</p>
+          <p class="distance">{{ distanceLabel(poi.distanceMeters) }} - {{ poi.durationSec | durationLabel }}</p>
+          <p class="teaser">{{ poiDescription(poi) }}</p>
+        </div>
+        <div class="poi-actions">
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="playAudio(poi)"
+            [disabled]="!hasPlayableAudio(poi)"
+            [attr.aria-label]="'favorites.audioAria' | t"
+            >
+            <mat-icon fontSet="material-icons-round">headphones</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" (click)="toggleFavorite(poi)" [attr.aria-label]="'favorites.favoriteAria' | t">
+            <mat-icon fontSet="material-icons-round">favorite</mat-icon>
+          </button>
+        </div>
+      </mat-card>
+    }
+  }
+
+  @if (!loading && !favorites.length) {
+    <mat-card class="card empty">
+      <p>{{ 'favorites.empty' | t }}</p>
+    </mat-card>
+  }
 </section>

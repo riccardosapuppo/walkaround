@@ -8,7 +8,7 @@
         loading="eager"
         decoding="sync"
         fetchpriority="high"
-      />
+        />
       <div class="brand-hero-footer">
         <p class="brand-hero-slogan">{{ 'common.brandTagline' | t }}</p>
       </div>
@@ -18,65 +18,86 @@
   <mat-card class="card section">
     <h3>{{ 'cart.placesInCart' | t }}</h3>
 
-    <div class="cart-list" *ngIf="cartItems.length; else emptyCart">
-      <div class="cart-item" *ngFor="let item of cartItems">
-        <div>
-          <p class="cart-item-title">{{ itemLabel(item) }}</p>
-          <p class="cart-item-sub">{{ itemCityName(item) }} - {{ itemAmountLabel(item) }}</p>
-        </div>
-        <button mat-icon-button color="warn" (click)="removeCartItem(item.key)" [attr.aria-label]="'cart.removeAria' | t">
-          <mat-icon fontSet="material-icons-round">delete</mat-icon>
-        </button>
+    @if (cartItems.length) {
+      <div class="cart-list">
+        @for (item of cartItems; track item) {
+          <div class="cart-item">
+            <div>
+              <p class="cart-item-title">{{ itemLabel(item) }}</p>
+              <p class="cart-item-sub">{{ itemCityName(item) }} - {{ itemAmountLabel(item) }}</p>
+            </div>
+            <button mat-icon-button color="warn" (click)="removeCartItem(item.key)" [attr.aria-label]="'cart.removeAria' | t">
+              <mat-icon fontSet="material-icons-round">delete</mat-icon>
+            </button>
+          </div>
+        }
       </div>
-    </div>
-    <ng-template #emptyCart>
+    } @else {
       <p>{{ 'cart.empty' | t }}</p>
-    </ng-template>
+    }
 
-    <div class="cart-total-block" *ngIf="cartItems.length">
-      <p class="cart-total"><strong>{{ 'cart.total' | t }}:</strong> {{ cartTotalLabel() }}</p>
-      <p class="cart-total discount-line" *ngIf="quote && (quote.discountAmount || 0) > 0">
-        <strong>{{ 'cart.discount' | t }}:</strong> -{{ quotedDiscountLabel() }}
-      </p>
-      <p class="cart-total final-line" *ngIf="quote">
-        <strong>{{ 'cart.paypalTotal' | t }}:</strong> {{ quotedFinalLabel() }}
-      </p>
-    </div>
-
-    <div class="paypal-panel" *ngIf="cartItems.length">
-      <p class="paypal-title"><strong>{{ 'cart.paymentMethod' | t }}</strong></p>
-
-      <div class="paypal-loading" *ngIf="loadingQuote">
-        <mat-spinner diameter="24"></mat-spinner>
-        <span>{{ 'cart.loadingQuote' | t }}</span>
+    @if (cartItems.length) {
+      <div class="cart-total-block">
+        <p class="cart-total"><strong>{{ 'cart.total' | t }}:</strong> {{ cartTotalLabel() }}</p>
+        @if (quote && (quote.discountAmount || 0) > 0) {
+          <p class="cart-total discount-line">
+            <strong>{{ 'cart.discount' | t }}:</strong> -{{ quotedDiscountLabel() }}
+          </p>
+        }
+        @if (quote) {
+          <p class="cart-total final-line">
+            <strong>{{ 'cart.paypalTotal' | t }}:</strong> {{ quotedFinalLabel() }}
+          </p>
+        }
       </div>
+    }
 
-      <div class="paypal-loading" *ngIf="!loadingQuote && restoringSession">
-        <mat-spinner diameter="24"></mat-spinner>
-        <span>{{ 'unlock.checking' | t }}</span>
+    @if (cartItems.length) {
+      <div class="paypal-panel">
+        <p class="paypal-title"><strong>{{ 'cart.paymentMethod' | t }}</strong></p>
+        @if (loadingQuote) {
+          <div class="paypal-loading">
+            <mat-spinner diameter="24"></mat-spinner>
+            <span>{{ 'cart.loadingQuote' | t }}</span>
+          </div>
+        }
+        @if (!loadingQuote && restoringSession) {
+          <div class="paypal-loading">
+            <mat-spinner diameter="24"></mat-spinner>
+            <span>{{ 'unlock.checking' | t }}</span>
+          </div>
+        }
+        @if (!loadingQuote && !restoringSession && !isAppLoggedIn) {
+          <div class="auth-required">
+            <p>{{ 'auth.checkoutRequired' | t }}</p>
+            <button mat-flat-button color="primary" type="button" (click)="goToLogin()">{{ 'auth.loginOrRegister' | t }}</button>
+          </div>
+        }
+        @if (paymentError) {
+          <p class="payment-error">{{ paymentError }}</p>
+        }
+        @if (!loadingQuote && !restoringSession && isAppLoggedIn && !paymentError && quote) {
+          <div class="paypal-button-stage">
+            @if (showPayPalButtonsLoading) {
+              <div class="paypal-loading paypal-button-loading">
+                <mat-spinner diameter="24"></mat-spinner>
+                <span>{{ 'unlock.paypalInit' | t }}</span>
+              </div>
+            }
+            <div
+              #paypalButtonsContainer
+              class="paypal-buttons"
+              [class.paypal-buttons-hidden]="showPayPalButtonsLoading"
+            ></div>
+          </div>
+        }
       </div>
+    }
 
-      <div class="auth-required" *ngIf="!loadingQuote && !restoringSession && !isAppLoggedIn">
-        <p>{{ 'auth.checkoutRequired' | t }}</p>
-        <button mat-flat-button color="primary" type="button" (click)="goToLogin()">{{ 'auth.loginOrRegister' | t }}</button>
+    @if (cartItems.length) {
+      <div class="cart-actions">
+        <button mat-stroked-button color="warn" (click)="clearCart()" [disabled]="cartPaying || loadingQuote || restoringSession || paypalButtonsLoading">{{ 'cart.clear' | t }}</button>
       </div>
-
-      <p class="payment-error" *ngIf="paymentError">{{ paymentError }}</p>
-      <div class="paypal-button-stage" *ngIf="!loadingQuote && !restoringSession && isAppLoggedIn && !paymentError && quote">
-        <div class="paypal-loading paypal-button-loading" *ngIf="showPayPalButtonsLoading">
-          <mat-spinner diameter="24"></mat-spinner>
-          <span>{{ 'unlock.paypalInit' | t }}</span>
-        </div>
-        <div
-          #paypalButtonsContainer
-          class="paypal-buttons"
-          [class.paypal-buttons-hidden]="showPayPalButtonsLoading"
-        ></div>
-      </div>
-    </div>
-
-    <div class="cart-actions" *ngIf="cartItems.length">
-      <button mat-stroked-button color="warn" (click)="clearCart()" [disabled]="cartPaying || loadingQuote || restoringSession || paypalButtonsLoading">{{ 'cart.clear' | t }}</button>
-    </div>
+    }
   </mat-card>
 </section>

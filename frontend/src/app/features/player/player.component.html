@@ -1,74 +1,78 @@
-<section class="player-page page-shell" *ngIf="poi as currentPoi">
-  <button mat-icon-button class="back" (click)="goBack()" [attr.aria-label]="'common.goBack' | t">
-    <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
-  </button>
-
-  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="poiName(currentPoi)" />
-
-  <h1 class="page-title">{{ poiName(currentPoi) }}</h1>
-  <p class="page-subtitle">
-    {{ audioUnavailable ? ('player.audioUnavailable' | t) : (previewMode ? ('player.previewLabel' | t:{ seconds: previewSeconds }) : ('player.fullAudio' | t)) }}
-    - {{ currentPoi.durationSec | durationLabel }}
-  </p>
-
-  <section class="player card" *ngIf="!audioUnavailable">
-    <ng-container *ngIf="playerState$ | async as state">
-    <input
-      type="range"
-      class="progress"
-      [max]="previewMode ? previewSeconds : (state.duration || currentPoi.durationSec)"
-      [value]="state.currentTime"
-      (input)="seek($event)"
-    />
-
-    <div class="time-row">
-      <span>{{ formatClock(state.currentTime) }}</span>
-      <span>{{ formatClock(previewMode ? previewSeconds : (state.duration || currentPoi.durationSec)) }}</span>
-    </div>
-
-    <div class="controls">
-      <button mat-mini-fab color="primary" (click)="skip(-15)">
-        <mat-icon fontSet="material-icons-round">replay_10</mat-icon>
-      </button>
-
-      <button mat-fab color="primary" (click)="togglePlay()">
-        <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
-      </button>
-
-      <button mat-mini-fab color="primary" (click)="skip(15)">
-        <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
-      </button>
-    </div>
-
-    <mat-slide-toggle *ngIf="canToggleOffline" [ngModel]="offlineEnabled" (ngModelChange)="toggleOffline($event)">
-      {{ 'player.downloadOffline' | t }}
-    </mat-slide-toggle>
-
-    <p class="preview-note" *ngIf="state.previewEnded">
-      {{ 'player.previewEnded' | t }}
+@if (poi; as currentPoi) {
+  <section class="player-page page-shell">
+    <button mat-icon-button class="back" (click)="goBack()" [attr.aria-label]="'common.goBack' | t">
+      <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
+    </button>
+    <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="poiName(currentPoi)" />
+    <h1 class="page-title">{{ poiName(currentPoi) }}</h1>
+    <p class="page-subtitle">
+      {{ audioUnavailable ? ('player.audioUnavailable' | t) : (previewMode ? ('player.previewLabel' | t:{ seconds: previewSeconds }) : ('player.fullAudio' | t)) }}
+      - {{ currentPoi.durationSec | durationLabel }}
     </p>
-    </ng-container>
+    @if (!audioUnavailable) {
+      <section class="player card">
+        @if (playerState$ | async; as state) {
+          <input
+            type="range"
+            class="progress"
+            [max]="previewMode ? previewSeconds : (state.duration || currentPoi.durationSec)"
+            [value]="state.currentTime"
+            (input)="seek($event)"
+            />
+          <div class="time-row">
+            <span>{{ formatClock(state.currentTime) }}</span>
+            <span>{{ formatClock(previewMode ? previewSeconds : (state.duration || currentPoi.durationSec)) }}</span>
+          </div>
+          <div class="controls">
+            <button mat-mini-fab color="primary" (click)="skip(-15)">
+              <mat-icon fontSet="material-icons-round">replay_10</mat-icon>
+            </button>
+            <button mat-fab color="primary" (click)="togglePlay()">
+              <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+            </button>
+            <button mat-mini-fab color="primary" (click)="skip(15)">
+              <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
+            </button>
+          </div>
+          @if (canToggleOffline) {
+            <mat-slide-toggle [ngModel]="offlineEnabled" (ngModelChange)="toggleOffline($event)">
+              {{ 'player.downloadOffline' | t }}
+            </mat-slide-toggle>
+          }
+          @if (state.previewEnded) {
+            <p class="preview-note">
+              {{ 'player.previewEnded' | t }}
+            </p>
+          }
+        }
+      </section>
+    }
+    @if (audioUnavailable) {
+      <mat-card class="card warning">
+        <p>{{ 'player.noAudioTrack' | t }}</p>
+      </mat-card>
+    }
+    @if (unlocked && !previewMode) {
+      <p class="description">{{ poiDescriptionLong(currentPoi) }}</p>
+    } @else {
+      <p class="description">{{ poiDescriptionShort(currentPoi) }}</p>
+    }
   </section>
+}
 
-  <mat-card class="card warning" *ngIf="audioUnavailable">
-    <p>{{ 'player.noAudioTrack' | t }}</p>
-  </mat-card>
+@if (loading) {
+  <section class="page-shell loading-shell">
+    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+    <p>{{ 'player.loading' | t }}</p>
+  </section>
+}
 
-  <p class="description" *ngIf="unlocked && !previewMode; else teaserDescription">{{ poiDescriptionLong(currentPoi) }}</p>
-  <ng-template #teaserDescription>
-    <p class="description">{{ poiDescriptionShort(currentPoi) }}</p>
-  </ng-template>
-</section>
-
-<section class="page-shell loading-shell" *ngIf="loading">
-  <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-  <p>{{ 'player.loading' | t }}</p>
-</section>
-
-<section class="page-shell player-page" *ngIf="!loading && !poi">
-  <mat-card class="card warning">
-    <p>{{ loadError ? ('player.unavailable' | t) : ('player.notFound' | t) }}</p>
-    <button mat-stroked-button color="primary" (click)="goBack()">{{ 'common.goBack' | t }}</button>
-  </mat-card>
-</section>
+@if (!loading && !poi) {
+  <section class="page-shell player-page">
+    <mat-card class="card warning">
+      <p>{{ loadError ? ('player.unavailable' | t) : ('player.notFound' | t) }}</p>
+      <button mat-stroked-button color="primary" (click)="goBack()">{{ 'common.goBack' | t }}</button>
+    </mat-card>
+  </section>
+}
 

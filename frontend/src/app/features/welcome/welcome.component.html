@@ -21,7 +21,9 @@
         <mat-icon matPrefix fontSet="material-icons-round" class="welcome-select-icon">location_city</mat-icon>
         <mat-label>{{ 'home.city' | t }}</mat-label>
         <mat-select [value]="selectedCityId" (selectionChange)="setCity($event.value)" [disabled]="loadingCities || !cities.length">
-          <mat-option *ngFor="let city of cities" [value]="city.id">{{ cityName(city) }}</mat-option>
+          @for (city of cities; track city) {
+            <mat-option [value]="city.id">{{ cityName(city) }}</mat-option>
+          }
         </mat-select>
       </mat-form-field>
 
@@ -31,15 +33,16 @@
 
       <div class="welcome-actions">
         <button mat-flat-button color="primary" class="big-cta welcome-cta primary-cta" (click)="start()">{{ 'common.enter' | t }}</button>
-        <button
-          mat-stroked-button
-          color="primary"
-          class="big-cta welcome-cta secondary-cta"
-          *ngIf="!isAppLoggedIn"
-          (click)="goToLogin()"
-        >
-          {{ 'auth.loginOrRegister' | t }}
-        </button>
+        @if (!isAppLoggedIn) {
+          <button
+            mat-stroked-button
+            color="primary"
+            class="big-cta welcome-cta secondary-cta"
+            (click)="goToLogin()"
+            >
+            {{ 'auth.loginOrRegister' | t }}
+          </button>
+        }
         <button mat-stroked-button color="primary" class="big-cta welcome-cta secondary-cta" (click)="goToPartnerRegistration()">
           {{ 'common.becomePartner' | t }}
         </button>
@@ -47,47 +50,60 @@
     </div>
 
     <div class="invite-box">
-      <div
-        class="discount-notice"
-        *ngIf="showDiscountNotice"
-        [ngClass]="'discount-notice-' + discountNoticeTone"
-        aria-live="polite"
-      >
-        <mat-spinner *ngIf="linkedDiscountState === 'checking'" diameter="22"></mat-spinner>
-        <mat-icon *ngIf="linkedDiscountState !== 'checking'" fontSet="material-icons-round">{{ discountNoticeIcon }}</mat-icon>
-        <div class="discount-notice-copy">
-          <p>{{ linkedDiscountMessage }}</p>
-          <small *ngIf="linkedDiscountDetail">{{ linkedDiscountDetail }}</small>
+      @if (showDiscountNotice) {
+        <div
+          class="discount-notice"
+          [ngClass]="'discount-notice-' + discountNoticeTone"
+          aria-live="polite"
+          >
+          @if (linkedDiscountState === 'checking') {
+            <mat-spinner diameter="22"></mat-spinner>
+          }
+          @if (linkedDiscountState !== 'checking') {
+            <mat-icon fontSet="material-icons-round">{{ discountNoticeIcon }}</mat-icon>
+          }
+          <div class="discount-notice-copy">
+            <p>{{ linkedDiscountMessage }}</p>
+            @if (linkedDiscountDetail) {
+              <small>{{ linkedDiscountDetail }}</small>
+            }
+          </div>
         </div>
-      </div>
+      }
 
       <button mat-button type="button" class="invite-toggle" color="primary" (click)="showCodeInput = !showCodeInput">
         {{ showCodeInput ? ('welcome.hideInviteQuestion' | t) : ('welcome.inviteQuestion' | t) }}
       </button>
 
-      <section class="code-box card" *ngIf="showCodeInput">
-        <div class="code-box-status" *ngIf="canContinueWithStoredCode">
-          <mat-icon fontSet="material-icons-round">verified</mat-icon>
-          <span>Codice pronto</span>
-        </div>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>{{ 'welcome.inviteCodeLabel' | t }}</mat-label>
-          <input
-            matInput
-            [ngModel]="hotelCode"
-            maxlength="6"
-            autocomplete="off"
-            (ngModelChange)="normalizeCodeInput($event)"
-          />
-        </mat-form-field>
-
-        <button mat-stroked-button color="primary" class="code-action" [disabled]="isCheckingCode" (click)="continueOrValidateCode()">
-          <mat-icon *ngIf="!isCheckingCode" fontSet="material-icons-round">{{ codeActionIcon }}</mat-icon>
-          <mat-spinner *ngIf="isCheckingCode" diameter="18"></mat-spinner>
-          <span>{{ codeActionLabel }}</span>
-        </button>
-      </section>
+      @if (showCodeInput) {
+        <section class="code-box card">
+          @if (canContinueWithStoredCode) {
+            <div class="code-box-status">
+              <mat-icon fontSet="material-icons-round">verified</mat-icon>
+              <span>Codice pronto</span>
+            </div>
+          }
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'welcome.inviteCodeLabel' | t }}</mat-label>
+            <input
+              matInput
+              [ngModel]="hotelCode"
+              maxlength="6"
+              autocomplete="off"
+              (ngModelChange)="normalizeCodeInput($event)"
+              />
+          </mat-form-field>
+          <button mat-stroked-button color="primary" class="code-action" [disabled]="isCheckingCode" (click)="continueOrValidateCode()">
+            @if (!isCheckingCode) {
+              <mat-icon fontSet="material-icons-round">{{ codeActionIcon }}</mat-icon>
+            }
+            @if (isCheckingCode) {
+              <mat-spinner diameter="18"></mat-spinner>
+            }
+            <span>{{ codeActionLabel }}</span>
+          </button>
+        </section>
+      }
     </div>
   </div>
 </section>

@@ -10,187 +10,231 @@
   </div>
 
   <mat-dialog-content>
-    <div *ngIf="syncingAssociation && !processingPayment && !paymentCompleted" class="processing-card" aria-live="polite">
-      <mat-spinner diameter="30"></mat-spinner>
-      <p class="processing-title">{{ i18n.t('unlock.checkingStoredCode') }}</p>
-    </div>
-
-    <div class="step-block" *ngIf="step === 'choice' && !syncingAssociation && !processingPayment && !paymentCompleted">
-      <div class="summary-card stored-code-card" *ngIf="hasStoredCode">
-        <p class="summary-title">{{ i18n.t('unlock.storedCodeDetected') }}</p>
-        <p class="summary-line">
-          <strong>{{ i18n.t('unlock.code') }}:</strong> <code>{{ storedCode }}</code>
-        </p>
+    @if (syncingAssociation && !processingPayment && !paymentCompleted) {
+      <div class="processing-card" aria-live="polite">
+        <mat-spinner diameter="30"></mat-spinner>
+        <p class="processing-title">{{ i18n.t('unlock.checkingStoredCode') }}</p>
       </div>
-      <p class="error-text" *ngIf="validationError">{{ validationError }}</p>
+    }
 
-      <div class="choice-grid">
-        <button
-          type="button"
-          mat-flat-button
-          color="primary"
-          class="choice-btn"
-          *ngIf="hasStoredCode"
-          (click)="useStoredCode()"
-          [disabled]="validating"
-        >
-          {{ i18n.t('unlock.useStoredCode') }}
-        </button>
-        <button type="button" mat-stroked-button color="primary" class="choice-btn" (click)="chooseHasInviteCode()">
-          {{ hasStoredCode ? i18n.t('unlock.enterNewCode') : i18n.t('unlock.haveInviteCode') }}
-        </button>
-        <button type="button" mat-stroked-button color="primary" class="choice-btn" (click)="chooseNoInviteCode()">
-          {{ i18n.t('unlock.noCodePaypal') }}
-        </button>
+    @if (step === 'choice' && !syncingAssociation && !processingPayment && !paymentCompleted) {
+      <div class="step-block">
+        @if (hasStoredCode) {
+          <div class="summary-card stored-code-card">
+            <p class="summary-title">{{ i18n.t('unlock.storedCodeDetected') }}</p>
+            <p class="summary-line">
+              <strong>{{ i18n.t('unlock.code') }}:</strong> <code>{{ storedCode }}</code>
+            </p>
+          </div>
+        }
+        @if (validationError) {
+          <p class="error-text">{{ validationError }}</p>
+        }
+        <div class="choice-grid">
+          @if (hasStoredCode) {
+            <button
+              type="button"
+              mat-flat-button
+              color="primary"
+              class="choice-btn"
+              (click)="useStoredCode()"
+              [disabled]="validating"
+              >
+              {{ i18n.t('unlock.useStoredCode') }}
+            </button>
+          }
+          <button type="button" mat-stroked-button color="primary" class="choice-btn" (click)="chooseHasInviteCode()">
+            {{ hasStoredCode ? i18n.t('unlock.enterNewCode') : i18n.t('unlock.haveInviteCode') }}
+          </button>
+          <button type="button" mat-stroked-button color="primary" class="choice-btn" (click)="chooseNoInviteCode()">
+            {{ i18n.t('unlock.noCodePaypal') }}
+          </button>
+        </div>
       </div>
-    </div>
+    }
 
-    <div *ngIf="step === 'input' && !syncingAssociation && !processingPayment && !paymentCompleted" class="step-block">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>{{ i18n.t('unlock.inviteCode') }}</mat-label>
-        <input
-          matInput
-          [formControl]="codeControl"
-          maxlength="6"
-          autocomplete="off"
-          autocapitalize="characters"
-          spellcheck="false"
-          (input)="normalizeCodeInput()"
-          (keyup.enter)="validateCode()"
-        />
-        <mat-hint>{{ i18n.t('unlock.codeHint') }}</mat-hint>
-        <mat-error *ngIf="codeControl.invalid && codeControl.touched">{{ i18n.t('unlock.enterValidCode') }}</mat-error>
-      </mat-form-field>
+    @if (step === 'input' && !syncingAssociation && !processingPayment && !paymentCompleted) {
+      <div class="step-block">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ i18n.t('unlock.inviteCode') }}</mat-label>
+          <input
+            matInput
+            [formControl]="codeControl"
+            maxlength="6"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            (input)="normalizeCodeInput()"
+            (keyup.enter)="validateCode()"
+            />
+          <mat-hint>{{ i18n.t('unlock.codeHint') }}</mat-hint>
+          @if (codeControl.invalid && codeControl.touched) {
+            <mat-error>{{ i18n.t('unlock.enterValidCode') }}</mat-error>
+          }
+        </mat-form-field>
+        @if (validationError) {
+          <p class="error-text">{{ validationError }}</p>
+        }
+      </div>
+    }
 
-      <p class="error-text" *ngIf="validationError">{{ validationError }}</p>
-    </div>
-
-    <div *ngIf="step === 'summary' && !paymentCompleted" class="step-block">
-      <div class="summary-card" *ngIf="appliedAssociation as association; else noCodeSummary">
-        <p class="summary-title">{{ i18n.t('unlock.discountCodeApplied') }}</p>
-        <p class="summary-line">
-          <strong>{{ i18n.t('unlock.code') }}:</strong> <code>{{ appliedCode || association.inviteCode }}</code>
-        </p>
-        <p class="summary-line"><strong>{{ i18n.t('unlock.structure') }}:</strong> {{ association.structureName }}</p>
-        <p class="summary-line" *ngIf="association.appliesTo">
-          <strong>{{ i18n.t('unlock.applicableTo') }}:</strong> {{ applicableToLabel(association.appliesTo) }}
-        </p>
-        <p class="summary-line" *ngIf="associationCitiesLabel(association)">
-          <strong>{{ i18n.t('unlock.city') }}:</strong> {{ associationCitiesLabel(association) }}
-        </p>
-        <p class="summary-line status-line">
-          <strong>{{ i18n.t('unlock.codeStatus') }}:</strong>
-          <span
-            class="status-chip"
+    @if (step === 'summary' && !paymentCompleted) {
+      <div class="step-block">
+        @if (appliedAssociation; as association) {
+          <div class="summary-card">
+            <p class="summary-title">{{ i18n.t('unlock.discountCodeApplied') }}</p>
+            <p class="summary-line">
+              <strong>{{ i18n.t('unlock.code') }}:</strong> <code>{{ appliedCode || association.inviteCode }}</code>
+            </p>
+            <p class="summary-line"><strong>{{ i18n.t('unlock.structure') }}:</strong> {{ association.structureName }}</p>
+            @if (association.appliesTo) {
+              <p class="summary-line">
+                <strong>{{ i18n.t('unlock.applicableTo') }}:</strong> {{ applicableToLabel(association.appliesTo) }}
+              </p>
+            }
+            @if (associationCitiesLabel(association)) {
+              <p class="summary-line">
+                <strong>{{ i18n.t('unlock.city') }}:</strong> {{ associationCitiesLabel(association) }}
+              </p>
+            }
+            <p class="summary-line status-line">
+              <strong>{{ i18n.t('unlock.codeStatus') }}:</strong>
+              <span
+                class="status-chip"
             [ngClass]="{
               'status-chip-valid': association.codeStatus === 'valid',
               'status-chip-used': association.codeStatus === 'used',
               'status-chip-expired': association.codeStatus === 'expired',
               'status-chip-invalid': association.codeStatus !== 'valid' && association.codeStatus !== 'expired' && association.codeStatus !== 'used'
             }"
-          >
-            {{ codeStatusLabel(association.codeStatus) }}
-          </span>
-        </p>
-        <p class="summary-line" *ngIf="association.expiresAt">
-          <strong>{{ i18n.t('unlock.expiry') }}:</strong> {{ formatDateTime(association.expiresAt) }}
-        </p>
-        <p class="summary-line"><strong>{{ i18n.t('unlock.discount') }}:</strong> {{ discountPercent }}%</p>
-        <p class="summary-line"><strong>{{ i18n.t('unlock.basePrice') }}:</strong> {{ formatAmount(baseAmount) }}</p>
-        <p class="summary-line"><strong>{{ i18n.t('unlock.discountApplied') }}:</strong> -{{ formatAmount(discountAmount) }}</p>
-        <p class="summary-line summary-total"><strong>{{ i18n.t('unlock.finalPrice') }}:</strong> {{ formatAmount(finalAmount) }}</p>
+                >
+                {{ codeStatusLabel(association.codeStatus) }}
+              </span>
+            </p>
+            @if (association.expiresAt) {
+              <p class="summary-line">
+                <strong>{{ i18n.t('unlock.expiry') }}:</strong> {{ formatDateTime(association.expiresAt) }}
+              </p>
+            }
+            <p class="summary-line"><strong>{{ i18n.t('unlock.discount') }}:</strong> {{ discountPercent }}%</p>
+            <p class="summary-line"><strong>{{ i18n.t('unlock.basePrice') }}:</strong> {{ formatAmount(baseAmount) }}</p>
+            <p class="summary-line"><strong>{{ i18n.t('unlock.discountApplied') }}:</strong> -{{ formatAmount(discountAmount) }}</p>
+            <p class="summary-line summary-total"><strong>{{ i18n.t('unlock.finalPrice') }}:</strong> {{ formatAmount(finalAmount) }}</p>
+          </div>
+        } @else {
+          <div class="summary-card">
+            <p class="summary-title">{{ i18n.t('unlock.paypalPayment') }}</p>
+            <p class="summary-line">{{ i18n.t('unlock.noCodeSummary') }}</p>
+            <p class="summary-line"><strong>{{ i18n.t('unlock.basePrice') }}:</strong> {{ formatAmount(baseAmount) }}</p>
+            <p class="summary-line"><strong>{{ i18n.t('unlock.discountApplied') }}:</strong> -{{ formatAmount(0) }}</p>
+            <p class="summary-line summary-total"><strong>{{ i18n.t('unlock.totalToPay') }}:</strong> {{ formatAmount(finalAmount) }}</p>
+          </div>
+        }
+        <div class="summary-card paypal-card">
+          <p class="summary-title">{{ i18n.t('unlock.paymentMethod') }}</p>
+          <p class="summary-line">{{ i18n.t('unlock.paymentNote') }}</p>
+          @if (paypalLoading && !processingPayment) {
+            <div class="paypal-loading">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span>{{ i18n.t('unlock.paypalInit') }}</span>
+            </div>
+          }
+          @if (paymentError) {
+            <p class="error-text">{{ paymentError }}</p>
+          }
+          @if (!isAppLoggedIn) {
+            <div class="auth-required">
+              <p>{{ i18n.t('auth.checkoutRequired') }}</p>
+              <button mat-flat-button color="primary" type="button" (click)="goToLogin()">
+                {{ i18n.t('auth.loginOrRegister') }}
+              </button>
+            </div>
+          }
+          @if (isAppLoggedIn && !processingPayment && !paymentCompleted) {
+            <div #paypalButtonsContainer class="paypal-buttons"></div>
+          }
+        </div>
       </div>
+    }
 
-      <ng-template #noCodeSummary>
-        <div class="summary-card">
-          <p class="summary-title">{{ i18n.t('unlock.paypalPayment') }}</p>
-          <p class="summary-line">{{ i18n.t('unlock.noCodeSummary') }}</p>
-          <p class="summary-line"><strong>{{ i18n.t('unlock.basePrice') }}:</strong> {{ formatAmount(baseAmount) }}</p>
-          <p class="summary-line"><strong>{{ i18n.t('unlock.discountApplied') }}:</strong> -{{ formatAmount(0) }}</p>
-          <p class="summary-line summary-total"><strong>{{ i18n.t('unlock.totalToPay') }}:</strong> {{ formatAmount(finalAmount) }}</p>
-        </div>
-      </ng-template>
-
-      <div class="summary-card paypal-card">
-        <p class="summary-title">{{ i18n.t('unlock.paymentMethod') }}</p>
-        <p class="summary-line">{{ i18n.t('unlock.paymentNote') }}</p>
-
-        <div class="paypal-loading" *ngIf="paypalLoading && !processingPayment">
-          <mat-spinner diameter="24"></mat-spinner>
-          <span>{{ i18n.t('unlock.paypalInit') }}</span>
-        </div>
-
-        <p class="error-text" *ngIf="paymentError">{{ paymentError }}</p>
-        <div class="auth-required" *ngIf="!isAppLoggedIn">
-          <p>{{ i18n.t('auth.checkoutRequired') }}</p>
-          <button mat-flat-button color="primary" type="button" (click)="goToLogin()">
-            {{ i18n.t('auth.loginOrRegister') }}
-          </button>
-        </div>
-        <div #paypalButtonsContainer class="paypal-buttons" *ngIf="isAppLoggedIn && !processingPayment && !paymentCompleted"></div>
+    @if (processingPayment) {
+      <div class="processing-card" aria-live="polite">
+        <mat-spinner diameter="34"></mat-spinner>
+        <p class="processing-title">{{ i18n.t('unlock.processingPayment') }}</p>
+        <p class="processing-subtitle">{{ i18n.t('unlock.processingSubtitle') }}</p>
       </div>
-    </div>
+    }
 
-    <div *ngIf="processingPayment" class="processing-card" aria-live="polite">
-      <mat-spinner diameter="34"></mat-spinner>
-      <p class="processing-title">{{ i18n.t('unlock.processingPayment') }}</p>
-      <p class="processing-subtitle">{{ i18n.t('unlock.processingSubtitle') }}</p>
-    </div>
-
-    <div *ngIf="paymentCompleted" class="summary-card success-card" aria-live="polite">
-      <p class="summary-title">{{ i18n.t('unlock.paymentConfirmed') }}</p>
-      <p class="summary-line">{{ paymentResultMessage }}</p>
-      <p class="summary-line summary-total"><strong>{{ i18n.t('unlock.totalPaid') }}:</strong> {{ formatAmount(finalAmount) }}</p>
-    </div>
+    @if (paymentCompleted) {
+      <div class="summary-card success-card" aria-live="polite">
+        <p class="summary-title">{{ i18n.t('unlock.paymentConfirmed') }}</p>
+        <p class="summary-line">{{ paymentResultMessage }}</p>
+        <p class="summary-line summary-total"><strong>{{ i18n.t('unlock.totalPaid') }}:</strong> {{ formatAmount(finalAmount) }}</p>
+      </div>
+    }
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-button type="button" (click)="close()" *ngIf="!processingPayment && !paymentCompleted">{{ i18n.t('common.cancel') }}</button>
-    <button mat-button type="button" *ngIf="step === 'input'" (click)="backToChoice()">{{ i18n.t('common.back') }}</button>
-    <button
-      mat-flat-button
-      color="primary"
-      type="button"
-      *ngIf="step === 'input'"
-      (click)="validateCode()"
-      [disabled]="validating"
-    >
-      <span *ngIf="!validating">{{ i18n.t('unlock.verifyCode') }}</span>
-      <span class="btn-progress" *ngIf="validating">
-        <mat-spinner diameter="16"></mat-spinner>
-        {{ i18n.t('unlock.checking') }}
-      </span>
-    </button>
-    <button
-      mat-stroked-button
-      color="primary"
-      type="button"
-      *ngIf="step === 'input' && !processingPayment && !paymentCompleted"
-      (click)="proceedWithoutCode()"
-      [disabled]="validating"
-    >
-      {{ i18n.t('unlock.payWithoutCode') }}
-    </button>
-    <button
-      mat-stroked-button
-      color="primary"
-      type="button"
-      *ngIf="step === 'summary' && !processingPayment && !paymentCompleted && appliedAssociation"
-      (click)="useDifferentCode()"
-    >
-      {{ i18n.t('unlock.changeCode') }}
-    </button>
-    <button
-      mat-stroked-button
-      color="primary"
-      type="button"
-      *ngIf="step === 'summary' && !processingPayment && !paymentCompleted && !appliedAssociation"
-      (click)="backToChoice()"
-    >
-      {{ i18n.t('common.goBack') }}
-    </button>
-    <button mat-flat-button color="primary" type="button" *ngIf="paymentCompleted" (click)="closeAfterPayment()">
-      {{ i18n.t('common.ok') }}
-    </button>
+    @if (!processingPayment && !paymentCompleted) {
+      <button mat-button type="button" (click)="close()">{{ i18n.t('common.cancel') }}</button>
+    }
+    @if (step === 'input') {
+      <button mat-button type="button" (click)="backToChoice()">{{ i18n.t('common.back') }}</button>
+    }
+    @if (step === 'input') {
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        (click)="validateCode()"
+        [disabled]="validating"
+        >
+        @if (!validating) {
+          <span>{{ i18n.t('unlock.verifyCode') }}</span>
+        }
+        @if (validating) {
+          <span class="btn-progress">
+            <mat-spinner diameter="16"></mat-spinner>
+            {{ i18n.t('unlock.checking') }}
+          </span>
+        }
+      </button>
+    }
+    @if (step === 'input' && !processingPayment && !paymentCompleted) {
+      <button
+        mat-stroked-button
+        color="primary"
+        type="button"
+        (click)="proceedWithoutCode()"
+        [disabled]="validating"
+        >
+        {{ i18n.t('unlock.payWithoutCode') }}
+      </button>
+    }
+    @if (step === 'summary' && !processingPayment && !paymentCompleted && appliedAssociation) {
+      <button
+        mat-stroked-button
+        color="primary"
+        type="button"
+        (click)="useDifferentCode()"
+        >
+        {{ i18n.t('unlock.changeCode') }}
+      </button>
+    }
+    @if (step === 'summary' && !processingPayment && !paymentCompleted && !appliedAssociation) {
+      <button
+        mat-stroked-button
+        color="primary"
+        type="button"
+        (click)="backToChoice()"
+        >
+        {{ i18n.t('common.goBack') }}
+      </button>
+    }
+    @if (paymentCompleted) {
+      <button mat-flat-button color="primary" type="button" (click)="closeAfterPayment()">
+        {{ i18n.t('common.ok') }}
+      </button>
+    }
   </mat-dialog-actions>
 </div>

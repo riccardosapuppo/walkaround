@@ -9,28 +9,34 @@
   </div>
 
   <div class="picker-list">
-    <button
-      type="button"
-      class="picker-row"
-      *ngFor="let poi of data.pois"
-      [class.unlocked]="poi.unlocked"
-      [class.selected]="isSelected(poi.id)"
-      (click)="togglePoi(poi)"
-    >
-      <div class="picker-row-main">
-        <strong>{{ poi.name }}</strong>
-        <small>{{ poi.distanceLabel }} &middot; {{ poi.durationSec | durationLabel }}</small>
-        <p>{{ poi.descriptionShort }}</p>
-      </div>
-
-      <div class="picker-row-meta">
-        <span *ngIf="poi.unlocked" class="status-pill unlocked">{{ 'cityPicker.unlocked' | t }}</span>
-        <span *ngIf="!poi.unlocked" class="status-pill locked">
-          {{ isSelected(poi.id) ? ('cityPicker.selected' | t) : ('cityPicker.select' | t) }}
-        </span>
-        <strong *ngIf="!poi.unlocked">{{ formatPrice(poi.priceSingle) }}</strong>
-      </div>
-    </button>
+    @for (poi of data.pois; track poi) {
+      <button
+        type="button"
+        class="picker-row"
+        [class.unlocked]="poi.unlocked"
+        [class.selected]="isSelected(poi.id)"
+        (click)="togglePoi(poi)"
+        >
+        <div class="picker-row-main">
+          <strong>{{ poi.name }}</strong>
+          <small>{{ poi.distanceLabel }} &middot; {{ poi.durationSec | durationLabel }}</small>
+          <p>{{ poi.descriptionShort }}</p>
+        </div>
+        <div class="picker-row-meta">
+          @if (poi.unlocked) {
+            <span class="status-pill unlocked">{{ 'cityPicker.unlocked' | t }}</span>
+          }
+          @if (!poi.unlocked) {
+            <span class="status-pill locked">
+              {{ isSelected(poi.id) ? ('cityPicker.selected' | t) : ('cityPicker.select' | t) }}
+            </span>
+          }
+          @if (!poi.unlocked) {
+            <strong>{{ formatPrice(poi.priceSingle) }}</strong>
+          }
+        </div>
+      </button>
+    }
   </div>
 </mat-dialog-content>
 

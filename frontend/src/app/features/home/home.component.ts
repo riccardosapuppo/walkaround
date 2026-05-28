@@ -130,7 +130,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly router: Router,
     public readonly i18n: I18nService
   ) {
-    this.shouldRestoreScroll = this.router.getCurrentNavigation()?.trigger === 'popstate';
+    this.shouldRestoreScroll = this.router.currentNavigation()?.trigger === 'popstate';
   }
 
   get visibleAssociatedStructure(): HotelAssociation | null {

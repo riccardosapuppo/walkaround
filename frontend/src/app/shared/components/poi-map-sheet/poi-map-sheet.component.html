@@ -17,25 +17,24 @@
       {{ 'mapSheet.previewAudio' | t }}
     </button>
 
-    <ng-container *ngIf="data.unlocked; else lockedAction">
-      <button *ngIf="hasPlayableAudio(data.poi); else unlockedNoAudio" mat-flat-button color="primary" (click)="play(false)">
-        {{ 'mapSheet.playAudio' | t }}
-      </button>
-    </ng-container>
-
-    <ng-template #unlockedNoAudio>
-      <button mat-flat-button color="primary" disabled>{{ 'mapSheet.audioUnavailable' | t }}</button>
-    </ng-template>
-
-    <ng-template #lockedAction>
+    @if (data.unlocked) {
+      @if (hasPlayableAudio(data.poi)) {
+        <button mat-flat-button color="primary" (click)="play(false)">
+          {{ 'mapSheet.playAudio' | t }}
+        </button>
+      } @else {
+        <button mat-flat-button color="primary" disabled>{{ 'mapSheet.audioUnavailable' | t }}</button>
+      }
+    } @else {
       <button mat-flat-button color="primary" (click)="addToCart()" [disabled]="data.inCart">
         {{ data.inCart ? ('common.inCart' | t) : ('mapSheet.unlockPlace' | t:{ price: formatPrice(data.poi.priceSingle) }) }}
       </button>
-
       <button mat-stroked-button color="primary" (click)="purchaseCity()">
         {{ 'mapSheet.unlockCity' | t:{ city: cityName(data.poi.cityId), price: formatPrice(data.cityBundlePrice) } }}
       </button>
-    </ng-template>
+    }
+
+
 
     <button mat-flat-button color="accent" class="navigate-btn" (click)="navigate()">
       <mat-icon fontSet="material-icons-round">near_me</mat-icon>

@@ -8,52 +8,58 @@
         loading="eager"
         decoding="sync"
         fetchpriority="high"
-      />
+        />
       <div class="brand-hero-footer">
         <p class="brand-hero-slogan">{{ 'common.brandTagline' | t }}</p>
       </div>
     </div>
   </header>
 
-  <mat-card class="card download-box" *ngIf="!loading && audioItems.length">
-    <p>{{ 'myAudio.offlineAvailable' | t:{ minutes: offlineMinutes } }}</p>
-    <button mat-stroked-button color="primary" (click)="downloadAll()">{{ 'myAudio.downloadAll' | t }}</button>
-  </mat-card>
-
-  <mat-card class="card section-loading-card" *ngIf="loading">
-    <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
-    <p>{{ 'myAudio.loading' | t }}</p>
-  </mat-card>
-
-  <ng-container *ngIf="!loading">
-    <mat-card class="card audio-card" *ngFor="let item of audioItems">
-      <img [appImgFallback]="item.imageUrl" [alt]="poiName(item)" (click)="openPoi(item.id)" />
-
-      <div class="meta" (click)="openPoi(item.id)">
-        <h3>{{ poiName(item) }}</h3>
-        <p class="address">{{ poiAddress(item) }}</p>
-        <p class="distance">{{ distanceLabel(item.distanceMeters) }} - {{ item.durationSec | durationLabel }}</p>
-        <p class="teaser">{{ poiDescription(item) }}</p>
-      </div>
-
-      <div class="audio-actions">
-        <button
-          mat-icon-button
-          color="primary"
-          (click)="play(item)"
-          [disabled]="!hasPlayableAudio(item)"
-          [attr.aria-label]="'myAudio.playAria' | t"
-        >
-          <mat-icon fontSet="material-icons-round">headphones</mat-icon>
-        </button>
-        <button mat-icon-button color="primary" (click)="toggleFavorite(item)" [attr.aria-label]="'myAudio.favoriteAria' | t">
-          <mat-icon fontSet="material-icons-round">{{ item.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
-        </button>
-      </div>
+  @if (!loading && audioItems.length) {
+    <mat-card class="card download-box">
+      <p>{{ 'myAudio.offlineAvailable' | t:{ minutes: offlineMinutes } }}</p>
+      <button mat-stroked-button color="primary" (click)="downloadAll()">{{ 'myAudio.downloadAll' | t }}</button>
     </mat-card>
-  </ng-container>
+  }
 
-  <mat-card class="card empty" *ngIf="!loading && !audioItems.length">
-    <p>{{ 'myAudio.empty' | t }}</p>
-  </mat-card>
+  @if (loading) {
+    <mat-card class="card section-loading-card">
+      <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
+      <p>{{ 'myAudio.loading' | t }}</p>
+    </mat-card>
+  }
+
+  @if (!loading) {
+    @for (item of audioItems; track item) {
+      <mat-card class="card audio-card">
+        <img [appImgFallback]="item.imageUrl" [alt]="poiName(item)" (click)="openPoi(item.id)" />
+        <div class="meta" (click)="openPoi(item.id)">
+          <h3>{{ poiName(item) }}</h3>
+          <p class="address">{{ poiAddress(item) }}</p>
+          <p class="distance">{{ distanceLabel(item.distanceMeters) }} - {{ item.durationSec | durationLabel }}</p>
+          <p class="teaser">{{ poiDescription(item) }}</p>
+        </div>
+        <div class="audio-actions">
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="play(item)"
+            [disabled]="!hasPlayableAudio(item)"
+            [attr.aria-label]="'myAudio.playAria' | t"
+            >
+            <mat-icon fontSet="material-icons-round">headphones</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" (click)="toggleFavorite(item)" [attr.aria-label]="'myAudio.favoriteAria' | t">
+            <mat-icon fontSet="material-icons-round">{{ item.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+          </button>
+        </div>
+      </mat-card>
+    }
+  }
+
+  @if (!loading && !audioItems.length) {
+    <mat-card class="card empty">
+      <p>{{ 'myAudio.empty' | t }}</p>
+    </mat-card>
+  }
 </section>

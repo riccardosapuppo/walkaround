@@ -8,7 +8,7 @@
         loading="eager"
         decoding="sync"
         fetchpriority="high"
-      />
+        />
       <div class="brand-hero-footer">
         <p class="brand-hero-slogan">{{ 'common.brandTagline' | t }}</p>
       </div>
@@ -16,173 +16,196 @@
   </header>
 
   <ng-container>
-    <mat-card class="card section account-card" *ngIf="appSessionChecked && !isAppLoggedIn">
-      <div class="account-auth-head">
-        <h3>{{ 'auth.accountTitle' | t }}</h3>
-        <p>{{ 'auth.accountSubtitle' | t }}</p>
-      </div>
-
-      <div class="auth-tabs" role="tablist" [attr.aria-label]="'auth.accountTitle' | t">
-        <button mat-stroked-button type="button" [color]="authMode === 'login' ? 'primary' : undefined" (click)="setAuthMode('login')">
-          {{ 'auth.loginTab' | t }}
-        </button>
-        <button mat-stroked-button type="button" [color]="authMode === 'register' ? 'primary' : undefined" (click)="setAuthMode('register')">
-          {{ 'auth.registerTab' | t }}
-        </button>
-      </div>
-
-      <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="loginAppUser()" *ngIf="authMode === 'login'">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'auth.email' | t }}</mat-label>
-          <input matInput type="email" formControlName="email" autocomplete="email" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'auth.password' | t }}</mat-label>
-          <input
-            matInput
-            [type]="showLoginPassword ? 'text' : 'password'"
-            formControlName="password"
-            autocomplete="current-password"
-          />
-          <button
-            mat-icon-button
-            matSuffix
-            type="button"
-            (click)="toggleLoginPasswordVisibility()"
-            [attr.aria-label]="showLoginPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
-          >
-            <mat-icon fontSet="material-icons-round">{{ showLoginPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-        </mat-form-field>
-
-        <button mat-flat-button color="primary" type="submit" [disabled]="authSubmitting">
-          {{ authSubmitting ? ('auth.loggingIn' | t) : ('auth.loginAction' | t) }}
-        </button>
-      </form>
-
-      <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="registerAppUser()" *ngIf="authMode === 'register'">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'auth.firstName' | t }}</mat-label>
-          <input matInput type="text" formControlName="firstName" autocomplete="given-name" />
-          <mat-error *ngIf="registerForm.controls.firstName.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'auth.lastName' | t }}</mat-label>
-          <input matInput type="text" formControlName="lastName" autocomplete="family-name" />
-          <mat-error *ngIf="registerForm.controls.lastName.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'auth.email' | t }}</mat-label>
-          <input matInput type="email" formControlName="email" autocomplete="email" />
-          <mat-error *ngIf="registerForm.controls.email.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
-          <mat-error *ngIf="registerForm.controls.email.hasError('email')">{{ 'auth.invalidEmail' | t }}</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'auth.password' | t }}</mat-label>
-          <input
-            matInput
-            [type]="showRegisterPassword ? 'text' : 'password'"
-            formControlName="password"
-            autocomplete="new-password"
-          />
-          <button
-            mat-icon-button
-            matSuffix
-            type="button"
-            (click)="toggleRegisterPasswordVisibility()"
-            [attr.aria-label]="showRegisterPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
-          >
-            <mat-icon fontSet="material-icons-round">{{ showRegisterPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          <mat-hint>{{ 'auth.passwordRequirements' | t }}</mat-hint>
-          <mat-error *ngIf="registerForm.controls.password.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
-          <mat-error *ngIf="registerForm.controls.password.hasError('minlength')">{{ 'auth.passwordMinLength' | t }}</mat-error>
-          <mat-error *ngIf="registerForm.controls.password.hasError('maxlength')">{{ 'auth.passwordMaxLength' | t }}</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'completeRegistration.confirmPassword' | t }}</mat-label>
-          <input
-            matInput
-            [type]="showRegisterConfirmPassword ? 'text' : 'password'"
-            formControlName="confirmPassword"
-            autocomplete="new-password"
-          />
-          <button
-            mat-icon-button
-            matSuffix
-            type="button"
-            (click)="toggleRegisterConfirmPasswordVisibility()"
-            [attr.aria-label]="showRegisterConfirmPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
-          >
-            <mat-icon fontSet="material-icons-round">{{ showRegisterConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          <mat-error *ngIf="registerForm.controls.confirmPassword.hasError('required')">{{ 'auth.requiredField' | t }}</mat-error>
-        </mat-form-field>
-
-        <button mat-flat-button color="primary" type="submit" [disabled]="authSubmitting">
-          {{ authSubmitting ? ('auth.registering' | t) : ('auth.registerAction' | t) }}
-        </button>
-      </form>
-
-      <form class="auth-form reset-form" [formGroup]="resetForm" (ngSubmit)="requestPasswordReset()">
-        <button mat-button color="primary" type="button" (click)="resetRequested = false">
-          {{ 'auth.forgotPassword' | t }}
-        </button>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ 'auth.resetEmail' | t }}</mat-label>
-          <input matInput type="email" formControlName="email" autocomplete="email" />
-        </mat-form-field>
-        <button mat-stroked-button color="primary" type="submit" [disabled]="resetSubmitting">
-          {{ resetSubmitting ? ('auth.sendingReset' | t) : ('auth.sendResetLink' | t) }}
-        </button>
-        <small *ngIf="resetRequested">{{ 'auth.resetSentHint' | t }}</small>
-      </form>
-    </mat-card>
-
-    <mat-card class="card section account-card" *ngIf="isAppLoggedIn">
-      <div class="account-main">
-        <div class="account-avatar" aria-hidden="true">{{ appInitials }}</div>
-        <div class="account-copy">
-          <span>{{ 'auth.connectedAccount' | t }}</span>
-          <strong>{{ appDisplayName }}</strong>
-          <small>{{ appEmail }}</small>
+    @if (appSessionChecked && !isAppLoggedIn) {
+      <mat-card class="card section account-card">
+        <div class="account-auth-head">
+          <h3>{{ 'auth.accountTitle' | t }}</h3>
+          <p>{{ 'auth.accountSubtitle' | t }}</p>
         </div>
-      </div>
+        <div class="auth-tabs" role="tablist" [attr.aria-label]="'auth.accountTitle' | t">
+          <button mat-stroked-button type="button" [color]="authMode === 'login' ? 'primary' : undefined" (click)="setAuthMode('login')">
+            {{ 'auth.loginTab' | t }}
+          </button>
+          <button mat-stroked-button type="button" [color]="authMode === 'register' ? 'primary' : undefined" (click)="setAuthMode('register')">
+            {{ 'auth.registerTab' | t }}
+          </button>
+        </div>
+        @if (authMode === 'login') {
+          <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="loginAppUser()">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'auth.email' | t }}</mat-label>
+              <input matInput type="email" formControlName="email" autocomplete="email" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'auth.password' | t }}</mat-label>
+              <input
+                matInput
+                [type]="showLoginPassword ? 'text' : 'password'"
+                formControlName="password"
+                autocomplete="current-password"
+                />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="toggleLoginPasswordVisibility()"
+                [attr.aria-label]="showLoginPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+                >
+                <mat-icon fontSet="material-icons-round">{{ showLoginPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit" [disabled]="authSubmitting">
+              {{ authSubmitting ? ('auth.loggingIn' | t) : ('auth.loginAction' | t) }}
+            </button>
+          </form>
+        }
+        @if (authMode === 'register') {
+          <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="registerAppUser()">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'auth.firstName' | t }}</mat-label>
+              <input matInput type="text" formControlName="firstName" autocomplete="given-name" />
+              @if (registerForm.controls.firstName.hasError('required')) {
+                <mat-error>{{ 'auth.requiredField' | t }}</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'auth.lastName' | t }}</mat-label>
+              <input matInput type="text" formControlName="lastName" autocomplete="family-name" />
+              @if (registerForm.controls.lastName.hasError('required')) {
+                <mat-error>{{ 'auth.requiredField' | t }}</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'auth.email' | t }}</mat-label>
+              <input matInput type="email" formControlName="email" autocomplete="email" />
+              @if (registerForm.controls.email.hasError('required')) {
+                <mat-error>{{ 'auth.requiredField' | t }}</mat-error>
+              }
+              @if (registerForm.controls.email.hasError('email')) {
+                <mat-error>{{ 'auth.invalidEmail' | t }}</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'auth.password' | t }}</mat-label>
+              <input
+                matInput
+                [type]="showRegisterPassword ? 'text' : 'password'"
+                formControlName="password"
+                autocomplete="new-password"
+                />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="toggleRegisterPasswordVisibility()"
+                [attr.aria-label]="showRegisterPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+                >
+                <mat-icon fontSet="material-icons-round">{{ showRegisterPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-hint>{{ 'auth.passwordRequirements' | t }}</mat-hint>
+              @if (registerForm.controls.password.hasError('required')) {
+                <mat-error>{{ 'auth.requiredField' | t }}</mat-error>
+              }
+              @if (registerForm.controls.password.hasError('minlength')) {
+                <mat-error>{{ 'auth.passwordMinLength' | t }}</mat-error>
+              }
+              @if (registerForm.controls.password.hasError('maxlength')) {
+                <mat-error>{{ 'auth.passwordMaxLength' | t }}</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'completeRegistration.confirmPassword' | t }}</mat-label>
+              <input
+                matInput
+                [type]="showRegisterConfirmPassword ? 'text' : 'password'"
+                formControlName="confirmPassword"
+                autocomplete="new-password"
+                />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="toggleRegisterConfirmPasswordVisibility()"
+                [attr.aria-label]="showRegisterConfirmPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+                >
+                <mat-icon fontSet="material-icons-round">{{ showRegisterConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (registerForm.controls.confirmPassword.hasError('required')) {
+                <mat-error>{{ 'auth.requiredField' | t }}</mat-error>
+              }
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit" [disabled]="authSubmitting">
+              {{ authSubmitting ? ('auth.registering' | t) : ('auth.registerAction' | t) }}
+            </button>
+          </form>
+        }
+        <form class="auth-form reset-form" [formGroup]="resetForm" (ngSubmit)="requestPasswordReset()">
+          <button mat-button color="primary" type="button" (click)="resetRequested = false">
+            {{ 'auth.forgotPassword' | t }}
+          </button>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'auth.resetEmail' | t }}</mat-label>
+            <input matInput type="email" formControlName="email" autocomplete="email" />
+          </mat-form-field>
+          <button mat-stroked-button color="primary" type="submit" [disabled]="resetSubmitting">
+            {{ resetSubmitting ? ('auth.sendingReset' | t) : ('auth.sendResetLink' | t) }}
+          </button>
+          @if (resetRequested) {
+            <small>{{ 'auth.resetSentHint' | t }}</small>
+          }
+        </form>
+      </mat-card>
+    }
 
-      <div class="account-meta" *ngIf="isDashboardLoggedIn">
-        <span>
-          <strong>{{ 'profile.accountRole' | t }}:</strong>
-          {{ accountRoleLabel }}
-        </span>
-        <span *ngIf="accountStructureName">
-          <strong>{{ 'profile.accountStructure' | t }}:</strong>
-          {{ accountStructureName }}
-        </span>
-        <span *ngIf="isImpersonating">
-          <strong>{{ 'profile.accountImpersonating' | t }}:</strong>
-          {{ impersonatedByEmail }}
-        </span>
-      </div>
-
-      <div class="account-actions">
-        <button mat-stroked-button color="warn" type="button" [disabled]="loggingOutApp" (click)="openAppLogoutDialog()">
-          {{ loggingOutApp ? ('profile.loggingOut' | t) : ('profile.logout' | t) }}
-        </button>
-      </div>
-    </mat-card>
+    @if (isAppLoggedIn) {
+      <mat-card class="card section account-card">
+        <div class="account-main">
+          <div class="account-avatar" aria-hidden="true">{{ appInitials }}</div>
+          <div class="account-copy">
+            <span>{{ 'auth.connectedAccount' | t }}</span>
+            <strong>{{ appDisplayName }}</strong>
+            <small>{{ appEmail }}</small>
+          </div>
+        </div>
+        @if (isDashboardLoggedIn) {
+          <div class="account-meta">
+            <span>
+              <strong>{{ 'profile.accountRole' | t }}:</strong>
+              {{ accountRoleLabel }}
+            </span>
+            @if (accountStructureName) {
+              <span>
+                <strong>{{ 'profile.accountStructure' | t }}:</strong>
+                {{ accountStructureName }}
+              </span>
+            }
+            @if (isImpersonating) {
+              <span>
+                <strong>{{ 'profile.accountImpersonating' | t }}:</strong>
+                {{ impersonatedByEmail }}
+              </span>
+            }
+          </div>
+        }
+        <div class="account-actions">
+          <button mat-stroked-button color="warn" type="button" [disabled]="loggingOutApp" (click)="openAppLogoutDialog()">
+            {{ loggingOutApp ? ('profile.loggingOut' | t) : ('profile.logout' | t) }}
+          </button>
+        </div>
+      </mat-card>
+    }
 
     <mat-card class="card section">
       <h3>{{ 'profile.activeCity' | t }}</h3>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ 'profile.city' | t }}</mat-label>
         <mat-select [value]="activeCityId" (selectionChange)="setCity($event.value)" [disabled]="loadingCities || !cities.length">
-          <mat-option *ngIf="loadingCities" disabled>{{ 'profile.loading' | t }}</mat-option>
-          <mat-option *ngFor="let city of cities" [value]="city.id">{{ cityName(city.id) }}</mat-option>
+          @if (loadingCities) {
+            <mat-option disabled>{{ 'profile.loading' | t }}</mat-option>
+          }
+          @for (city of cities; track city) {
+            <mat-option [value]="city.id">{{ cityName(city.id) }}</mat-option>
+          }
         </mat-select>
       </mat-form-field>
     </mat-card>
@@ -192,50 +215,71 @@
       <p>{{ 'profile.manageCodes' | t }}</p>
       <p>{{ 'profile.activeCode' | t }}: <strong>{{ hotelCode }}</strong></p>
       <p>{{ 'profile.activeCodeStatus' | t }}: <strong>{{ inviteCodeStatusText }}</strong></p>
-      <p *ngIf="hotelAssociation">{{ 'profile.activeCodeExpiry' | t }}: <strong>{{ inviteCodeExpiresAt }}</strong></p>
-      <p *ngIf="hotelAssociation; else noAssociation">
-        {{ 'profile.associatedStructure' | t }}: <strong>{{ hotelAssociation.structureName }}</strong>
-        ({{ hotelAssociation.structureAddress }})
-      </p>
-      <div class="structure-actions" *ngIf="hotelAssociation">
-        <button mat-stroked-button color="primary" type="button" (click)="navigateToAssociatedStructure()">
-          {{ 'profile.navigateToStructure' | t }}
-        </button>
-      </div>
+      @if (hotelAssociation) {
+        <p>{{ 'profile.activeCodeExpiry' | t }}: <strong>{{ inviteCodeExpiresAt }}</strong></p>
+      }
+      @if (hotelAssociation) {
+        <p>
+          {{ 'profile.associatedStructure' | t }}: <strong>{{ hotelAssociation.structureName }}</strong>
+          ({{ hotelAssociation.structureAddress }})
+        </p>
+      } @else {
+        <p>{{ 'profile.noAssociatedStructure' | t }}</p>
+      }
+      @if (hotelAssociation) {
+        <div class="structure-actions">
+          <button mat-stroked-button color="primary" type="button" (click)="navigateToAssociatedStructure()">
+            {{ 'profile.navigateToStructure' | t }}
+          </button>
+        </div>
+      }
       <ng-template #noAssociation>
         <p>{{ 'profile.noAssociatedStructure' | t }}</p>
       </ng-template>
 
-      <div class="code-history" *ngIf="hotelCodeEntries.length; else noCodeHistory">
-        <p><strong>{{ 'profile.codeList' | t }}:</strong></p>
-        <div class="code-history-list">
-          <div class="code-history-item" *ngFor="let entry of hotelCodeEntries">
-            <div class="code-history-row">
-              <code>{{ entry.inviteCode }}</code>
-              <span [class]="codeEntryStatusClass(entry)">{{ codeEntryStatusLabel(entry) }}</span>
-            </div>
-            <small>{{ 'profile.associatedStructure' | t }}: {{ entry.structureName || ('profile.structureUnavailable' | t) }}</small>
-            <small>{{ 'profile.scope' | t }}: {{ codeEntryScopeLabel(entry) }}</small>
-            <small>{{ 'profile.city' | t }}: {{ codeEntryCitiesLabel(entry) }}</small>
-            <small *ngIf="entry.expiresAt">{{ 'profile.expiry' | t }}: {{ entryExpiryLabel(entry) }}</small>
-            <small *ngIf="entry.usedAt">{{ 'profile.usedAt' | t }}: {{ entryUsedAtLabel(entry) }}</small>
-            <div class="code-entry-actions">
-              <button
-                mat-stroked-button
-                color="warn"
-                type="button"
-                *ngIf="canRemoveCodeEntry(entry); else codeNotRemovable"
-                (click)="removeInviteCodeAssociation(entry)"
-              >
-                {{ removingInviteCode ? ('profile.removingCode' | t) : ('profile.removeCode' | t) }}
-              </button>
-              <ng-template #codeNotRemovable>
-                <small class="code-entry-locked">{{ 'profile.codeLocked' | t }}</small>
-              </ng-template>
-            </div>
+      @if (hotelCodeEntries.length) {
+        <div class="code-history">
+          <p><strong>{{ 'profile.codeList' | t }}:</strong></p>
+          <div class="code-history-list">
+            @for (entry of hotelCodeEntries; track entry) {
+              <div class="code-history-item">
+                <div class="code-history-row">
+                  <code>{{ entry.inviteCode }}</code>
+                  <span [class]="codeEntryStatusClass(entry)">{{ codeEntryStatusLabel(entry) }}</span>
+                </div>
+                <small>{{ 'profile.associatedStructure' | t }}: {{ entry.structureName || ('profile.structureUnavailable' | t) }}</small>
+                <small>{{ 'profile.scope' | t }}: {{ codeEntryScopeLabel(entry) }}</small>
+                <small>{{ 'profile.city' | t }}: {{ codeEntryCitiesLabel(entry) }}</small>
+                @if (entry.expiresAt) {
+                  <small>{{ 'profile.expiry' | t }}: {{ entryExpiryLabel(entry) }}</small>
+                }
+                @if (entry.usedAt) {
+                  <small>{{ 'profile.usedAt' | t }}: {{ entryUsedAtLabel(entry) }}</small>
+                }
+                <div class="code-entry-actions">
+                  @if (canRemoveCodeEntry(entry)) {
+                    <button
+                      mat-stroked-button
+                      color="warn"
+                      type="button"
+                      (click)="removeInviteCodeAssociation(entry)"
+                      >
+                      {{ removingInviteCode ? ('profile.removingCode' | t) : ('profile.removeCode' | t) }}
+                    </button>
+                  } @else {
+                    <small class="code-entry-locked">{{ 'profile.codeLocked' | t }}</small>
+                  }
+                  <ng-template #codeNotRemovable>
+                    <small class="code-entry-locked">{{ 'profile.codeLocked' | t }}</small>
+                  </ng-template>
+                </div>
+              </div>
+            }
           </div>
         </div>
-      </div>
+      } @else {
+        <p>{{ 'profile.noCodeHistory' | t }}</p>
+      }
       <ng-template #noCodeHistory>
         <p>{{ 'profile.noCodeHistory' | t }}</p>
       </ng-template>
@@ -244,47 +288,68 @@
     <mat-card class="card section">
       <h3>{{ 'profile.unlockedCities' | t }}</h3>
       <div class="chips">
-        <span class="status-chip unlocked" *ngFor="let cityId of displayedUnlockedCityIds">{{ cityName(cityId) }}</span>
-        <span class="status-chip locked" *ngIf="!displayedUnlockedCityIds.length">{{ 'profile.noUnlockedCities' | t }}</span>
+        @for (cityId of displayedUnlockedCityIds; track cityId) {
+          <span class="status-chip unlocked">{{ cityName(cityId) }}</span>
+        }
+        @if (!displayedUnlockedCityIds.length) {
+          <span class="status-chip locked">{{ 'profile.noUnlockedCities' | t }}</span>
+        }
       </div>
 
-      <div class="admin-simulation" *ngIf="isAdmin">
-        <div class="admin-simulation-status">
-          <strong>{{ 'profile.adminSimulationTitle' | t }}</strong>
-          <span [class]="adminUnlockSimulationActive ? 'status-chip unlocked' : 'status-chip locked'">
-            {{ adminUnlockSimulationActive ? ('profile.adminSimulationUnlocked' | t) : ('profile.adminSimulationReal' | t) }}
-          </span>
-        </div>
-        <button
-          mat-flat-button
-          color="primary"
-          type="button"
-          *ngIf="!adminUnlockSimulationActive; else disableAdminSimulation"
-          [disabled]="togglingAdminUnlockSimulation"
-          (click)="toggleAdminUnlockSimulation(true)"
-        >
-          {{
-            togglingAdminUnlockSimulation
+      @if (isAdmin) {
+        <div class="admin-simulation">
+          <div class="admin-simulation-status">
+            <strong>{{ 'profile.adminSimulationTitle' | t }}</strong>
+            <span [class]="adminUnlockSimulationActive ? 'status-chip unlocked' : 'status-chip locked'">
+              {{ adminUnlockSimulationActive ? ('profile.adminSimulationUnlocked' | t) : ('profile.adminSimulationReal' | t) }}
+            </span>
+          </div>
+          @if (!adminUnlockSimulationActive) {
+            <button
+              mat-flat-button
+              color="primary"
+              type="button"
+              [disabled]="togglingAdminUnlockSimulation"
+              (click)="toggleAdminUnlockSimulation(true)"
+              >
+              {{
+              togglingAdminUnlockSimulation
               ? ('profile.adminSimulationChanging' | t)
               : ('profile.adminSimulationEnable' | t)
-          }}
-        </button>
-        <ng-template #disableAdminSimulation>
-          <button
-            mat-stroked-button
-            color="warn"
-            type="button"
-            [disabled]="togglingAdminUnlockSimulation"
-            (click)="toggleAdminUnlockSimulation(false)"
-          >
-            {{
+              }}
+            </button>
+          } @else {
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              [disabled]="togglingAdminUnlockSimulation"
+              (click)="toggleAdminUnlockSimulation(false)"
+              >
+              {{
               togglingAdminUnlockSimulation
-                ? ('profile.adminSimulationChanging' | t)
-                : ('profile.adminSimulationDisable' | t)
-            }}
-          </button>
-        </ng-template>
-      </div>
+              ? ('profile.adminSimulationChanging' | t)
+              : ('profile.adminSimulationDisable' | t)
+              }}
+            </button>
+          }
+          <ng-template #disableAdminSimulation>
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              [disabled]="togglingAdminUnlockSimulation"
+              (click)="toggleAdminUnlockSimulation(false)"
+              >
+              {{
+              togglingAdminUnlockSimulation
+              ? ('profile.adminSimulationChanging' | t)
+              : ('profile.adminSimulationDisable' | t)
+              }}
+            </button>
+          </ng-template>
+        </div>
+      }
     </mat-card>
 
     <mat-card class="card section">
@@ -311,50 +376,58 @@
       </div>
     </mat-card>
 
-    <mat-card class="card section payment-history" *ngIf="paymentHistoryGroups.length">
-      <div class="payment-history-head">
-        <h3>{{ 'profile.paymentsTitle' | t }}</h3>
-        <p>{{ 'profile.paymentsSubtitle' | t }}</p>
-      </div>
-
-      <div class="payment-history-list">
-        <article class="payment-history-item" *ngFor="let group of paymentHistoryGroups">
-          <div class="payment-history-main">
-            <div class="payment-history-copy">
-              <h4>{{ paymentGroupTitle(group) }}</h4>
-              <p>{{ paymentGroupSubtitle(group) }}</p>
-            </div>
-            <span [class]="paymentGroupStatusClass(group)">{{ paymentGroupStatusLabel(group) }}</span>
-          </div>
-
-          <div class="payment-history-details">
-            <span>
-              <strong>{{ 'profile.paymentAmount' | t }}:</strong>
-              {{ paymentGroupAmountLabel(group) }}
-            </span>
-            <span>
-              <strong>{{ 'profile.paymentDate' | t }}:</strong>
-              {{ paymentGroupDateLabel(group) }}
-            </span>
-            <span *ngIf="paymentGroupMethodLabel(group) as methodLabel">
-              <strong>{{ 'profile.paymentMethod' | t }}:</strong>
-              {{ methodLabel }}
-            </span>
-          </div>
-
-          <p class="payment-discount" *ngIf="group.discountAmount > 0">
-            {{ 'profile.paymentDiscount' | t }}: {{ paymentGroupDiscountLabel(group) }}
-          </p>
-
-          <ul class="payment-content-list" *ngIf="group.items.length > 1">
-            <li *ngFor="let item of group.items">
-              <span>{{ purchaseItemTitle(item) }}</span>
-              <small>{{ purchaseItemMeta(item) }}</small>
-            </li>
-          </ul>
-        </article>
-      </div>
-    </mat-card>
+    @if (paymentHistoryGroups.length) {
+      <mat-card class="card section payment-history">
+        <div class="payment-history-head">
+          <h3>{{ 'profile.paymentsTitle' | t }}</h3>
+          <p>{{ 'profile.paymentsSubtitle' | t }}</p>
+        </div>
+        <div class="payment-history-list">
+          @for (group of paymentHistoryGroups; track group) {
+            <article class="payment-history-item">
+              <div class="payment-history-main">
+                <div class="payment-history-copy">
+                  <h4>{{ paymentGroupTitle(group) }}</h4>
+                  <p>{{ paymentGroupSubtitle(group) }}</p>
+                </div>
+                <span [class]="paymentGroupStatusClass(group)">{{ paymentGroupStatusLabel(group) }}</span>
+              </div>
+              <div class="payment-history-details">
+                <span>
+                  <strong>{{ 'profile.paymentAmount' | t }}:</strong>
+                  {{ paymentGroupAmountLabel(group) }}
+                </span>
+                <span>
+                  <strong>{{ 'profile.paymentDate' | t }}:</strong>
+                  {{ paymentGroupDateLabel(group) }}
+                </span>
+                @if (paymentGroupMethodLabel(group); as methodLabel) {
+                  <span>
+                    <strong>{{ 'profile.paymentMethod' | t }}:</strong>
+                    {{ methodLabel }}
+                  </span>
+                }
+              </div>
+              @if (group.discountAmount > 0) {
+                <p class="payment-discount">
+                  {{ 'profile.paymentDiscount' | t }}: {{ paymentGroupDiscountLabel(group) }}
+                </p>
+              }
+              @if (group.items.length > 1) {
+                <ul class="payment-content-list">
+                  @for (item of group.items; track item) {
+                    <li>
+                      <span>{{ purchaseItemTitle(item) }}</span>
+                      <small>{{ purchaseItemMeta(item) }}</small>
+                    </li>
+                  }
+                </ul>
+              }
+            </article>
+          }
+        </div>
+      </mat-card>
+    }
 
     <mat-card class="card section links">
       <a href="mailto:info@walkaround.cloud">{{ 'common.support' | t }}</a>
@@ -365,7 +438,9 @@
       <h2 mat-dialog-title>{{ 'profile.logoutDialogTitle' | t }}</h2>
       <div mat-dialog-content class="logout-dialog-body">
         <p>{{ 'auth.logoutDialogMessage' | t }}</p>
-        <small *ngIf="isDashboardLoggedIn">{{ 'auth.logoutDashboardHint' | t }}</small>
+        @if (isDashboardLoggedIn) {
+          <small>{{ 'auth.logoutDashboardHint' | t }}</small>
+        }
         <strong>{{ appDisplayName }}</strong>
         <small>{{ appEmail }}</small>
       </div>
@@ -378,12 +453,18 @@
     <ng-template #privacyPolicyDialog>
       <h2 mat-dialog-title>{{ 'common.privacy' | t }}</h2>
       <div mat-dialog-content class="privacy-dialog-body">
-        <div class="privacy-dialog-loading" *ngIf="privacyPolicyLoading">
-          <mat-spinner diameter="28"></mat-spinner>
-          <span>{{ 'profile.privacyLoading' | t }}</span>
-        </div>
-        <div class="privacy-policy-content" *ngIf="!privacyPolicyLoading && privacyPolicyHtml" [innerHTML]="privacyPolicyHtml"></div>
-        <p *ngIf="!privacyPolicyLoading && !privacyPolicyHtml">{{ 'profile.privacyUnavailable' | t }}</p>
+        @if (privacyPolicyLoading) {
+          <div class="privacy-dialog-loading">
+            <mat-spinner diameter="28"></mat-spinner>
+            <span>{{ 'profile.privacyLoading' | t }}</span>
+          </div>
+        }
+        @if (!privacyPolicyLoading && privacyPolicyHtml) {
+          <div class="privacy-policy-content" [innerHTML]="privacyPolicyHtml"></div>
+        }
+        @if (!privacyPolicyLoading && !privacyPolicyHtml) {
+          <p>{{ 'profile.privacyUnavailable' | t }}</p>
+        }
       </div>
       <div mat-dialog-actions align="end" class="logout-dialog-actions">
         <button mat-flat-button color="primary" type="button" mat-dialog-close>{{ 'common.close' | t }}</button>

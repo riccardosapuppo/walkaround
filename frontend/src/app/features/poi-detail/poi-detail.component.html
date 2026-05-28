@@ -1,102 +1,105 @@
-<section class="page-shell poi-detail" *ngIf="poi as currentPoi">
-  <button mat-icon-button class="back-btn" (click)="goBack()" [attr.aria-label]="'poiDetail.backAria' | t">
-    <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
-  </button>
-
-  <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="poiName(currentPoi)" />
-
-  <div class="title-row">
-    <div>
-      <h1 class="page-title">{{ poiName(currentPoi) }}</h1>
-      <p class="page-subtitle">{{ poiAddress(currentPoi) }}</p>
-      <p class="poi-distance">{{ distanceLabel }} - {{ currentPoi.durationSec | durationLabel }}</p>
+@if (poi; as currentPoi) {
+  <section class="page-shell poi-detail">
+    <button mat-icon-button class="back-btn" (click)="goBack()" [attr.aria-label]="'poiDetail.backAria' | t">
+      <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
+    </button>
+    <img class="hero-image" [appImgFallback]="currentPoi.imageUrl" [alt]="poiName(currentPoi)" />
+    <div class="title-row">
+      <div>
+        <h1 class="page-title">{{ poiName(currentPoi) }}</h1>
+        <p class="page-subtitle">{{ poiAddress(currentPoi) }}</p>
+        <p class="poi-distance">{{ distanceLabel }} - {{ currentPoi.durationSec | durationLabel }}</p>
+      </div>
+      <button mat-icon-button color="primary" (click)="toggleFavorite()">
+        <mat-icon fontSet="material-icons-round">{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+      </button>
     </div>
-
-    <button mat-icon-button color="primary" (click)="toggleFavorite()">
-      <mat-icon fontSet="material-icons-round">{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+    <button mat-flat-button color="accent" class="big-cta nav-cta" (click)="startNavigation()">
+      <mat-icon fontSet="material-icons-round">near_me</mat-icon>
+      {{ 'poiDetail.startNavigation' | t }}
     </button>
-  </div>
-
-  <button mat-flat-button color="accent" class="big-cta nav-cta" (click)="startNavigation()">
-    <mat-icon fontSet="material-icons-round">near_me</mat-icon>
-    {{ 'poiDetail.startNavigation' | t }}
-  </button>
-
-  <div class="description-wrap">
-    <p class="description-text">{{ descriptionText(currentPoi) }}</p>
-    <button mat-button type="button" class="expand-inline-btn" *ngIf="canExpandDescription(currentPoi)" (click)="toggleDescription()">
-      {{ descriptionExpanded ? ('common.showLess' | t) : ('common.showMore' | t) }}
-    </button>
-  </div>
-
-  <section class="preview-box card">
-    <p class="preview-title">{{ 'poiDetail.previewTitle' | t }}</p>
-    <ng-container *ngIf="hasPlayableAudio(currentPoi); else previewUnavailable">
-      <ng-container *ngIf="previewPlayerState$ | async as state">
-        <div class="preview-player" [attr.aria-label]="'poiDetail.previewAria' | t:{ name: poiName(currentPoi) }">
-          <input
-            type="range"
-            class="preview-progress"
-            min="0"
-            [max]="previewDurationLimit(state, currentPoi)"
-            [value]="previewCurrentTime(state, currentPoi)"
-            (input)="seekPreview($event)"
-          />
-
-          <div class="preview-time-row">
-            <span>{{ formatClock(previewCurrentTime(state, currentPoi)) }}</span>
-            <span>{{ formatClock(previewDurationLimit(state, currentPoi)) }}</span>
+    <div class="description-wrap">
+      <p class="description-text">{{ descriptionText(currentPoi) }}</p>
+      @if (canExpandDescription(currentPoi)) {
+        <button mat-button type="button" class="expand-inline-btn" (click)="toggleDescription()">
+          {{ descriptionExpanded ? ('common.showLess' | t) : ('common.showMore' | t) }}
+        </button>
+      }
+    </div>
+    <section class="preview-box card">
+      <p class="preview-title">{{ 'poiDetail.previewTitle' | t }}</p>
+      @if (hasPlayableAudio(currentPoi)) {
+        @if (previewPlayerState$ | async; as state) {
+          <div class="preview-player" [attr.aria-label]="'poiDetail.previewAria' | t:{ name: poiName(currentPoi) }">
+            <input
+              type="range"
+              class="preview-progress"
+              min="0"
+              [max]="previewDurationLimit(state, currentPoi)"
+              [value]="previewCurrentTime(state, currentPoi)"
+              (input)="seekPreview($event)"
+              />
+            <div class="preview-time-row">
+              <span>{{ formatClock(previewCurrentTime(state, currentPoi)) }}</span>
+              <span>{{ formatClock(previewDurationLimit(state, currentPoi)) }}</span>
+            </div>
+            <div class="preview-controls">
+              <button mat-mini-fab color="primary" type="button" (click)="skipPreview(-15)">
+                <mat-icon fontSet="material-icons-round">replay_10</mat-icon>
+              </button>
+              <button mat-fab color="primary" type="button" (click)="togglePreviewPlay()">
+                <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+              </button>
+              <button mat-mini-fab color="primary" type="button" (click)="skipPreview(15)">
+                <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
+              </button>
+            </div>
+            @if (state.previewEnded) {
+              <p class="preview-note preview-ended">
+                {{ 'poiDetail.previewCompleted' | t:{ seconds: previewSeconds } }}
+              </p>
+            }
           </div>
-
-          <div class="preview-controls">
-            <button mat-mini-fab color="primary" type="button" (click)="skipPreview(-15)">
-              <mat-icon fontSet="material-icons-round">replay_10</mat-icon>
-            </button>
-
-            <button mat-fab color="primary" type="button" (click)="togglePreviewPlay()">
-              <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
-            </button>
-
-            <button mat-mini-fab color="primary" type="button" (click)="skipPreview(15)">
-              <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
-            </button>
-          </div>
-
-          <p class="preview-note preview-ended" *ngIf="state.previewEnded">
-            {{ 'poiDetail.previewCompleted' | t:{ seconds: previewSeconds } }}
-          </p>
-        </div>
-      </ng-container>
-      <p class="preview-note" *ngIf="!unlocked">{{ 'poiDetail.previewLimited' | t:{ seconds: previewSeconds } }}</p>
-    </ng-container>
-    <ng-template #previewUnavailable>
-      <p class="preview-note">{{ 'mapSheet.audioUnavailable' | t }}</p>
-    </ng-template>
+        }
+        @if (!unlocked) {
+          <p class="preview-note">{{ 'poiDetail.previewLimited' | t:{ seconds: previewSeconds } }}</p>
+        }
+      } @else {
+        <p class="preview-note">{{ 'mapSheet.audioUnavailable' | t }}</p>
+      }
+    </section>
+    <section class="actions">
+      @if (!unlocked) {
+        <button mat-flat-button color="primary" class="big-cta" (click)="addPoiToCart()" [disabled]="isInCart()">
+          {{ isInCart() ? ('common.inCart' | t) : ('poiDetail.unlockPlace' | t:{ price: formatPrice(currentPoi.priceSingle) }) }}
+        </button>
+      }
+      @if (!unlocked) {
+        <button mat-stroked-button color="primary" class="big-cta" (click)="purchaseCity()">
+          {{ 'poiDetail.unlockCity' | t:{ city: cityName(currentPoi.cityId), price: formatPrice(cityBundlePrice(currentPoi.cityId)) } }}
+        </button>
+      }
+      @if (unlocked) {
+        <button mat-flat-button color="primary" class="big-cta" (click)="openFullPlayer()">
+          {{ 'poiDetail.playFullAudio' | t }}
+        </button>
+      }
+    </section>
   </section>
+}
 
-  <section class="actions">
-    <button mat-flat-button color="primary" class="big-cta" *ngIf="!unlocked" (click)="addPoiToCart()" [disabled]="isInCart()">
-      {{ isInCart() ? ('common.inCart' | t) : ('poiDetail.unlockPlace' | t:{ price: formatPrice(currentPoi.priceSingle) }) }}
-    </button>
-
-    <button mat-stroked-button color="primary" class="big-cta" *ngIf="!unlocked" (click)="purchaseCity()">
-      {{ 'poiDetail.unlockCity' | t:{ city: cityName(currentPoi.cityId), price: formatPrice(cityBundlePrice(currentPoi.cityId)) } }}
-    </button>
-
-    <button mat-flat-button color="primary" class="big-cta" *ngIf="unlocked" (click)="openFullPlayer()">
-      {{ 'poiDetail.playFullAudio' | t }}
-    </button>
+@if (loading) {
+  <section class="page-shell loading-shell">
+    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+    <p>{{ 'poiDetail.loading' | t }}</p>
   </section>
-</section>
+}
 
-<section class="page-shell loading-shell" *ngIf="loading">
-  <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-  <p>{{ 'poiDetail.loading' | t }}</p>
-</section>
-
-<section class="page-shell poi-detail" *ngIf="!loading && !poi">
-  <mat-card class="card warning">
-    <p>{{ loadError ? ('poiDetail.unavailable' | t) : ('poiDetail.notFound' | t) }}</p>
-    <button mat-stroked-button color="primary" (click)="goBack()">{{ 'poiDetail.backHome' | t }}</button>
-  </mat-card>
-</section>
+@if (!loading && !poi) {
+  <section class="page-shell poi-detail">
+    <mat-card class="card warning">
+      <p>{{ loadError ? ('poiDetail.unavailable' | t) : ('poiDetail.notFound' | t) }}</p>
+      <button mat-stroked-button color="primary" (click)="goBack()">{{ 'poiDetail.backHome' | t }}</button>
+    </mat-card>
+  </section>
+}

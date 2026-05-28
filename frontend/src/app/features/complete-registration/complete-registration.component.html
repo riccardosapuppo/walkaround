@@ -2,47 +2,56 @@
   <mat-card class="card registration-card">
     <h1 class="page-title">{{ pageTitle }}</h1>
 
-    <div class="loading-state" *ngIf="state === 'loading'">
-      <mat-spinner diameter="34"></mat-spinner>
-      <p>{{ 'completeRegistration.loading' | t }}</p>
-    </div>
+    @if (state === 'loading') {
+      <div class="loading-state">
+        <mat-spinner diameter="34"></mat-spinner>
+        <p>{{ 'completeRegistration.loading' | t }}</p>
+      </div>
+    }
 
-    <ng-container *ngIf="state === 'valid'">
-      <p class="page-subtitle" *ngIf="email">{{ 'completeRegistration.passwordFor' | t }}: <strong>{{ email }}</strong></p>
-
+    @if (state === 'valid') {
+      @if (email) {
+        <p class="page-subtitle">{{ 'completeRegistration.passwordFor' | t }}: <strong>{{ email }}</strong></p>
+      }
       <form [formGroup]="form" (ngSubmit)="submit()" class="registration-form">
         <mat-form-field appearance="outline">
           <mat-label>{{ 'completeRegistration.newPassword' | t }}</mat-label>
           <input matInput type="password" formControlName="password" autocomplete="new-password" />
         </mat-form-field>
-
         <mat-form-field appearance="outline">
           <mat-label>{{ 'completeRegistration.confirmPassword' | t }}</mat-label>
           <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
         </mat-form-field>
-
         <button mat-flat-button color="primary" class="big-cta" [disabled]="submitting" type="submit">
           {{ submitting ? ('completeRegistration.saving' | t) : submitLabel }}
         </button>
       </form>
-    </ng-container>
+    }
 
-    <div class="state-message" *ngIf="state === 'completed'">
-      {{ completedMessage }}
-    </div>
+    @if (state === 'completed') {
+      <div class="state-message">
+        {{ completedMessage }}
+      </div>
+    }
 
-    <div class="state-message" *ngIf="state === 'already_registered'">
-      {{ 'completeRegistration.alreadyRegistered' | t }}
-    </div>
+    @if (state === 'already_registered') {
+      <div class="state-message">
+        {{ 'completeRegistration.alreadyRegistered' | t }}
+      </div>
+    }
 
-    <div class="state-message" *ngIf="state === 'expired'">
-      {{ expiredMessage }}
-      <button mat-stroked-button color="primary" (click)="goToLogin()">{{ 'completeRegistration.goToLogin' | t }}</button>
-    </div>
+    @if (state === 'expired') {
+      <div class="state-message">
+        {{ expiredMessage }}
+        <button mat-stroked-button color="primary" (click)="goToLogin()">{{ 'completeRegistration.goToLogin' | t }}</button>
+      </div>
+    }
 
-    <div class="state-message" *ngIf="state === 'invalid'">
-      {{ 'completeRegistration.invalidLink' | t }}
-      <button mat-stroked-button color="primary" (click)="goToLogin()">{{ 'completeRegistration.goToLogin' | t }}</button>
-    </div>
+    @if (state === 'invalid') {
+      <div class="state-message">
+        {{ 'completeRegistration.invalidLink' | t }}
+        <button mat-stroked-button color="primary" (click)="goToLogin()">{{ 'completeRegistration.goToLogin' | t }}</button>
+      </div>
+    }
   </mat-card>
 </section>

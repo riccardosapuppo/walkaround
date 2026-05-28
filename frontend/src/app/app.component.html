@@ -1,2 +1,4 @@
 <router-outlet></router-outlet>
-<app-bottom-nav *ngIf="showBottomNav$ | async"></app-bottom-nav>
+@if (showBottomNav$ | async) {
+  <app-bottom-nav></app-bottom-nav>
+}

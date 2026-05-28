@@ -1,120 +1,139 @@
 <section class="map-page">
   <header class="map-header">
     <div class="map-header-top">
-      <button
-        mat-icon-button
-        class="map-back-btn"
-        type="button"
-        *ngIf="hasActiveNavigation"
-        (click)="goBack()"
-        [attr.aria-label]="'common.goBack' | t"
-      >
-        <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
-      </button>
+      @if (hasActiveNavigation) {
+        <button
+          mat-icon-button
+          class="map-back-btn"
+          type="button"
+          (click)="goBack()"
+          [attr.aria-label]="'common.goBack' | t"
+          >
+          <mat-icon fontSet="material-icons-round">arrow_back</mat-icon>
+        </button>
+      }
 
       <div>
         <h1 class="page-title">{{ 'map.title' | t }}</h1>
-        <p class="page-subtitle" *ngIf="!hasActiveNavigation">{{ 'map.availablePoiCount' | t:{ count: poiCount } }}</p>
-        <p class="page-subtitle" *ngIf="hasActiveNavigation && navigationTarget">
-          {{ 'map.activeNavigation' | t:{ name: poiName(navigationTarget) } }}
-        </p>
+        @if (!hasActiveNavigation) {
+          <p class="page-subtitle">{{ 'map.availablePoiCount' | t:{ count: poiCount } }}</p>
+        }
+        @if (hasActiveNavigation && navigationTarget) {
+          <p class="page-subtitle">
+            {{ 'map.activeNavigation' | t:{ name: poiName(navigationTarget) } }}
+          </p>
+        }
       </div>
     </div>
   </header>
 
-  <mat-card class="card warning api-warning" *ngIf="apiErrorMessage">
-    <p>{{ apiErrorMessage }}</p>
-  </mat-card>
+  @if (apiErrorMessage) {
+    <mat-card class="card warning api-warning">
+      <p>{{ apiErrorMessage }}</p>
+    </mat-card>
+  }
 
-  <mat-card class="card structure-card" *ngIf="visibleAssociatedStructure as structure">
-    <div class="structure-card-head">
-      <p class="structure-kicker">{{ 'map.associatedStructure' | t }}</p>
-      <span class="structure-status" *ngIf="resolvingAssociatedStructure">{{ 'map.positionResolving' | t }}</span>
-    </div>
-    <h3>{{ structure.structureName }}</h3>
-    <p class="structure-address">{{ structure.structureAddress }}</p>
-    <div class="structure-actions">
-      <button mat-flat-button color="primary" (click)="navigateToAssociatedStructure()">{{ 'map.navigate' | t }}</button>
-      <button mat-stroked-button color="primary" *ngIf="associatedStructureCoords" (click)="focusAssociatedStructure()">
-        {{ 'map.showPoint' | t }}
-      </button>
-    </div>
-  </mat-card>
-
-  <section class="loading-shell" *ngIf="isLoading">
-    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
-    <p>{{ 'map.loading' | t }}</p>
-  </section>
-
-  <div
-    class="map-frame"
-    *ngIf="!isLoading"
-    leaflet
-    [leafletOptions]="mapOptions"
-    [leafletLayers]="markerLayers"
-    (leafletMapReady)="onMapReady($event)"
-  ></div>
-
-  <section class="nav-hud card" *ngIf="navigationTarget as target">
-    <div class="nav-hud-head">
-      <div>
-        <p class="nav-kicker">{{ 'map.inAppNavigator' | t }}</p>
-        <h3>{{ poiName(target) }}</h3>
-        <p class="nav-provider" [class.fallback]="navigationProvider === 'fallback'">{{ navigationProviderLabel }}</p>
+  @if (visibleAssociatedStructure; as structure) {
+    <mat-card class="card structure-card">
+      <div class="structure-card-head">
+        <p class="structure-kicker">{{ 'map.associatedStructure' | t }}</p>
+        @if (resolvingAssociatedStructure) {
+          <span class="structure-status">{{ 'map.positionResolving' | t }}</span>
+        }
       </div>
+      <h3>{{ structure.structureName }}</h3>
+      <p class="structure-address">{{ structure.structureAddress }}</p>
+      <div class="structure-actions">
+        <button mat-flat-button color="primary" (click)="navigateToAssociatedStructure()">{{ 'map.navigate' | t }}</button>
+        @if (associatedStructureCoords) {
+          <button mat-stroked-button color="primary" (click)="focusAssociatedStructure()">
+            {{ 'map.showPoint' | t }}
+          </button>
+        }
+      </div>
+    </mat-card>
+  }
 
-      <button mat-icon-button (click)="stopNavigation()" [attr.aria-label]="'map.closeNavigation' | t">
-        <mat-icon fontSet="material-icons-round">close</mat-icon>
-      </button>
-    </div>
+  @if (isLoading) {
+    <section class="loading-shell">
+      <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+      <p>{{ 'map.loading' | t }}</p>
+    </section>
+  }
 
-    <div class="nav-metrics">
-      <article>
-        <span>{{ 'map.distance' | t }}</span>
-        <strong>{{ navigationDistanceLabel }}</strong>
-      </article>
-      <article>
-        <span>{{ 'map.time' | t }}</span>
-        <strong>{{ navigationEtaLabel }}</strong>
-      </article>
-      <article>
-        <span>{{ 'map.arrival' | t }}</span>
-        <strong>{{ navigationArrivalLabel }}</strong>
-      </article>
-    </div>
+  @if (!isLoading) {
+    <div
+      class="map-frame"
+      leaflet
+      [leafletOptions]="mapOptions"
+      [leafletLayers]="markerLayers"
+      (leafletMapReady)="onMapReady($event)"
+    ></div>
+  }
 
-    <mat-progress-bar mode="determinate" [value]="navigationProgress"></mat-progress-bar>
+  @if (navigationTarget; as target) {
+    <section class="nav-hud card">
+      <div class="nav-hud-head">
+        <div>
+          <p class="nav-kicker">{{ 'map.inAppNavigator' | t }}</p>
+          <h3>{{ poiName(target) }}</h3>
+          <p class="nav-provider" [class.fallback]="navigationProvider === 'fallback'">{{ navigationProviderLabel }}</p>
+        </div>
+        <button mat-icon-button (click)="stopNavigation()" [attr.aria-label]="'map.closeNavigation' | t">
+          <mat-icon fontSet="material-icons-round">close</mat-icon>
+        </button>
+      </div>
+      <div class="nav-metrics">
+        <article>
+          <span>{{ 'map.distance' | t }}</span>
+          <strong>{{ navigationDistanceLabel }}</strong>
+        </article>
+        <article>
+          <span>{{ 'map.time' | t }}</span>
+          <strong>{{ navigationEtaLabel }}</strong>
+        </article>
+        <article>
+          <span>{{ 'map.arrival' | t }}</span>
+          <strong>{{ navigationArrivalLabel }}</strong>
+        </article>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="navigationProgress"></mat-progress-bar>
+      <p class="nav-direction">{{ 'map.nextManeuver' | t }}: <strong>{{ navigationNextInstruction }}</strong></p>
+      @if (navigationUpcomingSteps.length) {
+        <div class="nav-steps">
+          @for (step of visibleNavigationSteps; track step; let index = $index) {
+            <article>
+              <span>{{ index + 1 }}. {{ step.instruction }}</span>
+              <strong>{{ step.distanceLabel }}</strong>
+            </article>
+          }
+          @if (canExpandNavigationSteps) {
+            <button mat-button class="nav-steps-toggle" (click)="toggleNavigationSteps()">
+              {{ showAllNavigationSteps ? ('common.showLess' | t) : ('map.showAllSteps' | t) }}
+            </button>
+          }
+        </div>
+      }
+      @if (isRouting) {
+        <div class="nav-refresh">
+          <mat-progress-spinner mode="indeterminate" diameter="16"></mat-progress-spinner>
+          <span>{{ 'map.updatingRoute' | t }}</span>
+        </div>
+      }
+      <button mat-stroked-button color="primary" (click)="focusNavigationRoute()">{{ 'map.focusRoute' | t }}</button>
+    </section>
+  }
 
-    <p class="nav-direction">{{ 'map.nextManeuver' | t }}: <strong>{{ navigationNextInstruction }}</strong></p>
-
-    <div class="nav-steps" *ngIf="navigationUpcomingSteps.length">
-      <article *ngFor="let step of visibleNavigationSteps; let index = index">
-        <span>{{ index + 1 }}. {{ step.instruction }}</span>
-        <strong>{{ step.distanceLabel }}</strong>
-      </article>
-
-      <button mat-button class="nav-steps-toggle" *ngIf="canExpandNavigationSteps" (click)="toggleNavigationSteps()">
-        {{ showAllNavigationSteps ? ('common.showLess' | t) : ('map.showAllSteps' | t) }}
-      </button>
-    </div>
-
-    <div class="nav-refresh" *ngIf="isRouting">
-      <mat-progress-spinner mode="indeterminate" diameter="16"></mat-progress-spinner>
-      <span>{{ 'map.updatingRoute' | t }}</span>
-    </div>
-
-    <button mat-stroked-button color="primary" (click)="focusNavigationRoute()">{{ 'map.focusRoute' | t }}</button>
-  </section>
-
-  <button
-    mat-fab
-    color="primary"
-    class="center-btn"
-    [class.with-navigation]="hasActiveNavigation"
-    *ngIf="!isLoading"
-    (click)="centerOnMe()"
-    [attr.aria-label]="'map.centerOnMe' | t"
-  >
-    <mat-icon fontSet="material-icons-round">my_location</mat-icon>
-  </button>
+  @if (!isLoading) {
+    <button
+      mat-fab
+      color="primary"
+      class="center-btn"
+      [class.with-navigation]="hasActiveNavigation"
+      (click)="centerOnMe()"
+      [attr.aria-label]="'map.centerOnMe' | t"
+      >
+      <mat-icon fontSet="material-icons-round">my_location</mat-icon>
+    </button>
+  }
 </section>

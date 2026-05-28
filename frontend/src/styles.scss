@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 $walkaround-primary: mat.m2-define-palette(mat.$m2-blue-palette, 700, 500, 900);
 $walkaround-accent: mat.m2-define-palette(mat.$m2-light-green-palette, 600, 500, 700);
@@ -319,8 +320,8 @@ body.app-user-theme .home-brand-stage::after {
 }
 
 .app-snackbar {
-  --mdc-snackbar-container-shape: 14px;
-  --mdc-snackbar-supporting-text-weight: 700;
+  --mat-snackbar-container-shape: 14px;
+  --mat-snackbar-supporting-text-weight: 700;
   --mat-mdc-snack-bar-button-color: #ffffff;
 }
 
@@ -329,18 +330,18 @@ body.app-user-theme .home-brand-stage::after {
 }
 
 .app-snackbar-success {
-  --mdc-snackbar-container-color: #1d7048;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snackbar-container-color: #1d7048;
+  --mat-snackbar-supporting-text-color: #ffffff;
 }
 
 .app-snackbar-info {
-  --mdc-snackbar-container-color: #1769aa;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snackbar-container-color: #1769aa;
+  --mat-snackbar-supporting-text-color: #ffffff;
 }
 
 .app-snackbar-warning {
-  --mdc-snackbar-container-color: #9a5a12;
-  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snackbar-container-color: #9a5a12;
+  --mat-snackbar-supporting-text-color: #ffffff;
 }
 
 @media (min-width: 900px) {
