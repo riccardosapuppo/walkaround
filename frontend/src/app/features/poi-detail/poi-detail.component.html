@@ -32,17 +32,41 @@
   <section class="preview-box card">
     <p class="preview-title">{{ 'poiDetail.previewTitle' | t }}</p>
     <ng-container *ngIf="hasPlayableAudio(currentPoi); else previewUnavailable">
-      <audio
-        class="preview-player"
-        controls
-        controlsList="nodownload"
-        disableRemotePlayback
-        [src]="poiAudioUrl(currentPoi)"
-        preload="none"
-        (contextmenu)="$event.preventDefault()"
-        (timeupdate)="onPreviewTimeUpdate($event)"
-        [attr.aria-label]="'poiDetail.previewAria' | t:{ name: poiName(currentPoi) }"
-      ></audio>
+      <ng-container *ngIf="previewPlayerState$ | async as state">
+        <div class="preview-player" [attr.aria-label]="'poiDetail.previewAria' | t:{ name: poiName(currentPoi) }">
+          <input
+            type="range"
+            class="preview-progress"
+            min="0"
+            [max]="previewDurationLimit(state, currentPoi)"
+            [value]="previewCurrentTime(state, currentPoi)"
+            (input)="seekPreview($event)"
+          />
+
+          <div class="preview-time-row">
+            <span>{{ formatClock(previewCurrentTime(state, currentPoi)) }}</span>
+            <span>{{ formatClock(previewDurationLimit(state, currentPoi)) }}</span>
+          </div>
+
+          <div class="preview-controls">
+            <button mat-mini-fab color="primary" type="button" (click)="skipPreview(-15)">
+              <mat-icon fontSet="material-icons-round">replay_10</mat-icon>
+            </button>
+
+            <button mat-fab color="primary" type="button" (click)="togglePreviewPlay()">
+              <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
+            </button>
+
+            <button mat-mini-fab color="primary" type="button" (click)="skipPreview(15)">
+              <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
+            </button>
+          </div>
+
+          <p class="preview-note preview-ended" *ngIf="state.previewEnded">
+            {{ 'poiDetail.previewCompleted' | t:{ seconds: previewSeconds } }}
+          </p>
+        </div>
+      </ng-container>
       <p class="preview-note" *ngIf="!unlocked">{{ 'poiDetail.previewLimited' | t:{ seconds: previewSeconds } }}</p>
     </ng-container>
     <ng-template #previewUnavailable>

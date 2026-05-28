@@ -95,7 +95,7 @@ export class FavoritesComponent implements OnInit, OnDestroy {
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {
-    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
+    return this.poiService.hasPreviewAudio(poi);
   }
 
   poiName(poi: Poi): string {

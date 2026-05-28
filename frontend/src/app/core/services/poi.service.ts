@@ -4,6 +4,9 @@ import { finalize, Observable, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { City } from '../models/city.model';
 import { Poi } from '../models/poi.model';
+import { AdminAuthService } from './admin-auth.service';
+import { AppAuthService } from './app-auth.service';
+import { I18nService } from './i18n.service';
 
 @Injectable({ providedIn: 'root' })
 export class PoiService {
@@ -13,7 +16,12 @@ export class PoiService {
   private poisByCityCache = new Map<string, Poi[]>();
   private poisByCityRequests = new Map<string, Observable<Poi[]>>();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly appAuth: AppAuthService,
+    private readonly adminAuth: AdminAuthService,
+    private readonly i18n: I18nService
+  ) {}
 
   getCities(forceRefresh = false): Observable<City[]> {
     if (!forceRefresh && this.citiesCache) {
@@ -84,6 +92,43 @@ export class PoiService {
       .pipe(tap((poi) => this.updateCachedPoi(poi)));
   }
 
+  getPoiPreviewAudioUrl(poi: Poi | null | undefined): string {
+    const poiId = String(poi?.id || '').trim();
+    if (!poiId) {
+      return '';
+    }
+
+    return this.withAudioLanguage(poi?.previewAudioUrl || `${environment.apiBaseUrl}/pois/${encodeURIComponent(poiId)}/audio-preview`);
+  }
+
+  getPoiFullAudioUrl(poi: Poi | null | undefined): string {
+    const poiId = String(poi?.id || '').trim();
+    if (!poiId) {
+      return '';
+    }
+
+    const params: Record<string, string> = {};
+    const appToken = this.appAuth.session?.token || '';
+    if (appToken) {
+      params['access_token'] = appToken;
+    }
+
+    const adminToken = this.adminAuth.isAdmin ? this.adminAuth.session?.token || '' : '';
+    if (adminToken) {
+      params['admin_token'] = adminToken;
+    }
+
+    return this.withAudioLanguage(poi?.audioUrl || `${environment.apiBaseUrl}/pois/${encodeURIComponent(poiId)}/audio`, params);
+  }
+
+  hasPreviewAudio(poi: Poi | null | undefined): boolean {
+    return Boolean(this.getPoiPreviewAudioUrl(poi));
+  }
+
+  hasFullAudio(poi: Poi | null | undefined): boolean {
+    return Boolean(this.getPoiFullAudioUrl(poi));
+  }
+
   private hasFullPoiDetails(poi: Poi): boolean {
     if (String(poi.descriptionLong || '').trim()) {
       return true;
@@ -102,6 +147,20 @@ export class PoiService {
     const cachedPois = this.poisByCityCache.get(cityId) || [];
     const nextPois = cachedPois.map((cachedPoi) => (cachedPoi.id === poiId ? poi : cachedPoi));
     this.poisByCityCache.set(cityId, nextPois);
+  }
+
+  private withAudioLanguage(url: string, extraParams: Record<string, string> = {}): string {
+    const normalizedUrl = String(url || '').trim();
+    if (!normalizedUrl) {
+      return '';
+    }
+
+    const separator = normalizedUrl.includes('?') ? '&' : '?';
+    const params = new URLSearchParams({
+      language: this.i18n.language,
+      ...extraParams
+    });
+    return `${normalizedUrl}${separator}${params.toString()}`;
   }
 }
 

@@ -12,6 +12,7 @@ export interface Poi {
   descriptionLong: string;
   imageUrl: string;
   audioUrl: string;
+  previewAudioUrl?: string;
   priceSingle: number;
   durationSec: number;
   distanceMeters?: number | null;

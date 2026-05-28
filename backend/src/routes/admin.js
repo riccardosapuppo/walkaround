@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { env } from '../config/env.js';
-import { requireAdmin, requireAuth } from '../auth/middleware.js';
+import { requireAdmin, requireAuth, resolveSessionUser } from '../auth/middleware.js';
 import { createOpaqueToken, hashPassword, hashToken } from '../auth/security.js';
 import { pool } from '../db/pool.js';
 import {
@@ -62,6 +62,64 @@ const privacyPolicyTargetLanguages = ['en', 'fr', 'es', 'de', 'pl'];
 const privacyPolicyHtmlMaxLength = 120000;
 const dashboardRoleSchema = z.enum(['admin', 'facility_manager', 'user']);
 const inviteRoleSchema = z.enum(['admin', 'facility_manager']);
+
+function isInsideDirectory(parentDir, childPath) {
+  const relative = path.relative(parentDir, childPath);
+  return Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+function resolveDashboardAudioPath(audioUrl) {
+  const cleanUrl = String(audioUrl || '').split('?')[0].split('#')[0].replace(/\\/g, '/');
+  if (!cleanUrl.startsWith('/public/audio/')) {
+    return null;
+  }
+
+  let decodedUrl = cleanUrl;
+  try {
+    decodedUrl = decodeURIComponent(cleanUrl);
+  } catch {
+    decodedUrl = cleanUrl;
+  }
+
+  const relativeAudioPath = decodedUrl.replace(/^\/public\/audio\//, '');
+  const absoluteAudioPath = path.resolve(publicAudioRootDir, relativeAudioPath);
+  return isInsideDirectory(publicAudioRootDir, absoluteAudioPath) ? absoluteAudioPath : null;
+}
+
+function dashboardAudioContentType(audioPath) {
+  const extension = path.extname(audioPath).toLowerCase();
+  if (extension === '.m4a' || extension === '.mp4') {
+    return 'audio/mp4';
+  }
+  if (extension === '.ogg' || extension === '.oga') {
+    return 'audio/ogg';
+  }
+  if (extension === '.wav') {
+    return 'audio/wav';
+  }
+  if (extension === '.webm') {
+    return 'audio/webm';
+  }
+  return 'audio/mpeg';
+}
+
+async function resolveDashboardSessionFromMediaRequest(req) {
+  const headerSession = await resolveSessionUser(req);
+  if (headerSession) {
+    return headerSession;
+  }
+
+  const accessToken = String(req.query.access_token || req.query.token || '').trim();
+  if (!accessToken) {
+    return null;
+  }
+
+  return resolveSessionUser({
+    headers: {
+      authorization: `Bearer ${accessToken}`
+    }
+  });
+}
 
 const inviteSchema = z.object({
   firstName: z.string().trim().min(1, 'Nome obbligatorio').max(120, 'Nome troppo lungo'),
@@ -3747,6 +3805,37 @@ router.get('/app-cache-settings', requireAuth, requireAdmin, async (_req, res, n
     const settings = await getAppCacheSettings();
     return res.json(mapAppCacheSettingsForResponse(settings));
   } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/media/audio', async (req, res, next) => {
+  try {
+    const session = await resolveDashboardSessionFromMediaRequest(req);
+    if (!session || session.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Accesso admin richiesto' });
+    }
+
+    const audioPath = resolveDashboardAudioPath(req.query.path);
+    if (!audioPath) {
+      return res.status(400).json({ message: 'Percorso audio non valido' });
+    }
+
+    const stat = await fs.stat(audioPath);
+    if (!stat.isFile()) {
+      return res.status(404).json({ message: 'Audio non trovato' });
+    }
+
+    res.set({
+      'Cache-Control': 'private, no-store',
+      'Content-Type': dashboardAudioContentType(audioPath),
+      'Content-Disposition': `inline; filename="${path.basename(audioPath).replace(/"/g, '')}"`
+    });
+    return res.sendFile(audioPath);
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      return res.status(404).json({ message: 'Audio non trovato' });
+    }
     return next(error);
   }
 });

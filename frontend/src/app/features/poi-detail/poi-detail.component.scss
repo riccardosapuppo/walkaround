@@ -60,7 +60,31 @@
 }
 
 .preview-player {
+  display: grid;
+  gap: 10px;
+}
+
+.preview-progress {
   width: 100%;
+}
+
+.preview-time-row {
+  display: flex;
+  justify-content: space-between;
+  color: #6c7a93;
+  font-size: 0.86rem;
+}
+
+.preview-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin: 4px 0;
+}
+
+.preview-ended {
+  text-align: center;
 }
 
 .preview-note {

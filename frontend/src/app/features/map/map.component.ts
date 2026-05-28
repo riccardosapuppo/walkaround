@@ -1,9 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, combineLatest, map, of, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { catchError, combineLatest, map, of, startWith, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 import {
   circleMarker,
   divIcon,
@@ -127,7 +127,9 @@ export class MapComponent implements OnInit, OnDestroy {
     private readonly snackBar: MatSnackBar,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly location: Location
+    private readonly location: Location,
+    private readonly zone: NgZone,
+    private readonly changeDetector: ChangeDetectorRef
   ) {
     this.applyNavigationPlaceholders();
   }
@@ -195,7 +197,7 @@ export class MapComponent implements OnInit, OnDestroy {
       .subscribe((coordinates) => {
         this.associatedStructureCoords = coordinates;
         this.resolvingAssociatedStructure = false;
-        this.markerLayers = this.composeMapLayers(this.latestPreparedPois);
+        this.refreshMapLayers();
       });
 
     this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe((queryParams) => {
@@ -261,7 +263,7 @@ export class MapComponent implements OnInit, OnDestroy {
           this.maybeRequestNavigationRoute(false);
         }
 
-        this.markerLayers = this.composeMapLayers(prepared);
+        this.refreshMapLayers(prepared);
         this.tryStartPendingNavigation();
         this.isLoading = false;
       });
@@ -349,7 +351,7 @@ export class MapComponent implements OnInit, OnDestroy {
   stopNavigation(): void {
     this.routeRequestToken += 1;
     this.clearNavigationState();
-    this.markerLayers = this.composeMapLayers(this.latestPreparedPois);
+    this.refreshMapLayers();
   }
 
   toggleNavigationSteps(): void {
@@ -371,87 +373,93 @@ export class MapComponent implements OnInit, OnDestroy {
 
     poiMarker.on('click', (event: LeafletMouseEvent) => {
       event.originalEvent.preventDefault();
-      const sheet = this.bottomSheet.open(PoiMapSheetComponent, {
-        data: {
-          poi,
-          distanceLabel: poi.distanceLabel,
-          unlocked: poi.unlocked,
-          isNavigating: this.navigationTarget?.id === poi.id,
-          isFavorite: this.appState.isFavorite(poi.id),
-          inCart: this.cartService.isPoiInCart(poi.id),
-          cityName: this.cityName(poi.cityId),
-          cityBundlePrice: this.cityBundlePrice(poi.cityId)
-        }
-      });
-
-      sheet.afterDismissed().subscribe((result?: PoiMapSheetAction) => {
-        if (!result) {
-          return;
-        }
-
-        if (result.action === 'navigate') {
-          this.deferNavigationStart(poi);
-          return;
-        }
-
-        if (result.action === 'play') {
-          if (!this.hasPlayableAudio(poi)) {
-            this.snackBar.open(this.i18n.t('map.noAudio'), this.i18n.t('common.ok'), { duration: 2400 });
-            return;
-          }
-
-          if (result.preview) {
-            void this.router.navigate(['/poi', result.poiId]);
-            return;
-          }
-
-          void this.router.navigate(['/player', result.poiId], { queryParams: { preview: false } });
-          return;
-        }
-
-        if (result.action === 'add-to-cart') {
-          if (this.purchaseService.isPoiUnlocked(poi.id, poi.cityId)) {
-            this.snackBar.open(this.i18n.t('map.placeAlreadyUnlocked'), this.i18n.t('common.ok'), { duration: 2200 });
-            return;
-          }
-
-          if (this.cartService.isPoiInCart(poi.id)) {
-            this.snackBar.open(this.i18n.t('map.placeAlreadyInCart'), this.i18n.t('common.ok'), { duration: 2200 });
-            return;
-          }
-
-          this.cartService.addPoi({
-            poiId: poi.id,
-            cityId: poi.cityId,
-            cityName: this.cityName(poi.cityId),
-            label: this.poiName(poi),
-            amount: poi.priceSingle
-          });
-          this.snackBar.open(this.i18n.t('map.placeAdded', { name: this.poiName(poi) }), this.i18n.t('common.ok'), {
-            duration: 2400
-          });
-          return;
-        }
-
-        if (result.action === 'toggle-favorite') {
-          this.appState.toggleFavorite(result.poiId);
-          return;
-        }
-
-        this.purchaseService.purchaseCityBundle(result.cityId, this.cityName(result.cityId), this.cityBundlePrice(result.cityId)).subscribe({
-          next: (dialogResult) => {
-            if (dialogResult?.action === 'paid') {
-              this.snackBar.open(
-                this.i18n.t('map.cityUnlocked', { city: this.cityName(result.cityId) }),
-                this.i18n.t('common.ok'),
-                { duration: 2400 }
-              );
-            }
-          },
-          error: () => {
-            this.snackBar.open(this.i18n.t('map.operationFailed'), this.i18n.t('common.close'), { duration: 2400 });
+      this.zone.run(() => {
+        const currentPoi = this.findPreparedPoi(poi.id) || poi;
+        const sheet = this.bottomSheet.open(PoiMapSheetComponent, {
+          data: {
+            poi: currentPoi,
+            distanceLabel: currentPoi.distanceLabel,
+            unlocked: currentPoi.unlocked,
+            isNavigating: this.navigationTarget?.id === currentPoi.id,
+            isFavorite: this.appState.isFavorite(currentPoi.id),
+            inCart: this.cartService.isPoiInCart(currentPoi.id),
+            cityName: this.cityName(currentPoi.cityId),
+            cityBundlePrice: this.cityBundlePrice(currentPoi.cityId)
           }
         });
+
+        sheet
+          .afterDismissed()
+          .pipe(take(1))
+          .subscribe((result?: PoiMapSheetAction) => {
+            if (!result) {
+              return;
+            }
+
+            if (result.action === 'navigate') {
+              this.startNavigationById(result.poiId);
+              return;
+            }
+
+            if (result.action === 'play') {
+              if (!this.hasPlayableAudio(currentPoi)) {
+                this.snackBar.open(this.i18n.t('map.noAudio'), this.i18n.t('common.ok'), { duration: 2400 });
+                return;
+              }
+
+              if (result.preview) {
+                void this.router.navigate(['/poi', result.poiId]);
+                return;
+              }
+
+              void this.router.navigate(['/player', result.poiId], { queryParams: { preview: false } });
+              return;
+            }
+
+            if (result.action === 'add-to-cart') {
+              if (this.purchaseService.isPoiUnlocked(currentPoi.id, currentPoi.cityId)) {
+                this.snackBar.open(this.i18n.t('map.placeAlreadyUnlocked'), this.i18n.t('common.ok'), { duration: 2200 });
+                return;
+              }
+
+              if (this.cartService.isPoiInCart(currentPoi.id)) {
+                this.snackBar.open(this.i18n.t('map.placeAlreadyInCart'), this.i18n.t('common.ok'), { duration: 2200 });
+                return;
+              }
+
+              this.cartService.addPoi({
+                poiId: currentPoi.id,
+                cityId: currentPoi.cityId,
+                cityName: this.cityName(currentPoi.cityId),
+                label: this.poiName(currentPoi),
+                amount: currentPoi.priceSingle
+              });
+              this.snackBar.open(this.i18n.t('map.placeAdded', { name: this.poiName(currentPoi) }), this.i18n.t('common.ok'), {
+                duration: 2400
+              });
+              return;
+            }
+
+            if (result.action === 'toggle-favorite') {
+              this.appState.toggleFavorite(result.poiId);
+              return;
+            }
+
+            this.purchaseService.purchaseCityBundle(result.cityId, this.cityName(result.cityId), this.cityBundlePrice(result.cityId)).subscribe({
+              next: (dialogResult) => {
+                if (dialogResult?.action === 'paid') {
+                  this.snackBar.open(
+                    this.i18n.t('map.cityUnlocked', { city: this.cityName(result.cityId) }),
+                    this.i18n.t('common.ok'),
+                    { duration: 2400 }
+                  );
+                }
+              },
+              error: () => {
+                this.snackBar.open(this.i18n.t('map.operationFailed'), this.i18n.t('common.close'), { duration: 2400 });
+              }
+            });
+          });
       });
     });
 
@@ -526,12 +534,28 @@ export class MapComponent implements OnInit, OnDestroy {
     return structureMarker;
   }
 
+  private findPreparedPoi(poiId: string): PoiMapView | undefined {
+    const normalizedPoiId = String(poiId || '').trim();
+    return this.latestPreparedPois.find((poi) => poi.id === normalizedPoiId);
+  }
+
+  private startNavigationById(poiId: string): void {
+    const target = this.findPreparedPoi(poiId);
+    if (!target) {
+      this.pendingNavigationPoiId = String(poiId || '').trim() || null;
+      return;
+    }
+
+    this.deferNavigationStart(target);
+  }
+
   private startNavigation(poi: PoiMapView): void {
     if (this.navigationTarget?.id === poi.id && this.activeRoute?.points?.length) {
       this.focusNavigationRoute();
       return;
     }
 
+    this.routeRequestToken += 1;
     this.pendingNavigationPoiId = null;
     this.navigationTarget = poi;
     this.activeRoute = undefined;
@@ -549,7 +573,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
     this.updateNavigationState();
     this.maybeRequestNavigationRoute(true);
-    this.markerLayers = this.composeMapLayers(this.latestPreparedPois);
+    this.refreshMapLayers();
     this.focusNavigationRoute();
   }
 
@@ -597,7 +621,7 @@ export class MapComponent implements OnInit, OnDestroy {
           this.isRouting = false;
           this.applyNavigationRoute(route);
           this.updateNavigationState();
-          this.markerLayers = this.composeMapLayers(this.latestPreparedPois);
+          this.refreshMapLayers();
 
           if (route.provider === 'fallback' && !this.hasShownFallbackSnack) {
             this.hasShownFallbackSnack = true;
@@ -716,6 +740,17 @@ export class MapComponent implements OnInit, OnDestroy {
     this.hasShownFallbackSnack = false;
   }
 
+  private refreshMapLayers(pois: PoiMapView[] = this.latestPreparedPois): void {
+    this.markerLayers = this.composeMapLayers(pois);
+    this.changeDetector.markForCheck();
+
+    if (this.mapRef) {
+      window.requestAnimationFrame(() => {
+        this.mapRef?.invalidateSize(false);
+      });
+    }
+  }
+
   private tryStartPendingNavigation(): void {
     if (!this.pendingNavigationPoiId) {
       return;
@@ -743,13 +778,9 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private deferNavigationStart(poi: PoiMapView): void {
-    window.setTimeout(() => {
-      if (this.destroy$.closed) {
-        return;
-      }
-
-      this.startNavigation(poi);
-    }, 0);
+    window.requestAnimationFrame(() => {
+      this.zone.run(() => this.startNavigation(poi));
+    });
   }
 
   private buildRemainingDistanceByPoint(points: Coordinates[]): number[] {
@@ -850,7 +881,7 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private hasPlayableAudio(poi: Poi | null | undefined): boolean {
-    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
+    return this.poiService.hasPreviewAudio(poi);
   }
 
   poiName(poi: Poi | null | undefined): string {

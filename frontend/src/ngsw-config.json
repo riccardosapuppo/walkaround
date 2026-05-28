@@ -21,7 +21,7 @@
   "dataGroups": [
     {
       "name": "media-runtime",
-      "urls": ["/public/images/**", "/public/audio/**"],
+      "urls": ["/public/images/**", "/public/audio-previews/**"],
       "cacheConfig": {
         "maxSize": 120,
         "maxAge": "30d",

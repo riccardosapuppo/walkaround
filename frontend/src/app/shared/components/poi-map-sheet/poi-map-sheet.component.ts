@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Poi } from '../../../core/models/poi.model';
 import { I18nService } from '../../../core/services/i18n.service';
+import { PoiService } from '../../../core/services/poi.service';
 import { formatCityLabel } from '../../../core/utils/city-label.util';
 
 export interface PoiMapSheetData {
@@ -32,6 +33,7 @@ export class PoiMapSheetComponent {
   constructor(
     @Inject(MAT_BOTTOM_SHEET_DATA) readonly data: PoiMapSheetData,
     private readonly bottomSheetRef: MatBottomSheetRef<PoiMapSheetComponent>,
+    private readonly poiService: PoiService,
     public readonly i18n: I18nService
   ) {}
 
@@ -92,7 +94,7 @@ export class PoiMapSheetComponent {
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {
-    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
+    return this.poiService.hasPreviewAudio(poi);
   }
 
   poiName(): string {

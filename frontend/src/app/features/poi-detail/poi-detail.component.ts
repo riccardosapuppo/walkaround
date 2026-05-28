@@ -10,6 +10,7 @@ import { AppStateService } from '../../core/services/app-state.service';
 import { CartService } from '../../core/services/cart.service';
 import { GeoService } from '../../core/services/geo.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { PlayerService } from '../../core/services/player.service';
 import { PoiService } from '../../core/services/poi.service';
 import { PurchaseService } from '../../core/services/purchase.service';
 import { formatCityLabel } from '../../core/utils/city-label.util';
@@ -31,9 +32,9 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   loading = true;
   loadError = false;
   descriptionExpanded = false;
-  previewLimitReached = false;
   cities: City[] = [];
   readonly previewSeconds = environment.previewSeconds;
+  readonly previewPlayerState$ = this.playerService.state$;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -45,6 +46,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
     private readonly appState: AppStateService,
     private readonly geoService: GeoService,
     private readonly cartService: CartService,
+    private readonly playerService: PlayerService,
     public readonly i18n: I18nService,
     private readonly location: Location,
     private readonly snackBar: MatSnackBar
@@ -70,7 +72,6 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
           this.loading = true;
           this.loadError = false;
           this.poi = undefined;
-          this.previewLimitReached = false;
           this.descriptionExpanded = false;
         }),
         switchMap((params) => this.poiService.getPoiById(String(params.get('id')))),
@@ -82,6 +83,11 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
           this.isFavorite = this.appState.isFavorite(poi.id);
           this.unlocked = this.purchaseService.isPoiUnlocked(poi.id, poi.cityId);
           this.updateDistanceLabel();
+          if (this.hasPlayableAudio(poi)) {
+            this.playerService.loadTrack(poi.id, this.poiPreviewAudioUrl(poi), true);
+          } else {
+            this.playerService.pause();
+          }
           this.loading = false;
         },
         error: () => {
@@ -102,6 +108,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.playerService.pause();
   }
 
   openFullPlayer(): void {
@@ -201,7 +208,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {
-    return Boolean(this.poiAudioUrl(poi));
+    return Boolean(this.poiPreviewAudioUrl(poi));
   }
 
   toggleFavorite(): void {
@@ -252,26 +259,67 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
     return this.poi ? this.cartService.isPoiInCart(this.poi.id) : false;
   }
 
-  onPreviewTimeUpdate(event: Event): void {
-    if (this.unlocked) {
+  togglePreviewPlay(): void {
+    if (!this.poi || !this.hasPlayableAudio(this.poi)) {
       return;
     }
 
-    const audio = event.target as HTMLAudioElement | null;
-    if (!audio) {
+    this.playerService.togglePlayPause();
+  }
+
+  seekPreview(event: Event): void {
+    if (!this.poi || !this.hasPlayableAudio(this.poi)) {
       return;
     }
 
-    if (audio.currentTime >= this.previewSeconds) {
-      audio.pause();
-      audio.currentTime = this.previewSeconds;
-      if (!this.previewLimitReached) {
-        this.previewLimitReached = true;
-        this.snackBar.open(this.i18n.t('poiDetail.previewCompleted', { seconds: this.previewSeconds }), this.i18n.t('common.ok'), {
-          duration: 2600
-        });
-      }
+    const value = Number((event.target as HTMLInputElement).value);
+    this.playerService.seek(value);
+  }
+
+  skipPreview(deltaSeconds: number): void {
+    if (!this.poi || !this.hasPlayableAudio(this.poi)) {
+      return;
     }
+
+    this.playerService.skipBy(deltaSeconds);
+  }
+
+  previewDurationLimit(state: { duration?: number } | null | undefined, poi: Poi | null | undefined): number {
+    const metadataDuration = Number(state?.duration || 0);
+    const poiDuration = Number(poi?.durationSec || 0);
+    const previewLimit = Number(this.previewSeconds || 30);
+
+    if (Number.isFinite(metadataDuration) && metadataDuration > 0) {
+      return Math.max(1, Math.min(previewLimit, metadataDuration));
+    }
+
+    if (Number.isFinite(poiDuration) && poiDuration > 0) {
+      return Math.max(1, Math.min(previewLimit, poiDuration));
+    }
+
+    return Math.max(1, previewLimit);
+  }
+
+  previewCurrentTime(state: { currentTime?: number; duration?: number } | null | undefined, poi: Poi | null | undefined): number {
+    const currentTime = Number(state?.currentTime || 0);
+    if (!Number.isFinite(currentTime) || currentTime <= 0) {
+      return 0;
+    }
+
+    return Math.min(currentTime, this.previewDurationLimit(state, poi));
+  }
+
+  formatClock(value: number): string {
+    if (!Number.isFinite(value) || value <= 0) {
+      return '0:00';
+    }
+
+    const minutes = Math.floor(value / 60);
+    const seconds = Math.floor(value % 60)
+      .toString()
+      .padStart(2, '0');
+
+    return `${minutes}:${seconds}`;
   }
 
   poiName(poi: Poi | null | undefined): string {
@@ -286,8 +334,12 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
     return this.i18n.resolvePoiField(poi?.descriptionLong, poi?.translations, 'descriptionLong');
   }
 
-  poiAudioUrl(poi: Poi | null | undefined): string {
-    return this.i18n.resolvePoiAudioUrl(poi);
+  poiPreviewAudioUrl(poi: Poi | null | undefined): string {
+    return this.poiService.getPoiPreviewAudioUrl(poi);
+  }
+
+  poiFullAudioUrl(poi: Poi | null | undefined): string {
+    return this.poiService.getPoiFullAudioUrl(poi);
   }
 
   private updateDistanceLabel(): void {

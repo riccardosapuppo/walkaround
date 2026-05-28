@@ -86,7 +86,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
             this.previewMode = true;
           }
 
-          this.playerService.loadTrack(poi.id, this.poiAudioUrl(poi), this.previewMode);
+          this.playerService.loadTrack(poi.id, this.currentAudioUrl(poi), this.previewMode);
           this.offlineEnabled = await this.offlineService.isPoiOffline(poi.id);
           this.loading = false;
         },
@@ -166,7 +166,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    await this.offlineService.cachePoiAssets(this.poi.id, [this.poiAudioUrl(this.poi), this.poi.imageUrl]);
+    await this.offlineService.cachePoiAssets(this.poi.id, [this.poiService.getPoiFullAudioUrl(this.poi), this.poi.imageUrl]);
     this.offlineEnabled = true;
     this.snackBar.open(this.i18n.t('player.availableOffline'), this.i18n.t('common.ok'), { duration: 2200 });
   }
@@ -189,7 +189,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {
-    return Boolean(this.poiAudioUrl(poi));
+    return Boolean(this.currentAudioUrl(poi));
   }
 
   poiName(poi: Poi | null | undefined): string {
@@ -204,8 +204,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return this.i18n.resolvePoiField(poi?.descriptionLong, poi?.translations, 'descriptionLong');
   }
 
-  poiAudioUrl(poi: Poi | null | undefined): string {
-    return this.i18n.resolvePoiAudioUrl(poi);
+  currentAudioUrl(poi: Poi | null | undefined): string {
+    return this.previewMode ? this.poiService.getPoiPreviewAudioUrl(poi) : this.poiService.getPoiFullAudioUrl(poi);
   }
 }
 

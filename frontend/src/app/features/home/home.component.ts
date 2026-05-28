@@ -433,7 +433,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {
-    return Boolean(this.i18n.resolvePoiAudioUrl(poi));
+    return this.poiService.hasPreviewAudio(poi);
   }
 
   private toast(message: string, action = this.i18n.t('common.ok'), duration = 2400): void {

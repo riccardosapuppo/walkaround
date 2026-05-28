@@ -33,7 +33,7 @@
                                                                                                                 ]
                                                                                                 },
                                                                                     "configurations":  {
-                                                                                                           "production":  {
+                                                                                                                          "production":  {
                                                                                                                               "budgets":  [
                                                                                                                                               {
                                                                                                                                                   "type":  "initial",
@@ -46,6 +46,13 @@
                                                                                                                                                   "maximumError":  "32kb"
                                                                                                                                               }
                                                                                                                                           ],
+                                                                                                                              "optimization":  {
+                                                                                                                                                   "scripts":  true,
+                                                                                                                                                   "styles":  true,
+                                                                                                                                                   "fonts":  {
+                                                                                                                                                                 "inline":  false
+                                                                                                                                                             }
+                                                                                                                                               },
                                                                                                                               "outputHashing":  "all",
                                                                                                                               "serviceWorker":  "src/ngsw-config.json",
                                                                                                                               "fileReplacements":  [

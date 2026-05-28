@@ -1,3 +1,9 @@
+import crypto from 'crypto';
+import { createReadStream, createWriteStream } from 'fs';
+import fs from 'fs/promises';
+import path from 'path';
+import { pipeline } from 'stream/promises';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import { z } from 'zod';
 import { resolveAppSessionUser } from '../auth/app-middleware.js';
@@ -13,7 +19,14 @@ import {
 } from '../services/paypal.js';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicRootDir = path.resolve(__dirname, '../../public');
+const publicAudioRootDir = path.join(publicRootDir, 'audio');
+const audioPreviewRootDir = path.join(publicRootDir, 'audio-previews');
+const audioPreviewSeconds = 30;
 const privacyPolicyLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
+const audioLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
 const privacyPolicyQuerySchema = z.object({
   language: z.enum(privacyPolicyLanguages).optional().default('it')
 });
@@ -119,6 +132,18 @@ function sanitizeText(value) {
   return text;
 }
 
+function encodeUrlPathPart(value) {
+  return encodeURIComponent(String(value || '').trim());
+}
+
+function buildProtectedPoiAudioUrl(poiId) {
+  return `/api/pois/${encodeUrlPathPart(poiId)}/audio`;
+}
+
+function buildPoiPreviewAudioUrl(poiId) {
+  return `/api/pois/${encodeUrlPathPart(poiId)}/audio-preview`;
+}
+
 function mapCity(row) {
   return {
     id: row.id,
@@ -143,7 +168,8 @@ function mapPoi(row) {
     descriptionShort: sanitizeText(row.description_short),
     descriptionLong: sanitizeText(row.description_long),
     imageUrl: row.image_url,
-    audioUrl: row.audio_url,
+    audioUrl: buildProtectedPoiAudioUrl(row.id),
+    previewAudioUrl: buildPoiPreviewAudioUrl(row.id),
     priceSingle: Number(row.price_single),
     durationSec: row.duration_sec,
     translations: sanitizePoiTranslations(row.translations)
@@ -162,7 +188,8 @@ function mapPoiListItem(row) {
     descriptionShort: sanitizeText(row.description_short),
     descriptionLong: '',
     imageUrl: row.image_url,
-    audioUrl: row.audio_url,
+    audioUrl: buildProtectedPoiAudioUrl(row.id),
+    previewAudioUrl: buildPoiPreviewAudioUrl(row.id),
     priceSingle: Number(row.price_single),
     durationSec: row.duration_sec,
     translations: sanitizePoiListTranslations(row.translations)
@@ -174,11 +201,11 @@ function sanitizeCityTranslations(_value) {
 }
 
 function sanitizePoiTranslations(value) {
-  return sanitizeTranslations(value, ['descriptionShort', 'descriptionLong', 'audioUrl']);
+  return sanitizeTranslations(value, ['descriptionShort', 'descriptionLong']);
 }
 
 function sanitizePoiListTranslations(value) {
-  return sanitizeTranslations(value, ['descriptionShort', 'audioUrl']);
+  return sanitizeTranslations(value, ['descriptionShort']);
 }
 
 function sanitizeTranslations(value, allowedFields) {
@@ -210,6 +237,228 @@ function sanitizeTranslations(value, allowedFields) {
   });
 
   return sanitized;
+}
+
+function normalizeAudioLanguage(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  return audioLanguages.includes(normalized) ? normalized : 'it';
+}
+
+function selectPoiAudioUrl(row, language) {
+  const normalizedLanguage = normalizeAudioLanguage(language);
+  if (normalizedLanguage !== 'it' && row?.translations && typeof row.translations === 'object' && !Array.isArray(row.translations)) {
+    const translatedAudioUrl = String(row.translations?.[normalizedLanguage]?.audioUrl || '').trim();
+    if (translatedAudioUrl) {
+      return translatedAudioUrl;
+    }
+  }
+
+  return String(row?.audio_url || '').trim();
+}
+
+function isInsideDirectory(parentDir, childPath) {
+  const relative = path.relative(parentDir, childPath);
+  return Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+function resolveLocalPublicAudioPath(audioUrl) {
+  const cleanUrl = String(audioUrl || '').split('?')[0].split('#')[0].replace(/\\/g, '/');
+  if (!cleanUrl.startsWith('/public/audio/')) {
+    return null;
+  }
+
+  let decodedUrl = cleanUrl;
+  try {
+    decodedUrl = decodeURIComponent(cleanUrl);
+  } catch {
+    decodedUrl = cleanUrl;
+  }
+
+  const relativeAudioPath = decodedUrl.replace(/^\/public\/audio\//, '');
+  const absoluteAudioPath = path.resolve(publicAudioRootDir, relativeAudioPath);
+  return isInsideDirectory(publicAudioRootDir, absoluteAudioPath) ? absoluteAudioPath : null;
+}
+
+function contentTypeForAudioPath(audioPath) {
+  const extension = path.extname(audioPath).toLowerCase();
+  if (extension === '.m4a' || extension === '.mp4') {
+    return 'audio/mp4';
+  }
+  if (extension === '.ogg' || extension === '.oga') {
+    return 'audio/ogg';
+  }
+  if (extension === '.wav') {
+    return 'audio/wav';
+  }
+  if (extension === '.webm') {
+    return 'audio/webm';
+  }
+  return 'audio/mpeg';
+}
+
+function safePreviewFilePart(value) {
+  return String(value || 'audio')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || 'audio';
+}
+
+async function fetchPublishedPoiAudioSource(poiId, language) {
+  const result = await queryWithRetry(
+    `
+      SELECT
+        p.id,
+        p.city_id,
+        p.audio_url,
+        p.duration_sec,
+        p.translations
+      FROM pois p
+      JOIN cities c ON c.id = p.city_id
+      WHERE p.id = $1
+        AND p.publication_status = 'published'
+        AND c.publication_status = 'published'
+      LIMIT 1
+    `,
+    [poiId],
+    { label: 'public poi audio source' }
+  );
+
+  if (!result.rowCount) {
+    return null;
+  }
+
+  const row = result.rows[0];
+  const audioUrl = selectPoiAudioUrl(row, language);
+  const audioPath = resolveLocalPublicAudioPath(audioUrl);
+  if (!audioPath) {
+    return {
+      ...row,
+      audioUrl,
+      audioPath: null
+    };
+  }
+
+  return {
+    ...row,
+    audioUrl,
+    audioPath
+  };
+}
+
+async function ensureAudioPreviewFile({ poiId, language, sourcePath, durationSec }) {
+  const sourceStat = await fs.stat(sourcePath);
+  if (!sourceStat.isFile() || sourceStat.size <= 0) {
+    const error = new Error('Audio source unavailable');
+    error.status = 404;
+    throw error;
+  }
+
+  await fs.mkdir(audioPreviewRootDir, { recursive: true });
+  const duration = Number(durationSec);
+  const sourceHash = crypto
+    .createHash('sha1')
+    .update(`${sourcePath}:${sourceStat.size}:${sourceStat.mtimeMs}:${duration || 0}:${audioPreviewSeconds}`)
+    .digest('hex')
+    .slice(0, 16);
+  const extension = path.extname(sourcePath).toLowerCase() || '.mp3';
+  const previewFileName = `${safePreviewFilePart(poiId)}-${safePreviewFilePart(language)}-${sourceHash}${extension}`;
+  const previewPath = path.join(audioPreviewRootDir, previewFileName);
+
+  try {
+    const existing = await fs.stat(previewPath);
+    if (existing.isFile() && existing.size > 0) {
+      return previewPath;
+    }
+  } catch {
+    // Preview is generated on demand.
+  }
+
+  const ratio = Number.isFinite(duration) && duration > audioPreviewSeconds ? audioPreviewSeconds / duration : 1;
+  const targetBytes =
+    ratio >= 1
+      ? sourceStat.size
+      : Math.min(sourceStat.size, Math.max(96 * 1024, Math.ceil(sourceStat.size * ratio * 1.15)));
+  const tempPreviewPath = `${previewPath}.${process.pid}.${Date.now()}.tmp`;
+
+  await pipeline(
+    createReadStream(sourcePath, { start: 0, end: Math.max(0, targetBytes - 1) }),
+    createWriteStream(tempPreviewPath)
+  );
+
+  try {
+    await fs.rename(tempPreviewPath, previewPath);
+  } catch (error) {
+    await fs.rm(tempPreviewPath, { force: true }).catch(() => {});
+    try {
+      const existing = await fs.stat(previewPath);
+      if (existing.isFile() && existing.size > 0) {
+        return previewPath;
+      }
+    } catch {
+      // Preserve the original error below.
+    }
+    throw error;
+  }
+
+  return previewPath;
+}
+
+async function resolveAudioAppSessionUser(req) {
+  const headerSession = await resolveAppSessionUser(req);
+  if (headerSession) {
+    return headerSession;
+  }
+
+  const accessToken = String(req.query.access_token || req.query.token || '').trim();
+  if (!accessToken) {
+    return null;
+  }
+
+  return resolveAppSessionUser({
+    headers: {
+      authorization: `Bearer ${accessToken}`
+    }
+  });
+}
+
+async function resolveAudioDashboardSession(req) {
+  const headerSession = await resolveSessionUser(req);
+  if (headerSession) {
+    return headerSession;
+  }
+
+  const accessToken = String(req.query.admin_token || '').trim();
+  if (!accessToken) {
+    return null;
+  }
+
+  return resolveSessionUser({
+    headers: {
+      authorization: `Bearer ${accessToken}`
+    }
+  });
+}
+
+async function userCanAccessPoiAudio(userId, poiId, cityId) {
+  const result = await queryWithRetry(
+    `
+      SELECT purchased_at
+      FROM purchases
+      WHERE user_id = $1
+        AND (
+          (type = 'single' AND poi_id = $2)
+          OR (type = 'bundle' AND city_id = $3)
+        )
+      ORDER BY purchased_at DESC, id DESC
+      LIMIT 1
+    `,
+    [userId, poiId, cityId],
+    { label: 'poi audio purchase check' }
+  );
+
+  return result.rows.some((row) => isPurchaseStillActive(row.purchased_at));
 }
 
 function sanitizePrivacyPolicyTranslations(value) {
@@ -1197,6 +1446,75 @@ router.get('/cities/:cityId/pois', async (req, res, next) => {
     res.json(result.rows.map(mapPoiListItem));
   } catch (error) {
     next(error);
+  }
+});
+
+router.get('/pois/:poiId/audio-preview', async (req, res, next) => {
+  const { poiId } = req.params;
+  const language = normalizeAudioLanguage(req.query.language);
+
+  try {
+    const source = await fetchPublishedPoiAudioSource(poiId, language);
+    if (!source) {
+      return res.status(404).json({ message: 'POI not found' });
+    }
+    if (!source.audioPath) {
+      return res.status(404).json({ message: 'Audio preview unavailable' });
+    }
+
+    const previewPath = await ensureAudioPreviewFile({
+      poiId: source.id,
+      language,
+      sourcePath: source.audioPath,
+      durationSec: source.duration_sec
+    });
+
+    res.set({
+      'Cache-Control': 'public, max-age=2592000, immutable',
+      'Content-Type': contentTypeForAudioPath(previewPath),
+      'Content-Disposition': `inline; filename="${path.basename(previewPath).replace(/"/g, '')}"`
+    });
+    return res.sendFile(previewPath);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/pois/:poiId/audio', async (req, res, next) => {
+  const { poiId } = req.params;
+  const language = normalizeAudioLanguage(req.query.language);
+
+  try {
+    const source = await fetchPublishedPoiAudioSource(poiId, language);
+    if (!source) {
+      return res.status(404).json({ message: 'POI not found' });
+    }
+    if (!source.audioPath) {
+      return res.status(404).json({ message: 'Audio unavailable' });
+    }
+
+    const dashboardSession = await resolveAudioDashboardSession(req);
+    const isAdminAudioAccess = dashboardSession?.user?.role === 'admin';
+    if (!isAdminAudioAccess) {
+      const appSession = await resolveAudioAppSessionUser(req);
+      if (!appSession) {
+        return res.status(401).json({ message: 'Accesso utente richiesto per audio completo' });
+      }
+
+      const canAccess = await userCanAccessPoiAudio(appSession.user.id, source.id, source.city_id);
+      if (!canAccess) {
+        return res.status(403).json({ message: 'Acquista questo contenuto per ascoltare l audio completo' });
+      }
+    }
+
+    res.set({
+      'Cache-Control': 'private, no-store',
+      'Content-Type': contentTypeForAudioPath(source.audioPath),
+      'Content-Disposition': `inline; filename="${path.basename(source.audioPath).replace(/"/g, '')}"`
+    });
+    return res.sendFile(source.audioPath);
+  } catch (error) {
+    return next(error);
   }
 });
 

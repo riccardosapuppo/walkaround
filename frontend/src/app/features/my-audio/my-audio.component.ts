@@ -85,7 +85,7 @@ export class MyAudioComponent implements OnInit, OnDestroy {
       .filter((item) => this.hasPlayableAudio(item))
       .map((item) => ({
         poiId: item.id,
-        urls: [this.poiAudioUrl(item), item.imageUrl]
+        urls: [this.poiService.getPoiFullAudioUrl(item), item.imageUrl]
       }));
 
     await this.offlineService.cacheBatch(toCache);
@@ -113,7 +113,7 @@ export class MyAudioComponent implements OnInit, OnDestroy {
   }
 
   hasPlayableAudio(poi: Poi | null | undefined): boolean {
-    return Boolean(this.poiAudioUrl(poi));
+    return this.poiService.hasFullAudio(poi);
   }
 
   poiName(poi: Poi): string {
@@ -125,7 +125,7 @@ export class MyAudioComponent implements OnInit, OnDestroy {
   }
 
   poiAudioUrl(poi: Poi | null | undefined): string {
-    return this.i18n.resolvePoiAudioUrl(poi);
+    return this.poiService.getPoiFullAudioUrl(poi);
   }
 
   poiAddress(poi: Poi): string {

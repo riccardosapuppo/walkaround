@@ -1625,7 +1625,7 @@
                   controls
                   controlsList="nodownload"
                   disableRemotePlayback
-                  [src]="selectedGptTranslationPoiAudioUrl"
+                  [src]="audioPlaybackUrl(selectedGptTranslationPoiAudioUrl)"
                   (contextmenu)="$event.preventDefault()"
                 ></audio>
               </div>
@@ -2545,7 +2545,7 @@
                   disableRemotePlayback
                   preload="none"
                   *ngIf="catalogPoiForm.controls.audioUrl.value"
-                  [src]="catalogPoiForm.controls.audioUrl.value"
+                  [src]="audioPlaybackUrl(catalogPoiForm.controls.audioUrl.value)"
                   (contextmenu)="$event.preventDefault()"
                 ></audio>
               </div>
@@ -2625,7 +2625,7 @@
                         disableRemotePlayback
                         preload="none"
                         *ngIf="catalogPoiTranslationAudioUrl(language.code, 'create')"
-                        [src]="catalogPoiTranslationAudioUrl(language.code, 'create')"
+                        [src]="audioPlaybackUrl(catalogPoiTranslationAudioUrl(language.code, 'create'))"
                         (contextmenu)="$event.preventDefault()"
                       ></audio>
                     </div>
@@ -2898,7 +2898,7 @@
                 disableRemotePlayback
                 preload="none"
                 *ngIf="catalogPoiEditForm.controls.audioUrl.value"
-                [src]="catalogPoiEditForm.controls.audioUrl.value"
+                [src]="audioPlaybackUrl(catalogPoiEditForm.controls.audioUrl.value)"
                 (contextmenu)="$event.preventDefault()"
               ></audio>
             </div>
@@ -2978,7 +2978,7 @@
                       disableRemotePlayback
                       preload="none"
                       *ngIf="catalogPoiTranslationAudioUrl(language.code, 'edit')"
-                      [src]="catalogPoiTranslationAudioUrl(language.code, 'edit')"
+                      [src]="audioPlaybackUrl(catalogPoiTranslationAudioUrl(language.code, 'edit'))"
                       (contextmenu)="$event.preventDefault()"
                     ></audio>
                   </div>

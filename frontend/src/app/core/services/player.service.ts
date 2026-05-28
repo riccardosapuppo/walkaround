@@ -32,6 +32,7 @@ export class PlayerService {
   readonly state$ = this.stateSubject.asObservable();
 
   constructor() {
+    this.audio.preload = 'metadata';
     this.bindAudioEvents();
   }
 
@@ -46,18 +47,19 @@ export class PlayerService {
     }
 
     const saved = this.getProgress(poiId);
+    const initialTime = previewMode ? 0 : saved?.currentTime || 0;
 
     this.stateSubject.next({
       poiId,
       sourceUrl,
       isPlaying: false,
-      currentTime: saved?.currentTime || 0,
-      duration: saved?.duration || 0,
+      currentTime: initialTime,
+      duration: previewMode ? 0 : saved?.duration || 0,
       previewMode,
       previewEnded: false
     });
 
-    this.audio.currentTime = previewMode ? 0 : saved?.currentTime || 0;
+    this.audio.currentTime = initialTime;
   }
 
   play(): Promise<void> {
@@ -108,36 +110,12 @@ export class PlayerService {
 
   private bindAudioEvents(): void {
     this.audio.addEventListener('timeupdate', () => {
-      const state = this.stateSubject.value;
-      const duration = Number.isFinite(this.audio.duration) ? this.audio.duration : 0;
-      let currentTime = this.audio.currentTime;
-      let previewEnded = false;
-
-      if (state.previewMode && currentTime >= environment.previewSeconds) {
+      if (this.stateSubject.value.previewMode && this.audio.currentTime >= environment.previewSeconds) {
         this.audio.pause();
-        currentTime = environment.previewSeconds;
-        this.audio.currentTime = currentTime;
-        previewEnded = true;
+        this.audio.currentTime = environment.previewSeconds;
       }
 
-      const nextState: PlayerState = {
-        ...state,
-        isPlaying: !this.audio.paused,
-        currentTime,
-        duration,
-        previewEnded
-      };
-
-      this.stateSubject.next(nextState);
-
-      if (state.poiId && !state.previewMode) {
-        this.saveProgress({
-          poiId: state.poiId,
-          currentTime,
-          duration,
-          updatedAt: Date.now()
-        });
-      }
+      this.syncStateFromAudio();
     });
 
     this.audio.addEventListener('play', () => {
@@ -160,6 +138,36 @@ export class PlayerService {
         isPlaying: false
       });
     });
+
+    this.audio.addEventListener('loadedmetadata', () => this.syncStateFromAudio());
+    this.audio.addEventListener('durationchange', () => this.syncStateFromAudio());
+    this.audio.addEventListener('seeked', () => this.syncStateFromAudio({ resetPreviewEnded: true }));
+  }
+
+  private syncStateFromAudio(options: { resetPreviewEnded?: boolean } = {}): void {
+    const state = this.stateSubject.value;
+    const duration = Number.isFinite(this.audio.duration) ? this.audio.duration : 0;
+    const currentTime = this.audio.currentTime;
+    const previewEnded = options.resetPreviewEnded
+      ? false
+      : state.previewMode && currentTime >= Math.min(environment.previewSeconds, duration || environment.previewSeconds);
+
+    this.stateSubject.next({
+      ...state,
+      isPlaying: !this.audio.paused,
+      currentTime,
+      duration,
+      previewEnded
+    });
+
+    if (state.poiId && !state.previewMode) {
+      this.saveProgress({
+        poiId: state.poiId,
+        currentTime,
+        duration,
+        updatedAt: Date.now()
+      });
+    }
   }
 
   private saveProgress(entry: PlayerProgress): void {

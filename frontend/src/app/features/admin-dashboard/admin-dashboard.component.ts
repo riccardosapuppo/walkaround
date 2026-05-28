@@ -43,6 +43,7 @@ import {
   UserRole
 } from '../../core/services/admin-auth.service';
 import { PoiTranslationFields, PoiTranslations } from '../../core/models/localized-content.model';
+import { environment } from '../../../environments/environment';
 
 type DashboardSection =
   | 'users'
@@ -5290,6 +5291,27 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
   }
 
+  audioPlaybackUrl(audioUrl: string | null | undefined): string {
+    const normalized = this.normalizeAudioUrl(audioUrl);
+    if (!normalized) {
+      return '';
+    }
+
+    if (!normalized.startsWith('/public/audio/')) {
+      return normalized;
+    }
+
+    const token = this.auth.session?.token || '';
+    const params = new URLSearchParams({
+      path: normalized
+    });
+    if (token) {
+      params.set('access_token', token);
+    }
+
+    return `${environment.apiBaseUrl}/admin/media/audio?${params.toString()}`;
+  }
+
   formatCatalogPoiDuration(poi: DashboardCatalogPoi): string {
     const normalizedAudioUrl = this.normalizeAudioUrl(poi.audioUrl);
     if (!normalizedAudioUrl) {
@@ -5322,7 +5344,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     this.audioPlayerPoiName = poi.name;
-    this.audioPlayerUrl = normalizedAudioUrl;
+    this.audioPlayerUrl = this.audioPlaybackUrl(normalizedAudioUrl);
     this.audioPlayerFileName = this.audioFileNameFromUrl(normalizedAudioUrl);
     this.catalogPoiAudioPlayerDialogRef?.close();
     this.catalogPoiAudioPlayerDialogRef = this.dialog.open(this.catalogPoiAudioPlayerDialog, {
@@ -6211,7 +6233,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       }
 
       this.pendingAudioDurationUrls.add(audioUrl);
-      this.readAudioDurationFromUrl(audioUrl)
+      this.readAudioDurationFromUrl(this.audioPlaybackUrl(audioUrl))
         .then((durationSec) => {
           if (!durationSec || !Number.isFinite(durationSec) || durationSec <= 0) {
             this.invalidAudioDurationUrls.add(audioUrl);

@@ -164,6 +164,11 @@ app.use('/public', async (req, res, next) => {
       return next();
     }
 
+    const normalizedRelativeRequestPath = relativeRequestPath.replace(/\\/g, '/').toLowerCase();
+    if (normalizedRelativeRequestPath === 'audio' || normalizedRelativeRequestPath.startsWith('audio/')) {
+      return res.status(403).json({ message: 'Audio completo disponibile solo tramite contenuti acquistati.' });
+    }
+
     const aliasPath = await resolvePublicAlias(relativeRequestPath);
     if (!aliasPath) {
       return next();
