@@ -54,6 +54,7 @@ export class PoiDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.purchaseService.refresh();
+    void this.geoService.requestPermissionAndTrack();
     this.poiService
       .getCities()
       .pipe(takeUntil(this.destroy$))

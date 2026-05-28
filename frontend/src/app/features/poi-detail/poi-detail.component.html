@@ -50,19 +50,20 @@
               <button mat-fab color="primary" type="button" (click)="togglePreviewPlay()">
                 <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
               </button>
-              <button mat-mini-fab color="primary" type="button" (click)="skipPreview(15)">
+              <button mat-mini-fab color="primary" type="button" (click)="skipPreview(15)" [disabled]="state.previewEnded">
                 <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
               </button>
             </div>
-            @if (state.previewEnded) {
-              <p class="preview-note preview-ended">
-                {{ 'poiDetail.previewCompleted' | t:{ seconds: previewSeconds } }}
+            @if (!unlocked) {
+              <p class="preview-note preview-status" [class.preview-ended]="state.previewEnded" aria-live="polite">
+                {{
+                  state.previewEnded
+                    ? ('poiDetail.previewCompleted' | t:{ seconds: previewSeconds })
+                    : ('poiDetail.previewLimited' | t:{ seconds: previewSeconds })
+                }}
               </p>
             }
           </div>
-        }
-        @if (!unlocked) {
-          <p class="preview-note">{{ 'poiDetail.previewLimited' | t:{ seconds: previewSeconds } }}</p>
         }
       } @else {
         <p class="preview-note">{{ 'mapSheet.audioUnavailable' | t }}</p>

@@ -14,6 +14,7 @@ interface PlayerState {
 }
 
 const STORAGE_KEY = 'walkaround.player.progress';
+const PREVIEW_LIMIT_EPSILON_SECONDS = 0.05;
 
 @Injectable({ providedIn: 'root' })
 export class PlayerService {
@@ -63,6 +64,12 @@ export class PlayerService {
   }
 
   play(): Promise<void> {
+    const state = this.stateSubject.value;
+    if (state.previewMode && state.previewEnded) {
+      this.audio.currentTime = 0;
+      this.syncStateFromAudio({ resetPreviewEnded: true });
+    }
+
     return this.audio.play();
   }
 
@@ -87,7 +94,15 @@ export class PlayerService {
 
     const state = this.stateSubject.value;
     const maxSeek = state.previewMode ? Math.min(duration, environment.previewSeconds) : duration;
-    this.audio.currentTime = Math.min(Math.max(0, seconds), maxSeek);
+    const targetTime = Math.min(Math.max(0, seconds), maxSeek);
+
+    if (state.previewMode && this.isAtPreviewLimit(targetTime, duration)) {
+      this.finishPreviewAt(duration);
+      return;
+    }
+
+    this.audio.currentTime = targetTime;
+    this.syncStateFromAudio({ resetPreviewEnded: state.previewMode });
   }
 
   skipBy(deltaSeconds: number): void {
@@ -110,9 +125,10 @@ export class PlayerService {
 
   private bindAudioEvents(): void {
     this.audio.addEventListener('timeupdate', () => {
-      if (this.stateSubject.value.previewMode && this.audio.currentTime >= environment.previewSeconds) {
-        this.audio.pause();
-        this.audio.currentTime = environment.previewSeconds;
+      const state = this.stateSubject.value;
+      if (state.previewMode && this.isAtPreviewLimit(this.audio.currentTime)) {
+        this.finishPreviewAt();
+        return;
       }
 
       this.syncStateFromAudio();
@@ -133,24 +149,29 @@ export class PlayerService {
     });
 
     this.audio.addEventListener('ended', () => {
-      this.stateSubject.next({
-        ...this.stateSubject.value,
-        isPlaying: false
-      });
+      this.syncStateFromAudio({ forcePreviewEnded: this.stateSubject.value.previewMode });
     });
 
     this.audio.addEventListener('loadedmetadata', () => this.syncStateFromAudio());
     this.audio.addEventListener('durationchange', () => this.syncStateFromAudio());
-    this.audio.addEventListener('seeked', () => this.syncStateFromAudio({ resetPreviewEnded: true }));
+    this.audio.addEventListener('seeked', () => {
+      const state = this.stateSubject.value;
+      if (state.previewMode && this.isAtPreviewLimit(this.audio.currentTime)) {
+        this.finishPreviewAt();
+        return;
+      }
+
+      this.syncStateFromAudio({ resetPreviewEnded: state.previewMode });
+    });
   }
 
-  private syncStateFromAudio(options: { resetPreviewEnded?: boolean } = {}): void {
+  private syncStateFromAudio(options: { forcePreviewEnded?: boolean; resetPreviewEnded?: boolean } = {}): void {
     const state = this.stateSubject.value;
-    const duration = Number.isFinite(this.audio.duration) ? this.audio.duration : 0;
+    const duration = this.audioDuration();
     const currentTime = this.audio.currentTime;
-    const previewEnded = options.resetPreviewEnded
-      ? false
-      : state.previewMode && currentTime >= Math.min(environment.previewSeconds, duration || environment.previewSeconds);
+    const previewEnded = state.previewMode
+      ? Boolean(options.forcePreviewEnded || this.isAtPreviewLimit(currentTime, duration)) && !options.resetPreviewEnded
+      : false;
 
     this.stateSubject.next({
       ...state,
@@ -168,6 +189,33 @@ export class PlayerService {
         updatedAt: Date.now()
       });
     }
+  }
+
+  private finishPreviewAt(duration = this.audioDuration()): void {
+    const previewLimit = this.previewLimit(duration);
+    const targetTime = previewLimit;
+
+    if (!this.audio.paused) {
+      this.audio.pause();
+    }
+
+    if (this.audio.currentTime !== targetTime) {
+      this.audio.currentTime = targetTime;
+    }
+
+    this.syncStateFromAudio({ forcePreviewEnded: true });
+  }
+
+  private isAtPreviewLimit(currentTime: number, duration = this.audioDuration()): boolean {
+    return currentTime >= this.previewLimit(duration) - PREVIEW_LIMIT_EPSILON_SECONDS;
+  }
+
+  private previewLimit(duration = this.audioDuration()): number {
+    return Number.isFinite(duration) && duration > 0 ? Math.min(duration, environment.previewSeconds) : environment.previewSeconds;
+  }
+
+  private audioDuration(): number {
+    return Number.isFinite(this.audio.duration) ? this.audio.duration : 0;
   }
 
   private saveProgress(entry: PlayerProgress): void {

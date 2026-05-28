@@ -30,7 +30,7 @@
             <button mat-fab color="primary" (click)="togglePlay()">
               <mat-icon fontSet="material-icons-round">{{ state.isPlaying ? 'pause' : 'play_arrow' }}</mat-icon>
             </button>
-            <button mat-mini-fab color="primary" (click)="skip(15)">
+            <button mat-mini-fab color="primary" (click)="skip(15)" [disabled]="previewMode && state.previewEnded">
               <mat-icon fontSet="material-icons-round">forward_10</mat-icon>
             </button>
           </div>
@@ -75,4 +75,3 @@
     </mat-card>
   </section>
 }
-

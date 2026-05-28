@@ -8,7 +8,7 @@ import { City } from '../../core/models/city.model';
 import { Poi } from '../../core/models/poi.model';
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { CartService } from '../../core/services/cart.service';
-import { Coordinates, GeoService } from '../../core/services/geo.service';
+import { GeoService } from '../../core/services/geo.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PlayerService } from '../../core/services/player.service';
 import { PoiService } from '../../core/services/poi.service';
@@ -17,7 +17,7 @@ import { StructureLocationService } from '../../core/services/structure-location
 import { formatCityLabel } from '../../core/utils/city-label.util';
 
 interface PoiHomeView extends Poi {
-  distanceMeters: number;
+  distanceMeters: number | null;
   distanceLabel: string;
   unlocked: boolean;
   near: boolean;
@@ -25,16 +25,10 @@ interface PoiHomeView extends Poi {
 
 interface HomeViewModel {
   cityId: string;
+  hasCoordinates: boolean;
   nearestPoi: PoiHomeView | null;
   pois: PoiHomeView[];
 }
-
-const cityFallbackMap: Record<string, Coordinates> = {
-  catania: { lat: 37.5079, lng: 15.083 },
-  siracusa: { lat: 37.067, lng: 15.2866 },
-  taormina: { lat: 37.8531, lng: 15.2899 },
-  ragusa: { lat: 36.9269, lng: 14.7305 }
-};
 
 const homeScrollStorageKey = 'walkaround.home.scrollY';
 const citySummaryMaxLength = 160;
@@ -74,29 +68,40 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.purchaseService.purchases$.pipe(startWith({ items: [], unlockedPoiIds: [], unlockedCityIds: [] }))
   ]).pipe(
     map(([cityData, coordinates]) => {
-      const fallback = cityFallbackMap[cityData.cityId] || cityFallbackMap['catania'];
-      const center = coordinates || fallback;
-
       const pois = cityData.pois
         .map((poi) => {
-          const distanceMeters = this.geoService.distanceInMeters(center, {
-            lat: poi.lat,
-            lng: poi.lng
-          });
+          const distanceMeters = coordinates
+            ? this.geoService.distanceInMeters(coordinates, {
+                lat: poi.lat,
+                lng: poi.lng
+              })
+            : null;
           const unlocked = this.purchaseService.isPoiUnlocked(poi.id, poi.cityId);
 
           return {
             ...poi,
             distanceMeters,
-            distanceLabel: this.i18n.formatDistance(distanceMeters),
+            distanceLabel: distanceMeters === null ? this.i18n.t('common.positionUnavailable') : this.i18n.formatDistance(distanceMeters),
             unlocked,
-            near: distanceMeters <= environment.geofenceRadiusMeters
+            near: distanceMeters !== null && distanceMeters <= environment.geofenceRadiusMeters
           } satisfies PoiHomeView;
         })
-        .sort((a, b) => a.distanceMeters - b.distanceMeters);
+        .sort((a, b) => {
+          if (a.distanceMeters === null && b.distanceMeters === null) {
+            return 0;
+          }
+          if (a.distanceMeters === null) {
+            return 1;
+          }
+          if (b.distanceMeters === null) {
+            return -1;
+          }
+          return a.distanceMeters - b.distanceMeters;
+        });
 
       return {
         cityId: cityData.cityId,
+        hasCoordinates: coordinates !== null,
         nearestPoi: pois[0] || null,
         pois
       } satisfies HomeViewModel;

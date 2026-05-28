@@ -64,7 +64,7 @@
       </div>
     }
     <section class="nearby-section">
-      <h3>{{ 'home.nearYou' | t }}</h3>
+      <h3>{{ vm.hasCoordinates ? ('home.nearYou' | t) : ('home.placesOfInterest' | t) }}</h3>
       @if (citySwitching) {
         <mat-card class="card city-switch-loader">
           <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
