@@ -322,6 +322,53 @@ export interface DashboardAppCacheSettings {
   updatedBy: string | null;
 }
 
+export interface DashboardNotificationSettings {
+  partnerRequestEnabled: boolean;
+  partnerRequestRecipients: string[];
+  paymentEnabled: boolean;
+  paymentRecipients: string[];
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface DashboardNotificationSettingsInput {
+  partnerRequestEnabled: boolean;
+  partnerRequestRecipients: string[];
+  paymentEnabled: boolean;
+  paymentRecipients: string[];
+}
+
+export type DashboardEmailTestStatus = 'untested' | 'valid' | 'invalid';
+
+export interface DashboardEmailSettings {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  hasPassword: boolean;
+  from: string;
+  lastTestedAt: string | null;
+  lastTestStatus: DashboardEmailTestStatus;
+  lastTestError: string | null;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface DashboardEmailSettingsInput {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  password?: string;
+  from: string;
+  clearPassword?: boolean;
+}
+
+export interface DashboardEmailTestResponse {
+  valid: boolean;
+  settings: DashboardEmailSettings;
+}
+
 export interface PrivacyPolicySettingsInput {
   translations: PrivacyPolicyTranslations;
 }
@@ -1259,6 +1306,63 @@ export class AdminAuthService {
       {},
       { headers: this.authHeaders(token) }
     );
+  }
+
+  getEmailSettings(): Observable<DashboardEmailSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardEmailSettings>(`${environment.apiBaseUrl}/admin/email-settings`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  updateEmailSettings(payload: DashboardEmailSettingsInput): Observable<DashboardEmailSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.put<DashboardEmailSettings>(`${environment.apiBaseUrl}/admin/email-settings`, payload, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  testEmailSettings(to: string): Observable<DashboardEmailTestResponse> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<DashboardEmailTestResponse>(
+      `${environment.apiBaseUrl}/admin/email-settings/test`,
+      { to },
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  getNotificationSettings(): Observable<DashboardNotificationSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardNotificationSettings>(`${environment.apiBaseUrl}/admin/notification-settings`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  updateNotificationSettings(payload: DashboardNotificationSettingsInput): Observable<DashboardNotificationSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.put<DashboardNotificationSettings>(`${environment.apiBaseUrl}/admin/notification-settings`, payload, {
+      headers: this.authHeaders(token)
+    });
   }
 
   listPartnerRequests(): Observable<DashboardPartnerRequest[]> {

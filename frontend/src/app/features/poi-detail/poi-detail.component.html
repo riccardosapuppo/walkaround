@@ -35,8 +35,11 @@
       <audio
         class="preview-player"
         controls
+        controlsList="nodownload"
+        disableRemotePlayback
         [src]="poiAudioUrl(currentPoi)"
         preload="none"
+        (contextmenu)="$event.preventDefault()"
         (timeupdate)="onPreviewTimeUpdate($event)"
         [attr.aria-label]="'poiDetail.previewAria' | t:{ name: poiName(currentPoi) }"
       ></audio>

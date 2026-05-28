@@ -803,6 +803,9 @@
                       <span class="status-pill" [ngClass]="partnerRequestPdfStatusClass(request.pdfReleaseStatus)">
                         PDF: {{ partnerRequestPdfStatusLabel(request.pdfReleaseStatus) }}
                       </span>
+                      <small *ngIf="request.approvalEmailSentAt">
+                        Email approvazione inviata il {{ formatDateTime(request.approvalEmailSentAt) }} con PDF allegato.
+                      </small>
                       <div class="partner-request-discount-card" *ngIf="request.discount as discount; else partnerRequestDiscountEmpty">
                         <span>Codice collegato</span>
                         <code>{{ discount.code }}</code>
@@ -1616,7 +1619,15 @@
                     <strong>{{ selectedGptTranslationPoiHasText ? 'Audio non ancora generato' : 'Testo non disponibile' }}</strong>
                   </div>
                 </ng-template>
-                <audio *ngIf="selectedGptTranslationPoiAudioUrl" class="media-player" controls [src]="selectedGptTranslationPoiAudioUrl"></audio>
+                <audio
+                  *ngIf="selectedGptTranslationPoiAudioUrl"
+                  class="media-player"
+                  controls
+                  controlsList="nodownload"
+                  disableRemotePlayback
+                  [src]="selectedGptTranslationPoiAudioUrl"
+                  (contextmenu)="$event.preventDefault()"
+                ></audio>
               </div>
               <div class="gpt-preview-actions">
                 <button
@@ -1861,6 +1872,201 @@
             </div>
           </div>
         </mat-card>
+        </ng-container>
+
+        <ng-container *ngIf="activeGlobalSettingsTab === 'notifications'">
+          <div class="stats-grid">
+            <mat-card class="stat-card">
+              <span>SMTP</span>
+              <strong *ngIf="!loadingEmailSettings; else emailSettingsLoading">
+                {{ emailTestStatusLabel }}
+              </strong>
+              <ng-template #emailSettingsLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Richieste partner</span>
+              <strong *ngIf="!loadingNotificationSettings; else partnerNotificationsLoading">
+                {{ notificationSettings?.partnerRequestEnabled ? 'Attive' : 'Disattive' }}
+              </strong>
+              <ng-template #partnerNotificationsLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Pagamenti</span>
+              <strong *ngIf="!loadingNotificationSettings; else paymentNotificationsLoading">
+                {{ notificationSettings?.paymentEnabled ? 'Attive' : 'Disattive' }}
+              </strong>
+              <ng-template #paymentNotificationsLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Ultimo aggiornamento</span>
+              <strong *ngIf="!loadingNotificationSettings; else notificationUpdatedLoading">
+                {{ notificationSettings?.updatedAt ? formatDateTime(notificationSettings?.updatedAt) : '-' }}
+              </strong>
+              <ng-template #notificationUpdatedLoading>
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              </ng-template>
+            </mat-card>
+          </div>
+
+          <mat-card class="card table-card">
+            <div class="table-head">
+              <div>
+                <h2>Configurazione SMTP</h2>
+                <p class="table-subtitle">Imposta il server usato per tutte le email automatiche e invia un test sulla configurazione salvata.</p>
+              </div>
+              <div class="table-actions">
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  (click)="loadEmailSettings(true)"
+                  [disabled]="loadingEmailSettings || savingEmailSettings || testingEmailSettings"
+                >
+                  {{ loadingEmailSettings ? 'Aggiorno...' : 'Ricarica' }}
+                </button>
+              </div>
+            </div>
+
+            <form class="paypal-settings-form" [formGroup]="emailSettingsForm" (ngSubmit)="saveEmailSettings()">
+              <div class="paypal-status-strip" *ngIf="emailSettings">
+                <strong>{{ emailTestStatusLabel }}</strong>
+                <span>Password SMTP: {{ emailSettings.hasPassword ? 'configurata' : 'non configurata' }}</span>
+                <span *ngIf="emailSettings.lastTestedAt">Ultimo test: {{ formatDateTime(emailSettings.lastTestedAt) }}</span>
+                <span *ngIf="emailSettings.lastTestError">{{ emailSettings.lastTestError }}</span>
+              </div>
+
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Host SMTP</mat-label>
+                  <input matInput formControlName="host" autocomplete="off" />
+                  <mat-error *ngIf="emailSettingsForm.controls.host.invalid && emailSettingsForm.controls.host.touched">
+                    Host obbligatorio
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Porta</mat-label>
+                  <input matInput type="number" min="1" max="65535" formControlName="port" autocomplete="off" />
+                  <mat-error *ngIf="emailSettingsForm.controls.port.invalid && emailSettingsForm.controls.port.touched">
+                    Porta non valida
+                  </mat-error>
+                </mat-form-field>
+
+                <div class="email-secure-toggle">
+                  <mat-slide-toggle formControlName="secure">SSL/TLS</mat-slide-toggle>
+                </div>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Username SMTP</mat-label>
+                  <input matInput formControlName="user" autocomplete="off" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Password SMTP</mat-label>
+                  <input
+                    matInput
+                    type="password"
+                    formControlName="password"
+                    autocomplete="new-password"
+                    [placeholder]="emailSettings?.hasPassword ? 'Password salvata' : ''"
+                  />
+                  <mat-hint>Lascia vuoto per mantenere quella salvata.</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-span">
+                  <mat-label>Mittente email</mat-label>
+                  <input matInput formControlName="from" autocomplete="off" placeholder="Walk Around <info@example.com>" />
+                  <mat-error *ngIf="emailSettingsForm.controls.from.invalid && emailSettingsForm.controls.from.touched">
+                    Mittente obbligatorio
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-span">
+                  <mat-label>Destinatario test email</mat-label>
+                  <input matInput type="email" formControlName="testRecipient" autocomplete="email" />
+                  <mat-hint>Il test salva prima la configurazione corrente e poi invia l'email.</mat-hint>
+                  <mat-error *ngIf="emailSettingsForm.controls.testRecipient.invalid && emailSettingsForm.controls.testRecipient.touched">
+                    Email test non valida
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="paypal-actions">
+                <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveEmailSettings">
+                  {{ savingEmailSettings ? 'Salvo...' : 'Salva configurazione SMTP' }}
+                </button>
+                <button mat-stroked-button color="primary" type="button" (click)="testEmailSettings()" [disabled]="!canTestEmailSettings">
+                  {{ testingEmailSettings ? 'Invio...' : 'Test email' }}
+                </button>
+              </div>
+            </form>
+          </mat-card>
+
+          <mat-card class="card table-card">
+            <div class="table-head">
+              <div>
+                <h2>Notifiche email</h2>
+                <p class="table-subtitle">Configura i destinatari interni per nuove richieste partner e pagamenti completati.</p>
+              </div>
+              <div class="table-actions">
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  (click)="loadNotificationSettings(true)"
+                  [disabled]="loadingNotificationSettings || savingNotificationSettings"
+                >
+                  {{ loadingNotificationSettings ? 'Aggiorno...' : 'Ricarica' }}
+                </button>
+              </div>
+            </div>
+
+            <form class="partner-email-settings-form" [formGroup]="notificationSettingsForm" (ngSubmit)="saveNotificationSettings()">
+              <div class="partner-email-template-grid">
+                <section class="partner-email-template-card">
+                  <h3>Nuova richiesta partner</h3>
+                  <mat-slide-toggle formControlName="partnerRequestEnabled">Invia notifica</mat-slide-toggle>
+
+                  <mat-form-field appearance="outline" class="full-span">
+                    <mat-label>Email destinatarie</mat-label>
+                    <textarea matInput rows="6" formControlName="partnerRequestRecipients"></textarea>
+                    <mat-hint>Una email per riga, oppure separate da virgola.</mat-hint>
+                  </mat-form-field>
+                </section>
+
+                <section class="partner-email-template-card">
+                  <h3>Nuovo pagamento</h3>
+                  <mat-slide-toggle formControlName="paymentEnabled">Invia notifica</mat-slide-toggle>
+
+                  <mat-form-field appearance="outline" class="full-span">
+                    <mat-label>Email destinatarie</mat-label>
+                    <textarea matInput rows="6" formControlName="paymentRecipients"></textarea>
+                    <mat-hint>Una email per riga, oppure separate da virgola.</mat-hint>
+                  </mat-form-field>
+                </section>
+              </div>
+
+              <div class="paypal-actions">
+                <button mat-flat-button color="primary" type="submit" [disabled]="!canSaveNotificationSettings">
+                  {{ savingNotificationSettings ? 'Salvo...' : 'Salva notifiche email' }}
+                </button>
+              </div>
+            </form>
+          </mat-card>
         </ng-container>
 
         <ng-container *ngIf="activeGlobalSettingsTab === 'appCache'">
@@ -2335,9 +2541,12 @@
                 <audio
                   class="media-player"
                   controls
+                  controlsList="nodownload"
+                  disableRemotePlayback
                   preload="none"
                   *ngIf="catalogPoiForm.controls.audioUrl.value"
                   [src]="catalogPoiForm.controls.audioUrl.value"
+                  (contextmenu)="$event.preventDefault()"
                 ></audio>
               </div>
 
@@ -2412,9 +2621,12 @@
                       <audio
                         class="media-player"
                         controls
+                        controlsList="nodownload"
+                        disableRemotePlayback
                         preload="none"
                         *ngIf="catalogPoiTranslationAudioUrl(language.code, 'create')"
                         [src]="catalogPoiTranslationAudioUrl(language.code, 'create')"
+                        (contextmenu)="$event.preventDefault()"
                       ></audio>
                     </div>
                   </section>
@@ -2682,9 +2894,12 @@
               <audio
                 class="media-player"
                 controls
+                controlsList="nodownload"
+                disableRemotePlayback
                 preload="none"
                 *ngIf="catalogPoiEditForm.controls.audioUrl.value"
                 [src]="catalogPoiEditForm.controls.audioUrl.value"
+                (contextmenu)="$event.preventDefault()"
               ></audio>
             </div>
 
@@ -2759,9 +2974,12 @@
                     <audio
                       class="media-player"
                       controls
+                      controlsList="nodownload"
+                      disableRemotePlayback
                       preload="none"
                       *ngIf="catalogPoiTranslationAudioUrl(language.code, 'edit')"
                       [src]="catalogPoiTranslationAudioUrl(language.code, 'edit')"
+                      (contextmenu)="$event.preventDefault()"
                     ></audio>
                   </div>
                 </section>
@@ -2841,7 +3059,16 @@
           <p class="table-subtitle">
             File audio: <strong>{{ audioPlayerFileName || '-' }}</strong>
           </p>
-          <audio class="media-player" controls autoplay preload="metadata" [src]="audioPlayerUrl"></audio>
+          <audio
+            class="media-player"
+            controls
+            controlsList="nodownload"
+            disableRemotePlayback
+            autoplay
+            preload="metadata"
+            [src]="audioPlayerUrl"
+            (contextmenu)="$event.preventDefault()"
+          ></audio>
         </div>
         <div mat-dialog-actions align="end" class="dialog-actions">
           <button type="button" class="row-save-btn secondary" (click)="closeCatalogPoiAudioPlayer()">Chiudi</button>
@@ -2988,8 +3215,8 @@
         <form [formGroup]="partnerRequestApprovalForm" (ngSubmit)="approvePartnerRequest()" class="form-grid dialog-form">
           <div mat-dialog-content class="dialog-body">
             <p class="inline-note" *ngIf="partnerRequestApprovalTarget as request">
-              Verranno creati automaticamente la struttura <strong>{{ request.structureName }}</strong>, il codice sconto e il PDF da inviare a
-              <strong>{{ request.contactEmail }}</strong>.
+              Verranno creati automaticamente la struttura <strong>{{ request.structureName }}</strong>, il codice sconto e lo stesso PDF
+              dell'anteprima, che sara allegato alla mail inviata a <strong>{{ request.contactEmail }}</strong>.
             </p>
 
             <div class="invite-code-row">

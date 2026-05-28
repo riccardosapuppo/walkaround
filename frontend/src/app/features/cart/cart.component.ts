@@ -197,7 +197,7 @@ export class CartComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     forkJoin(
       this.cartItems.map((item) =>
-        this.poiService.getPoiById(item.poiId).pipe(
+        this.poiService.getPoiById(item.poiId, false).pipe(
           takeUntil(this.destroy$),
           // Keep item label fallback when a POI is not reachable.
           // `of(null)` lets the list stay usable even with partial backend failures.

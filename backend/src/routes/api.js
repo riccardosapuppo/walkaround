@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { resolveAppSessionUser } from '../auth/app-middleware.js';
 import { resolveSessionUser } from '../auth/middleware.js';
 import { pool, queryWithRetry } from '../db/pool.js';
+import { notifyPartnerRegistrationRequest, notifyPaymentCompleted } from '../services/admin-notifications.js';
 import {
   PayPalConfigurationError,
   getPayPalSettings,
@@ -149,12 +150,35 @@ function mapPoi(row) {
   };
 }
 
+function mapPoiListItem(row) {
+  return {
+    id: row.id,
+    cityId: row.city_id,
+    name: sanitizeText(row.name),
+    address: sanitizeText(row.address),
+    lat: Number(row.lat),
+    lng: Number(row.lng),
+    category: sanitizeText(row.category),
+    descriptionShort: sanitizeText(row.description_short),
+    descriptionLong: '',
+    imageUrl: row.image_url,
+    audioUrl: row.audio_url,
+    priceSingle: Number(row.price_single),
+    durationSec: row.duration_sec,
+    translations: sanitizePoiListTranslations(row.translations)
+  };
+}
+
 function sanitizeCityTranslations(_value) {
   return {};
 }
 
 function sanitizePoiTranslations(value) {
   return sanitizeTranslations(value, ['descriptionShort', 'descriptionLong', 'audioUrl']);
+}
+
+function sanitizePoiListTranslations(value) {
+  return sanitizeTranslations(value, ['descriptionShort', 'audioUrl']);
 }
 
 function sanitizeTranslations(value, allowedFields) {
@@ -1027,6 +1051,15 @@ router.post('/partner-registration-requests', async (req, res, next) => {
     );
 
     const row = insert.rows[0];
+    notifyPartnerRegistrationRequest({
+      id: Number(row.id),
+      createdAt: row.created_at,
+      ...payload,
+      contactEmail: payload.contactEmail.toLowerCase()
+    }).catch((error) => {
+      console.error('Failed to send partner registration notification', error);
+    });
+
     return res.status(201).json({
       submitted: true,
       requestId: Number(row.id),
@@ -1126,7 +1159,26 @@ router.get('/cities/:cityId/pois', async (req, res, next) => {
   try {
     const result = await queryWithRetry(
       `
-      SELECT *
+      SELECT
+        p.id,
+        p.city_id,
+        p.name,
+        p.address,
+        p.lat,
+        p.lng,
+        p.category,
+        p.description_short,
+        p.image_url,
+        p.audio_url,
+        p.price_single,
+        p.duration_sec,
+        COALESCE(p.translations, '{}'::jsonb)
+          #- '{it,descriptionLong}'
+          #- '{en,descriptionLong}'
+          #- '{fr,descriptionLong}'
+          #- '{es,descriptionLong}'
+          #- '{de,descriptionLong}'
+          #- '{pl,descriptionLong}' AS translations
       FROM pois p
       WHERE p.city_id = $1
         AND p.publication_status = 'published'
@@ -1142,7 +1194,7 @@ router.get('/cities/:cityId/pois', async (req, res, next) => {
       { label: 'public city pois list' }
     );
 
-    res.json(result.rows.map(mapPoi));
+    res.json(result.rows.map(mapPoiListItem));
   } catch (error) {
     next(error);
   }
@@ -1718,6 +1770,17 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
     );
 
     await client.query('COMMIT');
+    notifyPaymentCompleted({
+      orderId,
+      captureId,
+      payer,
+      purchases: insertedPurchases,
+      paymentProvider: paypalProviderLabel(settings.mode),
+      paymentEnvironment: settings.mode
+    }).catch((error) => {
+      console.error('Failed to send payment notification', error);
+    });
+
     return res.json({
       captured: true,
       orderId,

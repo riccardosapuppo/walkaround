@@ -11,6 +11,9 @@ import {
   CatalogPublicationStatus,
   CatalogPoiInput,
   DashboardAppCacheSettings,
+  DashboardEmailSettings,
+  DashboardEmailSettingsInput,
+  DashboardNotificationSettings,
   DashboardPartnerRequest,
   DiscountCodeApplyTo,
   DashboardCatalogCity,
@@ -53,7 +56,7 @@ type DashboardSection =
   | 'globalSettings'
   | 'catalog';
 type CatalogTab = 'cities' | 'pois';
-type GlobalSettingsTab = 'privacyPolicy' | 'appCache';
+type GlobalSettingsTab = 'privacyPolicy' | 'notifications' | 'appCache';
 type GptTranslationsTab = 'texts' | 'audio' | 'settings';
 type PoiMapPickerTarget = 'create' | 'edit';
 type ContentEditorLanguage = 'en' | 'fr' | 'es' | 'de' | 'pl';
@@ -200,6 +203,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   ];
   readonly globalSettingsTabs: Array<{ id: GlobalSettingsTab; label: string }> = [
     { id: 'privacyPolicy', label: 'Privacy policy' },
+    { id: 'notifications', label: 'Email e notifiche' },
     { id: 'appCache', label: 'Cache e aggiornamenti' }
   ];
   readonly gptTranslationsTabs: Array<{ id: GptTranslationsTab; label: string }> = [
@@ -232,11 +236,13 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   loadingPartnerRequests = false;
   loadingPartnerEmailSettings = false;
   loadingPayPalSettings = false;
+  loadingNotificationSettings = false;
   loadingOpenAiTranslationSettings = false;
   loadingOpenAiTranslationStatus = false;
   loadingOpenAiTranslationSummary = false;
   loadingPrivacyPolicySettings = false;
   loadingAppCacheSettings = false;
+  loadingEmailSettings = false;
   creatingStructure = false;
   updatingStructure = false;
   loadingDiscountCodes = false;
@@ -244,7 +250,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   updatingDiscountCode = false;
   savingPayPalSettings = false;
   savingPartnerEmailSettings = false;
+  savingNotificationSettings = false;
   savingOpenAiTranslationSettings = false;
+  savingEmailSettings = false;
   previewingOpenAiVoice = false;
   savingPrivacyPolicySettings = false;
   bumpingAppCacheVersion = false;
@@ -252,6 +260,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   bulkTranslatingPois = false;
   bulkGeneratingPoiAudios = false;
   testingPayPalSettings = false;
+  testingEmailSettings = false;
   loadingCatalogCities = false;
   loadingCatalogPois = false;
   savingCatalogCity = false;
@@ -295,6 +304,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   openAiTranslationSummary: OpenAiPoiTranslationSummary | null = null;
   privacyPolicySettings: DashboardPrivacyPolicySettings | null = null;
   appCacheSettings: DashboardAppCacheSettings | null = null;
+  emailSettings: DashboardEmailSettings | null = null;
+  notificationSettings: DashboardNotificationSettings | null = null;
   privacyPolicyTranslations: Record<PrivacyPolicyLanguage, string> = this.emptyPrivacyPolicyTranslations();
   privacyPolicySelectedLanguage: PrivacyPolicyLanguage = 'it';
   privacyPolicyTranslateOverwrite = false;
@@ -479,6 +490,23 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     approvalBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody, [Validators.required, Validators.maxLength(10000)]],
     rejectionSubject: [DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject, [Validators.required, Validators.maxLength(200)]],
     rejectionBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody, [Validators.required, Validators.maxLength(10000)]]
+  });
+
+  readonly notificationSettingsForm = this.formBuilder.nonNullable.group({
+    partnerRequestEnabled: [true],
+    partnerRequestRecipients: ['', [Validators.maxLength(4000)]],
+    paymentEnabled: [true],
+    paymentRecipients: ['', [Validators.maxLength(4000)]]
+  });
+
+  readonly emailSettingsForm = this.formBuilder.nonNullable.group({
+    host: ['', [Validators.required, Validators.maxLength(253)]],
+    port: [465, [Validators.required, Validators.min(1), Validators.max(65535)]],
+    secure: [true],
+    user: ['', [Validators.maxLength(320)]],
+    password: ['', [Validators.maxLength(1000)]],
+    from: ['', [Validators.required, Validators.maxLength(320)]],
+    testRecipient: ['', [Validators.email, Validators.maxLength(320)]]
   });
 
   readonly payPalForm = this.formBuilder.nonNullable.group({
@@ -745,6 +773,38 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   get canSavePartnerEmailSettings(): boolean {
     return this.canManagePartnerEmails && !this.savingPartnerEmailSettings && this.partnerEmailSettingsForm.valid;
+  }
+
+  get canSaveNotificationSettings(): boolean {
+    return this.canManageGlobalSettings && !this.loadingNotificationSettings && !this.savingNotificationSettings && this.notificationSettingsForm.valid;
+  }
+
+  get canSaveEmailSettings(): boolean {
+    return this.canManageGlobalSettings && !this.loadingEmailSettings && !this.savingEmailSettings && !this.testingEmailSettings && this.emailSettingsForm.valid;
+  }
+
+  get canTestEmailSettings(): boolean {
+    return (
+      this.canManageGlobalSettings &&
+      !this.loadingEmailSettings &&
+      !this.savingEmailSettings &&
+      !this.testingEmailSettings &&
+      this.emailSettingsForm.valid &&
+      Boolean(this.emailSettingsForm.controls.testRecipient.value.trim())
+    );
+  }
+
+  get emailTestStatusLabel(): string {
+    if (!this.emailSettings) {
+      return 'Da configurare';
+    }
+    if (this.emailSettings.lastTestStatus === 'valid') {
+      return 'Test riuscito';
+    }
+    if (this.emailSettings.lastTestStatus === 'invalid') {
+      return 'Test fallito';
+    }
+    return this.emailSettings.hasPassword ? 'Configurata, non testata' : 'Password mancante';
   }
 
   get partnerEmailPlaceholders(): DashboardPartnerEmailSettings['placeholders'] {
@@ -1919,6 +1979,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
     this.loadPrivacyPolicySettings(force);
     this.loadAppCacheSettings(force);
+    this.loadEmailSettings(force);
+    this.loadNotificationSettings(force);
     this.loadOpenAiTranslationSettings(force);
   }
 
@@ -1931,9 +1993,195 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.activeGlobalSettingsTab = tab;
     if (tab === 'privacyPolicy') {
       this.syncPrivacyPolicyEditor();
+    } else if (tab === 'notifications') {
+      this.loadEmailSettings();
+      this.loadNotificationSettings();
     } else if (tab === 'appCache') {
       this.loadAppCacheSettings();
     }
+  }
+
+  loadEmailSettings(force = false): void {
+    if (!this.canManageGlobalSettings || this.loadingEmailSettings) {
+      return;
+    }
+    if (this.emailSettings && !force) {
+      return;
+    }
+
+    this.loadingEmailSettings = true;
+    this.auth.getEmailSettings().subscribe({
+      next: (settings) => {
+        this.loadingEmailSettings = false;
+        this.applyEmailSettings(settings);
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingEmailSettings = false;
+        const message = error?.error?.message || 'Errore caricamento configurazione email';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  saveEmailSettings(): void {
+    if (!this.canSaveEmailSettings) {
+      this.emailSettingsForm.markAllAsTouched();
+      return;
+    }
+
+    this.savingEmailSettings = true;
+    this.auth.updateEmailSettings(this.buildEmailSettingsPayload()).subscribe({
+      next: (settings) => {
+        this.savingEmailSettings = false;
+        this.applyEmailSettings(settings, { preserveTestRecipient: true });
+        this.snackBar.open('Configurazione SMTP salvata', 'OK', { duration: 2400 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.savingEmailSettings = false;
+        const message = error?.error?.message || 'Errore salvataggio configurazione SMTP';
+        this.snackBar.open(message, 'Chiudi', { duration: 3800 });
+      }
+    });
+  }
+
+  testEmailSettings(): void {
+    if (!this.canTestEmailSettings) {
+      this.emailSettingsForm.markAllAsTouched();
+      return;
+    }
+
+    const testRecipient = this.emailSettingsForm.controls.testRecipient.value.trim();
+    this.testingEmailSettings = true;
+    this.auth.updateEmailSettings(this.buildEmailSettingsPayload()).subscribe({
+      next: (settings) => {
+        this.applyEmailSettings(settings, { preserveTestRecipient: true });
+        this.auth.testEmailSettings(testRecipient).subscribe({
+          next: (response) => {
+            this.testingEmailSettings = false;
+            this.applyEmailSettings(response.settings, { preserveTestRecipient: true });
+            this.snackBar.open(`Email di test inviata a ${testRecipient}`, 'OK', { duration: 3000 });
+          },
+          error: (error: { error?: { message?: string; settings?: DashboardEmailSettings } }) => {
+            this.testingEmailSettings = false;
+            if (error?.error?.settings) {
+              this.applyEmailSettings(error.error.settings, { preserveTestRecipient: true });
+            }
+            const message = error?.error?.message || 'Invio email di test non riuscito';
+            this.snackBar.open(message, 'Chiudi', { duration: 4200 });
+          }
+        });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.testingEmailSettings = false;
+        const message = error?.error?.message || 'Errore salvataggio configurazione SMTP';
+        this.snackBar.open(message, 'Chiudi', { duration: 3800 });
+      }
+    });
+  }
+
+  private buildEmailSettingsPayload(): DashboardEmailSettingsInput {
+    const formValue = this.emailSettingsForm.getRawValue();
+    const password = formValue.password;
+    return {
+      host: formValue.host.trim(),
+      port: Number(formValue.port),
+      secure: formValue.secure,
+      user: formValue.user.trim(),
+      password,
+      from: formValue.from.trim()
+    };
+  }
+
+  private applyEmailSettings(settings: DashboardEmailSettings, options: { preserveTestRecipient?: boolean } = {}): void {
+    const testRecipient = options.preserveTestRecipient
+      ? this.emailSettingsForm.controls.testRecipient.value.trim() || this.currentEmail
+      : this.currentEmail;
+    this.emailSettings = settings;
+    this.emailSettingsForm.reset({
+      host: settings.host || '',
+      port: settings.port || 465,
+      secure: settings.secure,
+      user: settings.user || '',
+      password: '',
+      from: settings.from || '',
+      testRecipient
+    });
+  }
+
+  loadNotificationSettings(force = false): void {
+    if (!this.canManageGlobalSettings || this.loadingNotificationSettings) {
+      return;
+    }
+    if (this.notificationSettings && !force) {
+      return;
+    }
+
+    this.loadingNotificationSettings = true;
+    this.auth.getNotificationSettings().subscribe({
+      next: (settings) => {
+        this.loadingNotificationSettings = false;
+        this.applyNotificationSettings(settings);
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.loadingNotificationSettings = false;
+        const message = error?.error?.message || 'Errore caricamento notifiche email';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  saveNotificationSettings(): void {
+    if (!this.canSaveNotificationSettings) {
+      this.notificationSettingsForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.notificationSettingsForm.getRawValue();
+    const payload = {
+      partnerRequestEnabled: formValue.partnerRequestEnabled,
+      partnerRequestRecipients: this.parseNotificationRecipients(formValue.partnerRequestRecipients),
+      paymentEnabled: formValue.paymentEnabled,
+      paymentRecipients: this.parseNotificationRecipients(formValue.paymentRecipients)
+    };
+
+    this.savingNotificationSettings = true;
+    this.auth.updateNotificationSettings(payload).subscribe({
+      next: (settings) => {
+        this.savingNotificationSettings = false;
+        this.applyNotificationSettings(settings);
+        this.snackBar.open('Notifiche email salvate', 'OK', { duration: 2400 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.savingNotificationSettings = false;
+        const message = error?.error?.message || 'Errore salvataggio notifiche email';
+        this.snackBar.open(message, 'Chiudi', { duration: 3800 });
+      }
+    });
+  }
+
+  private applyNotificationSettings(settings: DashboardNotificationSettings): void {
+    this.notificationSettings = settings;
+    this.notificationSettingsForm.reset({
+      partnerRequestEnabled: settings.partnerRequestEnabled,
+      partnerRequestRecipients: this.notificationRecipientsText(settings.partnerRequestRecipients),
+      paymentEnabled: settings.paymentEnabled,
+      paymentRecipients: this.notificationRecipientsText(settings.paymentRecipients)
+    });
+  }
+
+  private notificationRecipientsText(recipients: readonly string[] | null | undefined): string {
+    return Array.isArray(recipients) ? recipients.join('\n') : '';
+  }
+
+  private parseNotificationRecipients(value: string): string[] {
+    return Array.from(
+      new Set(
+        String(value || '')
+          .split(/[,\n;]+/)
+          .map((item) => item.trim().toLowerCase())
+          .filter(Boolean)
+      )
+    );
   }
 
   loadAppCacheSettings(force = false): void {
@@ -2474,7 +2722,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   partnerRequestPdfStatusLabel(status: DashboardPartnerRequest['pdfReleaseStatus']): string {
-    return status === 'sent' ? 'Inviato' : 'Da inviare';
+    return status === 'sent' ? 'Inviato via email' : 'Da inviare';
   }
 
   partnerRequestPdfStatusClass(status: DashboardPartnerRequest['pdfReleaseStatus']): string {
@@ -4596,6 +4844,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.openAiTranslationSummary = null;
       this.privacyPolicySettings = null;
       this.appCacheSettings = null;
+      this.emailSettings = null;
+      this.notificationSettings = null;
       this.privacyPolicyTranslations = this.emptyPrivacyPolicyTranslations();
       this.privacyPolicySelectedLanguage = 'it';
       this.privacyPolicyTranslateOverwrite = false;
@@ -4672,12 +4922,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.loadingOpenAiTranslationSummary = false;
       this.loadingPrivacyPolicySettings = false;
       this.loadingAppCacheSettings = false;
+      this.loadingEmailSettings = false;
       this.creatingStructure = false;
       this.updatingStructure = false;
       this.loadingDiscountCodes = false;
       this.creatingDiscountCode = false;
       this.updatingDiscountCode = false;
       this.savingPayPalSettings = false;
+      this.savingEmailSettings = false;
       this.savingOpenAiTranslationSettings = false;
       this.previewingOpenAiVoice = false;
       this.cancelOpenAiVoicePreview();
@@ -4687,6 +4939,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.bulkTranslatingPois = false;
       this.bulkGeneratingPoiAudios = false;
       this.testingPayPalSettings = false;
+      this.testingEmailSettings = false;
       this.loadingCatalogCities = false;
       this.loadingCatalogPois = false;
       this.savingCatalogCity = false;

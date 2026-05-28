@@ -58,7 +58,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly vm$ = combineLatest([
     combineLatest([this.appState.activeCityId$, this.appState.language$]).pipe(
       switchMap(([cityId]) =>
-        this.poiService.getPoisByCity(cityId, true).pipe(
+        this.poiService.getPoisByCity(cityId).pipe(
           tap(() => {
             this.apiErrorMessage = null;
           }),
@@ -210,7 +210,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (latest) {
       this.continueTime = latest.currentTime;
       this.poiService
-        .getPoiById(latest.poiId)
+        .getPoiById(latest.poiId, false)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (poi) => {

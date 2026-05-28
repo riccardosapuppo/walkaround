@@ -8,7 +8,24 @@ import { env } from '../config/env.js';
 import { requireAdmin, requireAuth } from '../auth/middleware.js';
 import { createOpaqueToken, hashPassword, hashToken } from '../auth/security.js';
 import { pool } from '../db/pool.js';
-import { sendInvitationEmail, sendPartnerApprovalEmail, sendPartnerRejectionEmail, sendPasswordResetEmail } from '../services/mailer.js';
+import {
+  getDashboardEmailSettings,
+  mapDashboardEmailSettingsForResponse,
+  markDashboardEmailSettingsTestResult,
+  saveDashboardEmailSettings
+} from '../services/email-settings.js';
+import {
+  getDashboardNotificationSettings,
+  normalizeNotificationRecipients,
+  saveDashboardNotificationSettings
+} from '../services/admin-notifications.js';
+import {
+  sendDashboardEmailSettingsTestEmail,
+  sendInvitationEmail,
+  sendPartnerApprovalEmail,
+  sendPartnerRejectionEmail,
+  sendPasswordResetEmail
+} from '../services/mailer.js';
 import { buildPartnerPromotionFileName, buildPartnerPromotionPdf } from '../services/partner-pdf.js';
 import { DEFAULT_PARTNER_EMAIL_SETTINGS, PARTNER_EMAIL_TEMPLATE_PLACEHOLDERS } from '../services/partner-email-templates.js';
 import {
@@ -244,6 +261,45 @@ const privacyPolicyTranslateSchema = z.object({
   targetLanguages: z.array(openAiTranslationTargetLanguageSchema).optional().default(privacyPolicyTargetLanguages),
   overwrite: z.boolean().optional().default(false)
 });
+const notificationRecipientsSchema = z.preprocess(
+  (value) => normalizeNotificationRecipients(value),
+  z.array(z.string().email('Email destinatario non valida')).max(50, 'Massimo 50 destinatari')
+);
+const dashboardEmailSettingsSchema = z.object({
+  host: z.string().trim().min(1, 'Host SMTP obbligatorio').max(253, 'Host SMTP troppo lungo'),
+  port: z.coerce.number().int('Porta SMTP non valida').min(1, 'Porta SMTP non valida').max(65535, 'Porta SMTP non valida'),
+  secure: z.boolean().optional().default(true),
+  user: z.string().trim().max(320, 'Username SMTP troppo lungo').optional().default(''),
+  password: z.string().max(1000, 'Password SMTP troppo lunga').optional().default(''),
+  from: z.string().trim().min(1, 'Mittente obbligatorio').max(320, 'Mittente troppo lungo'),
+  clearPassword: z.boolean().optional().default(false)
+});
+const dashboardEmailTestSchema = z.object({
+  to: z.string().trim().email('Email test non valida').max(320, 'Email test troppo lunga')
+});
+const dashboardNotificationSettingsSchema = z
+  .object({
+    partnerRequestEnabled: z.boolean().optional().default(true),
+    partnerRequestRecipients: notificationRecipientsSchema.optional().default([]),
+    paymentEnabled: z.boolean().optional().default(true),
+    paymentRecipients: notificationRecipientsSchema.optional().default([])
+  })
+  .superRefine((value, ctx) => {
+    if (value.partnerRequestEnabled && !value.partnerRequestRecipients.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['partnerRequestRecipients'],
+        message: 'Inserisci almeno una email per le notifiche partner attive'
+      });
+    }
+    if (value.paymentEnabled && !value.paymentRecipients.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['paymentRecipients'],
+        message: 'Inserisci almeno una email per le notifiche pagamento attive'
+      });
+    }
+  });
 const publicationStatusSchema = z.enum(['published', 'draft']);
 
 const catalogCitySchema = z.object({
@@ -955,6 +1011,17 @@ function mapAppCacheSettingsForResponse(row) {
     cacheVersion: String(row?.cache_version || '1'),
     updatedAt: row?.updated_at || null,
     updatedBy: row?.updated_by || null
+  };
+}
+
+function mapDashboardNotificationSettingsForResponse(settings) {
+  return {
+    partnerRequestEnabled: Boolean(settings?.partnerRequestEnabled),
+    partnerRequestRecipients: normalizeNotificationRecipients(settings?.partnerRequestRecipients),
+    paymentEnabled: Boolean(settings?.paymentEnabled),
+    paymentRecipients: normalizeNotificationRecipients(settings?.paymentRecipients),
+    updatedAt: settings?.updatedAt || null,
+    updatedBy: settings?.updatedBy || null
   };
 }
 
@@ -3679,6 +3746,90 @@ router.get('/app-cache-settings', requireAuth, requireAdmin, async (_req, res, n
   try {
     const settings = await getAppCacheSettings();
     return res.json(mapAppCacheSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/email-settings', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getDashboardEmailSettings();
+    return res.json(mapDashboardEmailSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/email-settings', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = dashboardEmailSettingsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  try {
+    const settings = await saveDashboardEmailSettings(parsed.data, req.authSession.user.id);
+    return res.json(mapDashboardEmailSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/email-settings/test', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = dashboardEmailTestSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  try {
+    await sendDashboardEmailSettingsTestEmail({
+      to: parsed.data.to,
+      requestedByEmail: req.authSession.user.email
+    });
+    const settings = await markDashboardEmailSettingsTestResult({ valid: true });
+    return res.json({
+      valid: true,
+      settings: mapDashboardEmailSettingsForResponse(settings)
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invio email di test non riuscito.';
+    let settings = null;
+
+    try {
+      settings = await markDashboardEmailSettingsTestResult({ valid: false, error: message });
+    } catch {
+      // Ignore secondary update failures.
+    }
+
+    if (settings) {
+      return res.status(502).json({
+        valid: false,
+        message,
+        settings: mapDashboardEmailSettingsForResponse(settings)
+      });
+    }
+
+    return next(error);
+  }
+});
+
+router.get('/notification-settings', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const settings = await getDashboardNotificationSettings();
+    return res.json(mapDashboardNotificationSettingsForResponse(settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/notification-settings', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = dashboardNotificationSettingsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  try {
+    const settings = await saveDashboardNotificationSettings(parsed.data, req.authSession.user.id);
+    return res.json(mapDashboardNotificationSettingsForResponse(settings));
   } catch (error) {
     return next(error);
   }

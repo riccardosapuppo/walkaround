@@ -58,7 +58,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.poi = undefined;
         }),
         switchMap(([poiId, preview]) =>
-          this.poiService.getPoiById(poiId).pipe(
+          this.poiService.getPoiById(poiId, false).pipe(
             map((poi) => ({
               poi,
               preview

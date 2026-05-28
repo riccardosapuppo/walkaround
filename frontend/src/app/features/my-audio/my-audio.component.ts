@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { forkJoin, Subject, switchMap, takeUntil } from 'rxjs';
-import { City } from '../../core/models/city.model';
+import { catchError, forkJoin, map, Observable, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { Poi } from '../../core/models/poi.model';
+import { PurchasesResponse } from '../../core/models/purchase.model';
 import { AppStateService } from '../../core/services/app-state.service';
 import { GeoService } from '../../core/services/geo.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -47,15 +47,17 @@ export class MyAudioComponent implements OnInit, OnDestroy {
     this.purchaseService.refresh();
     void this.geoService.requestPermissionAndTrack();
 
-    this.poiService
-      .getCities()
+    this.purchaseService.purchases$
       .pipe(
-        switchMap((cities: City[]) => forkJoin(cities.map((city) => this.poiService.getPoisByCity(city.id)))),
+        switchMap((purchases) => {
+          this.loading = true;
+          return this.loadUnlockedPois(purchases).pipe(catchError(() => of([] as Poi[])));
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: async (allGroups) => {
-          this.allPois = allGroups.flat();
+        next: async (pois) => {
+          this.allPois = pois;
           await this.rebuildList();
           this.loading = false;
         },
@@ -63,10 +65,6 @@ export class MyAudioComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
       });
-
-    this.purchaseService.purchases$.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      void this.rebuildList();
-    });
 
     this.geoService.coordinates$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       void this.rebuildList();
@@ -169,5 +167,41 @@ export class MyAudioComponent implements OnInit, OnDestroy {
         .filter((item) => item.offline)
         .reduce((acc, item) => acc + item.durationSec, 0) / 60
     );
+  }
+
+  private loadUnlockedPois(purchases: PurchasesResponse): Observable<Poi[]> {
+    const cityIds = this.uniqueIds(purchases.unlockedCityIds || []);
+    const poiIds = this.uniqueIds(purchases.unlockedPoiIds || []);
+
+    const cityRequests = cityIds.map((cityId) =>
+      this.poiService.getPoisByCity(cityId).pipe(catchError(() => of([] as Poi[])))
+    );
+    const poiRequests = poiIds.map((poiId) =>
+      this.poiService.getPoiById(poiId, false).pipe(catchError(() => of(null as Poi | null)))
+    );
+    const requests = [...cityRequests, ...poiRequests];
+
+    if (!requests.length) {
+      return of([]);
+    }
+
+    return forkJoin(requests).pipe(
+      map((groups) => {
+        const byId = new Map<string, Poi>();
+        groups.forEach((group) => {
+          const pois = Array.isArray(group) ? group : group ? [group] : [];
+          pois.forEach((poi) => {
+            if (poi?.id) {
+              byId.set(poi.id, poi);
+            }
+          });
+        });
+        return Array.from(byId.values());
+      })
+    );
+  }
+
+  private uniqueIds(values: readonly string[]): string[] {
+    return Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
   }
 }

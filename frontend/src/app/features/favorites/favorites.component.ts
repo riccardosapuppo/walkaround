@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin, Subject, switchMap, takeUntil } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { Poi } from '../../core/models/poi.model';
 import { AppStateService } from '../../core/services/app-state.service';
 import { GeoService } from '../../core/services/geo.service';
@@ -40,15 +40,17 @@ export class FavoritesComponent implements OnInit, OnDestroy {
     this.purchaseService.refresh();
     void this.geoService.requestPermissionAndTrack();
 
-    this.poiService
-      .getCities()
+    this.appState.favorites$
       .pipe(
-        switchMap((cities) => forkJoin(cities.map((city) => this.poiService.getPoisByCity(city.id)))),
+        switchMap((favoriteIds) => {
+          this.loading = true;
+          return this.loadFavoritePois(favoriteIds).pipe(catchError(() => of([] as Poi[])));
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: (groups) => {
-          this.allPois = groups.flat();
+        next: (pois) => {
+          this.allPois = pois;
           this.refreshFavorites();
           this.loading = false;
         },
@@ -58,7 +60,6 @@ export class FavoritesComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.appState.favorites$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshFavorites());
     this.purchaseService.purchases$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshFavorites());
     this.geoService.coordinates$.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshFavorites());
   }
@@ -128,5 +129,16 @@ export class FavoritesComponent implements OnInit, OnDestroy {
           unlocked: this.purchaseService.isPoiUnlocked(poi.id, poi.cityId)
         } satisfies FavoriteItem;
       });
+  }
+
+  private loadFavoritePois(favoriteIds: readonly string[]): Observable<Poi[]> {
+    const uniqueIds = Array.from(new Set(favoriteIds.map((value) => String(value || '').trim()).filter(Boolean)));
+    if (!uniqueIds.length) {
+      return of([]);
+    }
+
+    return forkJoin(uniqueIds.map((poiId) => this.poiService.getPoiById(poiId, false).pipe(catchError(() => of(null as Poi | null))))).pipe(
+      map((pois) => pois.filter((poi): poi is Poi => Boolean(poi)))
+    );
   }
 }

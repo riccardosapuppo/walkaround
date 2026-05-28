@@ -203,6 +203,12 @@
   color: #2f4764;
 }
 
+.email-secure-toggle {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+
 .paypal-actions {
   display: flex;
   flex-wrap: wrap;

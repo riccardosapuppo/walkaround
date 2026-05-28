@@ -902,6 +902,210 @@ async function createSchema(client) {
   `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_email_settings (
+      id SMALLINT PRIMARY KEY,
+      smtp_host TEXT NOT NULL DEFAULT '',
+      smtp_port INTEGER NOT NULL DEFAULT 465,
+      smtp_secure BOOLEAN NOT NULL DEFAULT TRUE,
+      smtp_user TEXT NOT NULL DEFAULT '',
+      smtp_password TEXT NOT NULL DEFAULT '',
+      smtp_from TEXT NOT NULL DEFAULT '',
+      last_tested_at TIMESTAMPTZ,
+      last_test_status TEXT NOT NULL DEFAULT 'untested',
+      last_test_error TEXT,
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS smtp_host TEXT;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS smtp_port INTEGER;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS smtp_secure BOOLEAN;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS smtp_user TEXT;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS smtp_password TEXT;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS smtp_from TEXT;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS last_tested_at TIMESTAMPTZ;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS last_test_status TEXT;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS last_test_error TEXT;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();`);
+  await client.query(`ALTER TABLE dashboard_email_settings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();`);
+  await client.query(`
+    ALTER TABLE dashboard_email_settings
+    DROP CONSTRAINT IF EXISTS dashboard_email_settings_singleton;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_email_settings
+    ADD CONSTRAINT dashboard_email_settings_singleton CHECK (id = 1);
+  `);
+  await client.query(
+    `
+      INSERT INTO dashboard_email_settings (
+        id,
+        smtp_host,
+        smtp_port,
+        smtp_secure,
+        smtp_user,
+        smtp_password,
+        smtp_from
+      )
+      VALUES (1, $1, $2, $3, $4, $5, $6)
+      ON CONFLICT (id) DO NOTHING;
+    `,
+    [env.smtp.host, env.smtp.port, env.smtp.secure, env.smtp.user, env.smtp.password, env.smtp.from]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_email_settings
+      SET smtp_host = $1
+      WHERE smtp_host IS NULL OR smtp_host = '';
+    `,
+    [env.smtp.host]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_email_settings
+      SET smtp_port = $1
+      WHERE smtp_port IS NULL OR smtp_port < 1 OR smtp_port > 65535;
+    `,
+    [env.smtp.port]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_email_settings
+      SET smtp_secure = $1
+      WHERE smtp_secure IS NULL;
+    `,
+    [env.smtp.secure]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_email_settings
+      SET smtp_user = $1
+      WHERE smtp_user IS NULL;
+    `,
+    [env.smtp.user]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_email_settings
+      SET smtp_password = $1
+      WHERE smtp_password IS NULL;
+    `,
+    [env.smtp.password]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_email_settings
+      SET smtp_from = $1
+      WHERE smtp_from IS NULL OR smtp_from = '';
+    `,
+    [env.smtp.from]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_email_settings
+      SET last_test_status = 'untested'
+      WHERE last_test_status IS NULL OR last_test_status = '';
+    `
+  );
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_host SET DEFAULT '';`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_port SET DEFAULT 465;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_secure SET DEFAULT TRUE;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_user SET DEFAULT '';`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_password SET DEFAULT '';`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_from SET DEFAULT '';`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN last_test_status SET DEFAULT 'untested';`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_host SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_port SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_secure SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_user SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_password SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN smtp_from SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_email_settings ALTER COLUMN last_test_status SET NOT NULL;`);
+
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_notification_settings (
+      id SMALLINT PRIMARY KEY,
+      partner_request_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+      partner_request_recipients TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+      payment_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+      payment_recipients TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`ALTER TABLE dashboard_notification_settings ADD COLUMN IF NOT EXISTS partner_request_enabled BOOLEAN;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ADD COLUMN IF NOT EXISTS partner_request_recipients TEXT[];`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ADD COLUMN IF NOT EXISTS payment_enabled BOOLEAN;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ADD COLUMN IF NOT EXISTS payment_recipients TEXT[];`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ADD COLUMN IF NOT EXISTS updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();`);
+  await client.query(`
+    ALTER TABLE dashboard_notification_settings
+    DROP CONSTRAINT IF EXISTS dashboard_notification_settings_singleton;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_notification_settings
+    ADD CONSTRAINT dashboard_notification_settings_singleton CHECK (id = 1);
+  `);
+  const defaultNotificationRecipients = [String(env.auth.adminEmail || '').trim().toLowerCase()].filter(Boolean);
+  await client.query(
+    `
+      INSERT INTO dashboard_notification_settings (
+        id,
+        partner_request_enabled,
+        partner_request_recipients,
+        payment_enabled,
+        payment_recipients
+      )
+      VALUES (1, TRUE, $1::TEXT[], TRUE, $1::TEXT[])
+      ON CONFLICT (id) DO NOTHING;
+    `,
+    [defaultNotificationRecipients]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_notification_settings
+      SET partner_request_enabled = TRUE
+      WHERE partner_request_enabled IS NULL;
+    `
+  );
+  await client.query(
+    `
+      UPDATE dashboard_notification_settings
+      SET payment_enabled = TRUE
+      WHERE payment_enabled IS NULL;
+    `
+  );
+  await client.query(
+    `
+      UPDATE dashboard_notification_settings
+      SET partner_request_recipients = $1::TEXT[]
+      WHERE partner_request_recipients IS NULL;
+    `,
+    [defaultNotificationRecipients]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_notification_settings
+      SET payment_recipients = $1::TEXT[]
+      WHERE payment_recipients IS NULL;
+    `,
+    [defaultNotificationRecipients]
+  );
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN partner_request_enabled SET DEFAULT TRUE;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN partner_request_recipients SET DEFAULT ARRAY[]::TEXT[];`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN payment_enabled SET DEFAULT TRUE;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN payment_recipients SET DEFAULT ARRAY[]::TEXT[];`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN partner_request_enabled SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN partner_request_recipients SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN payment_enabled SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_notification_settings ALTER COLUMN payment_recipients SET NOT NULL;`);
+
+  await client.query(`
     CREATE TABLE IF NOT EXISTS dashboard_partner_email_settings (
       id SMALLINT PRIMARY KEY,
       approval_subject TEXT NOT NULL,
@@ -1259,6 +1463,12 @@ async function createSchema(client) {
   );
   await client.query(
     `CREATE INDEX IF NOT EXISTS idx_dashboard_app_cache_settings_updated_by ON dashboard_app_cache_settings(updated_by);`
+  );
+  await client.query(
+    `CREATE INDEX IF NOT EXISTS idx_dashboard_email_settings_updated_by ON dashboard_email_settings(updated_by);`
+  );
+  await client.query(
+    `CREATE INDEX IF NOT EXISTS idx_dashboard_notification_settings_updated_by ON dashboard_notification_settings(updated_by);`
   );
   await client.query(
     `CREATE INDEX IF NOT EXISTS idx_dashboard_partner_email_settings_updated_by ON dashboard_partner_email_settings(updated_by);`
