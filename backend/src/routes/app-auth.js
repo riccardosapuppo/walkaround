@@ -19,12 +19,14 @@ const registerSchema = z.object({
   firstName: z.string().trim().min(1).max(80),
   lastName: z.string().trim().min(1, 'Il cognome è obbligatorio').max(80),
   email: z.string().trim().email(),
-  password: passwordSchema
+  password: passwordSchema,
+  clientUserId: z.string().trim().min(1).max(120).optional()
 });
 
 const loginSchema = z.object({
   email: z.string().trim().email(),
-  password: z.string().min(1)
+  password: z.string().min(1),
+  clientUserId: z.string().trim().min(1).max(120).optional()
 });
 
 const forgotPasswordSchema = z.object({
@@ -224,6 +226,79 @@ async function createAppSession(userId, client = pool) {
   };
 }
 
+async function migrateClientUserDataToAppUser(clientUserId, appUserId, client = pool) {
+  const sourceUserId = String(clientUserId || '').trim();
+  const targetUserId = String(appUserId || '').trim();
+  if (!sourceUserId || !targetUserId || sourceUserId === targetUserId) {
+    return;
+  }
+
+  const sourceRegisteredUser = await client.query('SELECT 1 FROM app_users WHERE id = $1 LIMIT 1', [sourceUserId]);
+  if (sourceRegisteredUser.rowCount) {
+    return;
+  }
+
+  const sourceStructureLink = await client.query(
+    `
+      SELECT structure_id, discount_code_id, invite_code, associated_at
+      FROM app_user_structure_links
+      WHERE user_id = $1
+      LIMIT 1
+    `,
+    [sourceUserId]
+  );
+  if (sourceStructureLink.rowCount) {
+    const link = sourceStructureLink.rows[0];
+    await client.query(
+      `
+        INSERT INTO app_user_structure_links (
+          user_id,
+          structure_id,
+          discount_code_id,
+          invite_code,
+          associated_at,
+          updated_at
+        )
+        VALUES ($1, $2, $3, $4, $5, NOW())
+        ON CONFLICT (user_id) DO UPDATE SET
+          structure_id = EXCLUDED.structure_id,
+          discount_code_id = EXCLUDED.discount_code_id,
+          invite_code = EXCLUDED.invite_code,
+          updated_at = NOW()
+      `,
+      [targetUserId, link.structure_id, link.discount_code_id || null, link.invite_code, link.associated_at]
+    );
+    await client.query('DELETE FROM app_user_structure_links WHERE user_id = $1', [sourceUserId]);
+  }
+
+  await client.query(
+    `
+      INSERT INTO app_user_discount_code_uses (
+        user_id,
+        discount_code_id,
+        structure_id,
+        invite_code,
+        purchase_type,
+        used_at
+      )
+      SELECT
+        $2,
+        discount_code_id,
+        structure_id,
+        invite_code,
+        purchase_type,
+        used_at
+      FROM app_user_discount_code_uses
+      WHERE user_id = $1
+      ON CONFLICT (user_id, invite_code) DO NOTHING
+    `,
+    [sourceUserId, targetUserId]
+  );
+  await client.query('DELETE FROM app_user_discount_code_uses WHERE user_id = $1', [sourceUserId]);
+  await client.query('UPDATE purchases SET user_id = $2 WHERE user_id = $1', [sourceUserId, targetUserId]);
+  await client.query('UPDATE paypal_checkout_orders SET user_id = $2 WHERE user_id = $1', [sourceUserId, targetUserId]);
+}
+
 async function fetchResetByToken(token, client = pool) {
   const tokenHash = hashToken(token);
   const result = await client.query(
@@ -293,6 +368,7 @@ router.post('/register', async (req, res, next) => {
       [id, email, payload.firstName, payload.lastName || '', passwordHash]
     );
 
+    await migrateClientUserDataToAppUser(payload.clientUserId, id, client);
     const session = await createAppSession(id, client);
     await client.query('COMMIT');
 
@@ -329,8 +405,20 @@ router.post('/login', async (req, res, next) => {
     );
     const user = result.rows[0] || null;
     if (user && (await verifyPassword(parsed.data.password, user.password_hash))) {
-      await pool.query('DELETE FROM app_sessions WHERE expires_at <= NOW()');
-      const session = await createAppSession(user.id);
+      const client = await pool.connect();
+      let session;
+      try {
+        await client.query('BEGIN');
+        await migrateClientUserDataToAppUser(parsed.data.clientUserId, user.id, client);
+        await client.query('DELETE FROM app_sessions WHERE expires_at <= NOW()');
+        session = await createAppSession(user.id, client);
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
       const dashboardSession = await createDashboardSessionForAppLogin(email, parsed.data.password);
       return res.json({
         token: session.token,
@@ -349,9 +437,22 @@ router.post('/login', async (req, res, next) => {
       return res.status(401).json({ message: 'Credenziali non valide' });
     }
 
-    const syncedAppUser = await upsertAppUserFromDashboardUser(dashboardUser);
-    await pool.query('DELETE FROM app_sessions WHERE expires_at <= NOW()');
-    const session = await createAppSession(syncedAppUser.id);
+    const client = await pool.connect();
+    let syncedAppUser;
+    let session;
+    try {
+      await client.query('BEGIN');
+      syncedAppUser = await upsertAppUserFromDashboardUser(dashboardUser, client);
+      await migrateClientUserDataToAppUser(parsed.data.clientUserId, syncedAppUser.id, client);
+      await client.query('DELETE FROM app_sessions WHERE expires_at <= NOW()');
+      session = await createAppSession(syncedAppUser.id, client);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
     const dashboardSession =
       canAccessDashboard(dashboardUser.role)
         ? await createDashboardSession(dashboardUser.id)

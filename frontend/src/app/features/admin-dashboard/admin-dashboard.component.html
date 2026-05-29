@@ -336,9 +336,19 @@
         @if (canManageUsers && activeSection === 'users') {
           <div class="stats-grid">
             <mat-card class="stat-card">
-              <span>Utenti</span>
+              <span>Utenti registrati</span>
               @if (!loadingUsers) {
-                <strong>{{ totalUsers }}</strong>
+                <strong>{{ registeredUsersCount }}</strong>
+              } @else {
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              }
+            </mat-card>
+            <mat-card class="stat-card">
+              <span>Non registrati con codice</span>
+              @if (!loadingUsers) {
+                <strong>{{ codeOnlyUsersCount }}</strong>
               } @else {
                 <div class="stat-spinner">
                   <mat-spinner diameter="24"></mat-spinner>
@@ -359,8 +369,10 @@
           <mat-card class="card table-card">
             <div class="table-head">
               <div>
-                <h2>Lista utenti</h2>
-                <p class="table-subtitle">Gestisci struttura utente e operazioni rapide.</p>
+                <h2>Utenti</h2>
+                <p class="table-subtitle">
+                  Gestisci utenti registrati e utenti che hanno inserito solo un codice sconto.
+                </p>
               </div>
               <div class="table-actions">
                 <button type="button" class="toggle-panel-btn" [class.active]="showCreateUserSection" (click)="toggleCreateUserSection()">
@@ -507,6 +519,19 @@
                 </form>
               </section>
             }
+            <div class="catalog-tabs users-tabs" role="tablist" aria-label="Tipologia utenti">
+              @for (tab of usersTabs; track tab) {
+                <button
+                  type="button"
+                  class="catalog-tab"
+                  [class.active]="activeUsersTab === tab.id"
+                  (click)="selectUsersTab(tab.id)"
+                  >
+                  {{ tab.label }}
+                  <span class="users-tab-count">{{ tab.id === 'registered' ? registeredUsersCount : codeOnlyUsersCount }}</span>
+                </button>
+              }
+            </div>
             @if (isUsersStructureFilterActive) {
               <div class="users-structure-filter">
                 <span>
@@ -524,7 +549,7 @@
                     <th>Ruolo</th>
                     <th>Strutture associate</th>
                     <th>Sbloccati</th>
-                    <th>Data registrazione</th>
+                    <th>{{ activeUsersTab === 'codeOnly' ? 'Primo inserimento' : 'Data registrazione' }}</th>
                     <th>Azioni</th>
                   </tr>
                 </thead>
@@ -538,7 +563,9 @@
                   }
                   @if (!loadingUsers && !usersForDisplay.length) {
                     <tr>
-                      <td colspan="6" class="empty-cell">Nessun utente disponibile.</td>
+                      <td colspan="6" class="empty-cell">
+                        {{ activeUsersTab === 'codeOnly' ? 'Nessun utente con codice sconto senza account.' : 'Nessun utente registrato disponibile.' }}
+                      </td>
                     </tr>
                   }
                   @if (!loadingUsers) {
@@ -547,9 +574,9 @@
                         <td>
                           <strong>{{ displayName(user.firstName, user.lastName, user.email) }}</strong>
                           <small>{{ user.email }}</small>
-                          @if (isReadOnlyAppUser(user)) {
+                          @if (userOriginLabel(user)) {
                             <small class="structure-name muted">
-                              Utente app associato da codice invito/sconto
+                              {{ userOriginLabel(user) }}
                             </small>
                           }
                         </td>

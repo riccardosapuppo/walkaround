@@ -74,15 +74,17 @@ export class AppAuthService {
   }
 
   login(email: string, password: string): Observable<AppSession> {
-    return this.http.post<AuthResponse>(`${environment.apiBaseUrl}/app-auth/login`, { email, password }).pipe(
+    const clientUserId = this.appState.userId;
+    return this.http.post<AuthResponse>(`${environment.apiBaseUrl}/app-auth/login`, { email, password, clientUserId }).pipe(
       map((response) => this.persistAuthResponse(response)),
       switchMap((session) => this.syncStoredDiscountCode().pipe(map(() => session)))
     );
   }
 
   register(firstName: string, lastName: string, email: string, password: string): Observable<AppSession> {
+    const clientUserId = this.appState.userId;
     return this.http
-      .post<AuthResponse>(`${environment.apiBaseUrl}/app-auth/register`, { firstName, lastName, email, password })
+      .post<AuthResponse>(`${environment.apiBaseUrl}/app-auth/register`, { firstName, lastName, email, password, clientUserId })
       .pipe(
         map((response) => this.persistAuthResponse(response)),
         switchMap((session) => this.syncStoredDiscountCode().pipe(map(() => session)))

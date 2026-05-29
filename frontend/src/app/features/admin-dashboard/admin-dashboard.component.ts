@@ -57,6 +57,7 @@ type DashboardSection =
   | 'gptTranslations'
   | 'globalSettings'
   | 'catalog';
+type UsersTab = 'registered' | 'codeOnly';
 type CatalogTab = 'cities' | 'pois';
 type PartnerRequestsTab = 'requests' | 'emails';
 type GlobalSettingsTab = 'privacyPolicy' | 'notifications' | 'appCache';
@@ -174,6 +175,10 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     { type: 'cookiePolicy', label: 'Cookie policy' },
     { type: 'termsConditions', label: 'Termini e condizioni' }
   ];
+  readonly usersTabs: ReadonlyArray<{ id: UsersTab; label: string }> = [
+    { id: 'registered', label: 'Registrati' },
+    { id: 'codeOnly', label: 'Non registrati - solo codice sconto inserito' }
+  ];
   readonly poiCategoryOptions: string[] = [
     'Monumento',
     'Museo',
@@ -228,6 +233,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   isAuthenticated = false;
   activePartnerRequestsTab: PartnerRequestsTab = 'requests';
   activeSection: DashboardSection = this.readStoredActiveSection();
+  activeUsersTab: UsersTab = 'registered';
   showInviteSection = false;
   showCreateUserSection = false;
   showStructureSection = false;
@@ -1161,15 +1167,32 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return this.usersForDisplay.length;
   }
 
+  get registeredUsersCount(): number {
+    return this.registeredUsers.length;
+  }
+
+  get codeOnlyUsersCount(): number {
+    return this.codeOnlyUsers.length;
+  }
+
   get totalStructures(): number {
     return this.structures.length;
   }
 
+  get registeredUsers(): DashboardUserRow[] {
+    return this.users.filter((user) => !this.isCodeOnlyAppUser(user));
+  }
+
+  get codeOnlyUsers(): DashboardUserRow[] {
+    return this.users.filter((user) => this.isCodeOnlyAppUser(user));
+  }
+
   get usersForDisplay(): DashboardUserRow[] {
+    const tabUsers = this.activeUsersTab === 'codeOnly' ? this.codeOnlyUsers : this.registeredUsers;
     if (!this.selectedUsersStructureFilterId) {
-      return this.users;
+      return tabUsers;
     }
-    return this.users.filter((user) => this.userHasStructureAssociation(user, this.selectedUsersStructureFilterId || ''));
+    return tabUsers.filter((user) => this.userHasStructureAssociation(user, this.selectedUsersStructureFilterId || ''));
   }
 
   get isUsersStructureFilterActive(): boolean {
@@ -5412,8 +5435,33 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return 'Utente normale';
   }
 
+  selectUsersTab(tab: UsersTab): void {
+    if (tab === this.activeUsersTab) {
+      return;
+    }
+
+    this.activeUsersTab = tab;
+  }
+
   isReadOnlyAppUser(user: DashboardUserRow): boolean {
     return user.accountType === 'app';
+  }
+
+  isCodeOnlyAppUser(user: DashboardUserRow): boolean {
+    return user.accountType === 'app' && !user.isRegistered;
+  }
+
+  userOriginLabel(user: DashboardUserRow): string {
+    if (this.isCodeOnlyAppUser(user)) {
+      return 'Codice sconto inserito, account non registrato';
+    }
+    if (user.accountType === 'app') {
+      return 'Utente app registrato';
+    }
+    if (!user.isRegistered) {
+      return 'Invito dashboard non ancora completato';
+    }
+    return '';
   }
 
   userAssociations(user: DashboardUserRow): DashboardUserAssociation[] {

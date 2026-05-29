@@ -3155,13 +3155,13 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
         app_link_rows AS (
           SELECT
             l.user_id AS id,
-            'Utente'::TEXT AS first_name,
-            CONCAT('App ', LEFT(l.user_id, 8)) AS last_name,
-            CONCAT('utente+', LEFT(l.user_id, 12), '@app.local') AS email,
+            COALESCE(NULLIF(au.first_name, ''), 'Utente') AS first_name,
+            COALESCE(NULLIF(au.last_name, ''), CONCAT('App ', LEFT(l.user_id, 8))) AS last_name,
+            COALESCE(au.email, CONCAT('utente+', LEFT(l.user_id, 12), '@app.local')) AS email,
             'user'::TEXT AS role,
-            TRUE AS is_registered,
-            l.associated_at AS created_at,
-            l.updated_at AS updated_at,
+            (au.id IS NOT NULL) AS is_registered,
+            COALESCE(au.created_at, l.associated_at) AS created_at,
+            COALESCE(au.updated_at, l.updated_at) AS updated_at,
             l.structure_id,
             s.name AS structure_name,
             s.address AS structure_address,
@@ -3170,19 +3170,20 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
             'app'::TEXT AS account_type
           FROM app_user_structure_links l
           JOIN dashboard_structures s ON s.id = l.structure_id AND s.deleted = 0
+          LEFT JOIN app_users au ON au.id = l.user_id
           LEFT JOIN dashboard_users u ON u.id = l.user_id
           WHERE u.id IS NULL
         ),
         app_purchase_rows AS (
           SELECT DISTINCT ON (p.user_id)
             p.user_id AS id,
-            'Utente'::TEXT AS first_name,
-            CONCAT('App ', LEFT(p.user_id, 8)) AS last_name,
-            CONCAT('utente+', LEFT(p.user_id, 12), '@app.local') AS email,
+            COALESCE(NULLIF(au.first_name, ''), 'Utente') AS first_name,
+            COALESCE(NULLIF(au.last_name, ''), CONCAT('App ', LEFT(p.user_id, 8))) AS last_name,
+            COALESCE(au.email, CONCAT('utente+', LEFT(p.user_id, 12), '@app.local')) AS email,
             'user'::TEXT AS role,
-            TRUE AS is_registered,
-            p.purchased_at AS created_at,
-            p.purchased_at AS updated_at,
+            (au.id IS NOT NULL) AS is_registered,
+            COALESCE(au.created_at, p.purchased_at) AS created_at,
+            COALESCE(au.updated_at, p.purchased_at) AS updated_at,
             p.structure_id,
             s.name AS structure_name,
             s.address AS structure_address,
@@ -3191,6 +3192,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
             'app'::TEXT AS account_type
           FROM purchases p
           JOIN dashboard_structures s ON s.id = p.structure_id AND s.deleted = 0
+          LEFT JOIN app_users au ON au.id = p.user_id
           LEFT JOIN dashboard_users u ON u.id = p.user_id
           LEFT JOIN app_user_structure_links l ON l.user_id = p.user_id
           WHERE u.id IS NULL
