@@ -26,9 +26,17 @@ const publicAudioRootDir = path.join(publicRootDir, 'audio');
 const audioPreviewRootDir = path.join(publicRootDir, 'audio-previews');
 const audioPreviewSeconds = 30;
 const privacyPolicyLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
+const legalDocumentTypes = ['privacyPolicy', 'cookiePolicy', 'termsConditions'];
+const legalDocumentDbTypes = {
+  cookiePolicy: 'cookie_policy',
+  termsConditions: 'terms_conditions'
+};
 const audioLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
 const privacyPolicyQuerySchema = z.object({
   language: z.enum(privacyPolicyLanguages).optional().default('it')
+});
+const legalDocumentParamsSchema = z.object({
+  documentType: z.enum(legalDocumentTypes)
 });
 
 async function requireCheckoutAppUser(req, userId) {
@@ -487,6 +495,19 @@ function stripUnsafePrivacyHtml(value) {
     .replace(/\s+(href|src)\s*=\s*"javascript:[^"]*"/gi, ' $1="#"')
     .replace(/\s+(href|src)\s*=\s*'javascript:[^']*'/gi, " $1='#'")
     .replace(/\s+(href|src)\s*=\s*javascript:[^\s>]+/gi, ' $1="#"');
+}
+
+function selectLegalDocumentTranslation(translations, requestedLanguage) {
+  const fallbackLanguage = translations[requestedLanguage]
+    ? requestedLanguage
+    : translations.it
+    ? 'it'
+    : privacyPolicyLanguages.find((language) => translations[language]) || requestedLanguage;
+
+  return {
+    language: fallbackLanguage,
+    contentHtml: translations[fallbackLanguage] || ''
+  };
 }
 
 const purchaseSchema = z.discriminatedUnion('type', [
@@ -1347,6 +1368,57 @@ router.get('/privacy-policy', async (req, res, next) => {
       language: fallbackLanguage,
       requestedLanguage,
       contentHtml: translations[fallbackLanguage] || '',
+      updatedAt: row.updated_at || null
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/legal-documents/:documentType', async (req, res, next) => {
+  const parsedParams = legalDocumentParamsSchema.safeParse(req.params || {});
+  if (!parsedParams.success) {
+    return res.status(400).json({ message: 'Documento legale non valido', errors: parsedParams.error.flatten() });
+  }
+
+  const parsedQuery = privacyPolicyQuerySchema.safeParse(req.query || {});
+  if (!parsedQuery.success) {
+    return res.status(400).json({ message: 'Lingua non valida', errors: parsedQuery.error.flatten() });
+  }
+
+  const documentType = parsedParams.data.documentType;
+
+  try {
+    const result =
+      documentType === 'privacyPolicy'
+        ? await pool.query(
+            `
+              SELECT translations, updated_at
+              FROM dashboard_privacy_policy_settings
+              WHERE id = 1
+              LIMIT 1
+            `
+          )
+        : await pool.query(
+            `
+              SELECT translations, updated_at
+              FROM dashboard_legal_document_settings
+              WHERE document_type = $1
+              LIMIT 1
+            `,
+            [legalDocumentDbTypes[documentType]]
+          );
+
+    const row = result.rows[0] || {};
+    const translations = sanitizePrivacyPolicyTranslations(row.translations);
+    const requestedLanguage = parsedQuery.data.language;
+    const selected = selectLegalDocumentTranslation(translations, requestedLanguage);
+
+    return res.json({
+      type: documentType,
+      language: selected.language,
+      requestedLanguage,
+      contentHtml: selected.contentHtml,
       updatedAt: row.updated_at || null
     });
   } catch (error) {

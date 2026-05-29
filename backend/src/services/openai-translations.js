@@ -244,7 +244,7 @@ export async function translateHtmlWithOpenAI({ apiKey, model, sourceLanguage = 
 
   const sourceHtml = String(html || '').trim();
   if (!sourceHtml) {
-    throw new OpenAITranslationError('La privacy policy non contiene testo da tradurre.', 400);
+    throw new OpenAITranslationError('Il documento non contiene testo da tradurre.', 400);
   }
 
   const controller = new AbortController();
@@ -263,7 +263,7 @@ export async function translateHtmlWithOpenAI({ apiKey, model, sourceLanguage = 
           {
             role: 'system',
             content:
-              'Sei un traduttore professionale di privacy policy e testi legali per applicazioni turistiche. Traduci solo il testo leggibile. Mantieni intatti struttura HTML, tag, attributi, grassetti, corsivi, liste, titoli, link e ordine dei paragrafi. Non aggiungere Markdown. Rispondi solo con JSON valido conforme allo schema.'
+              'Sei un traduttore professionale di documenti legali per applicazioni turistiche. Traduci solo il testo leggibile. Mantieni intatti struttura HTML, tag, attributi, grassetti, corsivi, liste, titoli, link e ordine dei paragrafi. Non aggiungere Markdown. Rispondi solo con JSON valido conforme allo schema.'
           },
           {
             role: 'user',

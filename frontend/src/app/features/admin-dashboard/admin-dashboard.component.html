@@ -54,11 +54,18 @@
   @if (authChecked && isAuthenticated) {
     <div class="dashboard-layout">
       <aside class="sidebar">
-        <div class="brand">
+        <a
+          routerLink="/home"
+          target="_blank"
+          rel="noopener"
+          class="brand brand-home-link"
+          matTooltip="Vai alla home app"
+          aria-label="Vai alla home app"
+        >
           <img class="brand-logo" src="/assets/logo.png" alt="Logo Walk Around" loading="eager" decoding="sync" fetchpriority="high" />
           <p class="brand-slogan">Cammina.Ascolta.Esplora.</p>
           <span class="brand-dashboard-label">Dashboard</span>
-        </div>
+        </a>
         @if (canAccessDashboard && visibleSections.length) {
           <nav class="sidebar-nav">
             @for (section of visibleSections; track section) {
@@ -194,7 +201,7 @@
             <div class="table-head">
               <div>
                 <h2>Pagamenti struttura</h2>
-                <p class="table-subtitle">Visualizzi solo i pagamenti collegati alla tua struttura.</p>
+                <p class="table-subtitle">Visualizzi solo i pagamenti attivi collegati alla tua struttura. I totali escludono i pagamenti eliminati.</p>
               </div>
             </div>
             <div class="stats-grid manager-payments-stats">
@@ -219,10 +226,19 @@
                 }
               </mat-card>
             </div>
-            <div class="table-wrap">
-              <table class="modern-table users-table">
+            <div class="table-wrap payments-table-wrap">
+              <table class="modern-table users-table payments-table selectable-payments-table">
                 <thead>
                   <tr>
+                    <th class="payment-select-cell">
+                      <mat-checkbox
+                        [checked]="allSelectablePaymentsSelected"
+                        [indeterminate]="hasPartialPaymentSelection"
+                        [disabled]="!selectablePaymentsCount || loadingPayments || hidingSelectedPayments"
+                        (change)="toggleAllPaymentSelection($event.checked)"
+                        aria-label="Seleziona tutti i pagamenti visibili"
+                      ></mat-checkbox>
+                    </th>
                     <th>Data</th>
                     <th>Utente</th>
                     <th>Data nascita</th>
@@ -239,19 +255,28 @@
                 <tbody>
                   @if (loadingPayments) {
                     <tr>
-                      <td colspan="11" class="empty-cell spinner-cell">
+                      <td colspan="12" class="empty-cell spinner-cell">
                         <mat-spinner diameter="28"></mat-spinner>
                       </td>
                     </tr>
                   }
                   @if (!loadingPayments && !payments.length) {
                     <tr>
-                      <td colspan="11" class="empty-cell">Nessun pagamento registrato per la tua struttura.</td>
+                      <td colspan="12" class="empty-cell">Nessun pagamento registrato per la tua struttura.</td>
                     </tr>
                   }
                   @if (!loadingPayments) {
                     @for (payment of payments; track trackByPaymentId($index, payment)) {
-                      <tr>
+                      <tr [class.payment-hidden-row]="payment.hidden" [class.payment-selected-row]="isPaymentSelected(payment)">
+                        <td class="payment-select-cell">
+                          <mat-checkbox
+                            [checked]="isPaymentSelected(payment)"
+                            [disabled]="isPaymentSelectionDisabled(payment)"
+                            [matTooltip]="payment.hidden ? 'Pagamento gia eliminato' : 'Seleziona pagamento'"
+                            (change)="togglePaymentSelection(payment, $event.checked)"
+                            [attr.aria-label]="'Seleziona pagamento ' + payment.id"
+                          ></mat-checkbox>
+                        </td>
                         <td>{{ formatDateTime(payment.purchasedAt) }}</td>
                         <td class="payment-user-cell">
                           <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>
@@ -274,7 +299,12 @@
                         <td>{{ formatCurrency(payment.baseAmount) }}</td>
                         <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>
                         <td>{{ formatCurrency(payment.paidAmount) }}</td>
-                        <td>{{ payment.paymentStatus }}</td>
+                        <td>
+                          <span>{{ payment.paymentStatus }}</span>
+                          @if (payment.hidden) {
+                            <span class="payment-hidden-badge">Eliminato</span>
+                          }
+                        </td>
                         <td><code>{{ payment.inviteCode || '-' }}</code></td>
                         <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>
                       </tr>
@@ -283,6 +313,24 @@
                 </tbody>
               </table>
             </div>
+            @if (selectedPaymentsCount > 0) {
+              <div class="payment-bulk-bar">
+                <div class="payment-bulk-summary">
+                  <strong>{{ selectedPaymentsCount }}</strong>
+                  <span>{{ selectedPaymentsCount === 1 ? 'pagamento selezionato' : 'pagamenti selezionati' }}</span>
+                </div>
+                <div class="payment-bulk-actions">
+                  <button mat-button type="button" (click)="clearPaymentSelection()" [disabled]="hidingSelectedPayments">
+                    Annulla
+                  </button>
+                  <button mat-flat-button color="warn" type="button" (click)="hideSelectedPayments()" [disabled]="hidingSelectedPayments">
+                    <mat-icon fontSet="material-icons-round">{{ hidingSelectedPayments ? 'hourglass_empty' : 'delete' }}</mat-icon>
+                    {{ hidingSelectedPayments ? 'Elimino...' : 'Elimina' }}
+                  </button>
+                </div>
+              </div>
+              <div class="payment-bulk-spacer" aria-hidden="true"></div>
+            }
           </mat-card>
         }
         @if (canManageUsers && activeSection === 'users') {
@@ -772,6 +820,27 @@
           </mat-card>
         }
         @if (canManageUsers && activeSection === 'partnerRequests') {
+          <mat-card class="card table-card global-settings-nav-card partner-requests-nav-card">
+            <div class="table-head">
+              <div>
+                <h2>Richieste partner</h2>
+                <p class="table-subtitle">Gestisci richieste e template email partner dalla stessa area.</p>
+              </div>
+            </div>
+            <div class="catalog-tabs global-settings-tabs" role="tablist" aria-label="Richieste partner">
+              @for (tab of partnerRequestsTabs; track tab) {
+                <button
+                  type="button"
+                  class="catalog-tab"
+                  [class.active]="activePartnerRequestsTab === tab.id"
+                  (click)="selectPartnerRequestsTab(tab.id)"
+                  >
+                  {{ tab.label }}
+                </button>
+              }
+            </div>
+          </mat-card>
+          @if (activePartnerRequestsTab === 'requests') {
           <div class="stats-grid">
             <mat-card class="stat-card">
               <span>Richieste totali</span>
@@ -979,8 +1048,8 @@
               </table>
             </div>
           </mat-card>
-        }
-        @if (canManagePartnerEmails && activeSection === 'partnerEmails') {
+          }
+          @if (activePartnerRequestsTab === 'emails') {
           <div class="stats-grid">
             <mat-card class="stat-card">
               <span>Template approvazione</span>
@@ -1105,6 +1174,7 @@
               </div>
             </form>
           </mat-card>
+          }
         }
         @if (canManageUsers && activeSection === 'payments') {
           <div class="stats-grid">
@@ -1153,7 +1223,7 @@
             <div class="table-head">
               <div>
                 <h2>Pagamenti</h2>
-                <p class="table-subtitle">Storico acquisti con eventuale codice sconto e quota struttura.</p>
+                <p class="table-subtitle">Storico acquisti con eventuale codice sconto e quota struttura. I totali seguono il filtro corrente.</p>
               </div>
               <div class="table-actions">
                 <mat-form-field appearance="outline" class="compact-filter">
@@ -1170,12 +1240,28 @@
                     }
                   </mat-select>
                 </mat-form-field>
+                <mat-slide-toggle
+                  [checked]="showHiddenPayments"
+                  [disabled]="loadingPayments"
+                  (change)="onPaymentsHiddenFilterChange($event.checked)"
+                >
+                  Mostra eliminati
+                </mat-slide-toggle>
               </div>
             </div>
-            <div class="table-wrap">
-              <table class="modern-table structures-table">
+            <div class="table-wrap payments-table-wrap">
+              <table class="modern-table structures-table payments-table selectable-payments-table">
                 <thead>
                   <tr>
+                    <th class="payment-select-cell">
+                      <mat-checkbox
+                        [checked]="allSelectablePaymentsSelected"
+                        [indeterminate]="hasPartialPaymentSelection"
+                        [disabled]="!selectablePaymentsCount || loadingPayments || hidingSelectedPayments"
+                        (change)="toggleAllPaymentSelection($event.checked)"
+                        aria-label="Seleziona tutti i pagamenti visibili"
+                      ></mat-checkbox>
+                    </th>
                     <th>Data</th>
                     <th>Utente</th>
                     <th>Data nascita</th>
@@ -1193,19 +1279,28 @@
                 <tbody>
                   @if (loadingPayments) {
                     <tr>
-                      <td colspan="12" class="empty-cell spinner-cell">
+                      <td colspan="13" class="empty-cell spinner-cell">
                         <mat-spinner diameter="28"></mat-spinner>
                       </td>
                     </tr>
                   }
                   @if (!loadingPayments && !payments.length) {
                     <tr>
-                      <td colspan="12" class="empty-cell">Nessun pagamento registrato.</td>
+                      <td colspan="13" class="empty-cell">Nessun pagamento registrato.</td>
                     </tr>
                   }
                   @if (!loadingPayments) {
                     @for (payment of payments; track trackByPaymentId($index, payment)) {
-                      <tr>
+                      <tr [class.payment-hidden-row]="payment.hidden" [class.payment-selected-row]="isPaymentSelected(payment)">
+                        <td class="payment-select-cell">
+                          <mat-checkbox
+                            [checked]="isPaymentSelected(payment)"
+                            [disabled]="isPaymentSelectionDisabled(payment)"
+                            [matTooltip]="payment.hidden ? 'Pagamento gia eliminato' : 'Seleziona pagamento'"
+                            (change)="togglePaymentSelection(payment, $event.checked)"
+                            [attr.aria-label]="'Seleziona pagamento ' + payment.id"
+                          ></mat-checkbox>
+                        </td>
                         <td>{{ formatDateTime(payment.purchasedAt) }}</td>
                         <td class="payment-user-cell">
                           <strong>{{ payment.customerFirstName }} {{ payment.customerLastName }}</strong>
@@ -1228,7 +1323,12 @@
                         <td>{{ formatCurrency(payment.baseAmount) }}</td>
                         <td>{{ formatCurrency(payment.discountAmount) }} ({{ payment.discountPercent }}%)</td>
                         <td>{{ formatCurrency(payment.paidAmount) }}</td>
-                        <td>{{ payment.paymentStatus }}</td>
+                        <td>
+                          <span>{{ payment.paymentStatus }}</span>
+                          @if (payment.hidden) {
+                            <span class="payment-hidden-badge">Eliminato</span>
+                          }
+                        </td>
                         <td>{{ payment.structureName || '-' }}</td>
                         <td><code>{{ payment.inviteCode || '-' }}</code></td>
                         <td>{{ formatCurrency(payment.structureEarningAmount) }}</td>
@@ -1238,6 +1338,24 @@
                 </tbody>
               </table>
             </div>
+            @if (selectedPaymentsCount > 0) {
+              <div class="payment-bulk-bar">
+                <div class="payment-bulk-summary">
+                  <strong>{{ selectedPaymentsCount }}</strong>
+                  <span>{{ selectedPaymentsCount === 1 ? 'pagamento selezionato' : 'pagamenti selezionati' }}</span>
+                </div>
+                <div class="payment-bulk-actions">
+                  <button mat-button type="button" (click)="clearPaymentSelection()" [disabled]="hidingSelectedPayments">
+                    Annulla
+                  </button>
+                  <button mat-flat-button color="warn" type="button" (click)="hideSelectedPayments()" [disabled]="hidingSelectedPayments">
+                    <mat-icon fontSet="material-icons-round">{{ hidingSelectedPayments ? 'hourglass_empty' : 'delete' }}</mat-icon>
+                    {{ hidingSelectedPayments ? 'Elimino...' : 'Elimina' }}
+                  </button>
+                </div>
+              </div>
+              <div class="payment-bulk-spacer" aria-hidden="true"></div>
+            }
           </mat-card>
         }
         @if (canManagePayPal && activeSection === 'paypal') {
@@ -1911,6 +2029,10 @@
           @if (activeGlobalSettingsTab === 'privacyPolicy') {
             <div class="stats-grid">
               <mat-card class="stat-card">
+                <span>Documento</span>
+                <strong>{{ selectedLegalDocumentLabel }}</strong>
+              </mat-card>
+              <mat-card class="stat-card">
                 <span>Lingue configurate</span>
                 @if (!loadingPrivacyPolicySettings) {
                   <strong>
@@ -1938,8 +2060,8 @@
             <mat-card class="card table-card">
               <div class="table-head">
                 <div>
-                  <h2>Privacy policy</h2>
-                  <p class="table-subtitle">Gestisci il testo globale mostrato dalla voce Privacy nel profilo utente.</p>
+                  <h2>{{ selectedLegalDocumentLabel }}</h2>
+                  <p class="table-subtitle">Gestisci i documenti legali mostrati nel profilo utente e nel banner cookie.</p>
                 </div>
                 <div class="table-actions">
                   <input
@@ -1957,13 +2079,27 @@
                   </button>
                 </div>
               </div>
+              <div class="legal-document-tabs catalog-tabs" role="tablist" aria-label="Documenti legali">
+                @for (document of legalDocumentTabs; track document.type) {
+                  <button
+                    type="button"
+                    class="catalog-tab"
+                    [class.active]="selectedLegalDocumentType === document.type"
+                    [disabled]="translatingPrivacyPolicy"
+                    (click)="selectLegalDocumentType(document.type)"
+                    >
+                    {{ document.label }}
+                  </button>
+                }
+              </div>
               <div class="privacy-policy-toolbar">
-                <div class="privacy-policy-language-tabs" role="tablist" aria-label="Lingue privacy policy">
+                <div class="privacy-policy-language-tabs" role="tablist" aria-label="Lingue documento legale">
                   @for (language of privacyPolicyLanguages; track language) {
                     <button
                       type="button"
                       class="catalog-tab"
                       [class.active]="privacyPolicySelectedLanguage === language.code"
+                      [disabled]="translatingPrivacyPolicy"
                       (click)="selectPrivacyPolicyLanguage(language.code)"
                       >
                       {{ language.label }}
@@ -1971,54 +2107,89 @@
                     </button>
                   }
                 </div>
-                <div class="privacy-format-buttons" aria-label="Formato testo">
-                  <button mat-icon-button type="button" matTooltip="Paragrafo" (click)="formatPrivacyPolicyEditor('formatBlock', '<p>')">
-                    <mat-icon fontSet="material-icons-round">notes</mat-icon>
+                <div class="legal-editor-mode-tabs catalog-tabs" role="tablist" aria-label="Modalita editor documento">
+                  <button
+                    type="button"
+                    class="catalog-tab"
+                    [class.active]="legalDocumentEditorMode === 'visual'"
+                    [disabled]="translatingPrivacyPolicy"
+                    (click)="selectLegalDocumentEditorMode('visual')"
+                    >
+                    Testo
                   </button>
-                  <button mat-icon-button type="button" matTooltip="Titolo" (click)="formatPrivacyPolicyEditor('formatBlock', '<h2>')">
-                    <mat-icon fontSet="material-icons-round">title</mat-icon>
-                  </button>
-                  <button mat-icon-button type="button" matTooltip="Grassetto" (click)="formatPrivacyPolicyEditor('bold')">
-                    <mat-icon fontSet="material-icons-round">format_bold</mat-icon>
-                  </button>
-                  <button mat-icon-button type="button" matTooltip="Corsivo" (click)="formatPrivacyPolicyEditor('italic')">
-                    <mat-icon fontSet="material-icons-round">format_italic</mat-icon>
-                  </button>
-                  <button mat-icon-button type="button" matTooltip="Elenco puntato" (click)="formatPrivacyPolicyEditor('insertUnorderedList')">
-                    <mat-icon fontSet="material-icons-round">format_list_bulleted</mat-icon>
-                  </button>
-                  <button mat-icon-button type="button" matTooltip="Elenco numerato" (click)="formatPrivacyPolicyEditor('insertOrderedList')">
-                    <mat-icon fontSet="material-icons-round">format_list_numbered</mat-icon>
+                  <button
+                    type="button"
+                    class="catalog-tab"
+                    [class.active]="legalDocumentEditorMode === 'html'"
+                    [disabled]="translatingPrivacyPolicy"
+                    (click)="selectLegalDocumentEditorMode('html')"
+                    >
+                    HTML
                   </button>
                 </div>
+                @if (legalDocumentEditorMode === 'visual') {
+                  <div class="privacy-format-buttons" aria-label="Formato testo">
+                    <button mat-icon-button type="button" matTooltip="Paragrafo" [disabled]="translatingPrivacyPolicy" (click)="formatPrivacyPolicyEditor('formatBlock', '<p>')">
+                      <mat-icon fontSet="material-icons-round">notes</mat-icon>
+                    </button>
+                    <button mat-icon-button type="button" matTooltip="Titolo" [disabled]="translatingPrivacyPolicy" (click)="formatPrivacyPolicyEditor('formatBlock', '<h2>')">
+                      <mat-icon fontSet="material-icons-round">title</mat-icon>
+                    </button>
+                    <button mat-icon-button type="button" matTooltip="Grassetto" [disabled]="translatingPrivacyPolicy" (click)="formatPrivacyPolicyEditor('bold')">
+                      <mat-icon fontSet="material-icons-round">format_bold</mat-icon>
+                    </button>
+                    <button mat-icon-button type="button" matTooltip="Corsivo" [disabled]="translatingPrivacyPolicy" (click)="formatPrivacyPolicyEditor('italic')">
+                      <mat-icon fontSet="material-icons-round">format_italic</mat-icon>
+                    </button>
+                    <button mat-icon-button type="button" matTooltip="Elenco puntato" [disabled]="translatingPrivacyPolicy" (click)="formatPrivacyPolicyEditor('insertUnorderedList')">
+                      <mat-icon fontSet="material-icons-round">format_list_bulleted</mat-icon>
+                    </button>
+                    <button mat-icon-button type="button" matTooltip="Elenco numerato" [disabled]="translatingPrivacyPolicy" (click)="formatPrivacyPolicyEditor('insertOrderedList')">
+                      <mat-icon fontSet="material-icons-round">format_list_numbered</mat-icon>
+                    </button>
+                  </div>
+                }
               </div>
               <div class="privacy-policy-editor-shell">
                 <div class="privacy-policy-editor-head">
                   <strong>{{ selectedPrivacyPolicyLanguageLabel }}</strong>
-                  <span>{{ hasPrivacyPolicyContent(privacyPolicySelectedLanguage) ? 'Testo presente' : 'Testo mancante' }}</span>
+                  <span>{{ legalDocumentEditorMode === 'html' ? 'Sorgente HTML' : 'Testo formattato' }} - {{ hasPrivacyPolicyContent(privacyPolicySelectedLanguage) ? 'contenuto presente' : 'contenuto mancante' }}</span>
                 </div>
-                <div
-                  #privacyPolicyEditor
-                  class="privacy-policy-editor"
-                  contenteditable="true"
-                  role="textbox"
-                  tabindex="0"
-                  data-placeholder="Incolla qui la privacy policy oppure scrivi il testo."
-                  (input)="onPrivacyPolicyEditorInput()"
-                  (blur)="onPrivacyPolicyEditorInput()"
-                ></div>
+                @if (legalDocumentEditorMode === 'visual') {
+                  <div
+                    #privacyPolicyEditor
+                    class="privacy-policy-editor"
+                    [attr.contenteditable]="translatingPrivacyPolicy ? 'false' : 'true'"
+                    role="textbox"
+                    tabindex="0"
+                    data-placeholder="Incolla qui il documento legale oppure scrivi il testo."
+                    (input)="onPrivacyPolicyEditorInput()"
+                    (blur)="onPrivacyPolicyEditorInput()"
+                  ></div>
+                } @else {
+                  <textarea
+                    #privacyPolicyHtmlEditor
+                    class="privacy-policy-editor privacy-policy-html-editor"
+                    [value]="selectedLegalDocumentHtml"
+                    [disabled]="translatingPrivacyPolicy"
+                    spellcheck="false"
+                    placeholder="Incolla qui il codice HTML del documento. In questa vista i tag restano visibili."
+                    (input)="onPrivacyPolicyHtmlEditorInput($event)"
+                    (blur)="onPrivacyPolicyHtmlEditorInput($event)"
+                  ></textarea>
+                }
               </div>
               <div class="privacy-policy-actions">
                 <button mat-flat-button color="primary" type="button" (click)="savePrivacyPolicySettings()" [disabled]="!canSavePrivacyPolicySettings">
-                  {{ savingPrivacyPolicySettings ? 'Salvo...' : 'Salva privacy policy' }}
+                  {{ savingPrivacyPolicySettings ? 'Salvo...' : 'Salva documento' }}
                 </button>
               </div>
             </mat-card>
             <mat-card class="card table-card">
               <div class="table-head">
                 <div>
-                  <h2>Traduzione privacy con GPT</h2>
-                  <p class="table-subtitle">La versione italiana viene usata come sorgente e il markup HTML viene mantenuto nelle traduzioni.</p>
+                  <h2>Traduzione documento con GPT</h2>
+                  <p class="table-subtitle">La versione italiana del documento selezionato viene usata come sorgente e il markup HTML viene mantenuto.</p>
                 </div>
                 <div class="table-actions">
                   <button mat-flat-button color="primary" type="button" (click)="translatePrivacyPolicy()" [disabled]="!canTranslatePrivacyPolicy">
@@ -2033,14 +2204,23 @@
               }
               @if (!hasItalianPrivacyPolicyContent) {
                 <p class="inline-note">
-                  Carica prima la privacy policy in italiano.
+                  Carica prima il documento in italiano.
                 </p>
               }
-              <mat-slide-toggle [checked]="privacyPolicyTranslateOverwrite" (change)="privacyPolicyTranslateOverwrite = $event.checked">
+              <mat-slide-toggle [checked]="privacyPolicyTranslateOverwrite" [disabled]="translatingPrivacyPolicy" (change)="privacyPolicyTranslateOverwrite = $event.checked">
                 Sovrascrivi traduzioni esistenti
               </mat-slide-toggle>
               @if (translatingPrivacyPolicy || privacyPolicyTranslationLog.length) {
                 <div class="gpt-progress-panel">
+                  @if (privacyPolicyTranslationProgressTotal) {
+                    <div class="gpt-progress-head">
+                      <strong>{{ privacyPolicyTranslationProgressDone }} / {{ privacyPolicyTranslationProgressTotal }}</strong>
+                      <span>{{ privacyPolicyTranslationProgressPercent }}%</span>
+                    </div>
+                    <div class="gpt-progress-track" aria-hidden="true">
+                      <span class="gpt-progress-bar" [style.width.%]="privacyPolicyTranslationProgressPercent"></span>
+                    </div>
+                  }
                   <div class="gpt-token-strip">
                     <span>Input: {{ privacyPolicyTranslationUsage.inputTokens }}</span>
                     <span>Output: {{ privacyPolicyTranslationUsage.outputTokens }}</span>

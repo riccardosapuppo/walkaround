@@ -21,9 +21,11 @@ import {
   DashboardDiscountCode,
   DashboardPayPalSettings,
   DashboardPartnerEmailSettings,
-  DashboardPrivacyPolicySettings,
+  DashboardLegalDocumentSettings,
+  DashboardLegalDocumentsSettingsResponse,
   DashboardPaymentRow,
   DashboardPaymentsSummary,
+  LegalDocumentType,
   PartnerEmailSettingsInput,
   PrivacyPolicyTranslations,
   PartnerRequestApprovalInput,
@@ -50,19 +52,20 @@ type DashboardSection =
   | 'structures'
   | 'discounts'
   | 'partnerRequests'
-  | 'partnerEmails'
   | 'payments'
   | 'paypal'
   | 'gptTranslations'
   | 'globalSettings'
   | 'catalog';
 type CatalogTab = 'cities' | 'pois';
+type PartnerRequestsTab = 'requests' | 'emails';
 type GlobalSettingsTab = 'privacyPolicy' | 'notifications' | 'appCache';
 type GptTranslationsTab = 'texts' | 'audio' | 'settings';
 type PoiMapPickerTarget = 'create' | 'edit';
 type ContentEditorLanguage = 'en' | 'fr' | 'es' | 'de' | 'pl';
 type AudioEditorLanguage = OpenAiAudioTargetLanguage;
 type PrivacyPolicyLanguage = 'it' | ContentEditorLanguage;
+type LegalDocumentEditorMode = 'visual' | 'html';
 type PoiMapSearchResult = {
   displayName: string;
   lat: number;
@@ -166,6 +169,11 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     { code: 'it', label: 'Italiano' },
     ...this.contentLanguages
   ];
+  readonly legalDocumentTabs: ReadonlyArray<{ type: LegalDocumentType; label: string }> = [
+    { type: 'privacyPolicy', label: 'Privacy policy' },
+    { type: 'cookiePolicy', label: 'Cookie policy' },
+    { type: 'termsConditions', label: 'Termini e condizioni' }
+  ];
   readonly poiCategoryOptions: string[] = [
     'Monumento',
     'Museo',
@@ -190,7 +198,6 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     { id: 'structures', label: 'Strutture' },
     { id: 'discounts', label: 'Codici invito/sconto' },
     { id: 'partnerRequests', label: 'Richieste partner' },
-    { id: 'partnerEmails', label: 'Email partner' },
     { id: 'payments', label: 'Pagamenti' },
     { id: 'paypal', label: 'PayPal' },
     { id: 'gptTranslations', label: 'Traduzioni GPT' },
@@ -202,8 +209,12 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     { id: 'discounts', label: 'Codici invito/sconto' },
     { id: 'payments', label: 'Pagamenti' }
   ];
+  readonly partnerRequestsTabs: Array<{ id: PartnerRequestsTab; label: string }> = [
+    { id: 'requests', label: 'Richieste' },
+    { id: 'emails', label: 'Email partner' }
+  ];
   readonly globalSettingsTabs: Array<{ id: GlobalSettingsTab; label: string }> = [
-    { id: 'privacyPolicy', label: 'Privacy policy' },
+    { id: 'privacyPolicy', label: 'Documenti legali' },
     { id: 'notifications', label: 'Email e notifiche' },
     { id: 'appCache', label: 'Cache e aggiornamenti' }
   ];
@@ -215,12 +226,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   authChecked = false;
   isAuthenticated = false;
+  activePartnerRequestsTab: PartnerRequestsTab = 'requests';
   activeSection: DashboardSection = this.readStoredActiveSection();
   showInviteSection = false;
   showCreateUserSection = false;
   showStructureSection = false;
   selectedUsersStructureFilterId: string | null = null;
   selectedPaymentsStructureId = '';
+  showHiddenPayments = false;
   editingStructureId: string | null = null;
   catalogTab: CatalogTab = 'cities';
   activeGlobalSettingsTab: GlobalSettingsTab = 'privacyPolicy';
@@ -281,6 +294,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   previewingDiscountCodeId: number | null = null;
   deletingDiscountCodeId: number | null = null;
   deletingStructureId: string | null = null;
+  hidingSelectedPayments = false;
   resettingPasswordUserId: string | null = null;
   deletingUserId: string | null = null;
   impersonatingUserId: string | null = null;
@@ -297,24 +311,30 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   highlightedDiscountStructureId: string | null = null;
   associatedUsers: StructureAssociatedUserRow[] = [];
   payments: DashboardPaymentRow[] = [];
+  selectedPaymentIds = new Set<number>();
   partnerRequests: DashboardPartnerRequest[] = [];
   partnerEmailSettings: DashboardPartnerEmailSettings | null = null;
   payPalSettings: DashboardPayPalSettings | null = null;
   openAiTranslationSettings: OpenAiTranslationSettings | null = null;
   openAiTranslationStatusRows: OpenAiPoiTranslationStatus[] = [];
   openAiTranslationSummary: OpenAiPoiTranslationSummary | null = null;
-  privacyPolicySettings: DashboardPrivacyPolicySettings | null = null;
+  legalDocumentSettingsByType: Partial<Record<LegalDocumentType, DashboardLegalDocumentSettings>> = {};
+  selectedLegalDocumentType: LegalDocumentType = 'privacyPolicy';
+  privacyPolicySettings: DashboardLegalDocumentSettings | null = null;
   appCacheSettings: DashboardAppCacheSettings | null = null;
   emailSettings: DashboardEmailSettings | null = null;
   notificationSettings: DashboardNotificationSettings | null = null;
   privacyPolicyTranslations: Record<PrivacyPolicyLanguage, string> = this.emptyPrivacyPolicyTranslations();
   privacyPolicySelectedLanguage: PrivacyPolicyLanguage = 'it';
+  legalDocumentEditorMode: LegalDocumentEditorMode = 'visual';
   privacyPolicyTranslateOverwrite = false;
   privacyPolicyTranslationUsage: OpenAiTranslationUsage = {
     inputTokens: 0,
     outputTokens: 0,
     totalTokens: 0
   };
+  privacyPolicyTranslationProgressTotal = 0;
+  privacyPolicyTranslationProgressDone = 0;
   privacyPolicyTranslationLog: string[] = [];
   selectedGptTranslationPoiId = '';
   gptTranslationProgressTotal = 0;
@@ -371,6 +391,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   private poiMapMarker: any = null;
   private leafletLoaderPromise?: Promise<void>;
   private gptTranslationRunToken = 0;
+  private legalDocumentTranslationRunToken = 0;
   private confirmedGptTranslationLanguage: ContentEditorLanguage = 'en';
   private confirmedGptTranslationOverwrite = false;
   private confirmedGptAudioLanguage: AudioEditorLanguage = 'it';
@@ -400,6 +421,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   @ViewChild('gptTranslationInterruptDialog') gptTranslationInterruptDialog?: TemplateRef<unknown>;
   @ViewChild('poiMapCanvas') poiMapCanvas?: ElementRef<HTMLDivElement>;
   @ViewChild('privacyPolicyEditor') privacyPolicyEditor?: ElementRef<HTMLDivElement>;
+  @ViewChild('privacyPolicyHtmlEditor') privacyPolicyHtmlEditor?: ElementRef<HTMLTextAreaElement>;
 
   readonly structureInviteCodeDraftByUserId: Record<string, string> = {};
   editingDiscountCodeId: number | null = null;
@@ -756,7 +778,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   get visibleSections(): Array<{ id: DashboardSection; label: string }> {
     if (this.canManageUsers) {
-      return this.sections;
+      const globalSettingsSection = this.sections.find((section) => section.id === 'globalSettings');
+      const orderedSections = this.sections.filter((section) => section.id !== 'globalSettings');
+      return globalSettingsSection ? [...orderedSections, globalSettingsSection] : orderedSections;
     }
     if (this.isFacilityManager) {
       return this.managerSections;
@@ -829,7 +853,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   get canSavePrivacyPolicySettings(): boolean {
-    return this.canManageGlobalSettings && !this.loadingPrivacyPolicySettings && !this.savingPrivacyPolicySettings;
+    return this.canManageGlobalSettings && !this.loadingPrivacyPolicySettings && !this.savingPrivacyPolicySettings && !this.translatingPrivacyPolicy;
   }
 
   get canBumpAppCacheVersion(): boolean {
@@ -842,6 +866,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   get selectedPrivacyPolicyLanguageLabel(): string {
     return this.privacyPolicyLanguages.find((language) => language.code === this.privacyPolicySelectedLanguage)?.label || 'Italiano';
+  }
+
+  get selectedLegalDocumentHtml(): string {
+    return this.privacyPolicyTranslations[this.privacyPolicySelectedLanguage] || '';
+  }
+
+  get selectedLegalDocumentLabel(): string {
+    return this.legalDocumentLabel(this.selectedLegalDocumentType);
   }
 
   get hasItalianPrivacyPolicyContent(): boolean {
@@ -923,6 +955,16 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return 0;
     }
     return Math.min(100, Math.round((this.gptTranslationProgressDone / this.gptTranslationProgressTotal) * 100));
+  }
+
+  get privacyPolicyTranslationProgressPercent(): number {
+    if (!this.privacyPolicyTranslationProgressTotal) {
+      return 0;
+    }
+    return Math.min(
+      100,
+      Math.round((this.privacyPolicyTranslationProgressDone / this.privacyPolicyTranslationProgressTotal) * 100)
+    );
   }
 
   get gptAudioProgressPercent(): number {
@@ -1150,6 +1192,23 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return this.paymentsSummary.totalPayments;
   }
 
+  get selectablePaymentsCount(): number {
+    return this.payments.filter((payment) => this.canSelectPaymentForBulkAction(payment)).length;
+  }
+
+  get selectedPaymentsCount(): number {
+    return this.selectedPaymentIds.size;
+  }
+
+  get allSelectablePaymentsSelected(): boolean {
+    const selectablePayments = this.payments.filter((payment) => this.canSelectPaymentForBulkAction(payment));
+    return selectablePayments.length > 0 && selectablePayments.every((payment) => this.selectedPaymentIds.has(payment.id));
+  }
+
+  get hasPartialPaymentSelection(): boolean {
+    return this.selectedPaymentsCount > 0 && !this.allSelectablePaymentsSelected;
+  }
+
   get totalPartnerRequests(): number {
     return this.partnerRequests.length;
   }
@@ -1340,6 +1399,10 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.closeCreateDiscountCodeDialog();
       this.closeEditDiscountCodeDialog();
     }
+    if (section !== 'payments') {
+      this.clearPaymentSelection();
+      this.hidingSelectedPayments = false;
+    }
     if (section !== 'partnerRequests') {
       this.closePartnerRequestApprovalDialog();
       this.rejectingPartnerRequestId = null;
@@ -1357,9 +1420,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     if (section === 'payments' && this.canAccessDashboard) {
       this.loadPayments();
     } else if (section === 'partnerRequests' && this.canManageUsers) {
-      this.loadPartnerRequests();
-    } else if (section === 'partnerEmails' && this.canManagePartnerEmails) {
-      this.loadPartnerEmailSettings();
+      this.ensurePartnerRequestsTabLoaded();
     } else if (section === 'paypal' && this.canManagePayPal) {
       this.loadPayPalSettings();
     } else if (section === 'gptTranslations' && this.canManageGptTranslations) {
@@ -1379,6 +1440,15 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.closeCatalogPoiEditDialog();
       this.closePoiMapPicker();
     }
+  }
+
+  selectPartnerRequestsTab(tab: PartnerRequestsTab): void {
+    if (tab === this.activePartnerRequestsTab) {
+      return;
+    }
+
+    this.activePartnerRequestsTab = tab;
+    this.ensurePartnerRequestsTabLoaded();
   }
 
   private ensureActiveSectionAllowed(): void {
@@ -1857,11 +1927,16 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     const structureIdFilter = this.canManageUsers ? this.selectedPaymentsStructureId || undefined : undefined;
+    const includeHidden = this.canManageUsers && this.showHiddenPayments;
+    if (!this.canManageUsers && this.showHiddenPayments) {
+      this.showHiddenPayments = false;
+    }
     this.loadingPayments = true;
-    this.auth.listPayments(structureIdFilter).subscribe({
+    this.auth.listPayments(structureIdFilter, includeHidden).subscribe({
       next: (response) => {
         this.loadingPayments = false;
         this.payments = response?.items || [];
+        this.syncSelectedPaymentsWithCurrentRows();
         this.paymentsSummary = response?.summary || {
           totalPayments: 0,
           totalCollected: 0,
@@ -1894,6 +1969,19 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
+  }
+
+  private ensurePartnerRequestsTabLoaded(force = false): void {
+    if (!this.canManageUsers) {
+      return;
+    }
+
+    if (this.activePartnerRequestsTab === 'emails') {
+      this.loadPartnerEmailSettings(force);
+      return;
+    }
+
+    this.loadPartnerRequests();
   }
 
   loadPartnerEmailSettings(force = false): void {
@@ -2244,14 +2332,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     this.loadingPrivacyPolicySettings = true;
-    this.auth.getPrivacyPolicySettings().subscribe({
-      next: (settings) => {
+    this.auth.getLegalDocumentSettings().subscribe({
+      next: (response) => {
         this.loadingPrivacyPolicySettings = false;
-        this.applyPrivacyPolicySettings(settings);
+        this.applyLegalDocumentSettingsResponse(response);
       },
       error: (error: { error?: { message?: string } }) => {
         this.loadingPrivacyPolicySettings = false;
-        const message = error?.error?.message || 'Errore caricamento privacy policy';
+        const message = error?.error?.message || 'Errore caricamento documenti legali';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -2264,15 +2352,15 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
     this.capturePrivacyPolicyEditorContent();
     this.savingPrivacyPolicySettings = true;
-    this.auth.updatePrivacyPolicySettings({ translations: this.privacyPolicyTranslations }).subscribe({
+    this.auth.updateLegalDocumentSettings(this.selectedLegalDocumentType, { translations: this.privacyPolicyTranslations }).subscribe({
       next: (settings) => {
         this.savingPrivacyPolicySettings = false;
         this.applyPrivacyPolicySettings(settings);
-        this.snackBar.open('Privacy policy salvata', 'OK', { duration: 2400 });
+        this.snackBar.open(`${this.selectedLegalDocumentLabel} salvato`, 'OK', { duration: 2400 });
       },
       error: (error: { error?: { message?: string } }) => {
         this.savingPrivacyPolicySettings = false;
-        const message = error?.error?.message || 'Errore salvataggio privacy policy';
+        const message = error?.error?.message || 'Errore salvataggio documento legale';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -2284,41 +2372,86 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     this.capturePrivacyPolicyEditorContent();
+    const documentType = this.selectedLegalDocumentType;
+    const documentLabel = this.legalDocumentLabel(documentType);
+    const targetLanguages = this.contentLanguages.map((language) => language.code);
+    const overwrite = this.privacyPolicyTranslateOverwrite;
+    const runToken = ++this.legalDocumentTranslationRunToken;
+    let currentTargetLabel = '';
+    let completedLog: string[] = [];
+
     this.translatingPrivacyPolicy = true;
-    this.privacyPolicyTranslationUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
-    this.privacyPolicyTranslationLog = ['Salvataggio privacy italiana...'];
+    this.resetPrivacyPolicyTranslationProgress(targetLanguages.length);
+    this.privacyPolicyTranslationLog = [`Salvataggio ${documentLabel} in italiano...`];
 
     try {
-      const savedSettings = await firstValueFrom(this.auth.updatePrivacyPolicySettings({ translations: this.privacyPolicyTranslations }));
-      this.applyPrivacyPolicySettings(savedSettings);
-      this.privacyPolicyTranslationLog = ['Traduzione GPT in corso...'];
-      const response = await firstValueFrom(
-        this.auth.translatePrivacyPolicy({
-          sourceLanguage: 'it',
-          targetLanguages: this.contentLanguages.map((language) => language.code),
-          overwrite: this.privacyPolicyTranslateOverwrite
-        })
+      const savedSettings = await firstValueFrom(
+        this.auth.updateLegalDocumentSettings(documentType, { translations: this.privacyPolicyTranslations })
       );
+      if (runToken !== this.legalDocumentTranslationRunToken) {
+        return;
+      }
+      this.applyLegalDocumentTranslationSettings(savedSettings);
 
-      this.privacyPolicyTranslationUsage = response.usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
-      this.applyPrivacyPolicySettings(response.settings);
-      const translatedLabels = response.translatedLanguages.map((language) => this.privacyPolicyLanguageLabel(language)).join(', ');
-      const skippedLabels = response.skippedLanguages.map((language) => this.privacyPolicyLanguageLabel(language)).join(', ');
+      for (const targetLanguage of targetLanguages) {
+        if (runToken !== this.legalDocumentTranslationRunToken) {
+          return;
+        }
+
+        currentTargetLabel = this.privacyPolicyLanguageLabel(targetLanguage);
+        this.privacyPolicyTranslationLog = [`In corso: ${currentTargetLabel}`, ...completedLog].slice(0, 8);
+
+        const response = await firstValueFrom(
+          this.auth.translateLegalDocument(documentType, {
+            sourceLanguage: 'it',
+            targetLanguages: [targetLanguage],
+            overwrite
+          })
+        );
+        if (runToken !== this.legalDocumentTranslationRunToken) {
+          return;
+        }
+
+        this.addPrivacyPolicyTranslationUsage(response.usage);
+        this.applyLegalDocumentTranslationSettings(response.settings);
+        this.privacyPolicyTranslationProgressDone = Math.min(
+          this.privacyPolicyTranslationProgressTotal,
+          this.privacyPolicyTranslationProgressDone + 1
+        );
+
+        const status = response.translatedLanguages.includes(targetLanguage)
+          ? 'tradotto'
+          : response.skippedLanguages.includes(targetLanguage)
+            ? 'gia presente'
+            : 'nessuna modifica';
+        completedLog = [`${currentTargetLabel}: ${status}`, ...completedLog].slice(0, 8);
+        this.privacyPolicyTranslationLog = completedLog;
+      }
+
       this.privacyPolicyTranslationLog = [
-        translatedLabels ? `Tradotte: ${translatedLabels}` : 'Nessuna nuova lingua tradotta',
-        skippedLabels ? `Gia presenti: ${skippedLabels}` : ''
-      ].filter(Boolean);
-      this.snackBar.open('Traduzione privacy completata', 'OK', { duration: 2600 });
+        `Completato: ${this.privacyPolicyTranslationProgressDone} / ${this.privacyPolicyTranslationProgressTotal} lingue`,
+        ...completedLog
+      ].slice(0, 8);
+      this.snackBar.open('Traduzione documento completata', 'OK', { duration: 2600 });
     } catch (error) {
-      const message = this.dashboardErrorMessage(error, 'Traduzione privacy non riuscita');
-      this.privacyPolicyTranslationLog = [message];
+      if (runToken !== this.legalDocumentTranslationRunToken) {
+        return;
+      }
+      const message = this.dashboardErrorMessage(error, 'Traduzione documento non riuscita');
+      this.privacyPolicyTranslationLog = [currentTargetLabel ? `${currentTargetLabel}: ${message}` : message, ...completedLog].slice(0, 8);
       this.snackBar.open(message, 'Chiudi', { duration: 4500 });
     } finally {
-      this.translatingPrivacyPolicy = false;
+      if (runToken === this.legalDocumentTranslationRunToken) {
+        this.translatingPrivacyPolicy = false;
+      }
     }
   }
 
   selectPrivacyPolicyLanguage(language: PrivacyPolicyLanguage): void {
+    if (this.translatingPrivacyPolicy) {
+      return;
+    }
+
     if (language === this.privacyPolicySelectedLanguage) {
       return;
     }
@@ -2328,11 +2461,54 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.syncPrivacyPolicyEditor();
   }
 
+  selectLegalDocumentEditorMode(mode: LegalDocumentEditorMode): void {
+    if (this.translatingPrivacyPolicy) {
+      return;
+    }
+
+    if (mode === this.legalDocumentEditorMode) {
+      return;
+    }
+
+    this.capturePrivacyPolicyEditorContent();
+    this.legalDocumentEditorMode = mode;
+    this.syncPrivacyPolicyEditor();
+  }
+
+  selectLegalDocumentType(documentType: LegalDocumentType): void {
+    if (this.translatingPrivacyPolicy) {
+      return;
+    }
+
+    if (documentType === this.selectedLegalDocumentType) {
+      return;
+    }
+
+    this.capturePrivacyPolicyEditorContent();
+    this.persistCurrentLegalDocumentDraft();
+    this.selectedLegalDocumentType = documentType;
+    this.privacyPolicySelectedLanguage = 'it';
+    this.resetPrivacyPolicyTranslationProgress();
+    const settings = this.legalDocumentSettingsByType[documentType];
+    this.privacyPolicySettings = settings || null;
+    this.privacyPolicyTranslations = this.emptyPrivacyPolicyTranslations(settings?.translations);
+    this.syncPrivacyPolicyEditor();
+  }
+
   onPrivacyPolicyEditorInput(): void {
     this.capturePrivacyPolicyEditorContent();
   }
 
+  onPrivacyPolicyHtmlEditorInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement | null;
+    this.privacyPolicyTranslations[this.privacyPolicySelectedLanguage] = textarea?.value || '';
+  }
+
   formatPrivacyPolicyEditor(command: string, value?: string): void {
+    if (this.legalDocumentEditorMode !== 'visual') {
+      return;
+    }
+
     const editor = this.privacyPolicyEditor?.nativeElement;
     if (!editor) {
       return;
@@ -2350,7 +2526,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return;
     }
     if (file.size > this.maxPrivacyPolicyImportBytes) {
-      this.snackBar.open('File privacy troppo grande', 'Chiudi', { duration: 3200 });
+      this.snackBar.open('File documento troppo grande', 'Chiudi', { duration: 3200 });
       input.value = '';
       return;
     }
@@ -2369,7 +2545,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
         this.syncPrivacyPolicyEditor();
       })
       .catch((error: Error) => {
-        this.snackBar.open(error.message || 'Impossibile leggere il file privacy', 'Chiudi', { duration: 3500 });
+        this.snackBar.open(error.message || 'Impossibile leggere il file documento', 'Chiudi', { duration: 3500 });
       })
       .finally(() => {
         input.value = '';
@@ -3539,7 +3715,114 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     this.selectedPaymentsStructureId = String(structureId || '').trim();
+    this.clearPaymentSelection();
     this.loadPayments();
+  }
+
+  onPaymentsHiddenFilterChange(showHidden: boolean): void {
+    if (!this.canManageUsers) {
+      this.showHiddenPayments = false;
+      return;
+    }
+
+    this.showHiddenPayments = Boolean(showHidden);
+    this.clearPaymentSelection();
+    this.loadPayments();
+  }
+
+  canSelectPaymentForBulkAction(payment: DashboardPaymentRow): boolean {
+    return !payment.hidden;
+  }
+
+  isPaymentSelected(payment: DashboardPaymentRow): boolean {
+    return this.selectedPaymentIds.has(payment.id);
+  }
+
+  isPaymentSelectionDisabled(payment: DashboardPaymentRow): boolean {
+    return this.loadingPayments || this.hidingSelectedPayments || !this.canSelectPaymentForBulkAction(payment);
+  }
+
+  togglePaymentSelection(payment: DashboardPaymentRow, selected: boolean): void {
+    if (this.isPaymentSelectionDisabled(payment)) {
+      return;
+    }
+
+    const nextSelection = new Set(this.selectedPaymentIds);
+    if (selected) {
+      nextSelection.add(payment.id);
+    } else {
+      nextSelection.delete(payment.id);
+    }
+    this.selectedPaymentIds = nextSelection;
+  }
+
+  toggleAllPaymentSelection(selected: boolean): void {
+    if (this.loadingPayments || this.hidingSelectedPayments) {
+      return;
+    }
+
+    const nextSelection = new Set(this.selectedPaymentIds);
+    const selectablePayments = this.payments.filter((payment) => this.canSelectPaymentForBulkAction(payment));
+    if (selected) {
+      selectablePayments.forEach((payment) => nextSelection.add(payment.id));
+    } else {
+      selectablePayments.forEach((payment) => nextSelection.delete(payment.id));
+    }
+    this.selectedPaymentIds = nextSelection;
+  }
+
+  clearPaymentSelection(): void {
+    this.selectedPaymentIds = new Set<number>();
+  }
+
+  hideSelectedPayments(): void {
+    if (!this.canAccessDashboard || this.hidingSelectedPayments || !this.selectedPaymentsCount) {
+      return;
+    }
+
+    const paymentIds = this.payments
+      .filter((payment) => this.selectedPaymentIds.has(payment.id) && this.canSelectPaymentForBulkAction(payment))
+      .map((payment) => payment.id);
+
+    if (!paymentIds.length) {
+      this.clearPaymentSelection();
+      return;
+    }
+
+    const selectedLabel = paymentIds.length === 1 ? '1 pagamento' : `${paymentIds.length} pagamenti`;
+    const confirmed = window.confirm(
+      `Eliminare ${selectedLabel} dalla dashboard? Rimarranno nel database e i totali verranno ricalcolati.`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.hidingSelectedPayments = true;
+    this.auth.setPaymentsHidden(paymentIds, true).subscribe({
+      next: (response) => {
+        this.hidingSelectedPayments = false;
+        this.clearPaymentSelection();
+        this.loadPayments();
+        this.loadStructures();
+        this.loadUsers();
+        this.loadAssociatedUsers();
+        const updatedCount = Number(response?.updatedCount || paymentIds.length);
+        const message = updatedCount === 1 ? 'Pagamento eliminato dalla dashboard' : `${updatedCount} pagamenti eliminati dalla dashboard`;
+        this.snackBar.open(message, 'OK', { duration: 2400 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.hidingSelectedPayments = false;
+        const message = error?.error?.message || 'Errore eliminazione pagamenti';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  private syncSelectedPaymentsWithCurrentRows(): void {
+    const selectableIds = new Set(
+      this.payments.filter((payment) => this.canSelectPaymentForBulkAction(payment)).map((payment) => payment.id)
+    );
+    this.selectedPaymentIds = new Set([...this.selectedPaymentIds].filter((paymentId) => selectableIds.has(paymentId)));
   }
 
   registerStructure(): void {
@@ -4843,17 +5126,19 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.openAiTranslationSettings = null;
       this.openAiTranslationStatusRows = [];
       this.openAiTranslationSummary = null;
+      this.legalDocumentSettingsByType = {};
+      this.selectedLegalDocumentType = 'privacyPolicy';
       this.privacyPolicySettings = null;
       this.appCacheSettings = null;
       this.emailSettings = null;
       this.notificationSettings = null;
       this.privacyPolicyTranslations = this.emptyPrivacyPolicyTranslations();
       this.privacyPolicySelectedLanguage = 'it';
+      this.legalDocumentEditorMode = 'visual';
       this.privacyPolicyTranslateOverwrite = false;
       this.activeGlobalSettingsTab = 'privacyPolicy';
       this.activeGptTranslationsTab = 'texts';
-      this.privacyPolicyTranslationUsage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
-      this.privacyPolicyTranslationLog = [];
+      this.resetPrivacyPolicyTranslationProgress();
       this.selectedGptTranslationPoiId = '';
       this.resetGptTranslationProgress();
       this.resetGptAudioProgress();
@@ -4916,6 +5201,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.loadingStructures = false;
       this.loadingAssociatedUsers = false;
       this.loadingPayments = false;
+      this.showHiddenPayments = false;
+      this.clearPaymentSelection();
+      this.hidingSelectedPayments = false;
       this.loadingPartnerRequests = false;
       this.loadingPayPalSettings = false;
       this.loadingOpenAiTranslationSettings = false;
@@ -4936,6 +5224,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.cancelOpenAiVoicePreview();
       this.savingPrivacyPolicySettings = false;
       this.bumpingAppCacheVersion = false;
+      this.legalDocumentTranslationRunToken += 1;
       this.translatingPrivacyPolicy = false;
       this.bulkTranslatingPois = false;
       this.bulkGeneratingPoiAudios = false;
@@ -5434,10 +5723,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.loadDiscountCodes();
     }
     if (this.activeSection === 'partnerRequests' && this.canManageUsers) {
-      this.loadPartnerRequests();
-    }
-    if (this.activeSection === 'partnerEmails' && this.canManagePartnerEmails) {
-      this.loadPartnerEmailSettings(true);
+      this.ensurePartnerRequestsTabLoaded(true);
     }
     if (this.activeSection === 'payments') {
       this.loadPayments();
@@ -5481,7 +5767,13 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   private readStoredActiveSection(): DashboardSection {
     try {
-      const stored = localStorage.getItem(DASHBOARD_ACTIVE_SECTION_KEY) as DashboardSection | null;
+      const storedValue = localStorage.getItem(DASHBOARD_ACTIVE_SECTION_KEY);
+      if (storedValue === 'partnerEmails') {
+        this.activePartnerRequestsTab = 'emails';
+        return 'partnerRequests';
+      }
+
+      const stored = storedValue as DashboardSection | null;
       const isKnownSection =
         this.sections.some((section) => section.id === stored) ||
         this.managerSections.some((section) => section.id === stored);
@@ -5660,13 +5952,38 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return normalized || undefined;
   }
 
-  private applyPrivacyPolicySettings(settings: DashboardPrivacyPolicySettings): void {
+  private applyLegalDocumentSettingsResponse(response: DashboardLegalDocumentsSettingsResponse): void {
+    this.legalDocumentSettingsByType = { ...(response.documents || {}) };
+    const settings = this.legalDocumentSettingsByType[this.selectedLegalDocumentType];
+    if (settings) {
+      this.applyPrivacyPolicySettings(settings);
+      return;
+    }
+
+    this.privacyPolicySettings = null;
+    this.privacyPolicyTranslations = this.emptyPrivacyPolicyTranslations();
+    this.syncPrivacyPolicyEditor();
+  }
+
+  private applyPrivacyPolicySettings(settings: DashboardLegalDocumentSettings): void {
     this.privacyPolicySettings = settings;
+    this.legalDocumentSettingsByType[settings.type] = settings;
     this.privacyPolicyTranslations = this.emptyPrivacyPolicyTranslations(settings.translations);
     this.syncPrivacyPolicyEditor();
   }
 
+  private applyLegalDocumentTranslationSettings(settings: DashboardLegalDocumentSettings): void {
+    this.legalDocumentSettingsByType[settings.type] = settings;
+    if (settings.type === this.selectedLegalDocumentType) {
+      this.applyPrivacyPolicySettings(settings);
+    }
+  }
+
   private syncPrivacyPolicyEditor(): void {
+    if (this.legalDocumentEditorMode !== 'visual') {
+      return;
+    }
+
     window.setTimeout(() => {
       const editor = this.privacyPolicyEditor?.nativeElement;
       if (!editor) {
@@ -5678,6 +5995,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   private capturePrivacyPolicyEditorContent(): void {
+    if (this.legalDocumentEditorMode === 'html') {
+      const textarea = this.privacyPolicyHtmlEditor?.nativeElement;
+      if (textarea) {
+        this.privacyPolicyTranslations[this.privacyPolicySelectedLanguage] = textarea.value.trim();
+      }
+      return;
+    }
+
     const editor = this.privacyPolicyEditor?.nativeElement;
     if (!editor) {
       return;
@@ -5698,6 +6023,20 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   private privacyPolicyLanguageLabel(language: PrivacyPolicyLanguage): string {
     return this.privacyPolicyLanguages.find((item) => item.code === language)?.label || language.toUpperCase();
+  }
+
+  private legalDocumentLabel(documentType: LegalDocumentType): string {
+    return this.legalDocumentTabs.find((item) => item.type === documentType)?.label || documentType;
+  }
+
+  private persistCurrentLegalDocumentDraft(): void {
+    const existing = this.legalDocumentSettingsByType[this.selectedLegalDocumentType];
+    this.legalDocumentSettingsByType[this.selectedLegalDocumentType] = {
+      type: this.selectedLegalDocumentType,
+      translations: { ...this.privacyPolicyTranslations },
+      updatedAt: existing?.updatedAt || null,
+      updatedBy: existing?.updatedBy || null
+    };
   }
 
   private plainTextToPrivacyHtml(value: string): string {
@@ -5784,6 +6123,17 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.gptTranslationLog = [];
   }
 
+  private resetPrivacyPolicyTranslationProgress(total = 0): void {
+    this.privacyPolicyTranslationProgressTotal = total;
+    this.privacyPolicyTranslationProgressDone = 0;
+    this.privacyPolicyTranslationUsage = {
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0
+    };
+    this.privacyPolicyTranslationLog = [];
+  }
+
   private resetGptAudioProgress(total = 0): void {
     this.gptAudioProgressTotal = total;
     this.gptAudioProgressDone = 0;
@@ -5860,6 +6210,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       inputTokens: this.gptTranslationUsage.inputTokens + Number(usage?.inputTokens || 0),
       outputTokens: this.gptTranslationUsage.outputTokens + Number(usage?.outputTokens || 0),
       totalTokens: this.gptTranslationUsage.totalTokens + Number(usage?.totalTokens || 0)
+    };
+  }
+
+  private addPrivacyPolicyTranslationUsage(usage: OpenAiTranslationUsage | null | undefined): void {
+    this.privacyPolicyTranslationUsage = {
+      inputTokens: this.privacyPolicyTranslationUsage.inputTokens + Number(usage?.inputTokens || 0),
+      outputTokens: this.privacyPolicyTranslationUsage.outputTokens + Number(usage?.outputTokens || 0),
+      totalTokens: this.privacyPolicyTranslationUsage.totalTokens + Number(usage?.totalTokens || 0)
     };
   }
 

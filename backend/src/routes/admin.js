@@ -60,6 +60,16 @@ const publicImagesRootDir = path.resolve(__dirname, '../../public/images');
 const privacyPolicyLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
 const privacyPolicyTargetLanguages = ['en', 'fr', 'es', 'de', 'pl'];
 const privacyPolicyHtmlMaxLength = 120000;
+const legalDocumentTypes = ['privacyPolicy', 'cookiePolicy', 'termsConditions'];
+const legalDocumentDbTypes = {
+  cookiePolicy: 'cookie_policy',
+  termsConditions: 'terms_conditions'
+};
+const legalDocumentAdminLabels = {
+  privacyPolicy: 'privacy policy',
+  cookiePolicy: 'cookie policy',
+  termsConditions: 'termini e condizioni'
+};
 const dashboardRoleSchema = z.enum(['admin', 'facility_manager', 'user']);
 const inviteRoleSchema = z.enum(['admin', 'facility_manager']);
 
@@ -244,7 +254,19 @@ const passwordResetRequestSchema = z.object({
 });
 
 const paymentsQuerySchema = z.object({
-  structureId: z.string().trim().min(1).optional()
+  structureId: z.string().trim().min(1).optional(),
+  includeHidden: z.preprocess((value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+  }, z.boolean()).optional()
+});
+
+const paymentHiddenUpdateSchema = z.object({
+  hidden: z.boolean()
+});
+
+const paymentsHiddenBulkUpdateSchema = paymentHiddenUpdateSchema.extend({
+  paymentIds: z.array(z.coerce.number().int().positive()).min(1).max(500)
 });
 
 const paypalSettingsSchema = z.object({
@@ -319,6 +341,12 @@ const privacyPolicyTranslateSchema = z.object({
   targetLanguages: z.array(openAiTranslationTargetLanguageSchema).optional().default(privacyPolicyTargetLanguages),
   overwrite: z.boolean().optional().default(false)
 });
+const legalDocumentTypeSchema = z.enum(legalDocumentTypes);
+const legalDocumentParamsSchema = z.object({
+  documentType: legalDocumentTypeSchema
+});
+const legalDocumentSettingsSchema = privacyPolicySettingsSchema;
+const legalDocumentTranslateSchema = privacyPolicyTranslateSchema;
 const notificationRecipientsSchema = z.preprocess(
   (value) => normalizeNotificationRecipients(value),
   z.array(z.string().email('Email destinatario non valida')).max(50, 'Massimo 50 destinatari')
@@ -1058,6 +1086,15 @@ function mapPartnerEmailSettingsForResponse(row) {
 
 function mapPrivacyPolicySettingsForResponse(row) {
   return {
+    translations: sanitizePrivacyPolicyTranslations(row?.translations),
+    updatedAt: row?.updated_at || null,
+    updatedBy: row?.updated_by || null
+  };
+}
+
+function mapLegalDocumentSettingsForResponse(documentType, row) {
+  return {
+    type: documentType,
     translations: sanitizePrivacyPolicyTranslations(row?.translations),
     updatedAt: row?.updated_at || null,
     updatedBy: row?.updated_by || null
@@ -1903,6 +1940,94 @@ async function getPrivacyPolicySettings(client = pool) {
   return inserted.rows[0];
 }
 
+async function getLegalDocumentSettings(documentType, client = pool) {
+  if (documentType === 'privacyPolicy') {
+    return getPrivacyPolicySettings(client);
+  }
+
+  const documentDbType = legalDocumentDbTypes[documentType];
+  const result = await client.query(
+    `
+      SELECT document_type, translations, updated_at, updated_by
+      FROM dashboard_legal_document_settings
+      WHERE document_type = $1
+      LIMIT 1
+    `,
+    [documentDbType]
+  );
+
+  if (result.rowCount) {
+    return result.rows[0];
+  }
+
+  const inserted = await client.query(
+    `
+      INSERT INTO dashboard_legal_document_settings (document_type, translations)
+      VALUES ($1, '{}'::jsonb)
+      ON CONFLICT (document_type) DO UPDATE SET
+        translations = COALESCE(dashboard_legal_document_settings.translations, EXCLUDED.translations)
+      RETURNING document_type, translations, updated_at, updated_by
+    `,
+    [documentDbType]
+  );
+
+  return inserted.rows[0];
+}
+
+async function getAllLegalDocumentSettings(client = pool) {
+  const documents = {};
+  for (const documentType of legalDocumentTypes) {
+    const row = await getLegalDocumentSettings(documentType, client);
+    documents[documentType] = mapLegalDocumentSettingsForResponse(documentType, row);
+  }
+  return documents;
+}
+
+async function saveLegalDocumentSettings(documentType, translations, updatedBy, client = pool) {
+  if (documentType === 'privacyPolicy') {
+    const saved = await client.query(
+      `
+        INSERT INTO dashboard_privacy_policy_settings (
+          id,
+          translations,
+          updated_by,
+          updated_at
+        )
+        VALUES (1, $1::jsonb, $2, NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          translations = EXCLUDED.translations,
+          updated_by = EXCLUDED.updated_by,
+          updated_at = NOW()
+        RETURNING id, translations, updated_at, updated_by
+      `,
+      [JSON.stringify(translations), updatedBy]
+    );
+
+    return saved.rows[0];
+  }
+
+  const documentDbType = legalDocumentDbTypes[documentType];
+  const saved = await client.query(
+    `
+      INSERT INTO dashboard_legal_document_settings (
+        document_type,
+        translations,
+        updated_by,
+        updated_at
+      )
+      VALUES ($1, $2::jsonb, $3, NOW())
+      ON CONFLICT (document_type) DO UPDATE SET
+        translations = EXCLUDED.translations,
+        updated_by = EXCLUDED.updated_by,
+        updated_at = NOW()
+      RETURNING document_type, translations, updated_at, updated_by
+    `,
+    [documentDbType, JSON.stringify(translations), updatedBy]
+  );
+
+  return saved.rows[0];
+}
+
 async function getAppCacheSettings(client = pool) {
   const result = await client.query(
     `
@@ -2021,12 +2146,14 @@ router.get('/structures', requireAuth, requireAdmin, async (_req, res, next) => 
               SELECT p.user_id
               FROM purchases p
               WHERE p.structure_id = s.id
+                AND p.hidden = 0
             ) linked_users
           ) AS users_count,
           (
             SELECT COALESCE(SUM(p.structure_earning_amount), 0)::NUMERIC
             FROM purchases p
             WHERE p.structure_id = s.id
+              AND p.hidden = 0
           ) AS total_structure_earnings
         FROM dashboard_structures s
         WHERE s.deleted = 0
@@ -2258,6 +2385,7 @@ router.patch('/structures/:structureId', requireAuth, requireAdmin, async (req, 
           SELECT p.user_id
           FROM purchases p
           WHERE p.structure_id = $1
+            AND p.hidden = 0
         ) linked_users
       `,
       [structureId]
@@ -2267,6 +2395,7 @@ router.patch('/structures/:structureId', requireAuth, requireAdmin, async (req, 
         SELECT COALESCE(SUM(structure_earning_amount), 0)::NUMERIC AS total_structure_earnings
         FROM purchases
         WHERE structure_id = $1
+          AND hidden = 0
       `,
       [structureId]
     );
@@ -2357,6 +2486,7 @@ router.patch('/structures/:structureId/discounts', requireAuth, requireAdmin, as
           SELECT p.user_id
           FROM purchases p
           WHERE p.structure_id = $1
+            AND p.hidden = 0
         ) linked_users
       `,
       [structureId]
@@ -2366,6 +2496,7 @@ router.patch('/structures/:structureId/discounts', requireAuth, requireAdmin, as
         SELECT COALESCE(SUM(structure_earning_amount), 0)::NUMERIC AS total_structure_earnings
         FROM purchases
         WHERE structure_id = $1
+          AND hidden = 0
       `,
       [structureId]
     );
@@ -3065,6 +3196,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
           WHERE u.id IS NULL
             AND l.user_id IS NULL
             AND p.structure_id IS NOT NULL
+            AND p.hidden = 0
           ORDER BY p.user_id, p.purchased_at DESC, p.id DESC
         ),
         app_rows AS (
@@ -3254,6 +3386,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
           JOIN cities c ON c.id = p.city_id
           WHERE p.type = 'bundle'
             AND p.city_id IS NOT NULL
+            AND p.hidden = 0
           GROUP BY p.user_id, c.id, c.name
         ),
         poi_unlocks AS (
@@ -3270,6 +3403,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res, next) => {
           JOIN cities c ON c.id = poi.city_id
           WHERE p.type = 'single'
             AND p.poi_id IS NOT NULL
+            AND p.hidden = 0
           GROUP BY p.user_id, poi.id, poi.name, poi.city_id, c.name
         )
         SELECT
@@ -3423,6 +3557,7 @@ router.get('/associated-users', requireAuth, async (req, res, next) => {
             p.purchased_at AS updated_at
           FROM purchases p
           WHERE p.structure_id IS NOT NULL
+            AND p.hidden = 0
         ),
         all_events AS (
           SELECT * FROM link_events
@@ -3477,6 +3612,7 @@ router.get('/associated-users', requireAuth, async (req, res, next) => {
           FROM purchases p
           WHERE p.user_id = usp.user_id
             AND p.structure_id = usp.structure_id
+            AND p.hidden = 0
         ) payments ON TRUE
         LEFT JOIN LATERAL (
           SELECT MAX(u.used_at) AS last_used_at
@@ -3800,6 +3936,53 @@ router.put('/privacy-policy', requireAuth, requireAdmin, async (req, res, next) 
   }
 });
 
+router.get('/legal-documents', requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    const documents = await getAllLegalDocumentSettings();
+    return res.json({ documents });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/legal-documents/:documentType', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsedParams = legalDocumentParamsSchema.safeParse(req.params || {});
+  if (!parsedParams.success) {
+    return res.status(400).json({ message: 'Documento legale non valido', errors: parsedParams.error.flatten() });
+  }
+
+  const documentType = parsedParams.data.documentType;
+
+  try {
+    const settings = await getLegalDocumentSettings(documentType);
+    return res.json(mapLegalDocumentSettingsForResponse(documentType, settings));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/legal-documents/:documentType', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsedParams = legalDocumentParamsSchema.safeParse(req.params || {});
+  if (!parsedParams.success) {
+    return res.status(400).json({ message: 'Documento legale non valido', errors: parsedParams.error.flatten() });
+  }
+
+  const parsedBody = legalDocumentSettingsSchema.safeParse(req.body || {});
+  if (!parsedBody.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsedBody.error.flatten() });
+  }
+
+  const documentType = parsedParams.data.documentType;
+  const translations = sanitizePrivacyPolicyTranslations(parsedBody.data.translations);
+
+  try {
+    const saved = await saveLegalDocumentSettings(documentType, translations, req.authSession.user.id);
+    return res.json(mapLegalDocumentSettingsForResponse(documentType, saved));
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get('/app-cache-settings', requireAuth, requireAdmin, async (_req, res, next) => {
   try {
     const settings = await getAppCacheSettings();
@@ -4010,6 +4193,74 @@ router.post('/privacy-policy/translate', requireAuth, requireAdmin, async (req, 
 
     return res.json({
       settings: mapPrivacyPolicySettingsForResponse(saved.rows[0] || { translations }),
+      translatedLanguages,
+      skippedLanguages,
+      usage
+    });
+  } catch (error) {
+    if (error instanceof OpenAITranslationError) {
+      const status = error.status === 429 ? 429 : error.status === 400 ? 400 : 502;
+      return res.status(status).json({ message: error.message });
+    }
+    return next(error);
+  }
+});
+
+router.post('/legal-documents/:documentType/translate', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsedParams = legalDocumentParamsSchema.safeParse(req.params || {});
+  if (!parsedParams.success) {
+    return res.status(400).json({ message: 'Documento legale non valido', errors: parsedParams.error.flatten() });
+  }
+
+  const parsedBody = legalDocumentTranslateSchema.safeParse(req.body || {});
+  if (!parsedBody.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsedBody.error.flatten() });
+  }
+
+  const documentType = parsedParams.data.documentType;
+  const payload = parsedBody.data;
+  const uniqueTargetLanguages = Array.from(new Set(payload.targetLanguages)).filter((language) =>
+    privacyPolicyTargetLanguages.includes(language)
+  );
+
+  try {
+    const settings = await getOpenAiTranslationSettings();
+    const legalDocumentSettings = await getLegalDocumentSettings(documentType);
+    const translations = sanitizePrivacyPolicyTranslations(legalDocumentSettings.translations);
+    const sourceHtml = translations[payload.sourceLanguage] || '';
+    if (!sourceHtml) {
+      return res.status(400).json({ message: `Carica prima ${legalDocumentAdminLabels[documentType]} in italiano.` });
+    }
+
+    const translatedLanguages = [];
+    const skippedLanguages = [];
+    const usage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+
+    for (const targetLanguage of uniqueTargetLanguages) {
+      if (!payload.overwrite && translations[targetLanguage]) {
+        skippedLanguages.push(targetLanguage);
+        continue;
+      }
+
+      const result = await translateHtmlWithOpenAI({
+        apiKey: settings.api_key,
+        model: settings.model,
+        sourceLanguage: 'italiano',
+        targetLanguage,
+        html: sourceHtml
+      });
+
+      translations[targetLanguage] = normalizePrivacyPolicyHtml(result.html);
+      translatedLanguages.push(targetLanguage);
+      usage.inputTokens += Number(result.usage?.inputTokens || 0);
+      usage.outputTokens += Number(result.usage?.outputTokens || 0);
+      usage.totalTokens += Number(result.usage?.totalTokens || 0);
+    }
+
+    const saved = await saveLegalDocumentSettings(documentType, translations, req.authSession.user.id);
+
+    return res.json({
+      settings: mapLegalDocumentSettingsForResponse(documentType, saved),
       translatedLanguages,
       skippedLanguages,
       usage
@@ -4369,7 +4620,10 @@ router.get('/payments', requireAuth, async (req, res, next) => {
     return res.status(403).json({ message: 'Forbidden' });
   }
 
-  const parsed = paymentsQuerySchema.safeParse({ structureId: String(req.query.structureId || '').trim() || undefined });
+  const parsed = paymentsQuerySchema.safeParse({
+    structureId: String(req.query.structureId || '').trim() || undefined,
+    includeHidden: req.query.includeHidden
+  });
   if (!parsed.success) {
     return res.status(400).json({ message: 'Query non valida', errors: parsed.error.flatten() });
   }
@@ -4377,6 +4631,7 @@ router.get('/payments', requireAuth, async (req, res, next) => {
   const managerStructureId = req.authSession?.user?.structureId || null;
   const requestedStructureId = parsed.data.structureId || null;
   const structureIdFilter = role === 'facility_manager' ? managerStructureId : requestedStructureId;
+  const includeHidden = role === 'admin' && Boolean(parsed.data.includeHidden);
 
   if (role === 'facility_manager' && !structureIdFilter) {
     return res.json({
@@ -4391,11 +4646,15 @@ router.get('/payments', requireAuth, async (req, res, next) => {
   }
 
   const queryParams = [];
-  let whereSql = '';
+  const whereParts = [];
   if (structureIdFilter) {
     queryParams.push(structureIdFilter);
-    whereSql = 'WHERE p.structure_id = $1';
+    whereParts.push(`p.structure_id = $${queryParams.length}`);
   }
+  if (!includeHidden) {
+    whereParts.push('p.hidden = 0');
+  }
+  const whereSql = whereParts.length ? `WHERE ${whereParts.join(' AND ')}` : '';
 
   try {
     const result = await pool.query(
@@ -4431,6 +4690,7 @@ router.get('/payments', requireAuth, async (req, res, next) => {
           p.payer_country_code,
           p.payer_phone,
           p.payer_address,
+          p.hidden,
           p.purchased_at
         FROM purchases p
         LEFT JOIN cities c ON c.id = p.city_id
@@ -4482,6 +4742,7 @@ router.get('/payments', requireAuth, async (req, res, next) => {
         paymentOrderId: row.payment_order_id || null,
         paymentCaptureId: row.payment_capture_id || null,
         paymentEnvironment: row.payment_environment || null,
+        hidden: Number(row.hidden || 0) === 1,
         purchasedAt: row.purchased_at
       };
     });
@@ -4509,6 +4770,107 @@ router.get('/payments', requireAuth, async (req, res, next) => {
     return res.json({
       summary,
       items
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch('/payments/hidden', requireAuth, async (req, res, next) => {
+  const role = req.authSession?.user?.role;
+  if (!canViewPayments(role)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  const parsed = paymentsHiddenBulkUpdateSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const paymentIds = Array.from(new Set(parsed.data.paymentIds));
+  const managerStructureId = req.authSession?.user?.structureId || null;
+  if (role === 'facility_manager' && !managerStructureId) {
+    return res.status(403).json({ message: 'Gestore senza struttura assegnata' });
+  }
+
+  const params = [parsed.data.hidden ? 1 : 0, paymentIds];
+  const structureFilter = role === 'facility_manager' ? 'AND structure_id = $3' : '';
+  if (role === 'facility_manager') {
+    params.push(managerStructureId);
+  }
+
+  try {
+    const updated = await pool.query(
+      `
+        UPDATE purchases
+        SET hidden = $1
+        WHERE id = ANY($2::BIGINT[])
+          ${structureFilter}
+        RETURNING id, hidden
+      `,
+      params
+    );
+
+    if (!updated.rowCount) {
+      return res.status(404).json({ message: 'Nessun pagamento trovato' });
+    }
+
+    return res.json({
+      paymentIds: updated.rows.map((row) => Number(row.id)),
+      hidden: parsed.data.hidden,
+      updatedCount: updated.rowCount
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch('/payments/:paymentId/hidden', requireAuth, async (req, res, next) => {
+  const role = req.authSession?.user?.role;
+  if (!canViewPayments(role)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  const paymentId = Number(req.params.paymentId);
+  if (!Number.isInteger(paymentId) || paymentId <= 0) {
+    return res.status(400).json({ message: 'Pagamento non valido' });
+  }
+
+  const parsed = paymentHiddenUpdateSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const managerStructureId = req.authSession?.user?.structureId || null;
+  if (role === 'facility_manager' && !managerStructureId) {
+    return res.status(403).json({ message: 'Gestore senza struttura assegnata' });
+  }
+
+  const params = [parsed.data.hidden ? 1 : 0, paymentId];
+  const structureFilter = role === 'facility_manager' ? 'AND structure_id = $3' : '';
+  if (role === 'facility_manager') {
+    params.push(managerStructureId);
+  }
+
+  try {
+    const updated = await pool.query(
+      `
+        UPDATE purchases
+        SET hidden = $1
+        WHERE id = $2
+          ${structureFilter}
+        RETURNING id, hidden
+      `,
+      params
+    );
+
+    if (!updated.rowCount) {
+      return res.status(404).json({ message: 'Pagamento non trovato' });
+    }
+
+    return res.json({
+      paymentId: Number(updated.rows[0].id),
+      hidden: Number(updated.rows[0].hidden || 0) === 1
     });
   } catch (error) {
     return next(error);

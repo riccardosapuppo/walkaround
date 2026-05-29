@@ -309,11 +309,20 @@ export interface OpenAiGeneratePoiAudioResponse {
 }
 
 export type PrivacyPolicyTranslations = Partial<Record<AppLanguage, string>>;
+export type LegalDocumentType = 'privacyPolicy' | 'cookiePolicy' | 'termsConditions';
 
 export interface DashboardPrivacyPolicySettings {
   translations: PrivacyPolicyTranslations;
   updatedAt: string | null;
   updatedBy: string | null;
+}
+
+export interface DashboardLegalDocumentSettings extends DashboardPrivacyPolicySettings {
+  type: LegalDocumentType;
+}
+
+export interface DashboardLegalDocumentsSettingsResponse {
+  documents: Record<LegalDocumentType, DashboardLegalDocumentSettings>;
 }
 
 export interface DashboardAppCacheSettings {
@@ -386,6 +395,10 @@ export interface PrivacyPolicyTranslationResponse {
   usage: OpenAiTranslationUsage;
 }
 
+export interface LegalDocumentTranslationResponse extends Omit<PrivacyPolicyTranslationResponse, 'settings'> {
+  settings: DashboardLegalDocumentSettings;
+}
+
 export interface CatalogMediaTarget {
   cityId?: string;
   cityName?: string;
@@ -438,6 +451,7 @@ export interface DashboardPaymentRow {
   inviteCode: string | null;
   structureFixedAmount: number;
   structureEarningAmount: number;
+  hidden: boolean;
   purchasedAt: string;
 }
 
@@ -1182,16 +1196,49 @@ export class AdminAuthService {
     });
   }
 
-  listPayments(structureId?: string): Observable<DashboardPaymentsResponse> {
+  listPayments(structureId?: string, includeHidden = false): Observable<DashboardPaymentsResponse> {
     const token = this.sessionSubject.value?.token;
     if (!token) {
       return throwError(() => new Error('Sessione dashboard non valida'));
     }
 
-    const query = structureId ? `?structureId=${encodeURIComponent(structureId)}` : '';
+    const params = new URLSearchParams();
+    if (structureId) {
+      params.set('structureId', structureId);
+    }
+    if (includeHidden) {
+      params.set('includeHidden', '1');
+    }
+    const query = params.toString() ? `?${params.toString()}` : '';
     return this.http.get<DashboardPaymentsResponse>(`${environment.apiBaseUrl}/admin/payments${query}`, {
       headers: this.authHeaders(token)
     });
+  }
+
+  setPaymentHidden(paymentId: number, hidden: boolean): Observable<{ paymentId: number; hidden: boolean }> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.patch<{ paymentId: number; hidden: boolean }>(
+      `${environment.apiBaseUrl}/admin/payments/${encodeURIComponent(String(paymentId))}/hidden`,
+      { hidden },
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  setPaymentsHidden(paymentIds: number[], hidden: boolean): Observable<{ paymentIds: number[]; hidden: boolean; updatedCount: number }> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.patch<{ paymentIds: number[]; hidden: boolean; updatedCount: number }>(
+      `${environment.apiBaseUrl}/admin/payments/hidden`,
+      { paymentIds, hidden },
+      { headers: this.authHeaders(token) }
+    );
   }
 
   getPayPalSettings(): Observable<DashboardPayPalSettings> {
@@ -1279,6 +1326,49 @@ export class AdminAuthService {
 
     return this.http.post<PrivacyPolicyTranslationResponse>(
       `${environment.apiBaseUrl}/admin/privacy-policy/translate`,
+      payload,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  getLegalDocumentSettings(): Observable<DashboardLegalDocumentsSettingsResponse> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.get<DashboardLegalDocumentsSettingsResponse>(`${environment.apiBaseUrl}/admin/legal-documents`, {
+      headers: this.authHeaders(token)
+    });
+  }
+
+  updateLegalDocumentSettings(
+    documentType: LegalDocumentType,
+    payload: PrivacyPolicySettingsInput
+  ): Observable<DashboardLegalDocumentSettings> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.put<DashboardLegalDocumentSettings>(
+      `${environment.apiBaseUrl}/admin/legal-documents/${encodeURIComponent(documentType)}`,
+      payload,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  translateLegalDocument(
+    documentType: LegalDocumentType,
+    payload: PrivacyPolicyTranslationInput
+  ): Observable<LegalDocumentTranslationResponse> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<LegalDocumentTranslationResponse>(
+      `${environment.apiBaseUrl}/admin/legal-documents/${encodeURIComponent(documentType)}/translate`,
       payload,
       { headers: this.authHeaders(token) }
     );

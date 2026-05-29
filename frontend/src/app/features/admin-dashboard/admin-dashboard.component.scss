@@ -347,6 +347,10 @@
   margin-bottom: 0;
 }
 
+.legal-document-tabs {
+  margin: 0 0 14px;
+}
+
 .privacy-policy-toolbar {
   display: grid;
   gap: 12px;
@@ -363,6 +367,12 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
+}
+
+.legal-editor-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .privacy-language-dot {
@@ -428,6 +438,16 @@
   color: #7b8ba3;
 }
 
+.privacy-policy-html-editor {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 0.92rem;
+  white-space: pre;
+}
+
 .privacy-policy-editor h1,
 .privacy-policy-editor h2,
 .privacy-policy-editor h3 {
@@ -490,9 +510,30 @@
   display: grid;
   justify-items: center;
   gap: 7px;
+  width: 100%;
   padding: 2px 6px 16px;
+  border: 0;
   border-bottom: 1px solid rgba(168, 189, 235, 0.22);
+  background: transparent;
+  cursor: pointer;
   text-align: center;
+}
+
+.brand-home-link {
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+}
+
+.brand-home-link:hover {
+  background: rgba(202, 221, 255, 0.1);
+  border-radius: 14px;
+}
+
+.brand-home-link:focus-visible {
+  outline: 2px solid rgba(127, 210, 255, 0.9);
+  outline-offset: 3px;
+  border-radius: 14px;
 }
 
 .brand-logo {
@@ -1260,8 +1301,29 @@
 }
 
 .payments-table {
-  min-width: 860px;
+  min-width: 940px;
   table-layout: fixed;
+}
+
+.payments-table-wrap {
+  position: relative;
+}
+
+.selectable-payments-table .payment-select-cell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 52px;
+  min-width: 52px;
+  max-width: 52px;
+  text-align: center;
+  background: #f4f8ff;
+  box-shadow: 1px 0 0 #e1e8f7;
+}
+
+.selectable-payments-table td.payment-select-cell {
+  z-index: 1;
+  background: #fff;
 }
 
 .payments-table .payment-user-cell {
@@ -1286,6 +1348,10 @@
 
 .payments-table td {
   overflow-wrap: anywhere;
+}
+
+.payments-table .mat-mdc-checkbox {
+  --mdc-checkbox-state-layer-size: 36px;
 }
 
 .payments-table .payment-user-cell small,
@@ -1317,6 +1383,97 @@
   color: #196a3a;
   background: #e9f8ef;
   border-color: #bde5cc;
+}
+
+.payment-hidden-row {
+  background: #f8fafc;
+  color: #6b7280;
+}
+
+.payment-hidden-row td.payment-select-cell {
+  background: #f8fafc;
+}
+
+.payment-selected-row {
+  background: #f3f8ff;
+}
+
+.payment-selected-row td {
+  border-bottom-color: #d7e6fb;
+}
+
+.payment-selected-row td.payment-select-cell {
+  background: #f3f8ff;
+}
+
+.payment-hidden-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 4px;
+  border-radius: 999px;
+  border: 1px solid #d6dce8;
+  background: #edf1f6;
+  color: #4b5565;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.payment-bulk-bar {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: min(760px, calc(100vw - 32px));
+  border: 1px solid #d5e0f0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 38px rgba(23, 43, 77, 0.14);
+  padding: 10px 12px 10px 16px;
+  backdrop-filter: blur(10px);
+}
+
+.payment-bulk-spacer {
+  height: 78px;
+}
+
+.payment-bulk-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #213459;
+}
+
+.payment-bulk-summary strong {
+  font-size: 1.18rem;
+}
+
+.payment-bulk-summary span {
+  color: #5f718f;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.payment-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-bulk-actions button {
+  min-height: 38px;
+}
+
+.payment-bulk-actions mat-icon {
+  margin-right: 6px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .catalog-stack {
@@ -1970,6 +2127,17 @@ code {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .payment-bulk-bar {
+    width: 100%;
+    max-width: calc(100vw - 28px);
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .payment-bulk-actions {
+    justify-content: flex-end;
   }
 
   .toggle-panel-btn {

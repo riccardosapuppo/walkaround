@@ -172,6 +172,7 @@ async function createSchema(client) {
       invite_code TEXT,
       structure_fixed_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
       structure_earning_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+      hidden SMALLINT NOT NULL DEFAULT 0,
       purchased_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -680,6 +681,18 @@ async function createSchema(client) {
     ALTER TABLE purchases
     ADD COLUMN IF NOT EXISTS payer_address TEXT;
   `);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD COLUMN IF NOT EXISTS hidden SMALLINT;
+  `);
+  await client.query(`UPDATE purchases SET hidden = 0 WHERE hidden IS NULL;`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN hidden SET DEFAULT 0;`);
+  await client.query(`ALTER TABLE purchases ALTER COLUMN hidden SET NOT NULL;`);
+  await client.query(`ALTER TABLE purchases DROP CONSTRAINT IF EXISTS purchases_hidden_check;`);
+  await client.query(`
+    ALTER TABLE purchases
+    ADD CONSTRAINT purchases_hidden_check CHECK (hidden IN (0, 1));
+  `);
   await client.query(`UPDATE purchases SET base_amount = amount WHERE base_amount IS NULL;`);
   await client.query(`UPDATE purchases SET discount_percent = 0 WHERE discount_percent IS NULL;`);
   await client.query(`UPDATE purchases SET discount_amount = 0 WHERE discount_amount IS NULL;`);
@@ -1169,6 +1182,36 @@ async function createSchema(client) {
   `);
 
   await client.query(`
+    CREATE TABLE IF NOT EXISTS dashboard_legal_document_settings (
+      document_type TEXT PRIMARY KEY,
+      translations JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_by TEXT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await client.query(`
+    DELETE FROM dashboard_legal_document_settings
+    WHERE document_type = 'gdpr_policy';
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_legal_document_settings
+    DROP CONSTRAINT IF EXISTS dashboard_legal_document_settings_type_check;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_legal_document_settings
+    ADD CONSTRAINT dashboard_legal_document_settings_type_check
+    CHECK (document_type IN ('cookie_policy', 'terms_conditions'));
+  `);
+  await client.query(`
+    INSERT INTO dashboard_legal_document_settings (document_type, translations)
+    VALUES
+      ('cookie_policy', '{}'::jsonb),
+      ('terms_conditions', '{}'::jsonb)
+    ON CONFLICT (document_type) DO NOTHING;
+  `);
+
+  await client.query(`
     CREATE TABLE IF NOT EXISTS dashboard_invites (
       id BIGSERIAL PRIMARY KEY,
       email TEXT NOT NULL,
@@ -1432,6 +1475,7 @@ async function createSchema(client) {
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_poi_id ON purchases(poi_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_structure_id ON purchases(structure_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_payment_order_id ON purchases(payment_order_id);`);
+  await client.query(`CREATE INDEX IF NOT EXISTS idx_purchases_hidden ON purchases(hidden);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_invites_user_id ON dashboard_invites(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_invites_expires_at ON dashboard_invites(expires_at);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_dashboard_password_resets_user_id ON dashboard_password_resets(user_id);`);
@@ -1475,6 +1519,9 @@ async function createSchema(client) {
   );
   await client.query(
     `CREATE INDEX IF NOT EXISTS idx_dashboard_privacy_policy_settings_updated_by ON dashboard_privacy_policy_settings(updated_by);`
+  );
+  await client.query(
+    `CREATE INDEX IF NOT EXISTS idx_dashboard_legal_document_settings_updated_by ON dashboard_legal_document_settings(updated_by);`
   );
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_user_id ON paypal_checkout_orders(user_id);`);
   await client.query(`CREATE INDEX IF NOT EXISTS idx_paypal_checkout_orders_status ON paypal_checkout_orders(status);`);

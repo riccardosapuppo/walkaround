@@ -2,3 +2,40 @@
 @if (showBottomNav$ | async) {
   <app-bottom-nav></app-bottom-nav>
 }
+@if (showCookieBanner) {
+  <section class="cookie-banner" role="dialog" aria-live="polite" [attr.aria-label]="'cookieBanner.title' | t">
+    <div class="cookie-banner-copy">
+      <strong>{{ 'cookieBanner.title' | t }}</strong>
+      <p>{{ 'cookieBanner.message' | t }}</p>
+      <button mat-button color="primary" type="button" (click)="openLegalDocumentDialog('cookiePolicy')">
+        {{ 'common.cookiePolicy' | t }}
+      </button>
+    </div>
+    <div class="cookie-banner-actions">
+      <button mat-flat-button color="primary" type="button" (click)="acceptCookieConsent()">
+        {{ 'cookieBanner.accept' | t }}
+      </button>
+    </div>
+  </section>
+}
+
+<ng-template #legalDocumentDialog>
+  <h2 mat-dialog-title>{{ legalDocumentDialogTitleKey | t }}</h2>
+  <div mat-dialog-content class="legal-dialog-body">
+    @if (legalDocumentLoading) {
+      <div class="legal-dialog-loading">
+        <mat-spinner diameter="28"></mat-spinner>
+        <span>{{ 'legal.loading' | t }}</span>
+      </div>
+    }
+    @if (!legalDocumentLoading && legalDocumentHtml) {
+      <div class="legal-document-content" [innerHTML]="legalDocumentHtml"></div>
+    }
+    @if (!legalDocumentLoading && !legalDocumentHtml) {
+      <p>{{ 'legal.unavailable' | t }}</p>
+    }
+  </div>
+  <div mat-dialog-actions align="end">
+    <button mat-flat-button color="primary" type="button" mat-dialog-close>{{ 'common.close' | t }}</button>
+  </div>
+</ng-template>

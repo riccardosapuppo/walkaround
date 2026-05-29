@@ -12,7 +12,7 @@ import { AppAuthService, AppSession } from '../../core/services/app-auth.service
 import { AppStateService, HotelAssociation } from '../../core/services/app-state.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PoiService } from '../../core/services/poi.service';
-import { PrivacyPolicyService } from '../../core/services/privacy-policy.service';
+import { LegalDocumentsService, LegalDocumentType } from '../../core/services/legal-documents.service';
 import { HotelCodeStatusEntry, PurchaseService } from '../../core/services/purchase.service';
 import { StructureLocationService } from '../../core/services/structure-location.service';
 import { formatCityLabel } from '../../core/utils/city-label.util';
@@ -54,15 +54,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
   resetSubmitting = false;
   resetRequested = false;
   loggingOutApp = false;
-  privacyPolicyLoading = false;
-  privacyPolicyHtml = '';
-  privacyPolicyDialogLanguage: AppLanguage = 'it';
+  legalDocumentLoading = false;
+  legalDocumentHtml = '';
+  legalDocumentDialogLanguage: AppLanguage = 'it';
+  legalDocumentDialogTitleKey = 'common.privacy';
   showLoginPassword = false;
   showRegisterPassword = false;
   showRegisterConfirmPassword = false;
 
   @ViewChild('appLogoutDialog') private appLogoutDialog?: TemplateRef<unknown>;
-  @ViewChild('privacyPolicyDialog') private privacyPolicyDialog?: TemplateRef<unknown>;
+  @ViewChild('legalDocumentDialog') private legalDocumentDialog?: TemplateRef<unknown>;
 
   readonly loginForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -89,7 +90,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private readonly purchaseService: PurchaseService,
     private readonly adminAuth: AdminAuthService,
     private readonly appAuth: AppAuthService,
-    private readonly privacyPolicyService: PrivacyPolicyService,
+    private readonly legalDocumentsService: LegalDocumentsService,
     private readonly structureLocationService: StructureLocationService,
     private readonly formBuilder: FormBuilder,
     private readonly route: ActivatedRoute,
@@ -532,41 +533,52 @@ export class ProfileComponent implements OnInit, OnDestroy {
       });
   }
 
-  openPrivacyPolicyDialog(): void {
-    if (!this.privacyPolicyDialog || this.privacyPolicyLoading) {
+  openLegalDocumentDialog(documentType: LegalDocumentType): void {
+    if (!this.legalDocumentDialog || this.legalDocumentLoading) {
       return;
     }
 
     const language = this.language;
-    this.privacyPolicyDialogLanguage = language;
-    this.privacyPolicyHtml = '';
-    this.privacyPolicyLoading = true;
+    this.legalDocumentDialogLanguage = language;
+    this.legalDocumentDialogTitleKey = this.legalDocumentTitleKey(documentType);
+    this.legalDocumentHtml = '';
+    this.legalDocumentLoading = true;
 
-    this.dialog.open(this.privacyPolicyDialog, {
+    this.dialog.open(this.legalDocumentDialog, {
       autoFocus: false,
       restoreFocus: true,
       width: '92vw',
       maxWidth: '760px'
     });
 
-    this.privacyPolicyService
-      .getPrivacyPolicy(language)
+    this.legalDocumentsService
+      .getLegalDocument(documentType, language)
       .pipe(
         finalize(() => {
-          this.privacyPolicyLoading = false;
+          this.legalDocumentLoading = false;
         }),
         takeUntil(this.destroy$)
       )
       .subscribe({
         next: (response) => {
-          this.privacyPolicyDialogLanguage = response.language;
-          this.privacyPolicyHtml = response.contentHtml || '';
+          this.legalDocumentDialogLanguage = response.language;
+          this.legalDocumentHtml = response.contentHtml || '';
         },
         error: () => {
-          this.privacyPolicyHtml = '';
-          this.snackBar.open(this.i18n.t('profile.privacyLoadError'), this.i18n.t('common.close'), { duration: 3000 });
+          this.legalDocumentHtml = '';
+          this.snackBar.open(this.i18n.t('legal.loadError'), this.i18n.t('common.close'), { duration: 3000 });
         }
       });
+  }
+
+  private legalDocumentTitleKey(documentType: LegalDocumentType): string {
+    if (documentType === 'cookiePolicy') {
+      return 'common.cookiePolicy';
+    }
+    if (documentType === 'termsConditions') {
+      return 'common.termsConditions';
+    }
+    return 'common.privacy';
   }
 
   private logoutAppUser(): void {
