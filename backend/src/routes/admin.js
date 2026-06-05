@@ -1827,6 +1827,7 @@ async function createPartnerActivationInvite({ client, requestRow, structureId, 
   return {
     partnerUserId,
     activationUrl: `${activationOrigin}/auth/complete-registration?token=${encodeURIComponent(rawActivationToken)}`,
+    dashboardUrl: `${activationOrigin}/dashboard`,
     activationExpiresAt: activationExpiresAt.toISOString()
   };
 }
@@ -5527,6 +5528,7 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
       userDiscountPercent: payload.userDiscountPercent,
       structureFixedAmount: payload.structureFixedAmount,
       activationUrl,
+      dashboardUrl: activationInvite.dashboardUrl,
       pdfBuffer,
       pdfFileName,
       subjectTemplate: emailSettings.approvalSubject,
@@ -5676,6 +5678,7 @@ router.post('/partner-requests/:requestId/resend-activation', requireAuth, requi
       userDiscountPercent: optionalNumber(resolveDiscountRowValue(current, applyTo, 'user_discount_percent')),
       structureFixedAmount: optionalNumber(resolveDiscountRowValue(current, applyTo, 'structure_fixed_amount')),
       activationUrl: activationInvite.activationUrl,
+      dashboardUrl: activationInvite.dashboardUrl,
       subjectTemplate: emailSettings.activationSubject,
       bodyTemplate: emailSettings.activationBody
     });

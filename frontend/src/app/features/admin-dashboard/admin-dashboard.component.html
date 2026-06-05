@@ -1294,7 +1294,7 @@
                   <mat-form-field appearance="outline" class="full-span">
                     <mat-label>Testo approvazione</mat-label>
                     <textarea matInput rows="12" formControlName="approvalBody"></textarea>
-                    <mat-hint>Il PDF promozionale resta allegato automaticamente.</mat-hint>
+                    <mat-hint>Il PDF promozionale resta allegato automaticamente. Usa {{ partnerEmailPlaceholderToken('dashboardUrl') }} per il link dashboard.</mat-hint>
                     @if (partnerEmailSettingsForm.controls.approvalBody.invalid && partnerEmailSettingsForm.controls.approvalBody.touched) {
                       <mat-error>
                         Testo obbligatorio
@@ -1339,7 +1339,7 @@
                   <mat-form-field appearance="outline" class="full-span">
                     <mat-label>Testo reinvito</mat-label>
                     <textarea matInput rows="12" formControlName="activationBody"></textarea>
-                    <mat-hint>Usa {{ partnerEmailPlaceholderToken('activationUrl') }} per inserire il link nuovo.</mat-hint>
+                    <mat-hint>Usa {{ partnerEmailPlaceholderToken('activationUrl') }} per il link nuovo e {{ partnerEmailPlaceholderToken('dashboardUrl') }} per la dashboard.</mat-hint>
                     @if (partnerEmailSettingsForm.controls.activationBody.invalid && partnerEmailSettingsForm.controls.activationBody.touched) {
                       <mat-error>
                         Testo obbligatorio

@@ -26,6 +26,9 @@ export const DEFAULT_PARTNER_EMAIL_SETTINGS = {
     'Puoi completare la registrazione del tuo account partner da questo link:',
     '{{activationUrl}}',
     '',
+    'Link dashboard partner, da conservare per gli accessi successivi:',
+    '{{dashboardUrl}}',
+    '',
     'Una volta attivato il tuo account, potrai accedere alla dashboard partner per consultare le informazioni della struttura, verificare il codice sconto attivo, controllare le citta abilitate e consultare le condizioni economiche della partnership, inclusa la quota riconosciuta alla struttura per i pagamenti generati tramite il codice sconto associato.',
     '',
     'Per qualsiasi dubbio puoi rispondere a questa email.',
@@ -53,6 +56,9 @@ export const DEFAULT_PARTNER_EMAIL_SETTINGS = {
     'Link registrazione:',
     '{{activationUrl}}',
     '',
+    'Link dashboard partner, da usare dopo aver completato la registrazione:',
+    '{{dashboardUrl}}',
+    '',
     'Una volta attivato il tuo account, potrai accedere alla dashboard partner per consultare le informazioni della struttura, verificare il codice sconto attivo, controllare le citta abilitate e consultare le condizioni economiche della partnership.',
     '',
     'Per qualsiasi dubbio puoi rispondere a questa email.',
@@ -73,5 +79,6 @@ export const PARTNER_EMAIL_TEMPLATE_PLACEHOLDERS = [
   { key: 'expiresAt', description: 'Scadenza del codice sconto' },
   { key: 'userDiscountPercent', description: 'Percentuale sconto applicata agli utenti' },
   { key: 'structureFixedAmount', description: 'Quota fissa riconosciuta alla struttura' },
-  { key: 'activationUrl', description: 'Link per completare la registrazione account partner' }
+  { key: 'activationUrl', description: 'Link per completare la registrazione account partner' },
+  { key: 'dashboardUrl', description: 'Link alla dashboard partner' }
 ];
