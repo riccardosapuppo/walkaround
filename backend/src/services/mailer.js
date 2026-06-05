@@ -74,12 +74,16 @@ function formatNotificationAddress(parts) {
   return parts.map((part) => String(part || '').trim()).filter(Boolean).join(', ') || '-';
 }
 
+function normalizeEmailRecipients(to) {
+  const values = Array.isArray(to) ? to : [to];
+  return values.map((value) => String(value || '').trim()).filter(Boolean);
+}
+
 function paymentTypeLabel(type) {
   return type === 'bundle' ? 'Pacchetto citta' : 'Luogo singolo';
 }
 
 function buildPartnerEmailVariables({
-  requestId,
   contactName,
   structureName,
   structureType,
@@ -89,14 +93,14 @@ function buildPartnerEmailVariables({
   cityNames,
   expiresAt,
   userDiscountPercent,
-  structureFixedAmount
+  structureFixedAmount,
+  activationUrl
 }) {
   const recipientName = String(contactName || '').trim() || 'partner';
   const cityLabel = Array.isArray(cityNames) && cityNames.length ? cityNames.join(', ') : '';
   const discountPercent = Number(userDiscountPercent);
 
   return {
-    requestId: requestId == null ? '' : String(requestId),
     contactName: recipientName,
     structureName: String(structureName || '').trim(),
     structureType: String(structureType || '').trim(),
@@ -106,8 +110,23 @@ function buildPartnerEmailVariables({
     cityNames: cityLabel,
     expiresAt: formatItalianDateTime(expiresAt),
     userDiscountPercent: Number.isFinite(discountPercent) ? `${discountPercent}%` : '',
-    structureFixedAmount: formatPartnerEuroAmount(structureFixedAmount)
+    structureFixedAmount: formatPartnerEuroAmount(structureFixedAmount),
+    activationUrl: String(activationUrl || '').trim()
   };
+}
+
+function ensurePartnerActivationUrlPlaceholder(bodyTemplate, activationUrl) {
+  const template = String(bodyTemplate || DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody);
+  if (!activationUrl || /\{\{\s*activationUrl\s*\}\}/i.test(template)) {
+    return template;
+  }
+
+  return [
+    template.trim(),
+    '',
+    'Puoi completare la registrazione del tuo account partner da questo link:',
+    '{{activationUrl}}'
+  ].join('\n');
 }
 
 async function loadNodemailer() {
@@ -161,23 +180,63 @@ async function getTransporter() {
   }
 }
 
-async function sendPartnerTemplateEmail({ to, subjectTemplate, bodyTemplate, variables, attachments = [] }) {
-  const { transporter, from } = await getTransporter();
+async function sendPartnerTemplateEmail({ kind, to, subjectTemplate, bodyTemplate, variables, attachments = [] }) {
+  const recipients = normalizeEmailRecipients(to);
+  if (!recipients.length) {
+    const error = new Error('Destinatario email partner mancante');
+    error.partnerEmailDelivery = true;
+    throw error;
+  }
+
   const subject = renderTemplate(subjectTemplate, variables).trim() || 'Walk Around';
   const text = renderTemplate(bodyTemplate, variables).trim();
 
-  await transporter.sendMail({
-    from,
-    to,
-    subject,
-    text,
-    html: plainTextToHtml(text),
-    attachments
-  });
+  try {
+    const { transporter, from } = await getTransporter();
+    const info = await transporter.sendMail({
+      from,
+      to: recipients,
+      subject,
+      text,
+      html: plainTextToHtml(text),
+      attachments
+    });
+    const accepted = Array.isArray(info?.accepted) ? info.accepted.map(String) : [];
+    const rejected = Array.isArray(info?.rejected) ? info.rejected.map(String) : [];
+    const pending = Array.isArray(info?.pending) ? info.pending.map(String) : [];
+    console.info('[partner-email] SMTP response', {
+      kind: kind || 'partner-template',
+      to: recipients,
+      messageId: info?.messageId || null,
+      accepted,
+      rejected,
+      pending,
+      response: info?.response || null
+    });
+    if (rejected.length || (Object.prototype.hasOwnProperty.call(info || {}, 'accepted') && !accepted.length && !pending.length)) {
+      const error = new Error('Email partner non accettata dal server SMTP');
+      error.partnerEmailDelivery = true;
+      error.smtpInfo = { accepted, rejected, pending, response: info?.response || null };
+      throw error;
+    }
+    return info;
+  } catch (error) {
+    if (error && typeof error === 'object') {
+      error.partnerEmailDelivery = true;
+    }
+    console.error('[partner-email] SMTP send failed', {
+      kind: kind || 'partner-template',
+      to: recipients,
+      message: error instanceof Error ? error.message : String(error),
+      code: error && typeof error === 'object' && 'code' in error ? error.code : null,
+      response: error && typeof error === 'object' && 'response' in error ? error.response : null
+    });
+    throw error;
+  }
 }
 
 async function sendPlainOperationalEmail({ to, subject, lines }) {
-  const recipients = Array.isArray(to) ? to.filter(Boolean) : [to].filter(Boolean);
+  const recipients = normalizeEmailRecipients(to);
   if (!recipients.length) {
     return;
   }
@@ -271,7 +330,6 @@ export async function sendDashboardEmailSettingsTestEmail({ to, requestedByEmail
 }
 
 export async function sendPartnerApprovalEmail({
-  requestId,
   to,
   contactName,
   structureName,
@@ -283,13 +341,13 @@ export async function sendPartnerApprovalEmail({
   expiresAt,
   userDiscountPercent,
   structureFixedAmount,
+  activationUrl,
   pdfBuffer,
   pdfFileName,
   subjectTemplate = DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject,
   bodyTemplate = DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody
 }) {
   const variables = buildPartnerEmailVariables({
-    requestId,
     contactName,
     structureName,
     structureType,
@@ -299,13 +357,15 @@ export async function sendPartnerApprovalEmail({
     cityNames,
     expiresAt,
     userDiscountPercent,
-    structureFixedAmount
+    structureFixedAmount,
+    activationUrl
   });
 
   await sendPartnerTemplateEmail({
+    kind: 'approval',
     to,
     subjectTemplate,
-    bodyTemplate,
+    bodyTemplate: ensurePartnerActivationUrlPlaceholder(bodyTemplate, activationUrl),
     variables,
     attachments: pdfBuffer
       ? [
@@ -319,8 +379,46 @@ export async function sendPartnerApprovalEmail({
   });
 }
 
+export async function sendPartnerActivationEmail({
+  to,
+  contactName,
+  structureName,
+  structureType,
+  contactEmail,
+  addressCity,
+  discountCode,
+  cityNames,
+  expiresAt,
+  userDiscountPercent,
+  structureFixedAmount,
+  activationUrl,
+  subjectTemplate = DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject,
+  bodyTemplate = DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody
+}) {
+  const variables = buildPartnerEmailVariables({
+    contactName,
+    structureName,
+    structureType,
+    contactEmail: contactEmail || to,
+    addressCity,
+    discountCode,
+    cityNames,
+    expiresAt,
+    userDiscountPercent,
+    structureFixedAmount,
+    activationUrl
+  });
+
+  await sendPartnerTemplateEmail({
+    kind: 'activation',
+    to,
+    subjectTemplate,
+    bodyTemplate: ensurePartnerActivationUrlPlaceholder(bodyTemplate, activationUrl),
+    variables
+  });
+}
+
 export async function sendPartnerRejectionEmail({
-  requestId,
   to,
   contactName,
   structureName,
@@ -331,7 +429,6 @@ export async function sendPartnerRejectionEmail({
   bodyTemplate = DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
 }) {
   const variables = buildPartnerEmailVariables({
-    requestId,
     contactName,
     structureName,
     structureType,
@@ -340,6 +437,7 @@ export async function sendPartnerRejectionEmail({
   });
 
   await sendPartnerTemplateEmail({
+    kind: 'rejection',
     to,
     subjectTemplate,
     bodyTemplate,
@@ -348,7 +446,6 @@ export async function sendPartnerRejectionEmail({
 }
 
 export async function sendPartnerRegistrationNotificationEmail({ to, request }) {
-  const requestId = request?.id == null ? '' : `#${request.id}`;
   const contactName = [request?.contactFirstName, request?.contactLastName].filter(Boolean).join(' ');
   const address = formatNotificationAddress([
     [request?.addressStreet, request?.addressNumber].filter(Boolean).join(' '),
@@ -361,9 +458,9 @@ export async function sendPartnerRegistrationNotificationEmail({ to, request }) 
 
   await sendPlainOperationalEmail({
     to,
-    subject: `Walk Around - Nuova richiesta partner ${requestId}`.trim(),
+    subject: 'Walk Around - Nuova richiesta partner',
     lines: [
-      `Nuova richiesta partner ricevuta${requestId ? ` (${requestId})` : ''}.`,
+      'Nuova richiesta partner ricevuta.',
       '',
       `Struttura: ${formatNotificationValue(request?.structureName)}`,
       `Tipologia: ${formatNotificationValue(request?.structureType)}`,

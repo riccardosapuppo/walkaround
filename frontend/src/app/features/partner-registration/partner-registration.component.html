@@ -15,12 +15,39 @@
 
   @if (completed) {
     <mat-card class="card success-box">
-      <h2>{{ 'partner.requestSent' | t }}</h2>
-      <p>{{ 'partner.requestReceived' | t }}</p>
-      @if (requestId !== null) {
-        <p>{{ 'partner.requestNumber' | t }}: <strong>#{{ requestId }}</strong></p>
-      }
-      <p>{{ 'partner.pendingApproval' | t }}</p>
+      <div class="success-visual" aria-hidden="true">
+        <span class="success-ring">
+          <span class="success-check"></span>
+        </span>
+      </div>
+      <div class="success-copy">
+        <h2>{{ 'partner.requestSent' | t }}</h2>
+        <p>{{ 'partner.pendingApproval' | t }}</p>
+      </div>
+      <div class="success-steps" [attr.aria-label]="'partner.confirmationStepsLabel' | t">
+        <div class="success-step active">
+          <span class="success-step-marker">1</span>
+          <div>
+            <strong>{{ 'partner.confirmationStepReceivedTitle' | t }}</strong>
+            <small>{{ 'partner.confirmationStepReceivedText' | t }}</small>
+          </div>
+        </div>
+        <div class="success-step">
+          <span class="success-step-marker">2</span>
+          <div>
+            <strong>{{ 'partner.confirmationStepReviewTitle' | t }}</strong>
+            <small>{{ 'partner.confirmationStepReviewText' | t }}</small>
+          </div>
+        </div>
+        <div class="success-step">
+          <span class="success-step-marker">3</span>
+          <div>
+            <strong>{{ 'partner.confirmationStepApprovalTitle' | t }}</strong>
+            <small>{{ 'partner.confirmationStepApprovalText' | t }}</small>
+          </div>
+        </div>
+      </div>
+      <p class="success-note">{{ 'partner.confirmationNote' | t }}</p>
       <button mat-stroked-button color="primary" class="big-cta partner-secondary-cta" (click)="backToWelcome()">
         {{ 'partner.backToWelcome' | t }}
       </button>
@@ -84,6 +111,9 @@
           }
           @if (hasControlError('contactEmail', 'email')) {
             <mat-error>{{ 'partner.invalidEmail' | t }}</mat-error>
+          }
+          @if (hasControlError('contactEmail', 'emailAlreadyRegistered')) {
+            <mat-error>{{ 'partner.emailAlreadyRegistered' | t }}</mat-error>
           }
         </mat-form-field>
         <mat-form-field appearance="outline">

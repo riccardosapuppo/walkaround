@@ -3,7 +3,7 @@ import { hashPassword } from '../auth/security.js';
 import { pool } from './pool.js';
 import { getPoiAddress, poiAddressesById } from './poi-addresses.js';
 import { citiesSeed, hotelCodesSeed, poisSeed } from './seed-data.js';
-import { DEFAULT_PARTNER_EMAIL_SETTINGS } from '../services/partner-email-templates.js';
+import { DEFAULT_PARTNER_EMAIL_SETTINGS, LEGACY_PARTNER_APPROVAL_BODY } from '../services/partner-email-templates.js';
 
 const DB_INIT_LOCK_NAMESPACE = 7518401;
 const DB_INIT_LOCK_KEY = 1;
@@ -1138,6 +1138,36 @@ async function createSchema(client) {
     ALTER TABLE dashboard_partner_email_settings
     ADD CONSTRAINT dashboard_partner_email_settings_singleton CHECK (id = 1);
   `);
+  await client.query(`
+    ALTER TABLE dashboard_partner_email_settings
+    ADD COLUMN IF NOT EXISTS activation_subject TEXT;
+  `);
+  await client.query(`
+    ALTER TABLE dashboard_partner_email_settings
+    ADD COLUMN IF NOT EXISTS activation_body TEXT;
+  `);
+  await client.query(
+    `
+      UPDATE dashboard_partner_email_settings
+      SET activation_subject = $1
+      WHERE activation_subject IS NULL
+        OR TRIM(activation_subject) = '';
+    `,
+    [DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_partner_email_settings
+      SET activation_body = $1
+      WHERE activation_body IS NULL
+        OR TRIM(activation_body) = '';
+    `,
+    [DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody]
+  );
+  await client.query(`ALTER TABLE dashboard_partner_email_settings ALTER COLUMN activation_subject SET DEFAULT '';`);
+  await client.query(`ALTER TABLE dashboard_partner_email_settings ALTER COLUMN activation_body SET DEFAULT '';`);
+  await client.query(`ALTER TABLE dashboard_partner_email_settings ALTER COLUMN activation_subject SET NOT NULL;`);
+  await client.query(`ALTER TABLE dashboard_partner_email_settings ALTER COLUMN activation_body SET NOT NULL;`);
   await client.query(
     `
       INSERT INTO dashboard_partner_email_settings (
@@ -1145,17 +1175,31 @@ async function createSchema(client) {
         approval_subject,
         approval_body,
         rejection_subject,
-        rejection_body
+        rejection_body,
+        activation_subject,
+        activation_body
       )
-      VALUES (1, $1, $2, $3, $4)
+      VALUES (1, $1, $2, $3, $4, $5, $6)
       ON CONFLICT (id) DO NOTHING;
     `,
     [
       DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject,
       DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody,
       DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject,
-      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
+      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody
     ]
+  );
+  await client.query(
+    `
+      UPDATE dashboard_partner_email_settings
+      SET approval_body = $1,
+          updated_at = NOW()
+      WHERE id = 1
+        AND approval_body = $2;
+    `,
+    [DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody, LEGACY_PARTNER_APPROVAL_BODY]
   );
 
   await client.query(`

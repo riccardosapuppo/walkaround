@@ -24,13 +24,18 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
   state: RegistrationState = 'loading';
   mode: CompletionMode = 'invite';
   email = '';
+  firstName = '';
+  lastName = '';
+  structureName = '';
   token = '';
   submitting = false;
+  showPassword = false;
+  showConfirmPassword = false;
 
   private redirectTimeoutId?: number;
 
   readonly form = this.formBuilder.nonNullable.group({
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(120)]],
     confirmPassword: ['', [Validators.required]]
   });
 
@@ -64,13 +69,26 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
   }
 
   submit(): void {
-    if (this.state !== 'valid' || this.submitting || this.form.invalid) {
+    if (this.state !== 'valid' || this.submitting) {
+      return;
+    }
+
+    this.clearPasswordMismatchError();
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.snackBar.open(this.i18n.t('completeRegistration.validationError'), this.i18n.t('common.close'), {
+        duration: 3200
+      });
       return;
     }
 
     const { password, confirmPassword } = this.form.getRawValue();
     if (password !== confirmPassword) {
+      this.form.controls.confirmPassword.setErrors({
+        ...(this.form.controls.confirmPassword.errors || {}),
+        passwordMismatch: true
+      });
+      this.form.controls.confirmPassword.markAsTouched();
       this.snackBar.open(this.i18n.t('completeRegistration.passwordMismatch'), this.i18n.t('common.close'), { duration: 2800 });
       return;
     }
@@ -131,6 +149,14 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
     void this.router.navigate([this.mode === 'app-reset' ? '/profile' : '/dashboard']);
   }
 
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
   private checkStatus(): void {
     this.state = 'loading';
     const request$ =
@@ -140,8 +166,8 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
           ? this.auth.getPasswordResetStatus(this.token)
           : this.auth.getInvitationStatus(this.token);
 
-    request$.subscribe({
-      next: (status) => {
+    (request$ as Observable<InvitationStatusResponse | PasswordResetStatusResponse>).subscribe({
+      next: (status: InvitationStatusResponse | PasswordResetStatusResponse) => {
         this.applyStatus(status);
       },
       error: () => {
@@ -152,6 +178,15 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
 
   private applyStatus(status: InvitationStatusResponse | PasswordResetStatusResponse): void {
     this.email = status.email || '';
+    if ('firstName' in status) {
+      this.firstName = status.firstName || '';
+    }
+    if ('lastName' in status) {
+      this.lastName = status.lastName || '';
+    }
+    if ('structureName' in status) {
+      this.structureName = status.structureName || '';
+    }
 
     if (status.status === 'valid') {
       this.state = 'valid';
@@ -195,10 +230,34 @@ export class CompleteRegistrationComponent implements OnInit, OnDestroy {
       : this.i18n.t('completeRegistration.completedInvite');
   }
 
+  get contactName(): string {
+    return `${this.firstName} ${this.lastName}`.trim();
+  }
+
+  get showStructureContext(): boolean {
+    return this.mode === 'invite' && Boolean(this.structureName);
+  }
+
   get expiredMessage(): string {
     return this.mode === 'reset'
       || this.mode === 'app-reset'
       ? this.i18n.t('completeRegistration.expiredReset')
       : this.i18n.t('completeRegistration.expiredInvite');
+  }
+
+  hasControlError(controlName: 'password' | 'confirmPassword', errorName: string): boolean {
+    const control = this.form.controls[controlName];
+    return control.touched && control.hasError(errorName);
+  }
+
+  clearPasswordMismatchError(): void {
+    const control = this.form.controls.confirmPassword;
+    if (!control.hasError('passwordMismatch')) {
+      return;
+    }
+
+    const remainingErrors = { ...(control.errors || {}) };
+    delete remainingErrors['passwordMismatch'];
+    control.setErrors(Object.keys(remainingErrors).length ? remainingErrors : null);
   }
 }

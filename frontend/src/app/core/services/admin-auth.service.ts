@@ -506,6 +506,8 @@ export interface DashboardPartnerEmailSettings {
   approvalBody: string;
   rejectionSubject: string;
   rejectionBody: string;
+  activationSubject: string;
+  activationBody: string;
   placeholders: PartnerEmailTemplatePlaceholder[];
   updatedAt: string | null;
   updatedBy: string | null;
@@ -516,6 +518,8 @@ export interface PartnerEmailSettingsInput {
   approvalBody: string;
   rejectionSubject: string;
   rejectionBody: string;
+  activationSubject: string;
+  activationBody: string;
 }
 
 export interface DashboardPartnerRequestDiscount {
@@ -554,6 +558,14 @@ export interface DashboardPartnerRequest {
   pdfReleaseStatus: 'pending' | 'sent';
   approvedStructureId: string | null;
   approvedDiscountCodeId: number | null;
+  partnerUserId: string | null;
+  partnerUserEmail: string | null;
+  partnerUserFirstName: string | null;
+  partnerUserLastName: string | null;
+  partnerUserIsRegistered: boolean | null;
+  partnerInviteExpiresAt: string | null;
+  partnerInviteUsedAt: string | null;
+  partnerInviteCreatedAt: string | null;
   discountCode: string | null;
   discount: DashboardPartnerRequestDiscount | null;
   approvalEmailSentAt: string | null;
@@ -568,6 +580,7 @@ export interface PartnerRequestApprovalInput {
   userDiscountPercent: number;
   structureFixedAmount: number;
   expiresAt: string;
+  origin?: string;
 }
 
 export interface PartnerRequestPdfPreviewInput {
@@ -587,12 +600,21 @@ export interface InvitationStatusResponse {
   status: 'valid' | 'expired' | 'already_registered' | 'invalid';
   email?: string;
   expiresAt?: string;
+  firstName?: string;
+  lastName?: string;
+  structureId?: string | null;
+  structureName?: string | null;
+  role?: UserRole | '';
 }
 
 export interface CompleteInvitationResponse {
   completed?: boolean;
   message?: string;
   status?: 'valid' | 'expired' | 'already_registered' | 'invalid';
+  token?: string;
+  expiresAt?: string;
+  user?: AdminUser;
+  session?: SessionMeta;
 }
 
 export interface PasswordResetStatusResponse {
@@ -1491,6 +1513,19 @@ export class AdminAuthService {
     );
   }
 
+  resendPartnerRequestActivation(requestId: number, origin: string): Observable<DashboardPartnerRequest> {
+    const token = this.sessionSubject.value?.token;
+    if (!token) {
+      return throwError(() => new Error('Sessione dashboard non valida'));
+    }
+
+    return this.http.post<DashboardPartnerRequest>(
+      `${environment.apiBaseUrl}/admin/partner-requests/${encodeURIComponent(String(requestId))}/resend-activation`,
+      { origin },
+      { headers: this.authHeaders(token) }
+    );
+  }
+
   rejectPartnerRequest(requestId: number): Observable<DashboardPartnerRequest> {
     const token = this.sessionSubject.value?.token;
     if (!token) {
@@ -1636,7 +1671,18 @@ export class AdminAuthService {
     const encoded = encodeURIComponent(token);
     return this.http.post<CompleteInvitationResponse>(`${environment.apiBaseUrl}/auth/invitations/${encoded}/complete`, {
       password
-    });
+    }).pipe(
+      tap((response) => {
+        if (response.token && response.expiresAt && response.user && response.session) {
+          this.persistSession({
+            token: response.token,
+            expiresAt: response.expiresAt,
+            user: response.user,
+            session: response.session
+          });
+        }
+      })
+    );
   }
 
   getPasswordResetStatus(token: string): Observable<PasswordResetStatusResponse> {

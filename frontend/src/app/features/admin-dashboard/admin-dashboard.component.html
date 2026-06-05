@@ -867,7 +867,7 @@
               }
             </div>
           </mat-card>
-          @if (activePartnerRequestsTab === 'requests') {
+          @if (activePartnerRequestsTab !== 'emails') {
           <div class="stats-grid">
             <mat-card class="stat-card">
               <span>Richieste totali</span>
@@ -900,9 +900,9 @@
               }
             </mat-card>
             <mat-card class="stat-card">
-              <span>PDF inviati</span>
+              <span>Approvate senza account attivo</span>
               @if (!loadingPartnerRequests) {
-                <strong>{{ sentPartnerRequestPdfs }}</strong>
+                <strong>{{ approvedPartnerRequestsWithoutRegisteredUser }}</strong>
               } @else {
                 <div class="stat-spinner">
                   <mat-spinner diameter="24"></mat-spinner>
@@ -914,7 +914,11 @@
             <div class="table-head">
               <div>
                 <h2>Richieste partner</h2>
-                <p class="table-subtitle">Approva o nega le richieste partner e genera il PDF promozionale da inviare alla struttura.</p>
+                <p class="table-subtitle">
+                  {{ activePartnerRequestsTab === 'approved'
+                    ? 'Controlla account partner, codice sconto e inviti di registrazione delle strutture approvate.'
+                    : 'Approva o nega le richieste partner e genera il PDF promozionale da inviare alla struttura.' }}
+                </p>
               </div>
               <div class="table-actions">
                 <button
@@ -936,28 +940,34 @@
                     <th>Referente</th>
                     <th>Indirizzo</th>
                     <th>Stato</th>
-                    <th>Messaggio</th>
-                    <th>Azioni</th>
+                    @if (activePartnerRequestsTab === 'approved') {
+                      <th>Account e azioni</th>
+                    } @else {
+                      <th>Messaggio</th>
+                      <th>Azioni</th>
+                    }
                   </tr>
                 </thead>
                 <tbody>
                   @if (loadingPartnerRequests) {
                     <tr>
-                      <td colspan="6" class="empty-cell spinner-cell">
+                      <td [attr.colspan]="activePartnerRequestsTab === 'approved' ? 5 : 6" class="empty-cell spinner-cell">
                         <mat-spinner diameter="28"></mat-spinner>
                       </td>
                     </tr>
                   }
-                  @if (!loadingPartnerRequests && !partnerRequests.length) {
+                  @if (!loadingPartnerRequests && !visiblePartnerRequests.length) {
                     <tr>
-                      <td colspan="6" class="empty-cell">Nessuna richiesta partner registrata.</td>
+                      <td [attr.colspan]="activePartnerRequestsTab === 'approved' ? 5 : 6" class="empty-cell">
+                        {{ activePartnerRequestsTab === 'approved' ? 'Nessuna richiesta partner approvata.' : 'Nessuna richiesta partner da approvare.' }}
+                      </td>
                     </tr>
                   }
                   @if (!loadingPartnerRequests) {
-                    @for (request of partnerRequests; track trackByPartnerRequestId($index, request)) {
+                    @for (request of visiblePartnerRequests; track trackByPartnerRequestId($index, request)) {
                       <tr>
                         <td class="partner-request-main-cell">
-                          <strong>#{{ request.id }} - {{ request.structureName }}</strong>
+                          <strong>{{ request.structureName }}</strong>
                           @if (request.structureType) {
                             <small>Tipologia: {{ request.structureType }}</small>
                           }
@@ -981,42 +991,134 @@
                           <small>{{ partnerRequestAddress(request) || '-' }}</small>
                         </td>
                         <td class="partner-request-status-cell">
-                          <span class="status-pill" [ngClass]="partnerRequestStatusClass(request.status)">
-                            {{ partnerRequestStatusLabel(request.status) }}
-                          </span>
-                          <span class="status-pill" [ngClass]="partnerRequestPdfStatusClass(request.pdfReleaseStatus)">
-                            PDF: {{ partnerRequestPdfStatusLabel(request.pdfReleaseStatus) }}
-                          </span>
-                          @if (request.approvalEmailSentAt) {
-                            <small>
-                              Email approvazione inviata il {{ formatDateTime(request.approvalEmailSentAt) }} con PDF allegato.
-                            </small>
-                          }
-                          @if (request.discount; as discount) {
-                            <div class="partner-request-discount-card">
-                              <span>Codice collegato</span>
-                              <code>{{ discount.code }}</code>
-                              <small>{{ discountCodeApplyToLabel(discount.applyTo) }} - {{ partnerRequestDiscountCitiesLabel(request) }}</small>
-                              <small>
-                                Sconto/Incasso:
-                                <strong>{{ partnerRequestDiscountValueLabel(request) }}</strong>
-                              </small>
-                              <small>Scadenza: {{ formatDateTime(discount.expiresAt) }}</small>
+                          @if (activePartnerRequestsTab === 'approved') {
+                            <div class="action-buttons">
+                              <span class="status-pill" [ngClass]="partnerRequestStatusClass(request.status)">
+                                {{ partnerRequestStatusLabel(request.status) }}
+                              </span>
+                              <span class="status-pill" [ngClass]="partnerRequestPdfStatusClass(request.pdfReleaseStatus)">
+                                PDF {{ request.pdfReleaseStatus === 'sent' ? 'inviato' : 'da inviare' }}
+                              </span>
                             </div>
-                          } @else {
-                            @if (request.status === 'pending') {
-                              <small>Codice da creare in approvazione</small>
+                            @if (request.discount; as discount) {
+                              <small>
+                                Codice: <strong>{{ discount.code }}</strong> - {{ partnerRequestDiscountCitiesSummaryLabel(request) }}
+                              </small>
+                              <small>
+                                Sconto/Incasso: <strong>{{ partnerRequestDiscountValueLabel(request) }}</strong>
+                              </small>
+                              <small>Scade: {{ formatDateTime(discount.expiresAt) }}</small>
                             }
+                            @if (request.approvalEmailSentAt) {
+                              <small>Email: {{ formatDateTime(request.approvalEmailSentAt) }}</small>
+                            }
+                          } @else {
+                            <span class="status-pill" [ngClass]="partnerRequestStatusClass(request.status)">
+                              {{ partnerRequestStatusLabel(request.status) }}
+                            </span>
+                            <span class="status-pill" [ngClass]="partnerRequestPdfStatusClass(request.pdfReleaseStatus)">
+                              PDF: {{ partnerRequestPdfStatusLabel(request.pdfReleaseStatus) }}
+                            </span>
+                            @if (request.approvalEmailSentAt) {
+                              <small>
+                                Email approvazione: {{ formatDateTime(request.approvalEmailSentAt) }}
+                              </small>
+                            }
+                            @if (request.discount; as discount) {
+                              <div class="partner-request-discount-card">
+                                <span>Codice collegato</span>
+                                <code>{{ discount.code }}</code>
+                                <small>{{ discountCodeApplyToLabel(discount.applyTo) }} - {{ partnerRequestDiscountCitiesLabel(request) }}</small>
+                                <small>
+                                  Sconto/Incasso:
+                                  <strong>{{ partnerRequestDiscountValueLabel(request) }}</strong>
+                                </small>
+                                <small>Scadenza: {{ formatDateTime(discount.expiresAt) }}</small>
+                              </div>
+                            } @else {
+                              @if (request.status === 'pending') {
+                                <small>Codice da creare in approvazione</small>
+                              }
+                            }
+                            <small>Aggiornata {{ formatDateTime(request.updatedAt) }}</small>
                           }
-                          <small>Aggiornata {{ formatDateTime(request.updatedAt) }}</small>
                         </td>
-                        <td class="partner-request-message-cell">
-                          <small class="partner-request-notes" [class.partner-request-empty-note]="!request.notes">
-                            {{ request.notes || 'Nessun messaggio aggiuntivo.' }}
-                          </small>
-                        </td>
+                        @if (activePartnerRequestsTab === 'approved') {
+                          <td class="partner-request-status-cell">
+                            <span class="status-pill" [ngClass]="partnerRequestAccountStatusClass(request)">
+                              {{ partnerRequestAccountLabel(request) }}
+                            </span>
+                            @if (request.partnerUserEmail) {
+                              <small>{{ request.partnerUserEmail }}</small>
+                            } @else {
+                              <small>Referente: {{ request.contactEmail }}</small>
+                            }
+                            @if (request.partnerUserIsRegistered) {
+                              <small>Registrazione completata.</small>
+                            } @else {
+                              @if (request.partnerInviteExpiresAt) {
+                                <small>Scadenza invito: {{ formatDateTime(request.partnerInviteExpiresAt) }}</small>
+                              }
+                            }
+                            <div class="action-buttons user-row-actions">
+                              <button
+                                mat-stroked-button
+                                color="primary"
+                                type="button"
+                                (click)="previewPartnerRequestPdf(request)"
+                                [disabled]="isPartnerRequestBusy(request)"
+                                >
+                                {{ previewingPartnerRequestId === request.id ? 'Apro...' : 'Anteprima PDF' }}
+                              </button>
+                              @if (request.approvedDiscountCodeId || request.approvedStructureId) {
+                                <button
+                                  mat-stroked-button
+                                  color="primary"
+                                  type="button"
+                                  (click)="openPartnerRequestDiscountCodes(request)"
+                                  [disabled]="isPartnerRequestBusy(request)"
+                                  >
+                                  Gestisci codice
+                                </button>
+                              }
+                              @if (canResendPartnerActivation(request)) {
+                                <span class="user-row-actions">
+                                  <button
+                                    mat-stroked-button
+                                    color="primary"
+                                    type="button"
+                                    (click)="resendPartnerActivation(request)"
+                                    [disabled]="isPartnerRequestBusy(request)"
+                                    >
+                                    {{ resendingPartnerActivationRequestId === request.id ? 'Reinvio...' : 'Reinvia invito' }}
+                                  </button>
+                                  <small>
+                                    Ultimo invio: {{ request.partnerInviteCreatedAt ? formatDateTime(request.partnerInviteCreatedAt) : 'mai inviato' }}
+                                  </small>
+                                </span>
+                              }
+                              <button
+                                mat-stroked-button
+                                color="warn"
+                                type="button"
+                                (click)="deletePartnerRequest(request)"
+                                [disabled]="isPartnerRequestBusy(request)"
+                                >
+                                {{ deletingPartnerRequestId === request.id ? 'Elimino...' : 'Elimina' }}
+                              </button>
+                            </div>
+                          </td>
+                        }
+                        @if (activePartnerRequestsTab !== 'approved') {
+                          <td class="partner-request-message-cell">
+                            <small class="partner-request-notes" [class.partner-request-empty-note]="!request.notes">
+                              {{ request.notes || 'Nessun messaggio aggiuntivo.' }}
+                            </small>
+                          </td>
+                        }
+                        @if (activePartnerRequestsTab !== 'approved') {
                         <td>
-                          <div class="action-buttons">
+                          <div class="action-buttons user-row-actions">
                             <button
                               mat-stroked-button
                               color="primary"
@@ -1026,15 +1128,17 @@
                               >
                               {{ previewingPartnerRequestId === request.id ? 'Apro...' : 'Anteprima PDF' }}
                             </button>
-                            <button
-                              mat-flat-button
-                              color="primary"
-                              type="button"
-                              (click)="openPartnerRequestApproval(request)"
-                              [disabled]="isPartnerRequestBusy(request) || request.status === 'approved'"
-                              >
-                              {{ approvingPartnerRequestId === request.id ? 'Invio...' : 'Approva' }}
-                            </button>
+                            @if (request.status === 'pending') {
+                              <button
+                                mat-flat-button
+                                color="primary"
+                                type="button"
+                                (click)="openPartnerRequestApproval(request)"
+                                [disabled]="isPartnerRequestBusy(request)"
+                                >
+                                {{ approvingPartnerRequestId === request.id ? 'Invio...' : 'Approva' }}
+                              </button>
+                            }
                             @if (request.approvedDiscountCodeId || request.approvedStructureId) {
                               <button
                                 mat-stroked-button
@@ -1046,16 +1150,32 @@
                                 Gestisci codice
                               </button>
                             }
-                            <button
-                              mat-stroked-button
-                              color="warn"
-                              type="button"
-                              (click)="rejectPartnerRequest(request)"
-                              [disabled]="isPartnerRequestBusy(request) || request.status !== 'pending'"
-                              >
-                              {{ rejectingPartnerRequestId === request.id ? 'Nego...' : 'Nega' }}
-                            </button>
-                            @if (request.status !== 'approved') {
+                            @if (canResendPartnerActivation(request)) {
+                              <span class="user-row-actions">
+                                <button
+                                  mat-stroked-button
+                                  color="primary"
+                                  type="button"
+                                  (click)="resendPartnerActivation(request)"
+                                  [disabled]="isPartnerRequestBusy(request)"
+                                  >
+                                  {{ resendingPartnerActivationRequestId === request.id ? 'Reinvio...' : 'Reinvia invito' }}
+                                </button>
+                                <small>
+                                  Ultimo invio: {{ request.partnerInviteCreatedAt ? formatDateTime(request.partnerInviteCreatedAt) : 'mai inviato' }}
+                                </small>
+                              </span>
+                            }
+                            @if (request.status === 'pending') {
+                              <button
+                                mat-stroked-button
+                                color="warn"
+                                type="button"
+                                (click)="rejectPartnerRequest(request)"
+                                [disabled]="isPartnerRequestBusy(request)"
+                                >
+                                {{ rejectingPartnerRequestId === request.id ? 'Nego...' : 'Nega' }}
+                              </button>
                               <button
                                 mat-stroked-button
                                 color="warn"
@@ -1068,6 +1188,7 @@
                             }
                           </div>
                         </td>
+                        }
                       </tr>
                     }
                   }
@@ -1098,12 +1219,22 @@
                 </div>
               }
             </mat-card>
+            <mat-card class="stat-card">
+              <span>Template reinvito</span>
+              @if (!loadingPartnerEmailSettings) {
+                <strong>Attivo</strong>
+              } @else {
+                <div class="stat-spinner">
+                  <mat-spinner diameter="24"></mat-spinner>
+                </div>
+              }
+            </mat-card>
           </div>
           <mat-card class="card table-card">
             <div class="table-head">
               <div>
                 <h2>Email partner</h2>
-                <p class="table-subtitle">Modifica oggetto e testo delle email inviate quando una richiesta partner viene approvata o negata.</p>
+                <p class="table-subtitle">Modifica oggetto e testo delle email partner: approvazione, rifiuto e reinvio del link di registrazione.</p>
               </div>
               <div class="table-actions">
                 <button
@@ -1150,7 +1281,7 @@
               <div class="partner-email-template-grid">
                 <section class="partner-email-template-card">
                   <h3>Mail di approvazione</h3>
-                  <p>Usata dopo la creazione della struttura, del codice sconto e del PDF allegato.</p>
+                  <p>Parte solo quando approvi una richiesta: crea struttura, codice sconto, PDF allegato e link registrazione.</p>
                   <mat-form-field appearance="outline" class="full-span">
                     <mat-label>Oggetto approvazione</mat-label>
                     <input matInput formControlName="approvalSubject" autocomplete="off" />
@@ -1173,7 +1304,7 @@
                 </section>
                 <section class="partner-email-template-card">
                   <h3>Mail di rifiuto</h3>
-                  <p>Usata quando la richiesta partner in attesa viene negata dalla dashboard.</p>
+                  <p>Parte solo quando neghi una richiesta partner ancora da approvare.</p>
                   <mat-form-field appearance="outline" class="full-span">
                     <mat-label>Oggetto rifiuto</mat-label>
                     <input matInput formControlName="rejectionSubject" autocomplete="off" />
@@ -1187,6 +1318,29 @@
                     <mat-label>Testo rifiuto</mat-label>
                     <textarea matInput rows="12" formControlName="rejectionBody"></textarea>
                     @if (partnerEmailSettingsForm.controls.rejectionBody.invalid && partnerEmailSettingsForm.controls.rejectionBody.touched) {
+                      <mat-error>
+                        Testo obbligatorio
+                      </mat-error>
+                    }
+                  </mat-form-field>
+                </section>
+                <section class="partner-email-template-card">
+                  <h3>Mail reinvito registrazione</h3>
+                  <p>Parte solo dal pulsante Reinvia invito nelle richieste approvate senza account completato.</p>
+                  <mat-form-field appearance="outline" class="full-span">
+                    <mat-label>Oggetto reinvito</mat-label>
+                    <input matInput formControlName="activationSubject" autocomplete="off" />
+                    @if (partnerEmailSettingsForm.controls.activationSubject.invalid && partnerEmailSettingsForm.controls.activationSubject.touched) {
+                      <mat-error>
+                        Oggetto obbligatorio
+                      </mat-error>
+                    }
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="full-span">
+                    <mat-label>Testo reinvito</mat-label>
+                    <textarea matInput rows="12" formControlName="activationBody"></textarea>
+                    <mat-hint>Usa {{ partnerEmailPlaceholderToken('activationUrl') }} per inserire il link nuovo.</mat-hint>
+                    @if (partnerEmailSettingsForm.controls.activationBody.invalid && partnerEmailSettingsForm.controls.activationBody.touched) {
                       <mat-error>
                         Testo obbligatorio
                       </mat-error>

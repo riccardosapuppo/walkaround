@@ -10,17 +10,73 @@
     }
 
     @if (state === 'valid') {
+      @if (showStructureContext) {
+        <div class="structure-context">
+          <span>{{ 'completeRegistration.partnerContextLabel' | t }}</span>
+          <strong>{{ structureName }}</strong>
+          @if (contactName) {
+            <small>{{ contactName }}</small>
+          }
+          <p>{{ 'completeRegistration.partnerContextHint' | t }}</p>
+        </div>
+      }
       @if (email) {
         <p class="page-subtitle">{{ 'completeRegistration.passwordFor' | t }}: <strong>{{ email }}</strong></p>
       }
       <form [formGroup]="form" (ngSubmit)="submit()" class="registration-form">
         <mat-form-field appearance="outline">
           <mat-label>{{ 'completeRegistration.newPassword' | t }}</mat-label>
-          <input matInput type="password" formControlName="password" autocomplete="new-password" />
+          <input
+            matInput
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="new-password"
+            (input)="clearPasswordMismatchError()"
+            />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+            >
+            <mat-icon fontSet="material-icons-round">{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-hint>{{ 'auth.passwordRequirements' | t }}</mat-hint>
+          @if (hasControlError('password', 'required')) {
+            <mat-error>{{ 'auth.requiredField' | t }}</mat-error>
+          }
+          @if (hasControlError('password', 'minlength')) {
+            <mat-error>{{ 'auth.passwordMinLength' | t }}</mat-error>
+          }
+          @if (hasControlError('password', 'maxlength')) {
+            <mat-error>{{ 'auth.passwordMaxLength' | t }}</mat-error>
+          }
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>{{ 'completeRegistration.confirmPassword' | t }}</mat-label>
-          <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
+          <input
+            matInput
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+            (input)="clearPasswordMismatchError()"
+            />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="toggleConfirmPasswordVisibility()"
+            [attr.aria-label]="showConfirmPassword ? ('auth.hidePassword' | t) : ('auth.showPassword' | t)"
+            >
+            <mat-icon fontSet="material-icons-round">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (hasControlError('confirmPassword', 'required')) {
+            <mat-error>{{ 'auth.requiredField' | t }}</mat-error>
+          }
+          @if (hasControlError('confirmPassword', 'passwordMismatch')) {
+            <mat-error>{{ 'completeRegistration.passwordMismatch' | t }}</mat-error>
+          }
         </mat-form-field>
         <button mat-flat-button color="primary" class="big-cta" [disabled]="submitting" type="submit">
           {{ submitting ? ('completeRegistration.saving' | t) : submitLabel }}

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -14,7 +15,6 @@ import { PartnerRequestService } from '../../core/services/partner-request.servi
 export class PartnerRegistrationComponent {
   sending = false;
   completed = false;
-  requestId: number | null = null;
 
   readonly form = this.formBuilder.group({
     structureName: ['', [Validators.required, Validators.maxLength(180)]],
@@ -84,13 +84,31 @@ export class PartnerRegistrationComponent {
         notes: String(raw.notes || '').trim()
       })
       .subscribe({
-        next: (response) => {
+        next: () => {
           this.sending = false;
           this.completed = true;
-          this.requestId = response.requestId;
         },
-        error: () => {
+        error: (error: unknown) => {
           this.sending = false;
+          if (
+            error instanceof HttpErrorResponse &&
+            error.status === 409 &&
+            error.error?.code === 'DASHBOARD_EMAIL_ALREADY_REGISTERED'
+          ) {
+            const contactEmailControl = this.form.controls.contactEmail;
+            contactEmailControl.setErrors({
+              ...(contactEmailControl.errors || {}),
+              emailAlreadyRegistered: true
+            });
+            contactEmailControl.markAsTouched();
+            this.snackBar.open(
+              this.i18n.t('partner.emailAlreadyRegistered'),
+              this.i18n.t('common.close'),
+              { duration: 4200 }
+            );
+            return;
+          }
+
           this.snackBar.open(this.i18n.t('partner.submitError'), this.i18n.t('common.close'), {
             duration: 3000
           });

@@ -21,6 +21,7 @@ import {
 } from '../services/admin-notifications.js';
 import {
   sendDashboardEmailSettingsTestEmail,
+  sendPartnerActivationEmail,
   sendInvitationEmail,
   sendPartnerApprovalEmail,
   sendPartnerRejectionEmail,
@@ -202,7 +203,8 @@ const partnerRequestApprovalSchema = z.object({
   code: structureInviteCodeSchema,
   userDiscountPercent: z.coerce.number().min(0, 'Sconto utente non valido').max(100, 'Sconto utente non valido'),
   structureFixedAmount: z.coerce.number().min(0, 'Importo struttura non valido').max(10000, 'Importo struttura non valido'),
-  expiresAt: discountCodeExpiresAtSchema
+  expiresAt: discountCodeExpiresAtSchema,
+  origin: z.string().trim().url().optional()
 });
 const partnerRequestPdfPreviewSchema = z.object({
   applyTo: discountCodeApplyToSchema.optional(),
@@ -218,12 +220,17 @@ const partnerRequestPdfPreviewSchema = z.object({
   ),
   expiresAt: z.preprocess((value) => (value === null || value === '' ? undefined : value), discountCodeExpiresAtSchema.optional())
 });
+const partnerRequestActivationResendSchema = z.object({
+  origin: z.string().trim().url().optional()
+});
 
 const partnerEmailSettingsSchema = z.object({
   approvalSubject: z.string().trim().min(1, 'Oggetto approvazione obbligatorio').max(200, 'Oggetto approvazione troppo lungo'),
   approvalBody: z.string().trim().min(1, 'Testo approvazione obbligatorio').max(10000, 'Testo approvazione troppo lungo'),
   rejectionSubject: z.string().trim().min(1, 'Oggetto rifiuto obbligatorio').max(200, 'Oggetto rifiuto troppo lungo'),
-  rejectionBody: z.string().trim().min(1, 'Testo rifiuto obbligatorio').max(10000, 'Testo rifiuto troppo lungo')
+  rejectionBody: z.string().trim().min(1, 'Testo rifiuto obbligatorio').max(10000, 'Testo rifiuto troppo lungo'),
+  activationSubject: z.string().trim().min(1, 'Oggetto reinvito obbligatorio').max(200, 'Oggetto reinvito troppo lungo'),
+  activationBody: z.string().trim().min(1, 'Testo reinvito obbligatorio').max(10000, 'Testo reinvito troppo lungo')
 });
 
 const userStructureUpdateSchema = z
@@ -1072,9 +1079,15 @@ function normalizePartnerEmailSettings(row) {
     approvalBody: String(row?.approval_body || DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody),
     rejectionSubject: String(row?.rejection_subject || DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject),
     rejectionBody: String(row?.rejection_body || DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody),
+    activationSubject: String(row?.activation_subject || DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject),
+    activationBody: String(row?.activation_body || DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody),
     updatedAt: row?.updated_at || null,
     updatedBy: row?.updated_by || null
   };
+}
+
+function isPartnerEmailDeliveryError(error) {
+  return Boolean(error && typeof error === 'object' && error.partnerEmailDelivery);
 }
 
 function mapPartnerEmailSettingsForResponse(row) {
@@ -1423,6 +1436,14 @@ function mapPartnerRequestRow(row) {
     pdfReleaseStatus: normalizePartnerRequestPdfReleaseStatus(row.pdf_release_status),
     approvedStructureId: row.approved_structure_id || null,
     approvedDiscountCodeId,
+    partnerUserId: row.partner_user_id || null,
+    partnerUserEmail: row.partner_user_email ? sanitizeCatalogText(row.partner_user_email) : null,
+    partnerUserFirstName: row.partner_user_first_name ? sanitizeCatalogText(row.partner_user_first_name) : null,
+    partnerUserLastName: row.partner_user_last_name ? sanitizeCatalogText(row.partner_user_last_name) : null,
+    partnerUserIsRegistered: row.partner_user_is_registered == null ? null : Boolean(row.partner_user_is_registered),
+    partnerInviteExpiresAt: row.partner_invite_expires_at || null,
+    partnerInviteUsedAt: row.partner_invite_used_at || null,
+    partnerInviteCreatedAt: row.partner_invite_created_at || null,
     discountCode,
     discount:
       discountCode && approvedDiscountCodeId
@@ -1638,6 +1659,14 @@ async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
         pr.approved_structure_id,
         pr.approved_discount_code_id,
         pr.approval_email_sent_at,
+        partner_user.id AS partner_user_id,
+        partner_user.email AS partner_user_email,
+        partner_user.first_name AS partner_user_first_name,
+        partner_user.last_name AS partner_user_last_name,
+        partner_user.is_registered AS partner_user_is_registered,
+        partner_user.invite_expires_at AS partner_invite_expires_at,
+        partner_user.invite_used_at AS partner_invite_used_at,
+        partner_user.invite_created_at AS partner_invite_created_at,
         dc.code AS discount_code,
         dc.apply_to,
         dc.city_id,
@@ -1664,6 +1693,30 @@ async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
         JOIN cities c ON c.id = dcc.city_id
         WHERE dcc.discount_code_id = dc.id
       ) city_links ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT
+          u.id,
+          u.email,
+          u.first_name,
+          u.last_name,
+          u.is_registered,
+          latest_invite.expires_at AS invite_expires_at,
+          latest_invite.used_at AS invite_used_at,
+          latest_invite.created_at AS invite_created_at
+        FROM dashboard_users u
+        LEFT JOIN LATERAL (
+          SELECT i.expires_at, i.used_at, i.created_at
+          FROM dashboard_invites i
+          WHERE i.user_id = u.id
+          ORDER BY i.created_at DESC, i.id DESC
+          LIMIT 1
+        ) latest_invite ON TRUE
+        WHERE u.deleted = 0
+          AND u.structure_id = pr.approved_structure_id
+          AND LOWER(u.email) = LOWER(pr.contact_email)
+        ORDER BY u.is_registered DESC, u.updated_at DESC
+        LIMIT 1
+      ) partner_user ON TRUE
       WHERE pr.id = $1
         ${deletedFilterSql}
       LIMIT 1
@@ -1673,6 +1726,109 @@ async function fetchPartnerRequestById(requestId, client = pool, options = {}) {
   );
 
   return result.rowCount ? result.rows[0] : null;
+}
+
+async function createPartnerActivationInvite({ client, requestRow, structureId, invitedByUserId, origin }) {
+  const partnerEmail = String(requestRow.contact_email || '').trim().toLowerCase();
+  if (!partnerEmail) {
+    return { error: { status: 400, message: 'Email referente partner mancante' } };
+  }
+
+  const structureName = String(requestRow.structure_name || '').trim();
+  const partnerFirstName = String(requestRow.contact_first_name || '').trim();
+  const partnerLastName = String(requestRow.contact_last_name || '').trim();
+  const partnerName = [partnerFirstName, partnerLastName].filter(Boolean).join(' ') || partnerEmail;
+  const partnerUserResult = await client.query(
+    `
+      SELECT id, email, is_registered
+      FROM dashboard_users
+      WHERE email = $1
+      FOR UPDATE
+    `,
+    [partnerEmail]
+  );
+
+  let partnerUserId;
+  if (!partnerUserResult.rowCount) {
+    partnerUserId = `usr_${crypto.randomUUID()}`;
+    const placeholderHash = await hashPassword(createOpaqueToken(24));
+    await client.query(
+      `
+        INSERT INTO dashboard_users (
+          id,
+          name,
+          first_name,
+          last_name,
+          facility_name,
+          structure_id,
+          email,
+          password_hash,
+          role,
+          is_registered,
+          invited_by
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'facility_manager', FALSE, $9)
+      `,
+      [
+        partnerUserId,
+        partnerName,
+        partnerFirstName,
+        partnerLastName,
+        structureName,
+        structureId,
+        partnerEmail,
+        placeholderHash,
+        invitedByUserId
+      ]
+    );
+  } else {
+    const existingPartnerUser = partnerUserResult.rows[0];
+    if (existingPartnerUser.is_registered) {
+      return {
+        error: {
+          status: 409,
+          message: 'Esiste gia un utente dashboard registrato con questa email. Associa manualmente la struttura o usa un altro referente.'
+        }
+      };
+    }
+
+    partnerUserId = existingPartnerUser.id;
+    await client.query(
+      `
+        UPDATE dashboard_users
+        SET invited_by = $1,
+            role = 'facility_manager',
+            name = $2,
+            first_name = $3,
+            last_name = $4,
+            facility_name = $5,
+            structure_id = $6,
+            updated_at = NOW()
+        WHERE id = $7
+      `,
+      [invitedByUserId, partnerName, partnerFirstName, partnerLastName, structureName, structureId, partnerUserId]
+    );
+  }
+
+  await client.query('UPDATE dashboard_invites SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL', [partnerUserId]);
+
+  const rawActivationToken = createOpaqueToken(32);
+  const activationTokenHash = hashToken(rawActivationToken);
+  const activationExpiresAt = inviteExpiryDate();
+  await client.query(
+    `
+      INSERT INTO dashboard_invites (email, user_id, token_hash, invited_by, expires_at)
+      VALUES ($1, $2, $3, $4, $5)
+    `,
+    [partnerEmail, partnerUserId, activationTokenHash, invitedByUserId, activationExpiresAt.toISOString()]
+  );
+
+  const activationOrigin = normalizedOrigin(origin);
+  return {
+    partnerUserId,
+    activationUrl: `${activationOrigin}/auth/complete-registration?token=${encodeURIComponent(rawActivationToken)}`,
+    activationExpiresAt: activationExpiresAt.toISOString()
+  };
 }
 
 async function fetchDiscountCodeByIdForPdf(discountCodeId, client = pool, options = {}) {
@@ -1867,6 +2023,8 @@ async function getPartnerEmailSettings(client = pool) {
         approval_body,
         rejection_subject,
         rejection_body,
+        activation_subject,
+        activation_body,
         updated_at,
         updated_by
       FROM dashboard_partner_email_settings
@@ -1886,20 +2044,26 @@ async function getPartnerEmailSettings(client = pool) {
         approval_subject,
         approval_body,
         rejection_subject,
-        rejection_body
+        rejection_body,
+        activation_subject,
+        activation_body
       )
-      VALUES (1, $1, $2, $3, $4)
+      VALUES (1, $1, $2, $3, $4, $5, $6)
       ON CONFLICT (id) DO UPDATE SET
         approval_subject = COALESCE(dashboard_partner_email_settings.approval_subject, EXCLUDED.approval_subject),
         approval_body = COALESCE(dashboard_partner_email_settings.approval_body, EXCLUDED.approval_body),
         rejection_subject = COALESCE(dashboard_partner_email_settings.rejection_subject, EXCLUDED.rejection_subject),
-        rejection_body = COALESCE(dashboard_partner_email_settings.rejection_body, EXCLUDED.rejection_body)
+        rejection_body = COALESCE(dashboard_partner_email_settings.rejection_body, EXCLUDED.rejection_body),
+        activation_subject = COALESCE(dashboard_partner_email_settings.activation_subject, EXCLUDED.activation_subject),
+        activation_body = COALESCE(dashboard_partner_email_settings.activation_body, EXCLUDED.activation_body)
       RETURNING
         id,
         approval_subject,
         approval_body,
         rejection_subject,
         rejection_body,
+        activation_subject,
+        activation_body,
         updated_at,
         updated_by
     `,
@@ -1907,7 +2071,9 @@ async function getPartnerEmailSettings(client = pool) {
       DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject,
       DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody,
       DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject,
-      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
+      DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject,
+      DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody
     ]
   );
 
@@ -3861,15 +4027,19 @@ router.put('/partner-email-settings', requireAuth, requireAdmin, async (req, res
           approval_body,
           rejection_subject,
           rejection_body,
+          activation_subject,
+          activation_body,
           updated_by,
           updated_at
         )
-        VALUES (1, $1, $2, $3, $4, $5, NOW())
+        VALUES (1, $1, $2, $3, $4, $5, $6, $7, NOW())
         ON CONFLICT (id) DO UPDATE SET
           approval_subject = EXCLUDED.approval_subject,
           approval_body = EXCLUDED.approval_body,
           rejection_subject = EXCLUDED.rejection_subject,
           rejection_body = EXCLUDED.rejection_body,
+          activation_subject = EXCLUDED.activation_subject,
+          activation_body = EXCLUDED.activation_body,
           updated_by = EXCLUDED.updated_by,
           updated_at = NOW()
         RETURNING
@@ -3878,6 +4048,8 @@ router.put('/partner-email-settings', requireAuth, requireAdmin, async (req, res
           approval_body,
           rejection_subject,
           rejection_body,
+          activation_subject,
+          activation_body,
           updated_at,
           updated_by
       `,
@@ -3886,6 +4058,8 @@ router.put('/partner-email-settings', requireAuth, requireAdmin, async (req, res
         payload.approvalBody,
         payload.rejectionSubject,
         payload.rejectionBody,
+        payload.activationSubject,
+        payload.activationBody,
         req.authSession.user.id
       ]
     );
@@ -4907,6 +5081,14 @@ router.get('/partner-requests', requireAuth, requireAdmin, async (_req, res, nex
           pr.approved_structure_id,
           pr.approved_discount_code_id,
           pr.approval_email_sent_at,
+          partner_user.id AS partner_user_id,
+          partner_user.email AS partner_user_email,
+          partner_user.first_name AS partner_user_first_name,
+          partner_user.last_name AS partner_user_last_name,
+          partner_user.is_registered AS partner_user_is_registered,
+          partner_user.invite_expires_at AS partner_invite_expires_at,
+          partner_user.invite_used_at AS partner_invite_used_at,
+          partner_user.invite_created_at AS partner_invite_created_at,
           dc.code AS discount_code,
           dc.apply_to,
           dc.city_id,
@@ -4933,6 +5115,30 @@ router.get('/partner-requests', requireAuth, requireAdmin, async (_req, res, nex
           JOIN cities c ON c.id = dcc.city_id
           WHERE dcc.discount_code_id = dc.id
         ) city_links ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT
+            u.id,
+            u.email,
+            u.first_name,
+            u.last_name,
+            u.is_registered,
+            latest_invite.expires_at AS invite_expires_at,
+            latest_invite.used_at AS invite_used_at,
+            latest_invite.created_at AS invite_created_at
+          FROM dashboard_users u
+          LEFT JOIN LATERAL (
+            SELECT i.expires_at, i.used_at, i.created_at
+            FROM dashboard_invites i
+            WHERE i.user_id = u.id
+            ORDER BY i.created_at DESC, i.id DESC
+            LIMIT 1
+          ) latest_invite ON TRUE
+          WHERE u.deleted = 0
+            AND u.structure_id = pr.approved_structure_id
+            AND LOWER(u.email) = LOWER(pr.contact_email)
+          ORDER BY u.is_registered DESC, u.updated_at DESC
+          LIMIT 1
+        ) partner_user ON TRUE
         WHERE pr.deleted = 0
         ORDER BY
           CASE
@@ -5090,6 +5296,11 @@ router.post('/partner-requests/:requestId/reject', requireAuth, requireAdmin, as
     );
   } catch (error) {
     await client.query('ROLLBACK');
+    if (isPartnerEmailDeliveryError(error)) {
+      return res.status(502).json({
+        message: 'Email partner non inviata dal server SMTP. Controlla destinatario, spam/provider e log backend.'
+      });
+    }
     return next(error);
   } finally {
     client.release();
@@ -5109,11 +5320,6 @@ router.delete('/partner-requests/:requestId', requireAuth, requireAdmin, async (
     if (!current || Number(current.deleted || 0) === 1) {
       await client.query('ROLLBACK');
       return res.status(404).json({ message: 'Richiesta partner non trovata' });
-    }
-
-    if (normalizePartnerRequestStatus(current.status) === 'approved') {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ message: 'Le richieste partner approvate non possono essere eliminate' });
     }
 
     await client.query(
@@ -5230,6 +5436,19 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
       ]
     );
 
+    const activationInvite = await createPartnerActivationInvite({
+      client,
+      requestRow,
+      structureId,
+      invitedByUserId: req.authSession.user.id,
+      origin: payload.origin
+    });
+    if (activationInvite.error) {
+      await client.query('ROLLBACK');
+      return res.status(activationInvite.error.status).json({ message: activationInvite.error.message });
+    }
+    const activationUrl = activationInvite.activationUrl;
+
     const applyTo = payload.applyTo === 'single' ? 'single' : 'bundle';
     const userDiscountPercentSingle = applyTo === 'single' ? payload.userDiscountPercent : 0;
     const userDiscountPercentBundle = applyTo === 'bundle' ? payload.userDiscountPercent : 0;
@@ -5307,6 +5526,7 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
       expiresAt: payload.expiresAt.toISOString(),
       userDiscountPercent: payload.userDiscountPercent,
       structureFixedAmount: payload.structureFixedAmount,
+      activationUrl,
       pdfBuffer,
       pdfFileName,
       subjectTemplate: emailSettings.approvalSubject,
@@ -5369,7 +5589,15 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
         structure_fixed_amount: payload.structureFixedAmount,
         structure_fixed_amount_single: structureFixedAmountSingle,
         structure_fixed_amount_bundle: structureFixedAmountBundle,
-        expires_at: payload.expiresAt.toISOString()
+        expires_at: payload.expiresAt.toISOString(),
+        partner_user_id: activationInvite.partnerUserId,
+        partner_user_email: requestRow.contact_email,
+        partner_user_first_name: requestRow.contact_first_name,
+        partner_user_last_name: requestRow.contact_last_name,
+        partner_user_is_registered: false,
+        partner_invite_expires_at: activationInvite.activationExpiresAt,
+        partner_invite_used_at: null,
+        partner_invite_created_at: new Date().toISOString()
       })
     );
   } catch (error) {
@@ -5377,8 +5605,93 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
     if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_MODULE_NOT_FOUND') {
       return res.status(500).json({ message: 'Nodemailer non installato. Esegui npm install nel backend.' });
     }
+    if (isPartnerEmailDeliveryError(error)) {
+      return res.status(502).json({
+        message: 'Email partner non inviata dal server SMTP. Controlla destinatario, spam/provider e log backend.'
+      });
+    }
     if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       return res.status(409).json({ message: 'Codice gia in uso' });
+    }
+    return next(error);
+  } finally {
+    client.release();
+  }
+});
+
+router.post('/partner-requests/:requestId/resend-activation', requireAuth, requireAdmin, async (req, res, next) => {
+  const parsed = partnerRequestActivationResendSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ message: 'Payload non valido', errors: parsed.error.flatten() });
+  }
+
+  const requestId = Number(req.params.requestId);
+  if (!Number.isInteger(requestId) || requestId <= 0) {
+    return res.status(400).json({ message: 'Richiesta partner non valida' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const current = await fetchPartnerRequestById(requestId, client, { forUpdate: true });
+    if (!current) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'Richiesta partner non trovata' });
+    }
+    if (normalizePartnerRequestStatus(current.status) !== 'approved' || !current.approved_structure_id) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'Puoi reinviare l invito solo per richieste partner approvate' });
+    }
+    if (current.partner_user_is_registered) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ message: 'La struttura ha gia un utente dashboard registrato' });
+    }
+
+    const activationInvite = await createPartnerActivationInvite({
+      client,
+      requestRow: current,
+      structureId: current.approved_structure_id,
+      invitedByUserId: req.authSession.user.id,
+      origin: parsed.data.origin
+    });
+    if (activationInvite.error) {
+      await client.query('ROLLBACK');
+      return res.status(activationInvite.error.status).json({ message: activationInvite.error.message });
+    }
+
+    const emailSettings = normalizePartnerEmailSettings(await getPartnerEmailSettings(client));
+    const applyTo = current.apply_to === 'single' ? 'single' : 'bundle';
+    await sendPartnerActivationEmail({
+      requestId: current.id,
+      to: current.contact_email,
+      contactName: [current.contact_first_name, current.contact_last_name].filter(Boolean).join(' '),
+      structureName: current.structure_name,
+      structureType: current.structure_type,
+      contactEmail: current.contact_email,
+      addressCity: current.address_city,
+      discountCode: current.discount_code || '',
+      cityNames: normalizeTextArray(current.city_names),
+      expiresAt: current.expires_at || null,
+      userDiscountPercent: optionalNumber(resolveDiscountRowValue(current, applyTo, 'user_discount_percent')),
+      structureFixedAmount: optionalNumber(resolveDiscountRowValue(current, applyTo, 'structure_fixed_amount')),
+      activationUrl: activationInvite.activationUrl,
+      subjectTemplate: emailSettings.activationSubject,
+      bodyTemplate: emailSettings.activationBody
+    });
+
+    const updated = await fetchPartnerRequestById(requestId, client);
+    await client.query('COMMIT');
+    return res.json(mapPartnerRequestRow(updated || current));
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_MODULE_NOT_FOUND') {
+      return res.status(500).json({ message: 'Nodemailer non installato. Esegui npm install nel backend.' });
+    }
+    if (isPartnerEmailDeliveryError(error)) {
+      return res.status(502).json({
+        message: 'Email partner non inviata dal server SMTP. Controlla destinatario, spam/provider e log backend.'
+      });
     }
     return next(error);
   } finally {

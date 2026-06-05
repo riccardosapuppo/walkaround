@@ -15,6 +15,31 @@
   gap: 12px;
 }
 
+.structure-context {
+  margin: 16px 0;
+  padding: 14px 16px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(35, 49, 76, 0.12);
+  border-radius: 8px;
+  background: #f7f9fc;
+  color: #23314c;
+}
+
+.structure-context span,
+.structure-context small {
+  color: #63708a;
+}
+
+.structure-context strong {
+  overflow-wrap: anywhere;
+  font-size: 1.1rem;
+}
+
+.structure-context p {
+  margin: 8px 0 0;
+}
+
 .state-message {
   margin-top: 14px;
   display: grid;

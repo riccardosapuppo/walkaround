@@ -59,7 +59,7 @@ type DashboardSection =
   | 'catalog';
 type UsersTab = 'registered' | 'codeOnly';
 type CatalogTab = 'cities' | 'pois';
-type PartnerRequestsTab = 'requests' | 'emails';
+type PartnerRequestsTab = 'pending' | 'approved' | 'emails';
 type GlobalSettingsTab = 'privacyPolicy' | 'notifications' | 'appCache';
 type GptTranslationsTab = 'texts' | 'audio' | 'settings';
 type PoiMapPickerTarget = 'create' | 'edit';
@@ -102,7 +102,15 @@ const DEFAULT_PARTNER_EMAIL_SETTINGS: PartnerEmailSettingsInput = {
     '',
     'In allegato trovi il PDF pronto da esporre ai turisti.',
     '',
-    'Per qualsiasi dubbio puoi rispondere a questa email.'
+    'Puoi completare la registrazione del tuo account partner da questo link:',
+    '{{activationUrl}}',
+    '',
+    'Una volta attivato il tuo account, potrai accedere alla dashboard partner per consultare le informazioni della struttura, verificare il codice sconto attivo, controllare le citta abilitate e consultare le condizioni economiche della partnership, inclusa la quota riconosciuta alla struttura per i pagamenti generati tramite il codice sconto associato.',
+    '',
+    'Per qualsiasi dubbio puoi rispondere a questa email.',
+    '',
+    'Grazie,',
+    'Walk Around'
   ].join('\n'),
   rejectionSubject: 'Walk Around - Richiesta partner non approvata',
   rejectionBody: [
@@ -114,6 +122,22 @@ const DEFAULT_PARTNER_EMAIL_SETTINGS: PartnerEmailSettingsInput = {
     '',
     'Grazie,',
     'Walk Around'
+  ].join('\n'),
+  activationSubject: 'Walk Around - Attiva il tuo account partner',
+  activationBody: [
+    'Ciao {{contactName}},',
+    '',
+    'abbiamo generato un nuovo link per completare la registrazione del tuo account partner per {{structureName}}.',
+    '',
+    'Link registrazione:',
+    '{{activationUrl}}',
+    '',
+    'Una volta attivato il tuo account, potrai accedere alla dashboard partner per consultare le informazioni della struttura, verificare il codice sconto attivo, controllare le citta abilitate e consultare le condizioni economiche della partnership.',
+    '',
+    'Per qualsiasi dubbio puoi rispondere a questa email.',
+    '',
+    'Grazie,',
+    'Walk Around'
   ].join('\n')
 };
 
@@ -122,13 +146,13 @@ const DEFAULT_PARTNER_EMAIL_PLACEHOLDERS: DashboardPartnerEmailSettings['placeho
   { key: 'structureName', description: 'Nome della struttura' },
   { key: 'structureType', description: 'Tipologia della struttura' },
   { key: 'contactEmail', description: 'Email del referente partner' },
-  { key: 'requestId', description: 'ID della richiesta partner' },
   { key: 'addressCity', description: 'Citta indicata nella richiesta' },
   { key: 'discountCode', description: 'Codice sconto generato in approvazione' },
   { key: 'cityNames', description: 'Citta abilitate per il codice sconto' },
   { key: 'expiresAt', description: 'Scadenza del codice sconto' },
   { key: 'userDiscountPercent', description: 'Percentuale sconto applicata agli utenti' },
-  { key: 'structureFixedAmount', description: 'Quota fissa riconosciuta alla struttura' }
+  { key: 'structureFixedAmount', description: 'Quota fissa riconosciuta alla struttura' },
+  { key: 'activationUrl', description: 'Link per completare la registrazione account partner' }
 ];
 
 @Component({
@@ -215,7 +239,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     { id: 'payments', label: 'Pagamenti' }
   ];
   readonly partnerRequestsTabs: Array<{ id: PartnerRequestsTab; label: string }> = [
-    { id: 'requests', label: 'Richieste' },
+    { id: 'pending', label: 'Da approvare' },
+    { id: 'approved', label: 'Approvati' },
     { id: 'emails', label: 'Email partner' }
   ];
   readonly globalSettingsTabs: Array<{ id: GlobalSettingsTab; label: string }> = [
@@ -231,7 +256,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   authChecked = false;
   isAuthenticated = false;
-  activePartnerRequestsTab: PartnerRequestsTab = 'requests';
+  activePartnerRequestsTab: PartnerRequestsTab = 'pending';
   activeSection: DashboardSection = this.readStoredActiveSection();
   activeUsersTab: UsersTab = 'registered';
   showInviteSection = false;
@@ -370,6 +395,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   rejectingPartnerRequestId: number | null = null;
   deletingPartnerRequestId: number | null = null;
   previewingPartnerRequestId: number | null = null;
+  resendingPartnerActivationRequestId: number | null = null;
   private lastLoadedCatalogPoisCityId = '';
   private catalogPoisRequestToken = 0;
   private openAiTranslationStatusRequestToken = 0;
@@ -518,7 +544,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     approvalSubject: [DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject, [Validators.required, Validators.maxLength(200)]],
     approvalBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody, [Validators.required, Validators.maxLength(10000)]],
     rejectionSubject: [DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject, [Validators.required, Validators.maxLength(200)]],
-    rejectionBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody, [Validators.required, Validators.maxLength(10000)]]
+    rejectionBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody, [Validators.required, Validators.maxLength(10000)]],
+    activationSubject: [DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject, [Validators.required, Validators.maxLength(200)]],
+    activationBody: [DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody, [Validators.required, Validators.maxLength(10000)]]
   });
 
   readonly notificationSettingsForm = this.formBuilder.nonNullable.group({
@@ -1236,12 +1264,23 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return this.partnerRequests.length;
   }
 
+  get visiblePartnerRequests(): DashboardPartnerRequest[] {
+    if (this.activePartnerRequestsTab === 'approved') {
+      return this.partnerRequests.filter((request) => request.status === 'approved');
+    }
+    return this.partnerRequests.filter((request) => request.status === 'pending');
+  }
+
   get pendingPartnerRequests(): number {
     return this.partnerRequests.filter((request) => request.status === 'pending').length;
   }
 
   get approvedPartnerRequests(): number {
     return this.partnerRequests.filter((request) => request.status === 'approved').length;
+  }
+
+  get approvedPartnerRequestsWithoutRegisteredUser(): number {
+    return this.partnerRequests.filter((request) => request.status === 'approved' && !request.partnerUserIsRegistered).length;
   }
 
   get sentPartnerRequestPdfs(): number {
@@ -1431,6 +1470,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.rejectingPartnerRequestId = null;
       this.deletingPartnerRequestId = null;
       this.previewingPartnerRequestId = null;
+      this.resendingPartnerActivationRequestId = null;
     }
     if (section !== 'catalog') {
       this.closeCreateCatalogCityDialog();
@@ -2024,7 +2064,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
           approvalSubject: settings.approvalSubject || '',
           approvalBody: settings.approvalBody || '',
           rejectionSubject: settings.rejectionSubject || '',
-          rejectionBody: settings.rejectionBody || ''
+          rejectionBody: settings.rejectionBody || '',
+          activationSubject: settings.activationSubject || '',
+          activationBody: settings.activationBody || ''
         });
       },
       error: (error: { error?: { message?: string } }) => {
@@ -2046,7 +2088,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       approvalSubject: formValue.approvalSubject.trim(),
       approvalBody: formValue.approvalBody.trim(),
       rejectionSubject: formValue.rejectionSubject.trim(),
-      rejectionBody: formValue.rejectionBody.trim()
+      rejectionBody: formValue.rejectionBody.trim(),
+      activationSubject: formValue.activationSubject.trim(),
+      activationBody: formValue.activationBody.trim()
     };
 
     this.savingPartnerEmailSettings = true;
@@ -2058,7 +2102,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
           approvalSubject: settings.approvalSubject || '',
           approvalBody: settings.approvalBody || '',
           rejectionSubject: settings.rejectionSubject || '',
-          rejectionBody: settings.rejectionBody || ''
+          rejectionBody: settings.rejectionBody || '',
+          activationSubject: settings.activationSubject || '',
+          activationBody: settings.activationBody || ''
         });
         this.snackBar.open('Template email partner salvati', 'OK', { duration: 2400 });
       },
@@ -2075,7 +2121,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       approvalSubject: DEFAULT_PARTNER_EMAIL_SETTINGS.approvalSubject,
       approvalBody: DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody,
       rejectionSubject: DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionSubject,
-      rejectionBody: DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody
+      rejectionBody: DEFAULT_PARTNER_EMAIL_SETTINGS.rejectionBody,
+      activationSubject: DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject,
+      activationBody: DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody
     });
     this.partnerEmailSettingsForm.markAsDirty();
   }
@@ -2757,7 +2805,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       code: normalizedCode,
       userDiscountPercent: this.normalizePercent(userDiscountPercent),
       structureFixedAmount: this.normalizeEuroAmount(structureFixedAmount),
-      expiresAt: expiresAtIso
+      expiresAt: expiresAtIso,
+      origin: window.location.origin
     };
 
     this.approvingPartnerRequestId = request.id;
@@ -2777,6 +2826,28 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       error: (error: { error?: { message?: string } }) => {
         this.approvingPartnerRequestId = null;
         const message = error?.error?.message || 'Errore approvazione richiesta partner';
+        this.snackBar.open(message, 'Chiudi', { duration: 3500 });
+      }
+    });
+  }
+
+  resendPartnerActivation(request: DashboardPartnerRequest): void {
+    if (!this.canResendPartnerActivation(request) || this.resendingPartnerActivationRequestId !== null) {
+      return;
+    }
+
+    this.resendingPartnerActivationRequestId = request.id;
+    this.auth.resendPartnerRequestActivation(request.id, window.location.origin).subscribe({
+      next: (updated) => {
+        this.resendingPartnerActivationRequestId = null;
+        this.partnerRequests = this.sortPartnerRequests(
+          this.partnerRequests.map((item) => (item.id === updated.id ? updated : item))
+        );
+        this.snackBar.open(`Invito registrazione reinviato a ${updated.contactEmail}`, 'OK', { duration: 3200 });
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.resendingPartnerActivationRequestId = null;
+        const message = error?.error?.message || 'Errore reinvio invito registrazione';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -2810,12 +2881,16 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   }
 
   deletePartnerRequest(request: DashboardPartnerRequest): void {
-    if (!this.canManageUsers || this.deletingPartnerRequestId !== null || request.status === 'approved') {
+    if (!this.canManageUsers || this.deletingPartnerRequestId !== null) {
       return;
     }
 
+    const approvedNotice =
+      request.status === 'approved'
+        ? ' La struttura, il codice sconto e l account collegato resteranno attivi nelle rispettive sezioni.'
+        : '';
     const confirmed = window.confirm(
-      `Eliminare la richiesta partner per "${request.structureName}"? Rimarra nel database ma non sara piu visibile in dashboard.`
+      `Eliminare la richiesta partner per "${request.structureName}"? Rimarra nel database ma non sara piu visibile in dashboard.${approvedNotice}`
     );
     if (!confirmed) {
       return;
@@ -2841,7 +2916,8 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       this.approvingPartnerRequestId === request.id ||
       this.rejectingPartnerRequestId === request.id ||
       this.deletingPartnerRequestId === request.id ||
-      this.previewingPartnerRequestId === request.id
+      this.previewingPartnerRequestId === request.id ||
+      this.resendingPartnerActivationRequestId === request.id
     );
   }
 
@@ -2893,6 +2969,20 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return 'Contenuti associati';
   }
 
+  partnerRequestDiscountCitiesSummaryLabel(request: DashboardPartnerRequest): string {
+    const discount = request.discount;
+    if (!discount) {
+      return '-';
+    }
+    const names = Array.isArray(discount.cityNames) ? discount.cityNames.filter(Boolean) : [];
+    const ids = Array.isArray(discount.cityIds) ? discount.cityIds.filter(Boolean) : [];
+    const count = names.length || ids.length;
+    if (count > 2) {
+      return `${count} citta abilitate`;
+    }
+    return this.partnerRequestDiscountCitiesLabel(request);
+  }
+
   partnerRequestDiscountValueLabel(request: DashboardPartnerRequest): string {
     const discount = request.discount;
     if (!discount) {
@@ -2927,6 +3017,30 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   partnerRequestPdfStatusClass(status: DashboardPartnerRequest['pdfReleaseStatus']): string {
     return status === 'sent' ? 'ok' : 'warn';
+  }
+
+  partnerRequestAccountLabel(request: DashboardPartnerRequest): string {
+    if (request.partnerUserIsRegistered) {
+      return 'Utente associato';
+    }
+    if (request.partnerUserId) {
+      return 'Invito non completato';
+    }
+    return 'Nessun utente associato';
+  }
+
+  partnerRequestAccountStatusClass(request: DashboardPartnerRequest): string {
+    if (request.partnerUserIsRegistered) {
+      return 'ok';
+    }
+    if (request.partnerUserId) {
+      return 'warn';
+    }
+    return 'bad';
+  }
+
+  canResendPartnerActivation(request: DashboardPartnerRequest): boolean {
+    return this.canManageUsers && request.status === 'approved' && !request.partnerUserIsRegistered;
   }
 
   loadPayPalSettings(): void {

@@ -1270,8 +1270,29 @@ router.post('/partner-registration-requests', async (req, res, next) => {
   }
 
   const payload = parsed.data;
+  const normalizedContactEmail = payload.contactEmail.toLowerCase();
 
   try {
+    const existingDashboardUser = await pool.query(
+      `
+        SELECT id
+        FROM dashboard_users
+        WHERE LOWER(email) = LOWER($1)
+          AND deleted = 0
+          AND is_registered = TRUE
+        LIMIT 1
+      `,
+      [normalizedContactEmail]
+    );
+
+    if (existingDashboardUser.rowCount) {
+      return res.status(409).json({
+        code: 'DASHBOARD_EMAIL_ALREADY_REGISTERED',
+        field: 'contactEmail',
+        message: 'Questa email e gia registrata. Usa un altra email o contattaci per associare la struttura.'
+      });
+    }
+
     const insert = await pool.query(
       `
       INSERT INTO partner_registration_requests (
@@ -1305,7 +1326,7 @@ router.post('/partner-registration-requests', async (req, res, next) => {
         payload.vatNumber || null,
         payload.contactFirstName,
         payload.contactLastName,
-        payload.contactEmail.toLowerCase(),
+        normalizedContactEmail,
         payload.contactPhone,
         payload.website || null,
         payload.addressStreet,
@@ -1321,12 +1342,14 @@ router.post('/partner-registration-requests', async (req, res, next) => {
     );
 
     const row = insert.rows[0];
-    notifyPartnerRegistrationRequest({
+    const requestNotification = {
       id: Number(row.id),
       createdAt: row.created_at,
       ...payload,
-      contactEmail: payload.contactEmail.toLowerCase()
-    }).catch((error) => {
+      contactEmail: normalizedContactEmail
+    };
+
+    notifyPartnerRegistrationRequest(requestNotification).catch((error) => {
       console.error('Failed to send partner registration notification', error);
     });
 

@@ -82,9 +82,15 @@ async function fetchInviteByToken(token, client = pool) {
         i.user_id,
         i.expires_at,
         i.used_at,
+        u.first_name,
+        u.last_name,
+        u.structure_id,
+        s.name AS structure_name,
+        u.role,
         u.is_registered
       FROM dashboard_invites i
       JOIN dashboard_users u ON u.id = i.user_id AND u.deleted = 0
+      LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
       WHERE i.token_hash = $1
       LIMIT 1
     `,
@@ -106,7 +112,12 @@ function mapInviteStatus(inviteRow) {
   if (inviteRow.is_registered) {
     return {
       status: 'already_registered',
-      email: inviteRow.email
+      email: inviteRow.email,
+      firstName: inviteRow.first_name || '',
+      lastName: inviteRow.last_name || '',
+      structureId: inviteRow.structure_id || null,
+      structureName: inviteRow.structure_name || null,
+      role: inviteRow.role || ''
     };
   }
 
@@ -114,6 +125,11 @@ function mapInviteStatus(inviteRow) {
     return {
       status: 'expired',
       email: inviteRow.email,
+      firstName: inviteRow.first_name || '',
+      lastName: inviteRow.last_name || '',
+      structureId: inviteRow.structure_id || null,
+      structureName: inviteRow.structure_name || null,
+      role: inviteRow.role || '',
       expiresAt: inviteRow.expires_at
     };
   }
@@ -121,6 +137,11 @@ function mapInviteStatus(inviteRow) {
   return {
     status: 'valid',
     email: inviteRow.email,
+    firstName: inviteRow.first_name || '',
+    lastName: inviteRow.last_name || '',
+    structureId: inviteRow.structure_id || null,
+    structureName: inviteRow.structure_name || null,
+    role: inviteRow.role || '',
     expiresAt: inviteRow.expires_at
   };
 }
@@ -338,11 +359,17 @@ router.post('/invitations/:token/complete', async (req, res, next) => {
           i.user_id,
           i.expires_at,
           i.used_at,
+          u.first_name,
+          u.last_name,
+          u.structure_id,
+          s.name AS structure_name,
+          u.role,
           u.is_registered
         FROM dashboard_invites i
         JOIN dashboard_users u ON u.id = i.user_id AND u.deleted = 0
+        LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
         WHERE i.token_hash = $1
-        FOR UPDATE
+        FOR UPDATE OF i, u
       `,
       [tokenHash]
     );
@@ -380,13 +407,37 @@ router.post('/invitations/:token/complete', async (req, res, next) => {
       [invite.id]
     );
 
+    const userResult = await client.query(
+      `
+        SELECT
+          u.id,
+          u.first_name,
+          u.last_name,
+          u.structure_id,
+          s.name AS structure_name,
+          u.email,
+          u.role
+        FROM dashboard_users u
+        LEFT JOIN dashboard_structures s ON s.id = u.structure_id AND s.deleted = 0
+        WHERE u.id = $1
+          AND u.deleted = 0
+        LIMIT 1
+      `,
+      [invite.user_id]
+    );
+    if (!userResult.rowCount || !canAccessDashboard(userResult.rows[0].role)) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ message: 'Questo account non puo accedere alla dashboard' });
+    }
+
     await client.query('COMMIT');
 
     const session = await createSession(invite.user_id);
     return res.json({
       completed: true,
       token: session.token,
-      expiresAt: session.expiresAt
+      expiresAt: session.expiresAt,
+      ...authPayload(userResult.rows[0])
     });
   } catch (error) {
     await client.query('ROLLBACK');
