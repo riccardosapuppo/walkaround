@@ -1740,9 +1740,9 @@ async function createPartnerActivationInvite({ client, requestRow, structureId, 
   const partnerName = [partnerFirstName, partnerLastName].filter(Boolean).join(' ') || partnerEmail;
   const partnerUserResult = await client.query(
     `
-      SELECT id, email, is_registered
+      SELECT id, email, is_registered, deleted
       FROM dashboard_users
-      WHERE email = $1
+      WHERE LOWER(email) = $1
       FOR UPDATE
     `,
     [partnerEmail]
@@ -1783,7 +1783,8 @@ async function createPartnerActivationInvite({ client, requestRow, structureId, 
     );
   } else {
     const existingPartnerUser = partnerUserResult.rows[0];
-    if (existingPartnerUser.is_registered) {
+    const existingPartnerUserDeleted = Number(existingPartnerUser.deleted) === 1;
+    if (existingPartnerUser.is_registered && !existingPartnerUserDeleted) {
       return {
         error: {
           status: 409,
@@ -1793,6 +1794,22 @@ async function createPartnerActivationInvite({ client, requestRow, structureId, 
     }
 
     partnerUserId = existingPartnerUser.id;
+    const updateValues = [
+      invitedByUserId,
+      partnerName,
+      partnerFirstName,
+      partnerLastName,
+      structureName,
+      structureId,
+      partnerUserId
+    ];
+    const passwordResetSql = existingPartnerUserDeleted
+      ? ', password_hash = $8, is_registered = FALSE'
+      : '';
+    if (existingPartnerUserDeleted) {
+      updateValues.push(await hashPassword(createOpaqueToken(24)));
+    }
+
     await client.query(
       `
         UPDATE dashboard_users
@@ -1803,10 +1820,12 @@ async function createPartnerActivationInvite({ client, requestRow, structureId, 
             last_name = $4,
             facility_name = $5,
             structure_id = $6,
+            deleted = 0,
             updated_at = NOW()
+            ${passwordResetSql}
         WHERE id = $7
       `,
-      [invitedByUserId, partnerName, partnerFirstName, partnerLastName, structureName, structureId, partnerUserId]
+      updateValues
     );
   }
 
@@ -3172,9 +3191,9 @@ router.post('/invitations', requireAuth, requireAdmin, async (req, res, next) =>
 
     const userResult = await client.query(
       `
-        SELECT id, email, is_registered
+        SELECT id, email, is_registered, deleted
         FROM dashboard_users
-        WHERE email = $1
+        WHERE LOWER(email) = $1
         FOR UPDATE
       `,
       [invitedEmail]
@@ -3219,12 +3238,30 @@ router.post('/invitations', requireAuth, requireAdmin, async (req, res, next) =>
       );
     } else {
       const existing = userResult.rows[0];
-      if (existing.is_registered) {
+      const existingDeleted = Number(existing.deleted) === 1;
+      if (existing.is_registered && !existingDeleted) {
         await client.query('ROLLBACK');
         return res.status(409).json({ message: 'Utente gia registrato' });
       }
 
       userId = existing.id;
+      const updateValues = [
+        req.authSession.user.id,
+        payload.role,
+        invitedName,
+        invitedFirstName,
+        invitedLastName,
+        legacyFacilityName,
+        structureId,
+        userId
+      ];
+      const passwordResetSql = existingDeleted
+        ? ', password_hash = $9, is_registered = FALSE'
+        : '';
+      if (existingDeleted) {
+        updateValues.push(await hashPassword(createOpaqueToken(24)));
+      }
+
       await client.query(
         `
           UPDATE dashboard_users
@@ -3235,10 +3272,12 @@ router.post('/invitations', requireAuth, requireAdmin, async (req, res, next) =>
               last_name = $5,
               facility_name = $6,
               structure_id = $7,
+              deleted = 0,
               updated_at = NOW()
+              ${passwordResetSql}
           WHERE id = $8
         `,
-        [req.authSession.user.id, payload.role, invitedName, invitedFirstName, invitedLastName, legacyFacilityName, structureId, userId]
+        updateValues
       );
     }
 
