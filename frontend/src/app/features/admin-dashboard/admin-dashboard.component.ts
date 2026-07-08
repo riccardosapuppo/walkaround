@@ -89,6 +89,42 @@ type DiscountCodesByStructureGroup = {
 };
 
 const DASHBOARD_ACTIVE_SECTION_KEY = 'walkaround.dashboard.activeSection';
+const DASHBOARD_SECTION_QUERY_KEY = 'section';
+const DASHBOARD_PARTNER_TAB_QUERY_KEY = 'tab';
+const DASHBOARD_SECTION_QUERY_ALIASES: Record<string, DashboardSection> = {
+  users: 'users',
+  utenti: 'users',
+  structures: 'structures',
+  strutture: 'structures',
+  discounts: 'discounts',
+  codici: 'discounts',
+  partnerrequests: 'partnerRequests',
+  'partner-requests': 'partnerRequests',
+  partner: 'partnerRequests',
+  partneremails: 'partnerRequests',
+  'partner-emails': 'partnerRequests',
+  payments: 'payments',
+  pagamenti: 'payments',
+  paypal: 'paypal',
+  gpttranslations: 'gptTranslations',
+  'gpt-translations': 'gptTranslations',
+  globalsettings: 'globalSettings',
+  'global-settings': 'globalSettings',
+  impostazioni: 'globalSettings',
+  catalog: 'catalog',
+  catalogo: 'catalog'
+};
+const PARTNER_REQUESTS_TAB_QUERY_ALIASES: Record<string, PartnerRequestsTab> = {
+  pending: 'pending',
+  'da-approvare': 'pending',
+  approvare: 'pending',
+  approved: 'approved',
+  approvati: 'approved',
+  approvate: 'approved',
+  emails: 'emails',
+  email: 'emails',
+  template: 'emails'
+};
 
 const DEFAULT_PARTNER_EMAIL_SETTINGS: PartnerEmailSettingsInput = {
   approvalSubject: 'Walk Around - Richiesta partner approvata',
@@ -104,6 +140,7 @@ const DEFAULT_PARTNER_EMAIL_SETTINGS: PartnerEmailSettingsInput = {
     '',
     'Puoi completare la registrazione del tuo account partner da questo link:',
     '{{activationUrl}}',
+    'Scadenza link registrazione: {{activationExpiresAt}}.',
     '',
     'Link dashboard partner, da conservare per gli accessi successivi:',
     '{{dashboardUrl}}',
@@ -134,6 +171,7 @@ const DEFAULT_PARTNER_EMAIL_SETTINGS: PartnerEmailSettingsInput = {
     '',
     'Link registrazione:',
     '{{activationUrl}}',
+    'Scadenza link registrazione: {{activationExpiresAt}}.',
     '',
     'Link dashboard partner, da usare dopo aver completato la registrazione:',
     '{{dashboardUrl}}',
@@ -159,6 +197,7 @@ const DEFAULT_PARTNER_EMAIL_PLACEHOLDERS: DashboardPartnerEmailSettings['placeho
   { key: 'userDiscountPercent', description: 'Percentuale sconto applicata agli utenti' },
   { key: 'structureFixedAmount', description: 'Quota fissa riconosciuta alla struttura' },
   { key: 'activationUrl', description: 'Link per completare la registrazione account partner' },
+  { key: 'activationExpiresAt', description: 'Scadenza del link registrazione account partner' },
   { key: 'dashboardUrl', description: 'Link alla dashboard partner' }
 ];
 
@@ -727,7 +766,9 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.applyDashboardRouteState();
     this.showDashboardMessagesFromQuery();
+    this.syncDashboardRouteState({ replaceUrl: true });
     this.auth.ensureAuthenticated().subscribe((isAuthenticated) => {
       this.authChecked = true;
       this.isAuthenticated = isAuthenticated;
@@ -1451,6 +1492,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
     this.activeSection = section;
     this.storeActiveSection(section);
+    this.syncDashboardRouteState();
     if (section !== 'users') {
       this.showInviteSection = false;
       this.showCreateUserSection = false;
@@ -1518,6 +1560,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     this.activePartnerRequestsTab = tab;
+    this.syncDashboardRouteState();
     this.ensurePartnerRequestsTabLoaded();
   }
 
@@ -1530,6 +1573,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
     this.activeSection = this.visibleSections[0].id;
     this.storeActiveSection(this.activeSection);
+    this.syncDashboardRouteState({ replaceUrl: true });
   }
 
   private syncDashboardDataForCurrentRole(): void {
@@ -2850,11 +2894,11 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
         this.partnerRequests = this.sortPartnerRequests(
           this.partnerRequests.map((item) => (item.id === updated.id ? updated : item))
         );
-        this.snackBar.open(`Invito registrazione reinviato a ${updated.contactEmail}`, 'OK', { duration: 3200 });
+        this.snackBar.open(`Nuovo link registrazione inviato a ${updated.contactEmail}`, 'OK', { duration: 3200 });
       },
       error: (error: { error?: { message?: string } }) => {
         this.resendingPartnerActivationRequestId = null;
-        const message = error?.error?.message || 'Errore reinvio invito registrazione';
+        const message = error?.error?.message || 'Errore invio link registrazione';
         this.snackBar.open(message, 'Chiudi', { duration: 3500 });
       }
     });
@@ -3028,12 +3072,14 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
 
   partnerRequestAccountLabel(request: DashboardPartnerRequest): string {
     if (request.partnerUserIsRegistered) {
-      return 'Utente associato';
+      return 'Account dashboard attivo';
     }
     if (request.partnerUserId) {
-      return 'Invito non completato';
+      return this.isPastDate(request.partnerInviteExpiresAt)
+        ? 'Link registrazione scaduto'
+        : 'Link registrazione inviato';
     }
-    return 'Nessun utente associato';
+    return 'Account dashboard non creato';
   }
 
   partnerRequestAccountStatusClass(request: DashboardPartnerRequest): string {
@@ -3041,9 +3087,29 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return 'ok';
     }
     if (request.partnerUserId) {
-      return 'warn';
+      return this.isPastDate(request.partnerInviteExpiresAt) ? 'bad' : 'warn';
     }
     return 'bad';
+  }
+
+  partnerRequestRegistrationDetail(request: DashboardPartnerRequest): string {
+    if (request.partnerUserIsRegistered) {
+      return 'La struttura puo accedere alla dashboard partner.';
+    }
+    if (!request.partnerUserId) {
+      return 'Account dashboard non ancora creato per questa richiesta.';
+    }
+    if (this.isPastDate(request.partnerInviteExpiresAt)) {
+      return 'Il link registrazione e scaduto: invia un nuovo link al referente.';
+    }
+    return 'Il referente deve aprire il link registrazione e impostare la password.';
+  }
+
+  partnerRequestDiscountExpiryLabel(request: DashboardPartnerRequest): string {
+    if (!request.discount?.expiresAt) {
+      return 'Scadenza codice sconto non disponibile';
+    }
+    return `Scadenza codice sconto: ${this.formatDateTime(request.discount.expiresAt)}`;
   }
 
   canResendPartnerActivation(request: DashboardPartnerRequest): boolean {
@@ -5708,6 +5774,15 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     return this.italianDateTimeFormatter.format(date);
   }
 
+  isPastDate(value: string | null | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+
+    const date = new Date(value);
+    return !Number.isNaN(date.getTime()) && date.getTime() <= Date.now();
+  }
+
   discountCodeExpiryStatus(value: string | null | undefined): 'active' | 'expired' | 'unknown' {
     if (!value) {
       return 'unknown';
@@ -5928,10 +6003,76 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     if (consumed) {
       void this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: {},
+        queryParams: this.dashboardRouteQueryParamsFromCurrentState(),
         replaceUrl: true
       });
     }
+  }
+
+  private applyDashboardRouteState(): void {
+    const query = this.route.snapshot.queryParamMap;
+    const sectionQuery = this.normalizeDashboardRouteQueryValue(query.get(DASHBOARD_SECTION_QUERY_KEY));
+    const section = this.parseDashboardSectionQuery(query.get(DASHBOARD_SECTION_QUERY_KEY));
+    const tab = this.parsePartnerRequestsTabQuery(query.get(DASHBOARD_PARTNER_TAB_QUERY_KEY));
+
+    if (section) {
+      this.activeSection = section;
+      this.storeActiveSection(section);
+    }
+
+    if (tab) {
+      this.activePartnerRequestsTab = tab;
+      if (!section) {
+        this.activeSection = 'partnerRequests';
+        this.storeActiveSection(this.activeSection);
+      }
+    }
+
+    if (section === 'partnerRequests' && !tab) {
+      this.activePartnerRequestsTab =
+        sectionQuery === 'partneremails' || sectionQuery === 'partner-emails' ? 'emails' : 'pending';
+    }
+
+    if (this.activeSection !== 'partnerRequests' && query.get(DASHBOARD_PARTNER_TAB_QUERY_KEY)) {
+      this.activePartnerRequestsTab = 'pending';
+    }
+  }
+
+  private syncDashboardRouteState(options: { replaceUrl?: boolean } = {}): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: this.dashboardRouteQueryParamsFromCurrentState(),
+      queryParamsHandling: 'merge',
+      replaceUrl: options.replaceUrl === true
+    });
+  }
+
+  private dashboardRouteQueryParamsFromCurrentState(): Record<string, string | null> {
+    return {
+      [DASHBOARD_SECTION_QUERY_KEY]: this.activeSection,
+      [DASHBOARD_PARTNER_TAB_QUERY_KEY]: this.activeSection === 'partnerRequests' ? this.activePartnerRequestsTab : null,
+      alreadyRegistered: null,
+      registered: null,
+      passwordReset: null
+    };
+  }
+
+  private parseDashboardSectionQuery(value: string | null): DashboardSection | null {
+    const normalized = this.normalizeDashboardRouteQueryValue(value);
+    return normalized ? DASHBOARD_SECTION_QUERY_ALIASES[normalized] || null : null;
+  }
+
+  private parsePartnerRequestsTabQuery(value: string | null): PartnerRequestsTab | null {
+    const normalized = this.normalizeDashboardRouteQueryValue(value);
+    return normalized ? PARTNER_REQUESTS_TAB_QUERY_ALIASES[normalized] || null : null;
+  }
+
+  private normalizeDashboardRouteQueryValue(value: string | null): string {
+    return String(value || '')
+      .trim()
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .replace(/[\s_]+/g, '-')
+      .toLowerCase();
   }
 
   private readStoredActiveSection(): DashboardSection {

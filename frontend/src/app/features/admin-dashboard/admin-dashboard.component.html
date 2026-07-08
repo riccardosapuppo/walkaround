@@ -448,7 +448,7 @@
                     @if (invite.structureName) {
                       <span>Struttura: {{ invite.structureName }}</span>
                     }
-                    <span>Scadenza: {{ formatDateTime(invite.expiresAt) }}</span>
+                    <span>Scadenza link registrazione: {{ formatDateTime(invite.expiresAt) }}</span>
                   </div>
                 }
               </section>
@@ -1053,13 +1053,18 @@
                             } @else {
                               <small>Referente: {{ request.contactEmail }}</small>
                             }
-                            @if (request.partnerUserIsRegistered) {
-                              <small>Registrazione completata.</small>
-                            } @else {
+                            <small>{{ partnerRequestRegistrationDetail(request) }}</small>
+                            @if (!request.partnerUserIsRegistered) {
+                              @if (request.partnerInviteCreatedAt) {
+                                <small>Ultimo invio link registrazione: {{ formatDateTime(request.partnerInviteCreatedAt) }}</small>
+                              }
                               @if (request.partnerInviteExpiresAt) {
-                                <small>Scadenza invito: {{ formatDateTime(request.partnerInviteExpiresAt) }}</small>
+                                <small>
+                                  Scadenza link registrazione: {{ formatDateTime(request.partnerInviteExpiresAt) }}
+                                </small>
                               }
                             }
+                            <small>{{ partnerRequestDiscountExpiryLabel(request) }}</small>
                             <div class="action-buttons user-row-actions">
                               <button
                                 mat-stroked-button
@@ -1090,10 +1095,10 @@
                                     (click)="resendPartnerActivation(request)"
                                     [disabled]="isPartnerRequestBusy(request)"
                                     >
-                                    {{ resendingPartnerActivationRequestId === request.id ? 'Reinvio...' : 'Reinvia invito' }}
+                                    {{ resendingPartnerActivationRequestId === request.id ? 'Invio...' : 'Invia nuovo link' }}
                                   </button>
                                   <small>
-                                    Ultimo invio: {{ request.partnerInviteCreatedAt ? formatDateTime(request.partnerInviteCreatedAt) : 'mai inviato' }}
+                                    Genera un link registrazione aggiornato.
                                   </small>
                                 </span>
                               }
@@ -1159,10 +1164,10 @@
                                   (click)="resendPartnerActivation(request)"
                                   [disabled]="isPartnerRequestBusy(request)"
                                   >
-                                  {{ resendingPartnerActivationRequestId === request.id ? 'Reinvio...' : 'Reinvia invito' }}
+                                  {{ resendingPartnerActivationRequestId === request.id ? 'Invio...' : 'Invia nuovo link' }}
                                 </button>
                                 <small>
-                                  Ultimo invio: {{ request.partnerInviteCreatedAt ? formatDateTime(request.partnerInviteCreatedAt) : 'mai inviato' }}
+                                  Genera un link registrazione aggiornato.
                                 </small>
                               </span>
                             }
@@ -1220,7 +1225,7 @@
               }
             </mat-card>
             <mat-card class="stat-card">
-              <span>Template reinvito</span>
+              <span>Template link registrazione</span>
               @if (!loadingPartnerEmailSettings) {
                 <strong>Attivo</strong>
               } @else {
@@ -1325,10 +1330,10 @@
                   </mat-form-field>
                 </section>
                 <section class="partner-email-template-card">
-                  <h3>Mail reinvito registrazione</h3>
-                  <p>Parte solo dal pulsante Reinvia invito nelle richieste approvate senza account completato.</p>
+                  <h3>Mail nuovo link registrazione</h3>
+                  <p>Parte solo dal pulsante Invia nuovo link nelle richieste approvate senza account dashboard attivo.</p>
                   <mat-form-field appearance="outline" class="full-span">
-                    <mat-label>Oggetto reinvito</mat-label>
+                    <mat-label>Oggetto link registrazione</mat-label>
                     <input matInput formControlName="activationSubject" autocomplete="off" />
                     @if (partnerEmailSettingsForm.controls.activationSubject.invalid && partnerEmailSettingsForm.controls.activationSubject.touched) {
                       <mat-error>
@@ -1337,9 +1342,9 @@
                     }
                   </mat-form-field>
                   <mat-form-field appearance="outline" class="full-span">
-                    <mat-label>Testo reinvito</mat-label>
+                    <mat-label>Testo link registrazione</mat-label>
                     <textarea matInput rows="12" formControlName="activationBody"></textarea>
-                    <mat-hint>Usa {{ partnerEmailPlaceholderToken('activationUrl') }} per il link nuovo e {{ partnerEmailPlaceholderToken('dashboardUrl') }} per la dashboard.</mat-hint>
+                    <mat-hint>Usa {{ partnerEmailPlaceholderToken('activationUrl') }} per il link nuovo, {{ partnerEmailPlaceholderToken('activationExpiresAt') }} per la scadenza e {{ partnerEmailPlaceholderToken('dashboardUrl') }} per la dashboard.</mat-hint>
                     @if (partnerEmailSettingsForm.controls.activationBody.invalid && partnerEmailSettingsForm.controls.activationBody.touched) {
                       <mat-error>
                         Testo obbligatorio

@@ -43,7 +43,7 @@ function appSessionExpiryDate() {
 }
 
 function appPasswordResetExpiryDate() {
-  return new Date(Date.now() + env.auth.inviteTtlHours * 60 * 60 * 1000);
+  return new Date(Date.now() + env.auth.passwordResetTtlHours * 60 * 60 * 1000);
 }
 
 function normalizeOrigin(value) {

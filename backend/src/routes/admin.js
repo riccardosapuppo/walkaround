@@ -229,8 +229,8 @@ const partnerEmailSettingsSchema = z.object({
   approvalBody: z.string().trim().min(1, 'Testo approvazione obbligatorio').max(10000, 'Testo approvazione troppo lungo'),
   rejectionSubject: z.string().trim().min(1, 'Oggetto rifiuto obbligatorio').max(200, 'Oggetto rifiuto troppo lungo'),
   rejectionBody: z.string().trim().min(1, 'Testo rifiuto obbligatorio').max(10000, 'Testo rifiuto troppo lungo'),
-  activationSubject: z.string().trim().min(1, 'Oggetto reinvito obbligatorio').max(200, 'Oggetto reinvito troppo lungo'),
-  activationBody: z.string().trim().min(1, 'Testo reinvito obbligatorio').max(10000, 'Testo reinvito troppo lungo')
+  activationSubject: z.string().trim().min(1, 'Oggetto link registrazione obbligatorio').max(200, 'Oggetto link registrazione troppo lungo'),
+  activationBody: z.string().trim().min(1, 'Testo link registrazione obbligatorio').max(10000, 'Testo link registrazione troppo lungo')
 });
 
 const userStructureUpdateSchema = z
@@ -460,6 +460,10 @@ function normalizedOrigin(origin) {
 
 function inviteExpiryDate() {
   return new Date(Date.now() + env.auth.inviteTtlHours * 60 * 60 * 1000);
+}
+
+function passwordResetExpiryDate() {
+  return new Date(Date.now() + env.auth.passwordResetTtlHours * 60 * 60 * 1000);
 }
 
 function sessionExpiryDate() {
@@ -5567,6 +5571,7 @@ router.post('/partner-requests/:requestId/approve', requireAuth, requireAdmin, a
       userDiscountPercent: payload.userDiscountPercent,
       structureFixedAmount: payload.structureFixedAmount,
       activationUrl,
+      activationExpiresAt: activationInvite.activationExpiresAt,
       dashboardUrl: activationInvite.dashboardUrl,
       pdfBuffer,
       pdfFileName,
@@ -5717,6 +5722,7 @@ router.post('/partner-requests/:requestId/resend-activation', requireAuth, requi
       userDiscountPercent: optionalNumber(resolveDiscountRowValue(current, applyTo, 'user_discount_percent')),
       structureFixedAmount: optionalNumber(resolveDiscountRowValue(current, applyTo, 'structure_fixed_amount')),
       activationUrl: activationInvite.activationUrl,
+      activationExpiresAt: activationInvite.activationExpiresAt,
       dashboardUrl: activationInvite.dashboardUrl,
       subjectTemplate: emailSettings.activationSubject,
       bodyTemplate: emailSettings.activationBody
@@ -6349,7 +6355,7 @@ router.post('/users/:userId/password-reset', requireAuth, requireAdmin, async (r
 
     const rawToken = createOpaqueToken(32);
     const tokenHash = hashToken(rawToken);
-    const expiresAt = inviteExpiryDate();
+    const expiresAt = passwordResetExpiryDate();
     await pool.query(
       `
         INSERT INTO dashboard_password_resets (user_id, token_hash, requested_by, expires_at)

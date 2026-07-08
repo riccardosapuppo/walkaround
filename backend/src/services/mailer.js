@@ -95,6 +95,7 @@ function buildPartnerEmailVariables({
   userDiscountPercent,
   structureFixedAmount,
   activationUrl,
+  activationExpiresAt,
   dashboardUrl
 }) {
   const recipientName = String(contactName || '').trim() || 'partner';
@@ -113,6 +114,7 @@ function buildPartnerEmailVariables({
     userDiscountPercent: Number.isFinite(discountPercent) ? `${discountPercent}%` : '',
     structureFixedAmount: formatPartnerEuroAmount(structureFixedAmount),
     activationUrl: String(activationUrl || '').trim(),
+    activationExpiresAt: formatItalianDateTime(activationExpiresAt),
     dashboardUrl: String(dashboardUrl || '').trim()
   };
 }
@@ -153,9 +155,26 @@ function ensurePartnerDashboardUrlPlaceholder(bodyTemplate, dashboardUrl) {
   ].join('\n');
 }
 
-function ensurePartnerAccessLinks(bodyTemplate, { activationUrl, dashboardUrl }) {
+function ensurePartnerActivationExpiryPlaceholder(bodyTemplate, { activationUrl, activationExpiresAt }) {
+  const template = String(bodyTemplate || DEFAULT_PARTNER_EMAIL_SETTINGS.approvalBody);
+  if (!activationUrl || !activationExpiresAt || /\{\{\s*activationExpiresAt\s*\}\}/i.test(template)) {
+    return template;
+  }
+
+  if (/\{\{\s*activationUrl\s*\}\}/i.test(template)) {
+    return template.replace(
+      /\{\{\s*activationUrl\s*\}\}/i,
+      (match) => `${match}\nScadenza link registrazione: {{activationExpiresAt}}.`
+    );
+  }
+
+  return template;
+}
+
+function ensurePartnerAccessLinks(bodyTemplate, { activationUrl, activationExpiresAt, dashboardUrl }) {
   const withActivationUrl = ensurePartnerActivationUrlPlaceholder(bodyTemplate, activationUrl);
-  return ensurePartnerDashboardUrlPlaceholder(withActivationUrl, dashboardUrl);
+  const withActivationExpiry = ensurePartnerActivationExpiryPlaceholder(withActivationUrl, { activationUrl, activationExpiresAt });
+  return ensurePartnerDashboardUrlPlaceholder(withActivationExpiry, dashboardUrl);
 }
 
 async function loadNodemailer() {
@@ -371,6 +390,7 @@ export async function sendPartnerApprovalEmail({
   userDiscountPercent,
   structureFixedAmount,
   activationUrl,
+  activationExpiresAt,
   dashboardUrl,
   pdfBuffer,
   pdfFileName,
@@ -389,6 +409,7 @@ export async function sendPartnerApprovalEmail({
     userDiscountPercent,
     structureFixedAmount,
     activationUrl,
+    activationExpiresAt,
     dashboardUrl
   });
 
@@ -396,7 +417,7 @@ export async function sendPartnerApprovalEmail({
     kind: 'approval',
     to,
     subjectTemplate,
-    bodyTemplate: ensurePartnerAccessLinks(bodyTemplate, { activationUrl, dashboardUrl }),
+    bodyTemplate: ensurePartnerAccessLinks(bodyTemplate, { activationUrl, activationExpiresAt, dashboardUrl }),
     variables,
     attachments: pdfBuffer
       ? [
@@ -423,6 +444,7 @@ export async function sendPartnerActivationEmail({
   userDiscountPercent,
   structureFixedAmount,
   activationUrl,
+  activationExpiresAt,
   dashboardUrl,
   subjectTemplate = DEFAULT_PARTNER_EMAIL_SETTINGS.activationSubject,
   bodyTemplate = DEFAULT_PARTNER_EMAIL_SETTINGS.activationBody
@@ -439,6 +461,7 @@ export async function sendPartnerActivationEmail({
     userDiscountPercent,
     structureFixedAmount,
     activationUrl,
+    activationExpiresAt,
     dashboardUrl
   });
 
@@ -446,7 +469,7 @@ export async function sendPartnerActivationEmail({
     kind: 'activation',
     to,
     subjectTemplate,
-    bodyTemplate: ensurePartnerAccessLinks(bodyTemplate, { activationUrl, dashboardUrl }),
+    bodyTemplate: ensurePartnerAccessLinks(bodyTemplate, { activationUrl, activationExpiresAt, dashboardUrl }),
     variables
   });
 }

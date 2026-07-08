@@ -35,7 +35,8 @@ export const env = {
     adminEmail: process.env.ADMIN_EMAIL || 'riccardo.sapuppo.9@gmail.com',
     adminPassword: process.env.ADMIN_PASSWORD || '',
     sessionTtlHours: parsePositiveNumber(process.env.AUTH_SESSION_TTL_HOURS, 168),
-    inviteTtlHours: parsePositiveNumber(process.env.AUTH_INVITE_TTL_HOURS, 24)
+    inviteTtlHours: parsePositiveNumber(process.env.AUTH_INVITE_TTL_HOURS, 720),
+    passwordResetTtlHours: parsePositiveNumber(process.env.AUTH_PASSWORD_RESET_TTL_HOURS, 24)
   },
   smtp: {
     host: process.env.SMTP_HOST || '',

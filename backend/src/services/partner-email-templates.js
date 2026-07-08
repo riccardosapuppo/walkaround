@@ -25,6 +25,7 @@ export const DEFAULT_PARTNER_EMAIL_SETTINGS = {
     '',
     'Puoi completare la registrazione del tuo account partner da questo link:',
     '{{activationUrl}}',
+    'Scadenza link registrazione: {{activationExpiresAt}}.',
     '',
     'Link dashboard partner, da conservare per gli accessi successivi:',
     '{{dashboardUrl}}',
@@ -55,6 +56,7 @@ export const DEFAULT_PARTNER_EMAIL_SETTINGS = {
     '',
     'Link registrazione:',
     '{{activationUrl}}',
+    'Scadenza link registrazione: {{activationExpiresAt}}.',
     '',
     'Link dashboard partner, da usare dopo aver completato la registrazione:',
     '{{dashboardUrl}}',
@@ -80,5 +82,6 @@ export const PARTNER_EMAIL_TEMPLATE_PLACEHOLDERS = [
   { key: 'userDiscountPercent', description: 'Percentuale sconto applicata agli utenti' },
   { key: 'structureFixedAmount', description: 'Quota fissa riconosciuta alla struttura' },
   { key: 'activationUrl', description: 'Link per completare la registrazione account partner' },
+  { key: 'activationExpiresAt', description: 'Scadenza del link registrazione account partner' },
   { key: 'dashboardUrl', description: 'Link alla dashboard partner' }
 ];
