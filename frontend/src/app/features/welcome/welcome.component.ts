@@ -4,7 +4,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AppLanguage } from '../../core/i18n/app-language';
 import { City } from '../../core/models/city.model';
-import { AppAuthService } from '../../core/services/app-auth.service';
+import { AppAuthService, AppUser } from '../../core/services/app-auth.service';
 import { AppStateService } from '../../core/services/app-state.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PoiService } from '../../core/services/poi.service';
@@ -29,6 +29,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   cities: City[] = [];
   loadingCities = false;
   isAppLoggedIn = false;
+  loggedUserName = '';
   linkedDiscountState: LinkedDiscountState = 'idle';
   linkedDiscountMessage = '';
   linkedDiscountDetail = '';
@@ -59,10 +60,12 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       });
 
     this.isAppLoggedIn = this.appAuth.isAuthenticated;
+    this.loggedUserName = this.displayUserName(this.appAuth.user);
     this.appAuth.session$
       .pipe(takeUntil(this.destroy$))
       .subscribe((session) => {
         this.isAppLoggedIn = !!session?.user?.id;
+        this.loggedUserName = this.displayUserName(session?.user || null);
       });
 
     this.loadingCities = true;
@@ -277,6 +280,23 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     }
 
     this.appState.setActiveCity(selectedCityId);
+  }
+
+  private displayUserName(user: AppUser | null): string {
+    const firstName = String(user?.firstName || '').trim();
+    if (firstName) {
+      return firstName;
+    }
+
+    const fullName = [user?.firstName, user?.lastName]
+      .map((part) => String(part || '').trim())
+      .filter(Boolean)
+      .join(' ');
+    if (fullName) {
+      return fullName;
+    }
+
+    return String(user?.email || '').split('@')[0].trim();
   }
 
   private applyLinkedDiscountCode(params: ParamMap): void {

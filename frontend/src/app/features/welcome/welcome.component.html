@@ -3,6 +3,18 @@
     <div class="welcome-card card">
       <img class="brand-logo" src="/assets/logo.png" [attr.alt]="'common.appName' | t" loading="eager" decoding="sync" fetchpriority="high" />
       <p class="brand-slogan">{{ 'common.brandTagline' | t }}</p>
+      @if (isAppLoggedIn) {
+        <div class="welcome-user-greeting" aria-live="polite">
+          <mat-icon fontSet="material-icons-round">account_circle</mat-icon>
+          <span>
+            {{
+              loggedUserName
+                ? ('welcome.greeting' | t:{ name: loggedUserName })
+                : ('welcome.greetingFallback' | t)
+            }}
+          </span>
+        </div>
+      }
 
       <mat-form-field appearance="fill" class="welcome-select">
         <mat-icon matPrefix fontSet="material-icons-round" class="welcome-select-icon">language</mat-icon>
@@ -107,4 +119,3 @@
     </div>
   </div>
 </section>
-

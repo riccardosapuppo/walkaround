@@ -14,7 +14,7 @@ interface NavItem {
 })
 export class BottomNavComponent {
   readonly items: NavItem[] = [
-    { route: '/home', icon: 'home', labelKey: 'bottomNav.home' },
+    { route: '/welcome', icon: 'home', labelKey: 'bottomNav.home' },
     { route: '/map', icon: 'map', labelKey: 'bottomNav.map' },
     { route: '/my-audio', icon: 'library_music', labelKey: 'bottomNav.audio' },
     { route: '/favorites', icon: 'favorite', labelKey: 'bottomNav.favorites' },

@@ -91,6 +91,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'bottomNav.aria': 'Navigazione principale',
     'welcome.description':
       "Walk Around è l'app pensata per trasformare ogni viaggio in un'esperienza immersiva e autentica. Con un semplice tocco puoi scoprire storie, curiosità e segreti dei luoghi che ti circondano, guidato da audioguide coinvolgenti e sempre a portata di mano. Che tu stia passeggiando tra le strade di una città o esplorando angoli nascosti, Walk Around ti accompagna passo dopo passo.",
+    'welcome.greeting': 'Ciao, {{name}}',
+    'welcome.greetingFallback': 'Ciao, bentornato',
     'welcome.inviteQuestion': 'Hai un codice invito/sconto?',
     'welcome.hideInviteQuestion': 'Nascondi codice invito/sconto',
     'welcome.inviteCodeLabel': 'Codice invito/sconto',
@@ -592,6 +594,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'bottomNav.aria': 'Main navigation',
     'welcome.description':
       'Walk Around is the app designed to turn every trip into an immersive and authentic experience. With a simple tap, you can discover stories, curiosities and hidden details about the places around you, guided by engaging audio guides always within reach. Whether you are walking through city streets or exploring hidden corners, Walk Around stays with you step by step.',
+    'welcome.greeting': 'Hi, {{name}}',
+    'welcome.greetingFallback': 'Hi, welcome back',
     'welcome.inviteQuestion': 'Do you have an invite/discount code?',
     'welcome.hideInviteQuestion': 'Hide invite/discount code',
     'welcome.inviteCodeLabel': 'Invite/discount code',
@@ -1093,6 +1097,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'bottomNav.aria': 'Navigation principale',
     'welcome.description':
       "Walk Around est l'application concue pour transformer chaque voyage en une experience immersive et authentique. En un simple geste, vous pouvez decouvrir histoires, curiosites et secrets des lieux qui vous entourent, guides par des audioguides captivants toujours a portee de main. Que vous marchiez dans les rues d'une ville ou exploriez des coins caches, Walk Around vous accompagne pas a pas.",
+    'welcome.greeting': 'Bonjour, {{name}}',
+    'welcome.greetingFallback': 'Bonjour, bon retour',
     'welcome.inviteQuestion': "Avez-vous un code d'invitation/remise ?",
     'welcome.hideInviteQuestion': "Masquer le code d'invitation/remise",
     'welcome.inviteCodeLabel': "Code d'invitation/remise",
@@ -1594,6 +1600,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'bottomNav.aria': 'Navegacion principal',
     'welcome.description':
       'Walk Around es la app pensada para convertir cada viaje en una experiencia inmersiva y autentica. Con un simple toque puedes descubrir historias, curiosidades y secretos de los lugares que te rodean, guiado por audioguias atractivas y siempre al alcance de la mano. Tanto si paseas por las calles de una ciudad como si exploras rincones escondidos, Walk Around te acompana paso a paso.',
+    'welcome.greeting': 'Hola, {{name}}',
+    'welcome.greetingFallback': 'Hola, bienvenido de nuevo',
     'welcome.inviteQuestion': 'Tienes un codigo de invitacion/descuento?',
     'welcome.hideInviteQuestion': 'Ocultar codigo de invitacion/descuento',
     'welcome.inviteCodeLabel': 'Codigo de invitacion/descuento',
@@ -2094,6 +2102,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'bottomNav.aria': 'Hauptnavigation',
     'welcome.description':
       'Walk Around ist die App, die jede Reise in ein intensives und authentisches Erlebnis verwandelt. Mit einem Tipp entdeckst du Geschichten, Kuriositaeten und Geheimnisse der Orte um dich herum, begleitet von Audioguides, die immer griffbereit sind. Ob du durch die Strassen einer Stadt gehst oder versteckte Ecken erkundest, Walk Around begleitet dich Schritt fuer Schritt.',
+    'welcome.greeting': 'Hallo, {{name}}',
+    'welcome.greetingFallback': 'Hallo, willkommen zurueck',
     'welcome.inviteQuestion': 'Hast du einen Einladungs- oder Rabattcode?',
     'welcome.hideInviteQuestion': 'Einladungs-/Rabattcode ausblenden',
     'welcome.inviteCodeLabel': 'Einladungs-/Rabattcode',
@@ -2595,6 +2605,8 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
     'bottomNav.aria': 'Nawigacja glowna',
     'welcome.description':
       'Walk Around to aplikacja, ktora zmienia kazda podroz w autentyczne i wciagajace doswiadczenie. Jednym dotknieciem odkrywasz historie, ciekawostki i sekrety miejsc wokol siebie, korzystajac z audioprzewodnikow zawsze pod reka. Niezaleznie od tego, czy spacerujesz ulicami miasta, czy odkrywasz ukryte zakatki, Walk Around prowadzi cie krok po kroku.',
+    'welcome.greeting': 'Czesc, {{name}}',
+    'welcome.greetingFallback': 'Czesc, witaj ponownie',
     'welcome.inviteQuestion': 'Masz kod zaproszenia lub rabatowy?',
     'welcome.hideInviteQuestion': 'Ukryj kod zaproszenia/rabatowy',
     'welcome.inviteCodeLabel': 'Kod zaproszenia/rabatowy',

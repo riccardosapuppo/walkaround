@@ -24,12 +24,7 @@ const launchRedirect: RedirectFunction = (route) => {
     return router.createUrlTree(['/welcome'], { queryParams: { code: discountCode } });
   }
 
-  if (appState.shouldShowWelcomeOnLaunch()) {
-    appState.markOnboardingSeen();
-    return 'welcome';
-  }
-
-  return 'home';
+  return 'welcome';
 };
 
 const routes: Routes = [
