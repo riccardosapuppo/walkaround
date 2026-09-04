@@ -1,5 +1,7 @@
 # Walk Around
 
+![La mappa dei luoghi, la scheda di un punto di interesse con l'anteprima da trenta secondi, e la schermata iniziale con il catalogo di una città](docs/schermate.webp)
+
 Un'audioguida è un file mp3. Il turista paga 2,49–2,99 € per un punto di interesse, oppure 15 € per la città intera, e quello che riceve in cambio non è il file — il file esiste già, sta su un disco, ed è raggiungibile via HTTP — ma il **permesso** di ascoltarlo. Tolto il permesso, questo progetto è un archivio di 739 mp3 aperto a chiunque conosca un indirizzo.
 
 Il permesso era una riga, e non funzionava:
