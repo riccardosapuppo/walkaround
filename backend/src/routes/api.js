@@ -2466,20 +2466,41 @@ router.get('/me/purchases', async (req, res, next) => {
     return res.status(400).json({ message: 'Missing userId query parameter' });
   }
 
-  if (await haRispostoPerchiNonAutorizzato(req, res, userId)) {
-    return;
-  }
-
   const adminUnlockSimulationRequested = String(req.query.adminUnlockSimulation || '').trim() === '1';
 
   try {
-    let adminUnlockSimulation = false;
-    if (adminUnlockSimulationRequested) {
-      const session = await resolveSessionUser(req);
-      if (!session || session.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Simulazione sblocco disponibile solo per admin' });
-      }
-      adminUnlockSimulation = true;
+    /**
+     * L'AMMINISTRATORE PRIMA, E L'ORDINE E' IL PUNTO.
+     *
+     * Questa rotta ha due modi legittimi di essere chiamata, e per un po' il
+     * secondo e' stato irraggiungibile:
+     *
+     *   - l'utente che guarda i propri acquisti, col token dell'app;
+     *   - un amministratore che accende la simulazione di sblocco per vedere
+     *     l'applicazione come la vedrebbe chi ha comprato tutto. Manda il
+     *     token della DASHBOARD, che vive in un'altra tabella (`sessions`,
+     *     non `app_sessions`) e nomina lo userId di qualcun altro: e' tutto
+     *     il senso della funzione.
+     *
+     * Il controllo generale girava per primo, e al secondo caso rispondeva
+     * 401 sempre, perche' cercava quel token fra le sessioni dell'app, dove
+     * non c'e' mai. Il controllo scritto apposta, dieci righe piu' sotto, non
+     * veniva mai raggiunto: codice vivo che non poteva eseguire.
+     *
+     * Un amministratore vede gia' tutti gli acquisti dalla dashboard, quindi
+     * lasciarlo passare non gli da' niente che non abbia. Ma va detto
+     * esplicitamente e va detto PRIMA: **due autorizzazioni in fila, dove la
+     * prima nega, ne lasciano viva una sola.**
+     */
+    const sessioneDashboard = adminUnlockSimulationRequested ? await resolveSessionUser(req) : null;
+    const adminUnlockSimulation = Boolean(sessioneDashboard && sessioneDashboard.user.role === 'admin');
+
+    if (adminUnlockSimulationRequested && !adminUnlockSimulation) {
+      return res.status(403).json({ message: 'Simulazione sblocco disponibile solo per admin' });
+    }
+
+    if (!adminUnlockSimulation && (await haRispostoPerchiNonAutorizzato(req, res, userId))) {
+      return;
     }
 
     const cityUnlockSimulationQuery = adminUnlockSimulation
