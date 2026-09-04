@@ -17,7 +17,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import test from 'node:test';
 
-import { decodeRequestPath, isInsideDirectory, resolveInside } from '../src/media/paths.js';
+import { decodeRequestPath, isInsideDirectory, resolveInside, resolvePublicAudioUrl } from '../src/media/paths.js';
 
 const PUBLIC = path.resolve('/srv/app/public');
 const AUDIO = path.resolve(PUBLIC, 'audio');
@@ -102,4 +102,82 @@ test('isInsideDirectory non considera una cartella dentro se stessa', () => {
   assert.equal(isInsideDirectory(AUDIO, AUDIO), false);
   assert.equal(isInsideDirectory(AUDIO, path.resolve(AUDIO, 'catania')), true);
   assert.equal(isInsideDirectory(AUDIO, path.resolve(PUBLIC, 'images')), false);
+});
+
+/* ------------------------------------------------------------------ */
+/* L'audio_url del catalogo                                            */
+/* ------------------------------------------------------------------ */
+
+const RADICE_AUDIO = path.resolve('/srv/app/public/audio');
+
+test('un audio_url normale trova il suo file', () => {
+  assert.equal(
+    resolvePublicAudioUrl(RADICE_AUDIO, '/public/audio/catania/duomo.mp3'),
+    path.join(RADICE_AUDIO, 'catania', 'duomo.mp3')
+  );
+});
+
+test('la coda della URL non fa parte del nome del file', () => {
+  for (const url of [
+    '/public/audio/catania/duomo.mp3?v=2',
+    '/public/audio/catania/duomo.mp3#inizio',
+    '/public/audio/catania/duomo.mp3?v=2#inizio'
+  ]) {
+    assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, url), path.join(RADICE_AUDIO, 'catania', 'duomo.mp3'), url);
+  }
+});
+
+test('si decodifica PRIMA di guardare il prefisso', () => {
+  /*
+   * Le due copie di questa funzione facevano il contrario: normalizzavano le
+   * barre rovesciate, controllavano il prefisso, e solo dopo decodificavano.
+   * Con quell'ordine `%61udio` non cominciava per `/public/audio/` e veniva
+   * rifiutato pur essendo lo stesso identico file.
+   *
+   * E' l'ordine sbagliato che, nel blocco di `server.js`, apriva il paywall:
+   * li' rifiutare per la forma voleva dire lasciar passare, qui vuol dire
+   * rifiutare un file buono. Lo stesso errore rende l'esito opposto a
+   * seconda di che cosa protegge — motivo in piu' per non ripeterlo in tre
+   * posti con tre correzioni separate.
+   */
+  const atteso = path.join(RADICE_AUDIO, 'catania', 'duomo.mp3');
+
+  assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, '/public/%61udio/catania/duomo.mp3'), atteso);
+  assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, '/public/audio/catania/duomo.mp3'), atteso);
+  assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, '/public/audio/catania/duomo%2Emp3'), atteso);
+});
+
+test('un audio_url che punta fuori non da un percorso', () => {
+  for (const url of [
+    '/public/audio/../../../etc/passwd',
+    '/public/audio/%2e%2e/%2e%2e/segreti.txt',
+    '/public/images/catania/foto.jpg',
+    '/etc/passwd',
+    'https://altro-sito.example/audio/x.mp3',
+    '',
+    null,
+    undefined
+  ]) {
+    assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, url), null, String(url));
+  }
+});
+
+test('un byte nullo nell audio_url si rifiuta qui e non piu in basso', () => {
+  // Con la vecchia versione il NUL arrivava dentro path.resolve e faceva
+  // sollevare fs.stat molto piu' tardi, in un punto che non sa spiegarlo.
+  assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, '/public/audio/catania/duomo.mp3%00.txt'), null);
+});
+
+test('una percentuale malformata non viene raddrizzata', () => {
+  // La vecchia versione, se decodeURIComponent sollevava, teneva la stringa
+  // grezza e tirava avanti: indovinare che cosa intendeva chi scrive e' il
+  // genere di gentilezza che apre i buchi.
+  assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, '/public/audio/%zz/x.mp3'), null);
+});
+
+test('la cartella sorella non e la cartella', () => {
+  // `public/audio-previews` comincia per `public/audio` e non ci sta dentro:
+  // e' esattamente la distinzione che startsWith non sa fare, ed e' la
+  // cartella da cui usciva l'audio intero.
+  assert.equal(resolvePublicAudioUrl(RADICE_AUDIO, '/public/audio-previews/x.mp3'), null);
 });

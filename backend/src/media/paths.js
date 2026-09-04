@@ -88,3 +88,39 @@ export function resolveInside(rootDir, requestPath) {
   const resolved = path.resolve(rootDir, decoded);
   return isInsideDirectory(rootDir, resolved) ? resolved : null;
 }
+
+const PREFISSO_AUDIO = 'public/audio/';
+
+/**
+ * Il file su disco che corrisponde a un `audio_url` del catalogo.
+ *
+ * Un `audio_url` non arriva da una richiesta: sta in una colonna, e lo scrive
+ * l'amministratore. Ma «scritto da noi» non vuol dire «sicuro» — vuol dire
+ * solo che chi lo sbaglia ha le credenziali — e comunque il valore fa la
+ * stessa strada di un percorso qualunque, quindi tanto vale trattarlo come
+ * tale.
+ *
+ * ESISTEVA IN DUE COPIE, in `api.js` e in `admin.js`, e tutte e due facevano
+ * due cose in ordine sbagliato: normalizzavano le barre rovesciate PRIMA di
+ * controllare il prefisso e decodificavano DOPO. Con quell'ordine
+ * `/public/%61udio/x.mp3` non cominciava per `/public/audio/` e veniva
+ * rifiutato pur essendo lo stesso file, mentre un `%00` decodificato passava
+ * dentro `path.resolve` e faceva sollevare `fs.stat` piu' in basso. Qui si
+ * decodifica prima e si guarda dopo: la stessa lezione del blocco in
+ * `server.js`, che e' il motivo per cui questo file esiste.
+ *
+ * @param {string} audioRootDir la cartella `public/audio` sul disco
+ * @param {string} audioUrl il valore della colonna, tipo `/public/audio/catania/x.mp3`
+ * @returns {string|null} il percorso assoluto, oppure null se non e' un audio nostro
+ */
+export function resolvePublicAudioUrl(audioRootDir, audioUrl) {
+  const senzaCoda = String(audioUrl || '').split('?')[0].split('#')[0];
+
+  const decoded = decodeRequestPath(senzaCoda);
+  if (decoded === null || !decoded.startsWith(PREFISSO_AUDIO)) {
+    return null;
+  }
+
+  const resolved = path.resolve(audioRootDir, decoded.slice(PREFISSO_AUDIO.length));
+  return isInsideDirectory(audioRootDir, resolved) ? resolved : null;
+}

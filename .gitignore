@@ -35,8 +35,9 @@ Thumbs.db
 out-tsc/
 .tmp_docx_*/
 
-# Le anteprime da trenta secondi, che il backend ritaglia dall'audio intero
-# la prima volta che qualcuno le chiede e poi tiene da parte. Sono un
-# prodotto, non una sorgente: si rifanno da sole e dipendono dal file
-# originale. Una ne era finita qui provando l'applicazione.
-backend/public/audio-previews/
+# Roba rigenerabile che il backend si scrive da solo mentre gira: dentro ci
+# stanno le anteprime da trenta secondi, ritagliate dall'audio intero la prima
+# volta che qualcuno le chiede. Sono un prodotto, non una sorgente, e si
+# possono cancellare a macchina spenta. Una era finita in repository provando
+# l'applicazione, quando ancora stavano sotto public/.
+backend/var/

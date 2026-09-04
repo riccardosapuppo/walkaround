@@ -21,7 +21,7 @@
   "dataGroups": [
     {
       "name": "media-runtime",
-      "urls": ["/public/images/**", "/public/audio-previews/**"],
+      "urls": ["/public/images/**", "/api/pois/*/audio-preview"],
       "cacheConfig": {
         "maxSize": 120,
         "maxAge": "30d",
