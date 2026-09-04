@@ -217,7 +217,9 @@ Quello spoglio, però, si fermava dove finisce la prima immagine e copiava il re
 
 Nello stesso giro APP14 è tornato fra i segmenti che restano — dichiara lo spazio colore, cioè come si leggono i pixel, non chi ha scattato — e l'orientamento sopravvive da solo, in un APP1 ricostruito con una voce sola: altrimenti ogni futura foto verticale finirebbe in catalogo coricata di novanta gradi.
 
-Restano ventiquattro punti di interesse con un segnaposto al posto della fotografia. Vanno rifatte. Tutta la storia, con l'elenco, è in `docs/immagini.md`.
+**I conti di oggi**, contati e non ricordati (`git ls-files backend/public/images`, confronto per SHA-256): **112 file** tracciati, di cui **17 sono copie del segnaposto** e 95 sono fotografie vere; le immagini distinte sono 94. I numeri del paragrafo qui sopra — 128 e ventiquattro — descrivono il catalogo **com'era quando è stata fatta la pulizia**, e sono la misura del problema, non dello stato attuale: da allora il catalogo si è mosso, e una cartella di quattordici SVG che non nominava nessuno è stata tolta.
+
+Restano dei punti di interesse con un segnaposto al posto della fotografia. Vanno rifatte. Tutta la storia, con l'elenco, è in `docs/immagini.md`.
 
 ### Un commento JavaScript dentro una query
 

@@ -3,6 +3,21 @@
 Questo file esiste perché una cosa è andata storta e conviene che resti scritta,
 invece di essere sistemata in silenzio.
 
+> **I numeri qui sotto sono quelli del momento della pulizia**, non quelli di
+> oggi: misurano il problema che è stato trovato. Lo stato attuale si conta in
+> un comando, e conviene contarlo invece di fidarsi di una cifra scritta mesi
+> prima:
+>
+> ```
+> git ls-files backend/public/images | wc -l
+> ```
+>
+> Quando è stata scritta questa nota dava **112** file, di cui **17** copie del
+> segnaposto e 95 fotografie vere — 94 immagini distinte, confrontate per
+> impronta SHA-256. La differenza rispetto al 128 di sotto non è una
+> contraddizione: nel frattempo il catalogo si è mosso, ed è stata tolta una
+> cartella di quattordici SVG che non nominava più nessuno.
+
 ## Che cosa è successo
 
 Il catalogo conteneva 128 immagini. Nessuna aveva una provenienza dichiarata: né
