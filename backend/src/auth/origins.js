@@ -55,6 +55,31 @@ export function toOriginSet(values) {
 }
 
 /**
+ * Quali origini sono nostre, secondo la configurazione.
+ *
+ * Sta qui e non nelle rotte perche' l'elenco era stato costruito in un file
+ * solo. `app-auth.js` chiedeva "e' una delle nostre?", `admin.js` continuava a
+ * chiedere "e' una URL ben formata?" — e sono quattro rotte che spediscono un
+ * token di invito o di reset dentro una email. Una regola applicata in un
+ * posto e non nel suo gemello e' una regola che qualcuno deve ricordarsi:
+ * meglio una funzione che tutti e due chiamano.
+ *
+ * `env` arriva come parametro invece di essere importato: cosi' questo file
+ * non dipende dalla configurazione e le prove possono passargli quello che
+ * vogliono.
+ *
+ * @param {{ appBaseOrigin?: string, corsOrigin?: string }} env
+ * @param {string|undefined} extra origini in piu', separate da virgola
+ * @returns {{ own: string, allowed: Set<string> }}
+ */
+export function origniDelSito(env, extra = process.env.APP_ALLOWED_ORIGINS) {
+  return {
+    own: env.appBaseOrigin || env.corsOrigin || 'http://localhost:4200',
+    allowed: toOriginSet([env.appBaseOrigin, env.corsOrigin, extra])
+  };
+}
+
+/**
  * L'origine da usare per un link: quella proposta se e' fra le nostre, la
  * nostra altrimenti.
  *

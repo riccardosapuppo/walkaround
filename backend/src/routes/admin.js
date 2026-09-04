@@ -6,8 +6,10 @@ import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { env } from '../config/env.js';
 import { requireAdmin, requireAuth, resolveSessionUser } from '../auth/middleware.js';
+import { origniDelSito, pickOrigin } from '../auth/origins.js';
 import { createOpaqueToken, hashPassword, hashToken } from '../auth/security.js';
 import { pool } from '../db/pool.js';
+import { resolvePublicAudioUrl } from '../media/paths.js';
 import { stripImageMetadata } from '../media/strip-metadata.js';
 import {
   getDashboardEmailSettings,
@@ -75,27 +77,9 @@ const legalDocumentAdminLabels = {
 const dashboardRoleSchema = z.enum(['admin', 'facility_manager', 'user']);
 const inviteRoleSchema = z.enum(['admin', 'facility_manager']);
 
-function isInsideDirectory(parentDir, childPath) {
-  const relative = path.relative(parentDir, childPath);
-  return Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
-}
-
+/* Era la seconda di tre copie identiche. Vedi `media/paths.js`. */
 function resolveDashboardAudioPath(audioUrl) {
-  const cleanUrl = String(audioUrl || '').split('?')[0].split('#')[0].replace(/\\/g, '/');
-  if (!cleanUrl.startsWith('/public/audio/')) {
-    return null;
-  }
-
-  let decodedUrl = cleanUrl;
-  try {
-    decodedUrl = decodeURIComponent(cleanUrl);
-  } catch {
-    decodedUrl = cleanUrl;
-  }
-
-  const relativeAudioPath = decodedUrl.replace(/^\/public\/audio\//, '');
-  const absoluteAudioPath = path.resolve(publicAudioRootDir, relativeAudioPath);
-  return isInsideDirectory(publicAudioRootDir, absoluteAudioPath) ? absoluteAudioPath : null;
+  return resolvePublicAudioUrl(publicAudioRootDir, audioUrl);
 }
 
 function dashboardAudioContentType(audioPath) {
@@ -445,18 +429,26 @@ const catalogImageUploadSchema = z.object({
   path: ['cityId']
 });
 
-function normalizedOrigin(origin) {
-  const fallback = new URL(env.appBaseOrigin);
-  if (!origin) {
-    return fallback.origin;
-  }
+/**
+ * L'origine su cui costruire un link che finisce dentro una email.
+ *
+ * Questa funzione accettava qualunque URL ben formata arrivasse dal corpo
+ * della richiesta, e non guardava nemmeno lo schema. Alimenta quattro rotte
+ * che spediscono un token vivo: l'invito a registrarsi, l'approvazione di un
+ * partner, il rinvio dell'attivazione e il reset password fatto
+ * dall'amministratore. Con `{"origin":"https://sito-di-chi-attacca"}` il link
+ * spedito puntava li', col token buono dentro.
+ *
+ * Sono rotte da amministratore, quindi il difetto vale meno di quello che
+ * stava sulla rotta di reset pubblica — ma e' lo stesso difetto, e quando
+ * quello e' stato corretto queste sono rimaste indietro. La domanda giusta
+ * non e' «e' una URL ben formata» ma «e' una delle nostre», e adesso la fanno
+ * tutte e cinque passando dalla stessa funzione (`auth/origins.js`).
+ */
+const dove = origniDelSito(env);
 
-  try {
-    const parsed = new URL(origin);
-    return parsed.origin;
-  } catch {
-    return fallback.origin;
-  }
+function normalizedOrigin(origin) {
+  return pickOrigin(origin, dove);
 }
 
 function inviteExpiryDate() {
