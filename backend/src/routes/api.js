@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { resolveAppSessionUser } from '../auth/app-middleware.js';
 import { resolveSessionUser } from '../auth/middleware.js';
 import { pool, queryWithRetry } from '../db/pool.js';
+import { resolvePublicAudioUrl } from '../media/paths.js';
 import { notifyPartnerRegistrationRequest, notifyPaymentCompleted } from '../services/admin-notifications.js';
 import {
   PayPalConfigurationError,
@@ -23,8 +24,40 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicRootDir = path.resolve(__dirname, '../../public');
 const publicAudioRootDir = path.join(publicRootDir, 'audio');
-const audioPreviewRootDir = path.join(publicRootDir, 'audio-previews');
+/**
+ * Le anteprime NON stanno sotto `public/`, e la ragione e' una falla.
+ *
+ * Ci stavano. `public/` lo serve `express.static` per intero, e il blocco che
+ * difende l'audio a pagamento guarda `public/audio/`: una cartella sorella
+ * chiamata `public/audio-previews/` non la copriva nessuno. Bastava che il
+ * ritaglio venisse lungo quanto il file — e piu' sotto si vede che era facile
+ * — perche' la traccia intera diventasse scaricabile da chiunque, senza
+ * sessione e senza acquisto, dalla porta accanto a quella sorvegliata.
+ *
+ * La rotta che le serve usa `res.sendFile`: legge dal disco e non ha mai
+ * avuto bisogno che il file fosse raggiungibile via URL. Quindi non lo e'
+ * piu'. E' il tipo di correzione che toglie la domanda invece di aggiungere
+ * un controllo: qui sotto non c'e' niente da difendere perche' non c'e'
+ * nessuna porta.
+ *
+ * `var/` e' materiale rigenerabile: si puo' cancellare a macchina spenta.
+ */
+const audioPreviewRootDir = path.resolve(__dirname, '../../var/audio-previews');
 const audioPreviewSeconds = 30;
+
+/**
+ * Quanta parte del file l'anteprima puo' arrivare a essere, al massimo.
+ *
+ * Serve un tetto che non dipenda dai dati: `duration_sec` la scrive
+ * l'amministratore e lo schema accetta 1. Con una durata di 1 secondo la
+ * proporzione 30/1 veniva schiacciata a 1, e l'anteprima diventava una copia
+ * integrale del file — cioe' il prodotto, gratis. Non serviva malafede: una
+ * traccia corta, o un numero sbagliato a mano, e il paywall spariva per quel
+ * luogo.
+ *
+ * Con il tetto, qualunque cosa dica il dato, quello che esce e' un pezzo.
+ */
+const anteprimaFrazioneMassima = 0.5;
 const privacyPolicyLanguages = ['it', 'en', 'fr', 'es', 'de', 'pl'];
 const legalDocumentTypes = ['privacyPolicy', 'cookiePolicy', 'termsConditions'];
 const legalDocumentDbTypes = {
@@ -40,30 +73,79 @@ const legalDocumentParamsSchema = z.object({
 });
 
 /**
- * L'utente della sessione deve essere quello di cui si parla.
+ * Questo `userId` puo' chiederlo chi sta chiamando?
  *
- * Si chiamava `requireCheckoutAppUser` e stava su due rotte di pagamento. Il
- * nome diceva "checkout", e cosi' nessuno l'ha messa altrove: sei rotte
- * prendevano lo userId dalla query o dal corpo e non guardavano affatto la
- * sessione — fra queste DELETE /me/purchases, che cancella gli acquisti di
- * chiunque il chiamante nomini.
+ * ================================================================
+ * IL DIFETTO
+ * ================================================================
  *
- * Il controllo era gia' scritto e gia' giusto. Mancava solo dove serviva, e
- * il nome e' parte del motivo.
+ * Sei rotte prendevano lo `userId` dalla query o dal corpo e non guardavano
+ * niente altro — fra queste `DELETE /me/purchases`, che cancella gli acquisti
+ * di chiunque il chiamante nomini. Il controllo giusto esisteva gia', si
+ * chiamava `requireCheckoutAppUser` e stava su due rotte di pagamento: il
+ * nome diceva "checkout", e cosi' nessuno l'ha messo altrove.
+ *
+ * ================================================================
+ * PERCHE' NON BASTA PRETENDERE UNA SESSIONE
+ * ================================================================
+ *
+ * Qui dentro convivono due specie di identita', e non e' un difetto:
+ *
+ *   - CHI HA UN ACCOUNT. `userId` e' la chiave in `app_users`, e la prova di
+ *     esserlo e' il token in `app_sessions`.
+ *   - L'OSPITE. Il browser si genera un uuid al primo avvio e se lo tiene:
+ *     e' l'unica cosa che ha. Chi arriva scansionando il QR di un albergo
+ *     atterra su `/welcome`, e la prima cosa che l'applicazione fa e'
+ *     chiedere se quel codice sconto vale — molto prima che esista un
+ *     account, e per l'albergo quel momento e' tutto il modello di business.
+ *
+ * La prima versione di questo controllo pretendeva la sessione sempre, e
+ * quindi spegneva il secondo caso: il QR del partner smetteva di funzionare.
+ * Chiudere una porta rompe chi ci passava, e chi ci passava andava guardato
+ * prima di chiuderla.
+ *
+ * ================================================================
+ * LA REGOLA
+ * ================================================================
+ *
+ *   sessione presente, e parla di se'      -> passa
+ *   sessione presente, e parla di un altro -> 403
+ *   nessuna sessione, e lo userId E' di    -> 401: quell'identita' appartiene
+ *     un account registrato                        a qualcuno, e ha un token
+ *   nessuna sessione, e non e' di nessuno  -> passa: e' un ospite
+ *
+ * Cioe': **non si puo' indossare un account senza il suo token**, che era
+ * tutto il difetto. L'uuid dell'ospite resta autodichiarato, come e' sempre
+ * stato: non c'e' niente da rubargli che non sia gia' suo, e l'unico modo di
+ * cambiarlo sarebbe obbligare tutti a registrarsi prima di vedere un prezzo.
+ *
+ * Resta vero che quell'uuid non deve girare dove si scrive: viaggiava nelle
+ * query string e finiva nel log di accesso, e la parte di query e' stata
+ * tolta dal log (`server.js`).
  */
 async function requireAppUser(req, userId) {
   const session = await resolveAppSessionUser(req);
-  if (!session) {
-    const error = new Error('Accedi o crea un account per continuare.');
-    error.status = 401;
-    throw error;
-  }
-  if (session.user.id !== userId) {
+
+  if (session) {
+    if (session.user.id === userId) {
+      return session.user;
+    }
     const error = new Error('Sessione utente non valida per questa richiesta.');
     error.status = 403;
     throw error;
   }
-  return session.user;
+
+  const registrato = await queryWithRetry('SELECT 1 FROM app_users WHERE id = $1 LIMIT 1', [userId], {
+    label: 'app user lookup'
+  });
+
+  if (registrato.rowCount > 0) {
+    const error = new Error('Accedi per continuare.');
+    error.status = 401;
+    throw error;
+  }
+
+  return null;
 }
 
 /**
@@ -75,6 +157,12 @@ async function requireAppUser(req, userId) {
  * rotta e' un controllo che prima o poi diventa un 500 con dentro la risposta
  * giusta, o peggio.
  *
+ * NON INGOIA GLI ALTRI ERRORI. Se il database non risponde, `requireAppUser`
+ * solleva qualcosa che non ha `status`: quello si rilancia e diventa il 500
+ * che e'. La prima versione rispondeva 401 a tutto — cioe' diceva "non sei
+ * autorizzato" a chi lo era, gli faceva buttare la sessione, e ci infilava
+ * dentro il messaggio interno di Postgres.
+ *
  * @returns {Promise<boolean>} vero se ha gia' risposto e il chiamante deve fermarsi
  */
 async function haRispostoPerchiNonAutorizzato(req, res, userId) {
@@ -82,7 +170,10 @@ async function haRispostoPerchiNonAutorizzato(req, res, userId) {
     await requireAppUser(req, userId);
     return false;
   } catch (error) {
-    res.status(error?.status || 401).json({ message: error?.message || 'Non autorizzato.' });
+    if (!error?.status) {
+      throw error;
+    }
+    res.status(error.status).json({ message: error.message || 'Non autorizzato.' });
     return true;
   }
 }
@@ -297,27 +388,13 @@ function selectPoiAudioUrl(row, language) {
   return String(row?.audio_url || '').trim();
 }
 
-function isInsideDirectory(parentDir, childPath) {
-  const relative = path.relative(parentDir, childPath);
-  return Boolean(relative) && !relative.startsWith('..') && !path.isAbsolute(relative);
-}
-
+/* La copia locale di `isInsideDirectory` e quella di questa funzione stavano
+   qui e, identiche, anche in `admin.js`. Ora stanno in `media/paths.js`, che
+   e' anche dove le usa il blocco dell'audio in `server.js`: tre punti che
+   devono rispondere la stessa cosa sullo stesso percorso, e che rispondevano
+   la stessa cosa solo finche' nessuno correggeva una copia sola. */
 function resolveLocalPublicAudioPath(audioUrl) {
-  const cleanUrl = String(audioUrl || '').split('?')[0].split('#')[0].replace(/\\/g, '/');
-  if (!cleanUrl.startsWith('/public/audio/')) {
-    return null;
-  }
-
-  let decodedUrl = cleanUrl;
-  try {
-    decodedUrl = decodeURIComponent(cleanUrl);
-  } catch {
-    decodedUrl = cleanUrl;
-  }
-
-  const relativeAudioPath = decodedUrl.replace(/^\/public\/audio\//, '');
-  const absoluteAudioPath = path.resolve(publicAudioRootDir, relativeAudioPath);
-  return isInsideDirectory(publicAudioRootDir, absoluteAudioPath) ? absoluteAudioPath : null;
+  return resolvePublicAudioUrl(publicAudioRootDir, audioUrl);
 }
 
 function contentTypeForAudioPath(audioPath) {
@@ -398,9 +475,17 @@ async function ensureAudioPreviewFile({ poiId, language, sourcePath, durationSec
 
   await fs.mkdir(audioPreviewRootDir, { recursive: true });
   const duration = Number(durationSec);
+  /* Il tetto entra nell'impronta apposta. Le anteprime gia' ritagliate col
+     vecchio calcolo stanno ancora su disco, e alcune sono copie integrali:
+     senza cambiare il nome del file, questa funzione le ritroverebbe e le
+     servirebbe per sempre, perche' la prima cosa che fa e' guardare se
+     esistono gia'. Cambiare il calcolo senza cambiare l'impronta correggerebbe
+     solo le anteprime future. */
   const sourceHash = crypto
     .createHash('sha1')
-    .update(`${sourcePath}:${sourceStat.size}:${sourceStat.mtimeMs}:${duration || 0}:${audioPreviewSeconds}`)
+    .update(
+      `${sourcePath}:${sourceStat.size}:${sourceStat.mtimeMs}:${duration || 0}:${audioPreviewSeconds}:${anteprimaFrazioneMassima}`
+    )
     .digest('hex')
     .slice(0, 16);
   const extension = path.extname(sourcePath).toLowerCase() || '.mp3';
@@ -416,11 +501,19 @@ async function ensureAudioPreviewFile({ poiId, language, sourcePath, durationSec
     // Preview is generated on demand.
   }
 
-  const ratio = Number.isFinite(duration) && duration > audioPreviewSeconds ? audioPreviewSeconds / duration : 1;
-  const targetBytes =
-    ratio >= 1
-      ? sourceStat.size
-      : Math.min(sourceStat.size, Math.max(96 * 1024, Math.ceil(sourceStat.size * ratio * 1.15)));
+  /* La proporzione fra i trenta secondi e la durata dichiarata, con due
+     protezioni. Una durata assente o assurda non vale 1 — cioe' "tutto" — ma
+     il tetto; e il tetto vince comunque, anche quando la durata e' scritta
+     bene ma la traccia e' corta. Il 1.15 e' il margine che serve perche' un
+     mp3 non ha un bitrate perfettamente costante e il taglio va a byte. */
+  const proporzione =
+    Number.isFinite(duration) && duration > 0
+      ? Math.min(audioPreviewSeconds / duration, anteprimaFrazioneMassima)
+      : anteprimaFrazioneMassima;
+
+  const tetto = Math.floor(sourceStat.size * anteprimaFrazioneMassima);
+  const voluti = Math.max(96 * 1024, Math.ceil(sourceStat.size * proporzione * 1.15));
+  const targetBytes = Math.max(1, Math.min(voluti, tetto));
   const tempPreviewPath = `${previewPath}.${process.pid}.${Date.now()}.tmp`;
 
   await pipeline(
@@ -1933,7 +2026,34 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
   const { orderId, userId } = parsed.data;
   const client = await pool.connect();
   let pendingOrder = null;
-  let incassoAvvenuto = false;
+
+  /**
+   * A che punto e' l'incasso. Tre stati, non due.
+   *
+   * La versione con un booleano `incassoAvvenuto` copriva un caso solo: PayPal
+   * ha risposto, e la risposta diceva qualcosa di diverso da COMPLETED. Ma il
+   * modo piu' comune di incassare senza registrare e' un altro — **la chiamata
+   * che non torna**: timeout, connessione chiusa, 502 del proxy davanti. Li'
+   * la riga che accende il booleano non viene mai eseguita, e il catch scrive
+   * 'failed' su un ordine i cui soldi sono stati presi davvero.
+   *
+   *   'da-fare'    non si e' ancora chiamato niente: nessun rischio.
+   *   'ignoto'     si e' chiesta la capture e non si e' letta la risposta.
+   *                Vale come incasso: **quando non si sa, si sceglie l'errore
+   *                dalla parte in cui qualcuno guarda**, perche' una riga che
+   *                dice il falso ("failed") chiude il caso per sempre, mentre
+   *                una che dice "guardami" costa una verifica a mano.
+   *   'incassato'  COMPLETED, letto.
+   *   'rifiutato'  PayPal ha risposto, e ha detto di no. Nessun incasso.
+   */
+  let esitoCattura = 'da-fare';
+
+  /* Dichiarati qui e non dentro il try: senza, il catch scrive lo stato ma
+     non l'identificativo della capture, e la persona che deve riconciliare si
+     ritrova un ordine PayPal e nient'altro — niente con cui cercare il
+     movimento nel pannello o emettere il rimborso. */
+  let capturePayload = null;
+  let captureId = null;
 
   try {
     await requireAppUser(req, userId);
@@ -2008,7 +2128,12 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
 
     const settings = await getPayPalSettings(client);
     const accessToken = await requestPayPalAccessToken(settings);
-    const capturePayload = await paypalApiRequest(
+
+    /* Segnato PRIMA della chiamata, non dopo. Da questa riga in poi i soldi
+       possono essere gia' partiti anche se qui non arriva niente. */
+    esitoCattura = 'ignoto';
+
+    capturePayload = await paypalApiRequest(
       settings,
       accessToken,
       `/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
@@ -2020,13 +2145,12 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
 
     const captureStatus = String(capturePayload.status || '').trim().toUpperCase() || 'UNKNOWN';
 
-    // Da qui in poi, se questo e' COMPLETED, i soldi del cliente sono stati
-    // presi e nessun rollback li restituisce. Lo stato di questa variabile
-    // decide che cosa scrive il catch in fondo.
-    incassoAvvenuto = captureStatus === 'COMPLETED';
+    // Adesso si sa, perche' la risposta e' stata letta.
+    esitoCattura = captureStatus === 'COMPLETED' ? 'incassato' : 'rifiutato';
+
     const captureUnit = Array.isArray(capturePayload.purchase_units) ? capturePayload.purchase_units[0] : null;
     const capture = Array.isArray(captureUnit?.payments?.captures) ? captureUnit.payments.captures[0] : null;
-    const captureId = String(capture?.id || '').trim() || null;
+    captureId = String(capture?.id || '').trim() || null;
     const payer = extractPayPalPayer(capturePayload);
     await client.query('BEGIN');
 
@@ -2275,16 +2399,34 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
         // gestire, ed e' voluto: vuol dire che c'e' un incasso senza
         // acquisto e che ci deve guardare una persona. Meglio una riga che
         // chiede aiuto che una che dice il falso.
+        //
+        // La clausola in fondo protegge DUE stati e non uno. Proteggeva solo
+        // 'completed', e quindi un ordine gia' marcato 'captured_unreconciled'
+        // si lasciava riscrivere da 'failed' al tentativo successivo: PayPal
+        // risponde 422 ORDER_ALREADY_CAPTURED, si finisce qui, e l'unico
+        // segnale che diceva "c'e' un incasso senza acquisto" spariva. Uno
+        // stato che chiede aiuto deve sopravvivere ai tentativi seguenti,
+        // altrimenti non chiede aiuto: lo chiede una volta e poi tace.
+        const nonRiconciliato = esitoCattura === 'incassato' || esitoCattura === 'ignoto';
+
         await pool.query(
           `
           UPDATE paypal_checkout_orders
             SET status = $3,
                 error_message = $2,
+                capture_id = COALESCE($4, capture_id),
+                capture_payload = COALESCE($5::jsonb, capture_payload),
                 updated_at = NOW()
             WHERE paypal_order_id = $1
-              AND status <> 'completed'
+              AND status NOT IN ('completed', 'captured_unreconciled')
           `,
-          [pendingOrder.paypal_order_id, error instanceof Error ? error.message : 'Errore PayPal', incassoAvvenuto ? 'captured_unreconciled' : 'failed']
+          [
+            pendingOrder.paypal_order_id,
+            error instanceof Error ? error.message : 'Errore PayPal',
+            nonRiconciliato ? 'captured_unreconciled' : 'failed',
+            captureId,
+            capturePayload ? JSON.stringify(capturePayload) : null
+          ]
         );
       } catch {
         // Ignore secondary failures while saving PayPal state.

@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localeIt from '@angular/common/locales/it';
 import { LOCALE_ID, NgModule } from '@angular/core';
@@ -10,6 +10,7 @@ import { AppComponent } from './app.component';
 import { BottomNavComponent } from './layout/bottom-nav/bottom-nav.component';
 import { MaterialModule } from './shared/material.module';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
+import { AppSessionInterceptor } from './core/interceptors/app-session.interceptor';
 import { environment } from '../environments/environment';
 
 registerLocaleData(localeIt);
@@ -28,7 +29,12 @@ registerLocaleData(localeIt);
       registrationStrategy: 'registerWhenStable:30000'
     })
   ],
-  providers: [{ provide: LOCALE_ID, useValue: 'it-IT' }],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'it-IT' },
+    // Il token di sessione su ogni chiamata al nostro backend, una volta
+    // sola invece che rotta per rotta. Il perche' sta nel file.
+    { provide: HTTP_INTERCEPTORS, useClass: AppSessionInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {}
