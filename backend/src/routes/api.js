@@ -39,19 +39,52 @@ const legalDocumentParamsSchema = z.object({
   documentType: z.enum(legalDocumentTypes)
 });
 
-async function requireCheckoutAppUser(req, userId) {
+/**
+ * L'utente della sessione deve essere quello di cui si parla.
+ *
+ * Si chiamava `requireCheckoutAppUser` e stava su due rotte di pagamento. Il
+ * nome diceva "checkout", e cosi' nessuno l'ha messa altrove: sei rotte
+ * prendevano lo userId dalla query o dal corpo e non guardavano affatto la
+ * sessione — fra queste DELETE /me/purchases, che cancella gli acquisti di
+ * chiunque il chiamante nomini.
+ *
+ * Il controllo era gia' scritto e gia' giusto. Mancava solo dove serviva, e
+ * il nome e' parte del motivo.
+ */
+async function requireAppUser(req, userId) {
   const session = await resolveAppSessionUser(req);
   if (!session) {
-    const error = new Error('Accedi o crea un account per completare il pagamento.');
+    const error = new Error('Accedi o crea un account per continuare.');
     error.status = 401;
     throw error;
   }
   if (session.user.id !== userId) {
-    const error = new Error('Sessione utente non valida per questo pagamento.');
+    const error = new Error('Sessione utente non valida per questa richiesta.');
     error.status = 403;
     throw error;
   }
   return session.user;
+}
+
+/**
+ * Come sopra, ma risponde invece di sollevare.
+ *
+ * Serve perche' le rotte qui sotto hanno `catch` scritti in modi diversi:
+ * alcuni guardano `error.status`, altri passano tutto a `next()`. Un
+ * controllo di autorizzazione che dipende da come e' scritto il catch della
+ * rotta e' un controllo che prima o poi diventa un 500 con dentro la risposta
+ * giusta, o peggio.
+ *
+ * @returns {Promise<boolean>} vero se ha gia' risposto e il chiamante deve fermarsi
+ */
+async function haRispostoPerchiNonAutorizzato(req, res, userId) {
+  try {
+    await requireAppUser(req, userId);
+    return false;
+  } catch (error) {
+    res.status(error?.status || 401).json({ message: error?.message || 'Non autorizzato.' });
+    return true;
+  }
 }
 
 function sanitizeText(value) {
@@ -1742,6 +1775,10 @@ router.post('/paypal/checkout/quote', async (req, res, next) => {
     return res.status(400).json({ message: 'Payload PayPal non valido', errors: parsed.error.flatten() });
   }
 
+  if (await haRispostoPerchiNonAutorizzato(req, res, parsed.data.userId)) {
+    return;
+  }
+
   const client = await pool.connect();
   try {
     await markExpiredPayPalOrders(client);
@@ -1765,7 +1802,7 @@ router.post('/paypal/checkout/create-order', async (req, res, next) => {
 
   const client = await pool.connect();
   try {
-    await requireCheckoutAppUser(req, parsed.data.userId);
+    await requireAppUser(req, parsed.data.userId);
     await markExpiredPayPalOrders(client);
     const settings = await getPayPalSettings(client);
     const checkoutPreview = await buildPayPalCheckoutPreview(parsed.data, client);
@@ -1898,7 +1935,7 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
   let pendingOrder = null;
 
   try {
-    await requireCheckoutAppUser(req, userId);
+    await requireAppUser(req, userId);
     await markExpiredPayPalOrders(client);
     const pendingQuery = await client.query(
       `
@@ -2256,6 +2293,10 @@ router.get('/me/purchases', async (req, res, next) => {
     return res.status(400).json({ message: 'Missing userId query parameter' });
   }
 
+  if (await haRispostoPerchiNonAutorizzato(req, res, userId)) {
+    return;
+  }
+
   const adminUnlockSimulationRequested = String(req.query.adminUnlockSimulation || '').trim() === '1';
 
   try {
@@ -2404,6 +2445,10 @@ router.delete('/me/purchases', async (req, res, next) => {
     return res.status(400).json({ message: 'Missing userId query parameter' });
   }
 
+  if (await haRispostoPerchiNonAutorizzato(req, res, parsed.data.userId)) {
+    return;
+  }
+
   try {
     const deleted = await pool.query(
       `
@@ -2450,6 +2495,11 @@ router.post('/hotel/validate', async (req, res, next) => {
   }
 
   const payload = parsed.data;
+
+  if (await haRispostoPerchiNonAutorizzato(req, res, payload.userId)) {
+    return;
+  }
+
   const normalizedCode = payload.code.trim().toUpperCase();
   const client = await pool.connect();
 
@@ -2623,6 +2673,10 @@ router.get('/me/hotel-association', async (req, res, next) => {
   const parsed = hotelAssociationQuerySchema.safeParse({ userId: String(req.query.userId || '').trim() });
   if (!parsed.success) {
     return res.status(400).json({ message: 'Missing userId query parameter' });
+  }
+
+  if (await haRispostoPerchiNonAutorizzato(req, res, parsed.data.userId)) {
+    return;
   }
 
   const userId = parsed.data.userId;
@@ -2834,6 +2888,10 @@ router.delete('/hotel/association', async (req, res, next) => {
   const parsed = hotelAssociationDeleteSchema.safeParse({ userId: String(req.query.userId || '').trim() });
   if (!parsed.success) {
     return res.status(400).json({ message: 'Missing userId query parameter' });
+  }
+
+  if (await haRispostoPerchiNonAutorizzato(req, res, parsed.data.userId)) {
+    return;
   }
 
   const client = await pool.connect();
