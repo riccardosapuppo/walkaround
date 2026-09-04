@@ -8,6 +8,7 @@ import { env } from '../config/env.js';
 import { requireAdmin, requireAuth, resolveSessionUser } from '../auth/middleware.js';
 import { createOpaqueToken, hashPassword, hashToken } from '../auth/security.js';
 import { pool } from '../db/pool.js';
+import { stripImageMetadata } from '../media/strip-metadata.js';
 import {
   getDashboardEmailSettings,
   mapDashboardEmailSettingsForResponse,
@@ -6173,13 +6174,20 @@ router.post('/catalog/upload-image', requireAuth, requireAdmin, async (req, res,
     const baseName = slugify(path.basename(payload.fileName, path.extname(payload.fileName))) || 'city-image';
     const storedFileName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${baseName}.${extension}`;
     const absolutePath = path.join(cityImagesDir, storedFileName);
-    await fs.writeFile(absolutePath, buffer);
+
+    // Prima di toccare il disco, non dopo: quello che non viene scritto non va
+    // ripulito piu' tardi. Una fotografia porta addosso il GPS di dove e'
+    // stata scattata e il nome di chi l'ha fatta, e questo catalogo e'
+    // pubblico. Lo spoglio non ricomprime: i pixel restano quelli.
+    const cleaned = stripImageMetadata(buffer, storedFileName);
+    await fs.writeFile(absolutePath, cleaned.buffer);
 
     return res.status(201).json({
       uploaded: true,
       imageUrl: `/public/images/${cityFolder.folderSlug}/${storedFileName}`,
       fileName: storedFileName,
-      sizeBytes: buffer.length
+      sizeBytes: cleaned.buffer.length,
+      strippedMetadata: cleaned.removed
     });
   } catch (error) {
     return next(error);
