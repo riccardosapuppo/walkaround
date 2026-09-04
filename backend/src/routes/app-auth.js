@@ -7,6 +7,7 @@ import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from '../a
 import { pool } from '../db/pool.js';
 import { createSession as createDashboardSession } from './auth.js';
 import { sendPasswordResetEmail } from '../services/mailer.js';
+import { pickOrigin, toOriginSet } from '../auth/origins.js';
 
 const router = express.Router();
 
@@ -46,17 +47,25 @@ function appPasswordResetExpiryDate() {
   return new Date(Date.now() + env.auth.passwordResetTtlHours * 60 * 60 * 1000);
 }
 
+/**
+ * L'origine su cui costruire un link mandato per posta.
+ *
+ * Prendeva l'origine dal corpo della richiesta e controllava solo lo schema:
+ * chi voleva si faceva mandare dalla vittima un token di reset valido
+ * puntato al proprio server. Vedi auth/origins.js, che spiega perche' la
+ * domanda giusta non e' 'e' una URL ben formata' ma 'e' una delle nostre'.
+ */
+const origniConsentite = toOriginSet([
+  env.appBaseOrigin,
+  env.corsOrigin,
+  process.env.APP_ALLOWED_ORIGINS
+]);
+
 function normalizeOrigin(value) {
-  const fallback = env.appBaseOrigin || env.corsOrigin || 'http://localhost:4200';
-  try {
-    const url = new URL(String(value || fallback));
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return fallback;
-    }
-    return url.origin;
-  } catch {
-    return fallback;
-  }
+  return pickOrigin(value, {
+    own: env.appBaseOrigin || env.corsOrigin || 'http://localhost:4200',
+    allowed: origniConsentite
+  });
 }
 
 function appUserPayload(row) {
