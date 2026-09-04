@@ -7,7 +7,7 @@
 #
 #     echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
 #     docker compose up -d
-version: '3.9'
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -38,7 +38,11 @@ services:
       DB_NAME: turismo_db_dev
       DB_USER: walkaround
       DB_PASSWORD: ${DB_PASSWORD:?serve DB_PASSWORD, mettila in un .env accanto a questo file}
-      DB_SEED_MODE: never
+      # if-empty per difetto: chi fa `docker compose up` deve trovarci
+      # dentro il catalogo, non un'applicazione vuota. Era `never`, e su
+      # un'installazione nuova non si vedeva niente e non lo spiegava nessuno.
+      # Con DB_SEED_MODE=never nel .env si torna al comportamento di prima.
+      DB_SEED_MODE: ${DB_SEED_MODE:-if-empty}
     ports:
       - '3001:3000'
     volumes:

@@ -34,3 +34,9 @@ Thumbs.db
 # `npm run git` fa `git add .` senza che nessuno guardi.
 out-tsc/
 .tmp_docx_*/
+
+# Le anteprime da trenta secondi, che il backend ritaglia dall'audio intero
+# la prima volta che qualcuno le chiede e poi tiene da parte. Sono un
+# prodotto, non una sorgente: si rifanno da sole e dipendono dal file
+# originale. Una ne era finita qui provando l'applicazione.
+backend/public/audio-previews/

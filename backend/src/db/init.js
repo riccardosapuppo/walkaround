@@ -951,6 +951,24 @@ async function createSchema(client) {
     ALTER TABLE dashboard_email_settings
     ADD CONSTRAINT dashboard_email_settings_singleton CHECK (id = 1);
   `);
+  // SMTP puo' non essere configurato, e queste colonne sono NOT NULL.
+  //
+  // Da quando la posta e' opzionale (config/env.js) env.smtp.host e compagni
+  // possono essere null, e l'INSERT qui sotto faceva fallire l'avvio con una
+  // violazione di vincolo: il programma non partiva affatto perche' non
+  // sapeva mandare una email. Trovato facendolo partire, non leggendolo.
+  //
+  // Vuoto e non null perche' e' quello che il resto di questo blocco si
+  // aspetta: le UPDATE qui sotto cercano proprio `IS NULL OR = ''`.
+  const smtp = {
+    host: env.smtp.host || '',
+    port: env.smtp.port,
+    secure: env.smtp.secure,
+    user: env.smtp.user || '',
+    password: env.smtp.password || '',
+    from: env.smtp.from || ''
+  };
+
   await client.query(
     `
       INSERT INTO dashboard_email_settings (
@@ -965,7 +983,7 @@ async function createSchema(client) {
       VALUES (1, $1, $2, $3, $4, $5, $6)
       ON CONFLICT (id) DO NOTHING;
     `,
-    [env.smtp.host, env.smtp.port, env.smtp.secure, env.smtp.user, env.smtp.password, env.smtp.from]
+    [smtp.host, smtp.port, smtp.secure, smtp.user, smtp.password, smtp.from]
   );
   await client.query(
     `
@@ -973,7 +991,7 @@ async function createSchema(client) {
       SET smtp_host = $1
       WHERE smtp_host IS NULL OR smtp_host = '';
     `,
-    [env.smtp.host]
+    [smtp.host]
   );
   await client.query(
     `
@@ -981,7 +999,7 @@ async function createSchema(client) {
       SET smtp_port = $1
       WHERE smtp_port IS NULL OR smtp_port < 1 OR smtp_port > 65535;
     `,
-    [env.smtp.port]
+    [smtp.port]
   );
   await client.query(
     `
@@ -989,7 +1007,7 @@ async function createSchema(client) {
       SET smtp_secure = $1
       WHERE smtp_secure IS NULL;
     `,
-    [env.smtp.secure]
+    [smtp.secure]
   );
   await client.query(
     `
@@ -997,7 +1015,7 @@ async function createSchema(client) {
       SET smtp_user = $1
       WHERE smtp_user IS NULL;
     `,
-    [env.smtp.user]
+    [smtp.user]
   );
   await client.query(
     `
@@ -1005,7 +1023,7 @@ async function createSchema(client) {
       SET smtp_password = $1
       WHERE smtp_password IS NULL;
     `,
-    [env.smtp.password]
+    [smtp.password]
   );
   await client.query(
     `
@@ -1013,7 +1031,7 @@ async function createSchema(client) {
       SET smtp_from = $1
       WHERE smtp_from IS NULL OR smtp_from = '';
     `,
-    [env.smtp.from]
+    [smtp.from]
   );
   await client.query(
     `
