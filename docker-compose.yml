@@ -1,3 +1,12 @@
+# La configurazione arriva da un .env accanto a questo file, che NON e'
+# versionato. Qui dentro c'erano le password vere, in chiaro, due volte.
+#
+# La sintassi ${VAR:?messaggio} fa fallire `docker compose up` quando la
+# variabile manca, invece di partire con una stringa vuota: un database che
+# accetta la password vuota e' peggio di un avvio fallito.
+#
+#     echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
+#     docker compose up -d
 version: '3.9'
 services:
   postgres:
@@ -7,7 +16,7 @@ services:
     environment:
       POSTGRES_DB: turismo_db_dev
       POSTGRES_USER: tourism
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?serve DB_PASSWORD, mettila in un .env accanto a questo file}
     ports:
       - '5433:5432'
     volumes:
@@ -28,7 +37,7 @@ services:
       DB_PORT: 5432
       DB_NAME: turismo_db_dev
       DB_USER: walkaround
-      DB_PASSWORD: 
+      DB_PASSWORD: ${DB_PASSWORD:?serve DB_PASSWORD, mettila in un .env accanto a questo file}
       DB_SEED_MODE: never
     ports:
       - '3001:3000'

@@ -12,11 +12,13 @@ import { adminRouter } from './routes/admin.js';
 import { appAuthRouter } from './routes/app-auth.js';
 import { apiRouter } from './routes/api.js';
 import { authRouter } from './routes/auth.js';
+import { isInsideDirectory, resolveInside } from './media/paths.js';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicPath = path.resolve(__dirname, '../public');
+const publicAudioDir = path.resolve(publicPath, 'audio');
 const publicImagesPath = path.join(publicPath, 'images');
 
 async function pathExists(absolutePath) {
@@ -164,8 +166,18 @@ app.use('/public', async (req, res, next) => {
       return next();
     }
 
-    const normalizedRelativeRequestPath = relativeRequestPath.replace(/\\/g, '/').toLowerCase();
-    if (normalizedRelativeRequestPath === 'audio' || normalizedRelativeRequestPath.startsWith('audio/')) {
+    // Dove finisce il percorso, non come e' scritto.
+    //
+    // Qui c'era startsWith('audio/') su req.path, che Express NON
+    // decodifica, mentre express.static piu' sotto decodifica: quindi
+    // /public/%61udio/... passava di qui e veniva servito di la'.
+    // Vedi il commento in media/paths.js.
+    const resolvedPublic = resolveInside(publicPath, req.path);
+    if (resolvedPublic === null) {
+      return res.status(400).json({ message: 'Percorso non valido.' });
+    }
+
+    if (isInsideDirectory(publicAudioDir, resolvedPublic) || resolvedPublic === publicAudioDir) {
       return res.status(403).json({ message: 'Audio completo disponibile solo tramite contenuti acquistati.' });
     }
 

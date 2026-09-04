@@ -1693,7 +1693,28 @@ async function seedHotelCodes(client) {
   }
 }
 
+/**
+ * Crea l'amministratore se non c'e', e non lo tocca se c'e' gia'.
+ *
+ * Prima faceva un'altra cosa, e il difetto vale la pena di raccontarlo: girava
+ * a ogni avvio, senza condizioni, con `password_hash = EXCLUDED.password_hash`
+ * dentro l'ON CONFLICT. Cioe' **riscriveva la password a ogni riavvio**.
+ * Cambiarla dalla dashboard funzionava fino al deploy successivo, che la
+ * riportava a quella nell'ambiente — e quando l'ambiente non ce l'aveva, a
+ * quella di ripiego scritta nel codice.
+ *
+ * Il seme di un utente amministratore ha senso una volta, alla prima
+ * installazione. Da li' in poi la password appartiene a chi la usa, non alla
+ * configurazione.
+ */
 async function seedAdminUser(client) {
+  if (!env.auth.adminEmail || !env.auth.adminPassword) {
+    // Senza le due variabili non si semina niente. Non e' un errore: e' un
+    // database gia' avviato, dove l'amministratore esiste e la sua password
+    // non riguarda piu' l'avvio.
+    return;
+  }
+
   const adminName = 'Admin';
   const adminFirstName = 'Admin';
   const adminLastName = 'User';
@@ -1733,7 +1754,6 @@ async function seedAdminUser(client) {
           WHEN EXCLUDED.role = 'admin' THEN NULL
           ELSE dashboard_users.structure_id
         END,
-        password_hash = EXCLUDED.password_hash,
         role = 'admin',
         is_registered = TRUE,
         updated_at = NOW()

@@ -10,6 +10,11 @@ modifiche da fare/
 
 # Env
 backend/.env
+
+# Quello che legge docker compose. Non era ignorato, e compose lo legge senza
+# dire niente: bastava un `docker compose up` con un .env accanto per
+# committarlo al giro dopo.
+/.env
 .env.deploy
 .env.deploy.local
 connections.txt

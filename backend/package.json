@@ -4,15 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --test",
     "db:init": "node scripts/init-db.js",
     "translate:missing": "node scripts/translate-missing-pois.js",
     "translate:missing:dry-run": "node scripts/translate-missing-pois.js --dry-run",
     "audio:missing": "node scripts/generate-missing-poi-audios.js",
     "audio:missing:dry-run": "node scripts/generate-missing-poi-audios.js --dry-run",
     "audio:apply-manifest": "node scripts/apply-poi-audio-manifest.js",
-    "audio:apply-manifest:dry-run": "node scripts/apply-poi-audio-manifest.js --dry-run"
+    "audio:apply-manifest:dry-run": "node scripts/apply-poi-audio-manifest.js --dry-run",
+    "images:clean": "node scripts/clean-image-metadata.js",
+    "images:clean:write": "node scripts/clean-image-metadata.js --write"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -27,5 +30,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
