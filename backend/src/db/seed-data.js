@@ -48,7 +48,7 @@ export const poisSeed = [
     descriptionLong:
       'Piazza del Duomo è il cuore monumentale e simbolico di Catania, il luogo in cui la città esprime pienamente la propria anima barocca e la sua storia di resilienza. Quasi interamente distrutta dal terremoto del 1693, fu ricostruita trasformando la tragedia in rinascita, con il contrasto tra pietra lavica e pietra chiara che definisce ancora oggi l\'identità del centro storico.',
     imageUrl: '/public/images/catania/piazza-duomo-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 430
   },
@@ -63,7 +63,7 @@ export const poisSeed = [
     descriptionLong:
       'La Fontana dell\'Amenano si trova accanto alla Pescheria, alle spalle di Piazza del Duomo, nel cuore più autentico e vivace di Catania. Tra il mercato del pesce e il ritmo della città, la fontana si presenta come presenza elegante e silenziosa, in un contrasto continuo tra acqua, pietra lavica e memoria popolare.',
     imageUrl: '/public/images/catania/fontana-dell-amenano-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 320
   },
@@ -78,7 +78,7 @@ export const poisSeed = [
     descriptionLong:
       'La Fontana dell\'Elefante, realizzata nel 1736 da Giovanni Battista Vaccarini, è il simbolo indiscusso di Catania. Al centro domina il celebre Liotru: un elefante in pietra lavica che sostiene un obelisco egizio, immagine che fonde epoche e culture e racconta il legame profondo tra mito cittadino, protezione e identità urbana.',
     imageUrl: '/public/images/catania/Fontana-dellElefante-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 360
   },
@@ -93,7 +93,7 @@ export const poisSeed = [
     descriptionLong:
       'La Cattedrale di Sant\'Agata rappresenta il cuore spirituale di Catania. Dedicata alla patrona martirizzata nel 251, custodisce una devozione che attraversa i secoli e si rinnova ogni anno nelle celebrazioni agatine. Il Duomo è anche il simbolo della rinascita della città dopo il terremoto del 1693, tra architettura monumentale e memoria collettiva.',
     imageUrl: '/public/images/catania/cathedral-of-sant-agata-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 540
   },
@@ -108,7 +108,7 @@ export const poisSeed = [
     descriptionLong:
       'La Basilica Maria Santissima dell\'Elemosina, nota come Collegiata, è uno dei massimi esempi di tardo barocco siciliano. Ricostruita dopo il 1693, presenta una facciata dinamica di colonne, statue e cornici che dialogano con la pietra lavica della città e trasformano la strada in un vero scenario teatrale.',
     imageUrl: '/public/images/catania/Collegiata.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 420
   },
@@ -123,7 +123,7 @@ export const poisSeed = [
     descriptionLong:
       'Il Castello Ursino fu edificato nel XIII secolo per volontà di Federico II come presidio strategico sul mare. Dopo l\'eruzione del 1669, la colata lavica ne modificò il paesaggio ma non ne compromise la struttura. Oggi resta una delle testimonianze più forti della storia civile e politica della città.',
     imageUrl: '/public/images/catania/castello-ursino-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 520
   },
@@ -138,7 +138,7 @@ export const poisSeed = [
     descriptionLong:
       'Il Teatro Romano di Catania, costruito tra I e II secolo d.C., è incastonato nel centro storico e racconta la stratificazione della città antica. La cavea in pietra lavica e i rivestimenti marmorei testimoniavano la centralità culturale di questo spazio, destinato a spettacoli pubblici e vita civica.',
     imageUrl: '/public/images/catania/Teatro-romano-Odeon-ct2.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 500
   },
@@ -153,7 +153,7 @@ export const poisSeed = [
     descriptionLong:
       'Nel centro storico di Catania, Palazzo Gravina Cruyllas unisce architettura barocca, stratificazioni urbane e vita culturale. Tra corti interne e sale storiche, il palazzo racconta secoli di trasformazioni e conserva un ruolo centrale nel rapporto tra patrimonio artistico e identità cittadina.',
     imageUrl: '/public/images/catania/palazzo-gravina-cruyas-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 410
   },
@@ -168,7 +168,7 @@ export const poisSeed = [
     descriptionLong:
       'Il Palazzo degli Elefanti, affacciato su Piazza del Duomo, è la sede del Municipio e uno dei simboli della rinascita successiva al terremoto del 1693. La sua architettura barocca, con balconi e decorazioni in dialogo con la pietra lavica, racconta il legame tra scena urbana e storia politica cittadina.',
     imageUrl: '/public/images/catania/palazzo-degli-elefanti-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 360
   },
@@ -183,7 +183,7 @@ export const poisSeed = [
     descriptionLong:
       'Il Teatro Massimo Bellini, inaugurato nel 1890, è uno dei simboli culturali di Catania. La sala a ferro di cavallo, i velluti rossi, gli stucchi dorati e l\'acustica eccellente fanno di questo luogo una tappa centrale per comprendere la tradizione lirica della città e la sua stagione ottocentesca.',
     imageUrl: '/public/images/catania/teatro-massimo-vincenzo-bellini-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 450
   },
@@ -198,7 +198,7 @@ export const poisSeed = [
     descriptionLong:
       'Alle spalle di Piazza Duomo, la Pescheria è uno dei luoghi più autentici di Catania. Tra banchi colmi di pesce fresco, pietra lavica bagnata e le tradizionali abbanniate dei venditori, questo mercato restituisce la dimensione popolare e quotidiana della città etnea.',
     imageUrl: '/public/images/catania/pescheria-ct2.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 350
   },
@@ -213,7 +213,7 @@ export const poisSeed = [
     descriptionLong:
       'Via Etnea attraversa Catania in linea retta dal Duomo ai Giardini Bellini e rappresenta la spina dorsale della rinascita barocca. Tra chiese, palazzi nobiliari, attività storiche e prospettive sul vulcano, è il luogo in cui si percepisce con più evidenza il dialogo tra vita quotidiana e paesaggio etneo.',
     imageUrl: '/public/images/catania/via-etnea-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 390
   },
@@ -228,7 +228,7 @@ export const poisSeed = [
     descriptionLong:
       'Il Monastero dei Benedettini di San Nicolò l\'Arena è un grande complesso monumentale, ricostruito dopo la lava del 1669 e il terremoto del 1693. Tra chiostri, scale, corti e stratificazioni architettoniche dal Rinascimento al Neoclassico, racconta in modo unico il rapporto tra sapere, città e paesaggio vulcanico.',
     imageUrl: '/public/images/catania/san-nicolo-l-arena-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 560
   },
@@ -243,7 +243,7 @@ export const poisSeed = [
     descriptionLong:
       'Villa Bellini è il principale parco urbano della città, un\'oasi verde nata tra Settecento e Ottocento. Viali alberati, aiuole curate, scalinate e terrazze panoramiche la rendono un punto di equilibrio tra la dimensione barocca del centro e il profilo naturale del vulcano.',
     imageUrl: '/public/images/catania/Villa_Bellini_ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 330
   },
@@ -258,7 +258,7 @@ export const poisSeed = [
     descriptionLong:
       'Piazza Università ospita il Palazzo dell\'Università, tra i più antichi atenei siciliani, e i celebri candelabri monumentali che raccontano storie e miti popolari di Catania. Lo spazio urbano unisce eleganza settecentesca, memoria civica e identità culturale contemporanea.',
     imageUrl: '/public/images/catania/piazza-dell-universita-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 300
   },
@@ -273,7 +273,7 @@ export const poisSeed = [
     descriptionLong:
       'In Piazza Stesicoro affiora l\'Anfiteatro Romano, una delle più importanti testimonianze della Katane imperiale. Solo una parte è visibile oggi: il resto resta sotto la città contemporanea, ricordando la dimensione monumentale dell\'antico impianto destinato agli spettacoli pubblici.',
     imageUrl: '/public/images/catania/piazza-stesicoro-ct.jpg',
-    audioUrl: '/public/audio/catania-anfiteatroromano.mp3',
+    audioUrl: '/public/audio/catania/catania-anfiteatroromano.mp3',
     priceSingle: 2.99,
     durationSec: 470
   },
@@ -288,7 +288,7 @@ export const poisSeed = [
     descriptionLong:
       'Mount Etna è la presenza naturale più potente del paesaggio catanese: vulcano attivo, patrimonio UNESCO e simbolo della città. Tra colate storiche, terre nere fertili e panorami in continuo cambiamento, racconta la relazione profonda tra Catania, il fuoco e la rinascita.',
     imageUrl: '/public/images/catania/etna2.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 540
   },
@@ -303,7 +303,7 @@ export const poisSeed = [
     descriptionLong:
       'La Badia di Sant\'Agata, ricostruita nel Settecento, è uno dei luoghi più suggestivi del centro storico. Legata alla storia del monastero benedettino femminile e alla devozione agatina, racconta il volto religioso e sociale della città barocca nel dialogo continuo con Piazza del Duomo.',
     imageUrl: '/public/images/catania/badia-santAgata.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 340
   },
@@ -318,7 +318,7 @@ export const poisSeed = [
     descriptionLong:
       'Nel sottosuolo di Piazza del Duomo, le Terme Achilliane conservano tracce della città romana tra III e IV secolo d.C. Il percorso sotterraneo, a pochi passi dal Duomo, mostra in modo diretto la stratificazione storica di Catania e il dialogo tra epoche che convivono nello stesso spazio urbano.',
     imageUrl: '/public/images/catania/Terme-Achilliane-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 360
   },
@@ -333,7 +333,7 @@ export const poisSeed = [
     descriptionLong:
       'Palazzo San Giuliano domina uno degli angoli più rappresentativi di Catania con la sua facciata curva settecentesca. Legato alla nobiltà cittadina, racconta il rapporto tra architettura barocca, vita pubblica e rappresentazione sociale nel cuore del centro storico.',
     imageUrl: '/public/images/catania/palazzo-san-giuliano-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 380
   },
@@ -348,7 +348,7 @@ export const poisSeed = [
     descriptionLong:
       'Accanto alla Cattedrale di Sant\'Agata, il Museo Emilio Greco raccoglie opere dello scultore catanese tra i più importanti del Novecento. Il percorso unisce scultura moderna e contesto archeologico, mostrando come a Catania il linguaggio contemporaneo continui a dialogare con pietra antica, spiritualità e memoria urbana.',
     imageUrl: '/public/images/catania/MUSEO-EMILIO-GRECO-ct.jpg',
-    audioUrl: '/public/audio/catania-guide.mp3',
+    audioUrl: '/public/audio/catania/catania-guide.mp3',
     priceSingle: 2.99,
     durationSec: 390
   },
@@ -363,7 +363,7 @@ export const poisSeed = [
     descriptionLong:
       'La Cattedrale di Siracusa ingloba colonne doriche del tempio di Atena in un impianto barocco unico. è un esempio straordinario di continuità storica nel Mediterraneo.',
     imageUrl: '/public/images/siracusa-duomo.svg',
-    audioUrl: '/public/audio/siracusa-guide.mp3',
+    audioUrl: '/public/audio/siracusa/siracusa-guide.mp3',
     priceSingle: 2.49,
     durationSec: 360
   },
@@ -378,7 +378,7 @@ export const poisSeed = [
     descriptionLong:
       'Secondo il mito, Aretusa si trasformò in sorgente per sfuggire ad Alfeo. Oggi la fonte è uno dei simboli più riconoscibili di Ortigia, con papiri che crescono in acqua dolce vicino alla costa.',
     imageUrl: '/public/images/siracusa/fonte-aretusa-sr.jpg',
-    audioUrl: '/public/audio/siracusa-guide.mp3',
+    audioUrl: '/public/audio/siracusa/siracusa-guide.mp3',
     priceSingle: 2.49,
     durationSec: 305
   },
@@ -393,7 +393,7 @@ export const poisSeed = [
     descriptionLong:
       'Neapolis raccoglie alcuni tra i più importanti monumenti della Siracusa antica. Le cave, il teatro e gli scenari naturali rendono il sito uno snodo centrale per comprendere la Magna Grecia.',
     imageUrl: '/public/images/siracusa/Zona_archeologica_di_Siracusa.jpg',
-    audioUrl: '/public/audio/siracusa-guide.mp3',
+    audioUrl: '/public/audio/siracusa/siracusa-guide.mp3',
     priceSingle: 2.49,
     durationSec: 420
   },

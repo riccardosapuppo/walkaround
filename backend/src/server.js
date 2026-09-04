@@ -151,7 +151,26 @@ app.use(
 app.use(helmet({
   crossOriginResourcePolicy: false
 }));
-app.use(morgan('dev'));
+// Il registro delle richieste SENZA la stringa di query.
+//
+// Un <audio src> non puo' mandare un header Authorization: e' un limite del
+// tag, non una scorciatoia. Percio' il token di sessione viaggia in
+// ?access_token=..., e con morgan('dev') finiva scritto per intero nel
+// registro a ogni riproduzione: un token da sette giorni, in chiaro, in un
+// file che si conserva e si copia.
+//
+// Questo toglie la query dal registro dell'applicazione. NON risolve il
+// problema: resta il registro di nginx davanti, che ha la sua direttiva.
+//
+// LA CORREZIONE VERA, non fatta qui perche' non e' verificabile senza un
+// browser e un database: nella URL non deve viaggiare la sessione ma un
+// BIGLIETTO - opaco, valido due minuti, legato a un solo utente e a un solo
+// punto di interesse, conservato come gia' si fa con le sessioni (token
+// casuale, in tabella solo l'impronta SHA-256). Se finisce in un registro
+// scade prima che serva a qualcosa, e comunque apre una traccia sola.
+morgan.token('percorso', (req) => String(req.originalUrl || req.url || '').split('?')[0]);
+
+app.use(morgan(':method :percorso :status :res[content-length] - :response-time ms'));
 app.use(express.json({ limit: '30mb' }));
 
 app.use('/api', (_req, res, next) => {
