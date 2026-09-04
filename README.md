@@ -244,7 +244,9 @@ Adesso lo stato si segna *prima* della chiamata e vale «ignoto», che conta com
 
 ## Quello che manca ancora
 
+- **Le credenziali vecchie sono ancora nella cronologia, e vanno ruotate.** È la voce più urgente dell'elenco. Password del database, password dell'amministratore, password SMTP di una casella reale, indirizzo e utente del server: tolte dai file, restano in 53 versioni di `backend/.env.example` e nelle vecchie versioni del README, tutte già su GitHub. Toglierle da un file non le toglie a chi ha clonato.
 - **Nessuna prova tocca il database né una rotta.** Le 44 coprono funzioni pure e la forma dei sorgenti. Il controllo di autorizzazione più importante — «la sessione è quella dell'utente nominato» — è verificato a mano contro il programma in esecuzione, non da una prova che si rilancia da sola, e dovrebbe essere il prossimo passo.
+- **`migrateClientUserDataToAppUser` si fida dello `userId` nel corpo della richiesta.** In `backend/src/routes/app-auth.js`, sposta gli acquisti fatti da ospite sull'account che si registra. Quell'uuid è l'unica cosa che un ospite ha, quindi non c'è un token da chiedere; la migrazione è di fatto una sola volta, perché le righe di partenza vengono spostate. Resta che chi conoscesse l'uuid di un ospite potrebbe rivendicarne gli acquisti registrandosi. Il modo giusto è legare l'uuid alla sessione che l'ha creato, e non è stato fatto.
 - **Le chiavi di PayPal e di OpenAI stanno nel database in chiaro.** Tolte dall'ambiente e dall'immagine, non ancora cifrate a riposo. Chi legge quel database le legge.
 - **Il repository contiene il prodotto.** I 739 mp3 a pagamento sono versionati in LFS: il paywall difende `/public/audio` via HTTP, ma un `git clone` con LFS consegna la libreria intera. Finché il repository è privato non cambia niente; renderlo pubblico vorrebbe dire pubblicare anche il catalogo.
 - **Ventiquattro punti di interesse hanno un segnaposto** al posto della fotografia.
@@ -257,7 +259,9 @@ Adesso lo stato si segna *prima* della chiamata e vale «ignoto», che conta com
 
 Progetto personale dell'autore, non un lavoro per un cliente. È in esercizio su <https://walkaround.cloud/>.
 
-Il README che questo sostituisce conteneva l'indirizzo del server, l'utente per l'accesso remoto e la password del database, in chiaro. Non ci sono più, e non ci sono altrove: la configurazione arriva dall'ambiente, e quando manca il programma si ferma invece di ripiegare su qualcosa scritto da qualche parte.
+Il README che questo sostituisce conteneva l'indirizzo del server, l'utente per l'accesso remoto e la password del database, in chiaro. Non ci sono più **in nessun file di adesso**: la configurazione arriva dall'ambiente, e quando manca il programma si ferma invece di ripiegare su qualcosa scritto da qualche parte.
+
+**Ci sono ancora nella cronologia di git, e questo va detto.** Un valore tolto da un file resta nei commit che lo contenevano: `backend/.env.example` ne ha 53 versioni con dentro delle credenziali, e il vecchio README ne ha altre. Sono commit già spinti, quindi l'unica correzione che vale qualcosa **è ruotare quelle credenziali** — riscrivere la cronologia non le toglie a chi ha già clonato, e non le toglie dalle copie che GitHub tiene raggiungibili per SHA.
 
 ---
 
