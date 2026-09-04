@@ -1,8 +1,0 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
-  <rect width="1200" height="700" fill="#f6fbff"/>
-  <rect y="420" width="1200" height="280" fill="#d2ecff"/>
-  <path d="M140 520 C300 380, 470 360, 620 510" fill="none" stroke="#95d39c" stroke-width="140" stroke-linecap="round"/>
-  <path d="M620 510 C760 370, 900 350, 1060 520" fill="none" stroke="#8dc0f3" stroke-width="120" stroke-linecap="round"/>
-  <text x="95" y="130" fill="#15395f" font-size="72" font-family="Arial, sans-serif" font-weight="700">Taormina</text>
-  <text x="98" y="188" fill="#2c5b90" font-size="30" font-family="Arial, sans-serif">Teatro e costa ionica</text>
-</svg>

@@ -1,0 +1,173 @@
+name: controlli
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+# Ogni lavoro ha un tempo massimo. Uno che si pianta e' peggio di uno che
+# fallisce: resta arancione per sei ore e non lo guarda nessuno, mentre uno
+# rosso manda una email.
+jobs:
+  le-prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # backend/package.json dichiara engines >=22 e il README chiede
+        # "Node 22 o piu' recente": si girano tutti e due gli estremi. Un
+        # minimo dichiarato che nessuno prova e' un'ipotesi, e qui l'intero
+        # apparato delle prove e' `node --test` senza librerie, cioe' proprio
+        # la parte che si sposta fra una versione maggiore e l'altra.
+        node: ['22', '24']
+
+    steps:
+      - uses: actions/checkout@v4
+        # Niente LFS: 2,4 GiB di mp3 non servono a nessuna di queste prove, e
+        # scaricarli a ogni giro brucia la banda mensile del repository per
+        # non guardarli. I puntatori bastano.
+        with:
+          lfs: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: le dipendenze del backend
+        run: npm ci
+        working-directory: backend
+
+      - name: le prove
+        # Il TAP e' chiesto invece che lasciato scegliere: fuori da un
+        # terminale Node lo userebbe gia' da solo, ma dirlo vuol dire che la
+        # riga letta dal passo qui sotto e' la stessa su tutte e due le
+        # versioni, e non dipende da come il runner presenta la console.
+        run: npm test -- --test-reporter=tap | tee /tmp/prove.txt
+        working-directory: backend
+
+      - name: e sono davvero quarantaquattro, non zero
+        # IL PUNTO: `node --test` che non trova nessun file da eseguire non fa
+        # rumore. Una cartella rinominata, un modello di ricerca cambiato in
+        # una versione maggiore, e la suite passa avendo eseguito niente —
+        # verde, velocissima, e senza significato. Quindi il conto si legge.
+        run: |
+          passate=$(sed -n 's/^# pass \([0-9][0-9]*\)$/\1/p' /tmp/prove.txt)
+          fallite=$(sed -n 's/^# fail \([0-9][0-9]*\)$/\1/p' /tmp/prove.txt)
+
+          if [ -z "$passate" ] || [ -z "$fallite" ]; then
+            echo "Il riassunto TAP non c'e'. Il resoconto e' cambiato, e questo controllo sta leggendo il nulla."
+            exit 1
+          fi
+
+          echo "passate: $passate   fallite: $fallite"
+
+          # La soglia sta sotto il numero di oggi apposta: aggiungere prove non
+          # deve far diventare rosso niente. Serve solo a separare
+          # "quarantaquattro" da "nessuna".
+          if [ "$passate" -lt 30 ] || [ "$fallite" -ne 0 ]; then
+            echo "Le prove eseguite sono troppo poche, oppure qualcuna e' fallita."
+            exit 1
+          fi
+
+  il-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: le dipendenze del frontend
+        run: npm ci
+        working-directory: frontend
+
+      - name: il frontend compila
+        # `ng build` senza argomenti e' la configurazione di produzione: e' il
+        # defaultConfiguration in angular.json. E' quella coi budget di peso e
+        # col service worker acceso, cioe' l'unica che qualcuno spedisce
+        # davvero. Compilare lo sviluppo direbbe molto meno.
+        run: npm run build
+        working-directory: frontend
+
+      - name: e quello che ne esce e' una PWA
+        # Una compilazione finita bene non basta come prova. Il README apre
+        # dicendo PWA, e ngsw.json lo scrive il builder solo se `serviceWorker`
+        # resta acceso nella configurazione di produzione: se qualcuno lo
+        # toglie, `ng build` continua a passare e l'applicazione smette di
+        # funzionare fuori rete senza che niente diventi rosso.
+        run: |
+          pagina=$(find frontend/dist -name index.html -print -quit)
+          servizio=$(find frontend/dist -name ngsw.json -print -quit)
+
+          echo "pagina         : ${pagina:-nessuna}"
+          echo "service worker : ${servizio:-nessuno}"
+
+          if [ -z "$pagina" ] || [ -z "$servizio" ]; then
+            echo "La compilazione e' andata a buon fine e non ha prodotto una PWA."
+            exit 1
+          fi
+
+  il-repository:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: ogni comando npm del README esiste dove il README lo fa dare
+        # I comandi si leggono dal README invece di essere elencati qui: un
+        # elenco scritto in due posti invecchia in uno dei due, in silenzio, e
+        # quello che invecchia e' sempre la copia.
+        run: node .github/controlla-readme.mjs
+
+      - name: il minimo di Node e' lo stesso in tutti e tre i posti
+        # Il README dice "Node 22 o piu' recente", backend/package.json
+        # dichiara engines >=22, e la matrice del primo lavoro parte da 22. Se
+        # uno dei tre si muove da solo, la CI comincia a promettere una
+        # versione che nessuno prova, oppure a provarne una che il progetto non
+        # promette piu'. Alzare il minimo vuol dire toccare tre righe: questo
+        # passo fa in modo che dimenticarne una si veda.
+        run: |
+          minimo=22
+
+          grep -qE "Node[^0-9]*${minimo}" README.md \
+            || { echo "Il README non dice piu' che il minimo e' Node ${minimo}."; exit 1; }
+
+          grep -qE "'${minimo}'" .github/workflows/controlli.yml \
+            || { echo "La matrice non prova piu' Node ${minimo}."; exit 1; }
+
+          dichiarato=$(node -pe "require('./backend/package.json').engines.node")
+          echo "engines.node: $dichiarato"
+
+          case "$dichiarato" in
+            *"$minimo"*) echo "README, package.json e matrice dicono la stessa cosa." ;;
+            *) echo "backend/package.json non dichiara piu' ${minimo} come minimo."; exit 1 ;;
+          esac
+
+      - name: nessun segreto in chiaro fra i file versionati
+        # Non e' un antivirus e non prova a esserlo: cerca le forme che in
+        # questo repository ci sono davvero state — un indirizzo IP pubblico
+        # in un comando ssh, una riga `password:` con dentro qualcosa che non
+        # sia un segnaposto. Il README ne aveva tre fino a poco fa.
+        run: node .github/controlla-segreti.mjs

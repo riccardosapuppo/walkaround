@@ -1,7 +1,0 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
-  <rect width="960" height="540" fill="#edf3f9"/>
-  <path d="M120 410 Q480 140 840 410" fill="none" stroke="#8e6a4b" stroke-width="42"/>
-  <path d="M170 410 Q480 190 790 410" fill="none" stroke="#b08a63" stroke-width="32"/>
-  <path d="M230 410 Q480 235 730 410" fill="none" stroke="#cba57a" stroke-width="26"/>
-  <text x="70" y="92" fill="#1d3f6a" font-size="52" font-family="Arial" font-weight="700">Teatro Romano</text>
-</svg>
