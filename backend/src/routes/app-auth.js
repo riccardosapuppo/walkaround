@@ -228,6 +228,36 @@ async function createAppSession(userId, client = pool) {
   };
 }
 
+/**
+ * Sposta su un account gli acquisti fatti da ospite.
+ *
+ * QUESTA FUNZIONE SI FIDA DELLO `userId` CHE ARRIVA NEL CORPO DELLA
+ * RICHIESTA, ed e' una scelta, non una svista. Va scritta perche' e' l'unico
+ * punto del progetto dove un dato non verificato decide di chi sono dei soldi.
+ *
+ * Chi compra senza registrarsi e' identificato da un uuid che il browser si
+ * genera al primo avvio e si tiene in locale. Non c'e' nessun token da
+ * chiedere, perche' quell'uuid E' tutto quello che l'ospite ha: pretendere
+ * una prova vorrebbe dire non far comprare nessuno senza account, che e' una
+ * decisione di prodotto e non una correzione.
+ *
+ * Il danno e' limitato da due cose, e nessuna delle due e' una difesa:
+ *   - le righe di partenza vengono SPOSTATE, non copiate, quindi di fatto la
+ *     migrazione riesce una volta sola per ogni uuid;
+ *   - un uuid v4 non si indovina.
+ *
+ * Ma chi lo VEDESSE — e fino a poco fa viaggiava nelle query string, quindi
+ * nei log di ogni proxy davanti — potrebbe registrarsi e rivendicare gli
+ * acquisti di quell'ospite. La query string e' stata tolta dal log
+ * dell'applicazione (`server.js`), il che riduce la superficie e non la
+ * chiude.
+ *
+ * IL MODO GIUSTO, non fatto: legare l'uuid alla sessione che l'ha creato —
+ * un cookie firmato dal server al primo contatto, che l'ospite non sceglie e
+ * non puo' presentare per conto di un altro. Vuol dire toccare il flusso di
+ * acquisto degli ospiti, che e' la parte che porta i soldi, e non si fa senza
+ * poterla provare davvero. E' dichiarato fra i limiti nel README.
+ */
 async function migrateClientUserDataToAppUser(clientUserId, appUserId, client = pool) {
   const sourceUserId = String(clientUserId || '').trim();
   const targetUserId = String(appUserId || '').trim();

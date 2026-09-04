@@ -75,10 +75,27 @@ const SOSPETTI = [
 /* I file che possono nominare queste cose per parlarne: la propria
    documentazione e i propri controlli. Un elenco corto e scritto a mano —
    allungarlo e' una decisione, non una scorciatoia. */
+/**
+ * L'ELENCO E' CORTO PER FORZA, E STA PER DIVENTARE PIU' CORTO.
+ *
+ * Ci stava anche `README.md`, e quella era una falla vera: il README e' IL
+ * FILE che conteneva l'indirizzo del server, l'utente SSH e la password del
+ * database. Metterlo qui dentro voleva dire che questo controllo, scritto
+ * apposta per quel genere di errore, sul caso concreto non guardava. Passava
+ * dicendo «nessun segreto in 176 file» e i 176 non lo comprendevano.
+ *
+ * E ci stava per una ragione che sembrava buona: il README parla di
+ * credenziali, quindi «e' normale che scatti». Ma se un file fa scattare il
+ * controllo, o il controllo e' troppo largo — e allora si stringe il modello —
+ * o il file ha davvero qualcosa dentro. Scusarlo e' la terza strada, ed e' la
+ * sola che non risponde alla domanda.
+ *
+ * Stretto il modello (si pretendono le virgolette e si escludono i rimandi),
+ * il README passa da solo, e questo elenco puo' restare a un nome: il file che
+ * per funzionare deve contenere i modelli e i propri casi di prova.
+ */
 const AMMESSI = new Set([
-  '.github/controlla-segreti.mjs',
-  'README.md',
-  'docs/immagini.md'
+  '.github/controlla-segreti.mjs'
 ]);
 
 const versionati = execFileSync('git', ['ls-files'], { cwd: RADICE, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
