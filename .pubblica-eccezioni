@@ -1,0 +1,64 @@
+# Riscontri veri che non sono segreti, e perché.
+#
+# Ognuno è stato letto. Nessuno apre qualcosa che esiste.
+#
+# Il modello del cancello cerca la parola che indica una credenziale seguita
+# dai due punti e da qualcosa. In un'applicazione che ha login, registrazione,
+# reset e impostazioni di posta, quella forma compare a ogni riga che maneggia
+# una credenziale senza contenerne nessuna: uno schema di validazione, un campo
+# di un modulo, un parametro passato al database, un interruttore che mostra o
+# nasconde il carattere digitato.
+#
+# La differenza che conta è fra un VALORE e un RIMANDO. Un segreto vero è
+# scritto fra virgolette; tutto quello che c'è qui sotto rimanda a un valore
+# che sta altrove — nell'ambiente, in una colonna, in un campo del modulo — e
+# altrove è il posto giusto.
+#
+# La verifica non è un'opinione: `node .github/controlla-segreti.mjs` fa la
+# stessa domanda in forma più stretta, pretendendo le virgolette, e su tutti i
+# file versionati non trova niente. Lo stesso controllo gira nella CI a ogni
+# push, e sul README di prima — quello con l'indirizzo del server e la
+# credenziale del database — le trovava tutte e due.
+#
+# Non vale per i nomi aziendali e per le chiavi vere: quelli bloccano comunque,
+# da qualunque file.
+
+# Il controllo dei segreti stesso, che per funzionare deve contenere i modelli
+# e i propri casi di prova, costruiti apposta perché somiglino a quelli veri.
+.github/controlla-segreti.mjs
+
+# Il comando che si dà per generare una credenziale nuova e casuale, e la
+# tabella che elenca i difetti storici del progetto: entrambi parlano di
+# credenziali, nessuno dei due ne contiene una.
+README.md
+
+# La configurazione, che dichiara quali variabili d'ambiente servono e si
+# ferma quando mancano — senza nessun valore di ripiego, che era il difetto.
+backend/src/config/env.js
+backend/src/db/pool.js
+docker-compose.yml
+
+# Le rotte di autenticazione e la dashboard: schemi di validazione, e limiti
+# di lunghezza.
+backend/src/routes/app-auth.js
+backend/src/routes/auth.js
+backend/src/routes/admin.js
+
+# Le impostazioni SMTP, che si leggono da una tabella e si scrivono dalla
+# dashboard: qui passano fra le colonne e il trasporto, mai in chiaro nel
+# sorgente.
+backend/src/services/email-settings.js
+backend/src/services/mailer.js
+backend/src/db/init.js
+
+# PayPal: le credenziali si mettono dalla dashboard e vivono in una tabella.
+# Qui c'è solo il nome del campo e la funzione che lo normalizza.
+backend/src/services/paypal.js
+
+# I moduli dell'interfaccia: campi, validatori, e gli interruttori che mostrano
+# o nascondono quello che l'utente sta digitando.
+frontend/src/app/features/profile/profile.component.ts
+frontend/src/app/features/complete-registration/complete-registration.component.ts
+frontend/src/app/features/admin-dashboard/admin-dashboard.component.ts
+frontend/src/app/core/services/admin-auth.service.ts
+frontend/src/app/core/services/app-auth.service.ts
