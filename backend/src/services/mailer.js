@@ -195,8 +195,42 @@ function buildTransportKey(settings) {
   });
 }
 
+/**
+ * Vero quando il guasto e' "la posta non e' configurata" e non "la posta non
+ * ha funzionato". Chi chiama puo' distinguere il caso in cui non c'e' niente
+ * di rotto da riparare.
+ */
+export function postaNonConfigurata(error) {
+  return Boolean(error?.postaNonConfigurata);
+}
+
 async function getTransporter() {
   const settings = await getDashboardEmailSettings();
+
+  /**
+   * Senza un host non si costruisce un trasporto, e lo si dice qui.
+   *
+   * La configurazione SMTP e' opzionale — un progetto che non parte perche'
+   * non sa mandare una email e' un progetto che nessuno prova in locale — ma
+   * "opzionale" era rimasta una parola: senza SMTP_* si seminava host stringa
+   * vuota, `createTransport` accettava, e il guasto arrivava dentro le rotte
+   * sotto forma di errore di rete oscuro. Un 500 con dentro "getaddrinfo
+   * ENOTFOUND" non dice a nessuno che manca una riga di configurazione.
+   *
+   * Nota su DOVE sta il controllo: le impostazioni della posta si cambiano
+   * anche dalla dashboard e vivono su una tabella, quindi `env.smtp` non e'
+   * l'ultima parola e chiedere a lui darebbe la risposta sbagliata alle
+   * installazioni configurate dall'interfaccia. La domanda si fa dove la
+   * risposta e' vera.
+   */
+  if (!String(settings.host || '').trim()) {
+    const error = new Error(
+      'La posta in uscita non e configurata: manca SMTP_HOST (oppure le impostazioni email nella dashboard).'
+    );
+    error.postaNonConfigurata = true;
+    throw error;
+  }
+
   const nextTransporterKey = buildTransportKey(settings);
 
   if (!transporterPromise || transporterKey !== nextTransporterKey) {

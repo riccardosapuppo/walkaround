@@ -99,9 +99,19 @@ export const env = {
   },
   smtp: {
     /*
-     * La posta è tutta opzionale: senza queste tre l'invio è spento e lo dice.
-     * Un progetto che si rifiuta di partire perché non sa mandare una email è
-     * un progetto che nessuno prova in locale.
+     * La posta è tutta opzionale: un progetto che si rifiuta di partire
+     * perché non sa mandare una email è un progetto che nessuno prova in
+     * locale.
+     *
+     * `enabled` dice solo com'è messo L'AMBIENTE, e non è l'ultima parola:
+     * le impostazioni email si cambiano anche dalla dashboard e vivono su una
+     * tabella, quindi un'installazione senza SMTP_* può benissimo spedire.
+     * Chi deve sapere se l'invio è possibile lo chiede a `getTransporter`
+     * (services/mailer.js), che guarda le impostazioni vere e, se manca
+     * l'host, solleva un errore che lo dice a parole.
+     *
+     * Questo campo serve ai seed e alla diagnostica: è la risposta a «di
+     * default questa macchina sa spedire?», non a «adesso può?».
      */
     enabled: Boolean(smtpHost && smtpUser && smtpPassword),
     host: smtpHost,

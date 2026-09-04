@@ -7,7 +7,7 @@ import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from '../a
 import { pool } from '../db/pool.js';
 import { createSession as createDashboardSession } from './auth.js';
 import { sendPasswordResetEmail } from '../services/mailer.js';
-import { pickOrigin, toOriginSet } from '../auth/origins.js';
+import { origniDelSito, pickOrigin } from '../auth/origins.js';
 
 const router = express.Router();
 
@@ -55,17 +55,10 @@ function appPasswordResetExpiryDate() {
  * puntato al proprio server. Vedi auth/origins.js, che spiega perche' la
  * domanda giusta non e' 'e' una URL ben formata' ma 'e' una delle nostre'.
  */
-const origniConsentite = toOriginSet([
-  env.appBaseOrigin,
-  env.corsOrigin,
-  process.env.APP_ALLOWED_ORIGINS
-]);
+const dove = origniDelSito(env);
 
 function normalizeOrigin(value) {
-  return pickOrigin(value, {
-    own: env.appBaseOrigin || env.corsOrigin || 'http://localhost:4200',
-    allowed: origniConsentite
-  });
+  return pickOrigin(value, dove);
 }
 
 function appUserPayload(row) {
@@ -538,12 +531,34 @@ router.post('/password-reset', async (req, res, next) => {
       );
 
       const resetLink = `${origin}/auth/app-password-reset?token=${encodeURIComponent(token)}`;
-      await sendPasswordResetEmail({
-        to: user.email,
-        resetLink,
-        requestedByEmail: user.email,
-        expiresAt: expiresAt.toISOString()
-      });
+
+      /**
+       * Se l'invio fallisce, questa rotta risponde 200 lo stesso.
+       *
+       * Non e' indulgenza verso un guasto: e' l'unica risposta che non dice
+       * niente. Questa rotta la chiama chiunque, senza autenticarsi, con
+       * qualunque indirizzo. Se un'email inesistente da' 200 e una vera da'
+       * 500 — perche' solo per quella si prova a spedire, e la posta puo' non
+       * essere configurata — la coppia di risposte diventa un elenco degli
+       * iscritti consultabile a piacere, una email per volta.
+       *
+       * E' lo stesso ragionamento per cui `pickOrigin` (`auth/origins.js`) non
+       * solleva mai: quel file spiega che la rotta deve rispondere sempre
+       * uguale, e poi la rotta lo faceva per l'origine e non per l'invio.
+       *
+       * Il guasto non sparisce: va nel log del server, dove lo legge chi
+       * gestisce la macchina e non chi sta provando gli indirizzi.
+       */
+      try {
+        await sendPasswordResetEmail({
+          to: user.email,
+          resetLink,
+          requestedByEmail: user.email,
+          expiresAt: expiresAt.toISOString()
+        });
+      } catch (error) {
+        console.error('[app-auth] invio del reset password fallito:', error instanceof Error ? error.message : error);
+      }
     }
 
     return res.json({ sent: true });
