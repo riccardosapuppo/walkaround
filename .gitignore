@@ -23,3 +23,14 @@ comandi utili.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Prodotti di compilazione e cartelle di appoggio finiti versionati.
+#
+# out-tsc/ c'era per un difetto di configurazione: tsconfig.app.json scriveva
+# in ./out-tsc/app, che sfuggiva alla regola su **/dist. 75 file compilati,
+# vecchi di tre mesi, che descrivevano un'applicazione che non esiste piu'.
+#
+# Le .tmp_docx_* erano cartelle di lavoro di uno script, entrate perche'
+# `npm run git` fa `git add .` senza che nessuno guardi.
+out-tsc/
+.tmp_docx_*/
