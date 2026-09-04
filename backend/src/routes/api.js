@@ -1933,6 +1933,7 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
   const { orderId, userId } = parsed.data;
   const client = await pool.connect();
   let pendingOrder = null;
+  let incassoAvvenuto = false;
 
   try {
     await requireAppUser(req, userId);
@@ -1992,6 +1993,19 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
       }
     }
 
+    // Letto PRIMA della capture, e non dopo.
+    //
+    // Questo JSON.parse puo' sollevare: purchase_items arriva da una colonna
+    // e non e' garantito che sia leggibile. Stava sotto la chiamata a PayPal,
+    // cioe' dopo che i soldi erano stati presi — e un'eccezione li' dentro
+    // faceva rollback lasciando un incasso senza acquisto e senza rimborso.
+    //
+    // Regola generale: tutto quello che puo' fallire va fatto prima del punto
+    // in cui non si torna indietro.
+    const rawItems = Array.isArray(pendingOrder.purchase_items)
+      ? pendingOrder.purchase_items
+      : JSON.parse(String(pendingOrder.purchase_items || '[]'));
+
     const settings = await getPayPalSettings(client);
     const accessToken = await requestPayPalAccessToken(settings);
     const capturePayload = await paypalApiRequest(
@@ -2005,14 +2019,15 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
     );
 
     const captureStatus = String(capturePayload.status || '').trim().toUpperCase() || 'UNKNOWN';
+
+    // Da qui in poi, se questo e' COMPLETED, i soldi del cliente sono stati
+    // presi e nessun rollback li restituisce. Lo stato di questa variabile
+    // decide che cosa scrive il catch in fondo.
+    incassoAvvenuto = captureStatus === 'COMPLETED';
     const captureUnit = Array.isArray(capturePayload.purchase_units) ? capturePayload.purchase_units[0] : null;
     const capture = Array.isArray(captureUnit?.payments?.captures) ? captureUnit.payments.captures[0] : null;
     const captureId = String(capture?.id || '').trim() || null;
     const payer = extractPayPalPayer(capturePayload);
-    const rawItems = Array.isArray(pendingOrder.purchase_items)
-      ? pendingOrder.purchase_items
-      : JSON.parse(String(pendingOrder.purchase_items || '[]'));
-
     await client.query('BEGIN');
 
     const lockedOrder = await client.query(
@@ -2245,15 +2260,31 @@ router.post('/paypal/checkout/capture-order', async (req, res, next) => {
 
     if (pendingOrder?.paypal_order_id) {
       try {
+        // Che cosa si scrive qui dipende da una cosa sola: se i soldi sono
+        // stati presi.
+        //
+        // Prima scriveva sempre 'failed', e senza guardare lo stato di
+        // partenza. Due conseguenze: una richiesta parallela che aveva gia'
+        // scritto 'completed' se la vedeva sovrascrivere — e con lei la
+        // riproduzione idempotente, che da quel momento non ritrovava piu'
+        // l'ordine gia' pagato — e un incasso riuscito con la registrazione
+        // fallita spariva sotto la stessa parola di un pagamento mai
+        // avvenuto.
+        //
+        // 'captured_unreconciled' non e' uno stato che il programma sa
+        // gestire, ed e' voluto: vuol dire che c'e' un incasso senza
+        // acquisto e che ci deve guardare una persona. Meglio una riga che
+        // chiede aiuto che una che dice il falso.
         await pool.query(
           `
-            UPDATE paypal_checkout_orders
-            SET status = 'failed',
+          UPDATE paypal_checkout_orders
+            SET status = $3,
                 error_message = $2,
                 updated_at = NOW()
             WHERE paypal_order_id = $1
+              AND status <> 'completed'
           `,
-          [pendingOrder.paypal_order_id, error instanceof Error ? error.message : 'Errore PayPal']
+          [pendingOrder.paypal_order_id, error instanceof Error ? error.message : 'Errore PayPal', incassoAvvenuto ? 'captured_unreconciled' : 'failed']
         );
       } catch {
         // Ignore secondary failures while saving PayPal state.
