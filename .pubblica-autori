@@ -1,0 +1,22 @@
+# Le identita' git che questo progetto riconosce come proprie.
+#
+# Un'email per riga, il motivo dopo il cancelletto. Vale solo per questo
+# repository, e si vede in revisione come qualunque altra scelta.
+#
+# Il cancello blocca su qualunque autore che non sia quello dichiarato, e fa
+# bene: serve ad accorgersi di codice di qualcun altro entrato nella storia.
+# Ma qui non c'e' nessun altro.
+
+riccardo@local   # cinquantadue commit fra marzo e luglio 2026, scritti dallo
+                 # stesso autore su una macchina dove `git config user.email`
+                 # non era stato impostato: git ha usato utente@nomehost.
+                 # Non e' una persona diversa, e' la stessa senza
+                 # configurazione. Verificato che non esistono altri autori:
+                 # `git log --format=%ae | sort -u` restituisce due righe, e
+                 # l'altra e' l'indirizzo vero.
+                 #
+                 # Conseguenza da sapere: GitHub non collega quei commit al
+                 # profilo, perche' non riconosce l'indirizzo. Per collegarli
+                 # bisognerebbe riscrivere tutti e cinquantadue e forzare il
+                 # push su una storia gia' pubblicata. E' stata una scelta
+                 # deliberata non farlo.
