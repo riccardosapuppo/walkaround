@@ -54,7 +54,7 @@ Il `docker-compose.yml` legge la password da un `.env` accanto a sé, che non è
 
 ```
 git clone <questo repository>
-cd tourismapp
+cd walkaround
 git lfs pull
 
 echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
@@ -65,7 +65,7 @@ docker compose up
 - API: `http://localhost:3001`
 - PostgreSQL 16: `localhost:5433`
 
-I due volumi (`tourism_pgdata` per il database, `tourism_public` per i file caricati dalla dashboard) sono i dati: `docker compose down -v` li cancella.
+I due volumi (`walkaround_pgdata` per il database, `walkaround_public` per i file caricati dalla dashboard) sono i dati: `docker compose down -v` li cancella.
 
 ### In sviluppo, senza container il backend
 

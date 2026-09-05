@@ -143,7 +143,7 @@ if (guardati < 20) {
 const finto = [
   'ssh -N -L 25432:127.0.0.1:5433 utente@203.0.113.10',
   "password: 'unaPasswordFinta42'",
-  'DATABASE_URL=postgres://tourism:unaPasswordVera@db.example:5432/x'
+  'DATABASE_URL=postgres://walkaround:unaPasswordVera@db.example:5432/x'
 ];
 for (const riga of finto) {
   if (!SOSPETTI.some(({ regola }) => regola.test(riga))) {

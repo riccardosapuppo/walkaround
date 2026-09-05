@@ -3,7 +3,7 @@
     "version":  1,
     "newProjectRoot":  "projects",
     "projects":  {
-                     "tourism-audio-frontend":  {
+                     "walkaround-frontend":  {
                                                     "projectType":  "application",
                                                     "root":  "",
                                                     "sourceRoot":  "src",
@@ -12,7 +12,7 @@
                                                                       "build":  {
                                                                                     "builder":  "@angular/build:application",
                                                                                     "options":  {
-                                                                                                    "outputPath":  "dist/tourism-audio-frontend",
+                                                                                                    "outputPath":  "dist/walkaround-frontend",
                                                                                                     "index":  "src/index.html",
                                                                                                     "browser":  "src/main.ts",
                                                                                                     "polyfills":  [
@@ -77,10 +77,10 @@
                                                                                     "builder":  "@angular/build:dev-server",
                                                                                     "configurations":  {
                                                                                                            "production":  {
-                                                                                                                              "buildTarget":  "tourism-audio-frontend:build:production"
+                                                                                                                              "buildTarget":  "walkaround-frontend:build:production"
                                                                                                                           },
                                                                                                            "development":  {
-                                                                                                                               "buildTarget":  "tourism-audio-frontend:build:development"
+                                                                                                                               "buildTarget":  "walkaround-frontend:build:development"
                                                                                                                            }
                                                                                                        },
                                                                                     "defaultConfiguration":  "development",

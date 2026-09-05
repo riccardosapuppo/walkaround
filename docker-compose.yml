@@ -11,22 +11,22 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: tourism-postgres
+    container_name: walkaround-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: turismo_db_dev
-      POSTGRES_USER: tourism
+      POSTGRES_DB: walkaround_db
+      POSTGRES_USER: walkaround
       POSTGRES_PASSWORD: ${DB_PASSWORD:?serve DB_PASSWORD, mettila in un .env accanto a questo file}
     ports:
       - '5433:5432'
     volumes:
-      - tourism_pgdata:/var/lib/postgresql/data
+      - walkaround_pgdata:/var/lib/postgresql/data
     networks:
-      - tourism-net
+      - walkaround-net
   backend:
     build:
       context: ./backend
-    container_name: tourism-backend
+    container_name: walkaround-backend
     restart: unless-stopped
     depends_on:
       - postgres
@@ -35,7 +35,7 @@ services:
       CORS_ORIGIN: http://localhost:8080
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: turismo_db_dev
+      DB_NAME: walkaround_db
       DB_USER: walkaround
       DB_PASSWORD: ${DB_PASSWORD:?serve DB_PASSWORD, mettila in un .env accanto a questo file}
       # if-empty per difetto: chi fa `docker compose up` deve trovarci
@@ -46,23 +46,23 @@ services:
     ports:
       - '3001:3000'
     volumes:
-      - tourism_public:/app/public
+      - walkaround_public:/app/public
     networks:
-      - tourism-net
+      - walkaround-net
   frontend:
     build:
       context: ./frontend
-    container_name: tourism-frontend
+    container_name: walkaround-frontend
     restart: unless-stopped
     depends_on:
       - backend
     ports:
       - '8080:80'
     networks:
-      - tourism-net
+      - walkaround-net
 networks:
-  tourism-net:
+  walkaround-net:
     driver: bridge
 volumes:
-  tourism_pgdata:
-  tourism_public:
+  walkaround_pgdata:
+  walkaround_public:

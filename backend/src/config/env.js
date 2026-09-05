@@ -78,8 +78,8 @@ export const env = {
   db: {
     host: process.env.DB_HOST || '127.0.0.1',
     port: Number(process.env.DB_PORT || 5432),
-    database: process.env.DB_NAME || 'turismo_db_dev',
-    user: process.env.DB_USER || 'tourism',
+    database: process.env.DB_NAME || 'walkaround_db',
+    user: process.env.DB_USER || 'walkaround',
     password: required('DB_PASSWORD'),
     seedMode: parseSeedMode(process.env.DB_SEED_MODE)
   },

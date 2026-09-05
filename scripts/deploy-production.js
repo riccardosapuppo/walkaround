@@ -74,7 +74,7 @@ function commandSucceeds(command, args) {
 }
 
 function createAskPassFile() {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tourism-deploy-'));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'walkaround-deploy-'));
   const isWindows = process.platform === 'win32';
   const askPassPath = path.join(tempDir, isWindows ? 'git-askpass.cmd' : 'git-askpass.sh');
   const content = isWindows
