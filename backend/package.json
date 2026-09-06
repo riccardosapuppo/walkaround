@@ -14,6 +14,7 @@
     "audio:missing:dry-run": "node scripts/generate-missing-poi-audios.js --dry-run",
     "audio:apply-manifest": "node scripts/apply-poi-audio-manifest.js",
     "audio:apply-manifest:dry-run": "node scripts/apply-poi-audio-manifest.js --dry-run",
+    "audio:segnaposto": "node scripts/genera-audio-segnaposto.js",
     "images:clean": "node scripts/clean-image-metadata.js",
     "images:clean:write": "node scripts/clean-image-metadata.js --write"
   },

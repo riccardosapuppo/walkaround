@@ -15,6 +15,23 @@
  *    filesystem non distingue; nel container Alpine no, e Ragusa era una
  *    citta' senza fotografie.
  *
+ * TERZO CAPITOLO, ARRIVATO DOPO: gli mp3 sono usciti dal repository.
+ *
+ * I 739 file a pagamento stavano in LFS, ed erano la ragione per cui questo
+ * repository non poteva diventare pubblico. Toglierli da tutta la cronologia
+ * ha fatto diventare rossa questa prova, e ha fatto bene: cinque `audioUrl`
+ * dei seed nominavano file che non c'erano piu'. La domanda che si fa qui e'
+ * «il file c'e'?», e la risposta onesta era no.
+ *
+ * La correzione non e' stata ammorbidire la domanda — controllare la FORMA
+ * dell'URL invece della presenza del file — ma dare una risposta: un unico
+ * `public/audio/segnaposto.mp3`, cinque secondi di silenzio che si
+ * rigenerano con `scripts/genera-audio-segnaposto.js`, a cui tutti i seed
+ * puntano. Se avesse guardato la forma, questa prova avrebbe smesso di
+ * trovare i due difetti per cui e' nata: erano due file nel posto sbagliato,
+ * non due URL scritti male, e sono passati per mesi sotto URL di forma
+ * perfetta.
+ *
  * PERCHE' QUESTA PROVA NON USA `existsSync`: perche' su Windows direbbe di si'
  * anche a `Ragusa` scritto `ragusa`, cioe' passerebbe qui e fallirebbe in
  * esercizio — la stessa asimmetria che ha nascosto il difetto per mesi. Si
@@ -119,7 +136,14 @@ test('le citta hanno tutte la cartella audio e quella immagini, in minuscolo', (
   // Le cartelle per citta' si chiamano tutte in minuscolo. Ragusa era
   // l'eccezione, e l'eccezione era il difetto.
   for (const dove of ['audio', 'images']) {
-    const nomi = [...(nomiIn(path.join(PUBLIC, dove)) || [])].filter((n) =>
+    // Il vecchio `|| []` lasciava passare anche la cartella sparita, ed e'
+    // successo davvero: tolti gli mp3 dal repository, `public/audio/` non
+    // esisteva piu' e questa prova non ha detto niente. Zero cartelle con la
+    // maiuscola su zero cartelle e' un modo di non guardare.
+    const elenco = nomiIn(path.join(PUBLIC, dove));
+    assert.ok(elenco, `manca del tutto la cartella public/${dove}`);
+
+    const nomi = [...elenco].filter((n) =>
       fs.statSync(path.join(PUBLIC, dove, n)).isDirectory()
     );
 
