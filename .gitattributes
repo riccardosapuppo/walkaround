@@ -17,4 +17,3 @@
 *.ico binary
 *.pdf binary
 *.zip binary
-backend/public/audio/**/*.mp3 filter=lfs diff=lfs merge=lfs -text

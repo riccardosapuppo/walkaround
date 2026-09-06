@@ -16,6 +16,8 @@ Il valore su cui era scritto quel confronto è `req.path`, che Express **non** d
 
 non cominciava per `audio/`, superava il controllo, e veniva servita dallo strato che nel frattempo aveva letto `%61` come `a`. Senza sessione, senza acquisto, e senza niente da vedere nei log: è una richiesta come le altre, e finisce con un 200. Il difetto non stava in una parte complicata, stava fra due strati che trattano la stessa stringa in due modi diversi — ed è di questo che parla il repository: non di come si vende un audio, che sono due tabelle, ma di dove si mettono i controlli perché non dipendano da come è scritta una richiesta.
 
+**I 739 mp3 non stanno in questo repository.** Sono il prodotto, erano versionati, ed erano la sola ragione per cui questo repository non poteva essere pubblicato: sono stati tolti da tutta la cronologia, e al loro posto c'è un segnaposto silenzioso da 20 KiB. Come e perché sta più sotto, in [«Il repository conteneva il prodotto»](#il-repository-conteneva-il-prodotto); le audioguide vere si ascoltano su <https://walkaround.cloud>.
+
 Arriva con sei affermazioni, e ognuna può essere falsa:
 
 | | |
@@ -37,14 +39,13 @@ Le prove tengono la prima, la terza, la quinta e la sesta. La seconda e la quart
 
 ## Prima di cominciare
 
-**Node 22 o più recente**, **Docker**, e **Git LFS**.
+**Node 22 o più recente** e **Docker**.
 
 ```
 node --version        # il backend dichiara >=22, l'immagine è node:22-alpine
-git lfs version
 ```
 
-Git LFS non è un dettaglio di comodo: i 739 mp3 sono lì dentro, circa 2,4 GiB. Un clone fatto senza LFS installato porta a casa dei puntatori di testo al posto degli audio, e l'applicazione parte lo stesso — mostra il catalogo, accetta un acquisto, e suona il silenzio.
+**Gli mp3 non ci sono, e l'applicazione parte lo stesso.** Il catalogo a pagamento — 739 file, circa 2,4 GiB — era versionato in LFS, e adesso non sta in nessun commit. Al suo posto c'è un file solo, `backend/public/audio/segnaposto.mp3`: cinque secondi di silenzio, 20 KiB, che si rifanno con `npm run audio:segnaposto`. Tutti i 66 punti di interesse del seed puntano lì, quindi un'installazione nuova mostra il catalogo, vende, taglia l'anteprima e riproduce — e quello che si sente non è una guida. Le audioguide vere stanno sul servizio in esercizio, <https://walkaround.cloud>.
 
 **La configurazione non ha valori di ripiego, ed è voluto.** Senza `DB_PASSWORD` il backend non parte e stampa che cosa gli manca. Prima ripiegava sulla password scritta nel sorgente, che è il motivo per cui una variabile dimenticata non si è mai notata.
 
@@ -55,7 +56,6 @@ Il `docker-compose.yml` legge la password da un `.env` accanto a sé, che non è
 ```
 git clone <questo repository>
 cd walkaround
-git lfs pull
 
 echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
 docker compose up
@@ -104,7 +104,7 @@ Niente chiave OpenAI, niente credenziali PayPal, niente SMTP. La posta è opzion
 | `backend/src/db/init.js` | Schema e migrazioni, 26 tabelle, idempotenti. |
 | `backend/src/db/seed-data.js` | Il catalogo di partenza: 4 città siciliane e 66 punti di interesse. |
 | `backend/media-manifests/poi-audio-manifest.json` | 729 righe: per ogni file audio, il punto di interesse, la lingua, il modello, la voce e la data. |
-| `backend/scripts/` | Traduzione, sintesi vocale, applicazione del manifesto, spoglio dei metadati delle immagini. Ognuno ha un `--dry-run`. |
+| `backend/scripts/` | Traduzione, sintesi vocale, applicazione del manifesto, spoglio dei metadati delle immagini, generazione del segnaposto audio. Quelli che scrivono nel catalogo hanno un `--dry-run`. |
 | `backend/test/` | 44 prove. Nessuna tocca il database. |
 | `frontend/src/app/core/interceptors/` | Il token di sessione su ogni chiamata al backend, una volta sola invece che rotta per rotta. |
 | `frontend/src/app/features/` | 13 schermate: welcome, home, mappa, dettaglio, player, i miei audio, preferiti, carrello, profilo, registrazione partner, dashboard. |
@@ -242,6 +242,20 @@ Nella cattura PayPal esisteva un booleano: i soldi sono stati presi, oppure no. 
 
 Adesso lo stato si segna *prima* della chiamata e vale «ignoto», che conta come incasso: quando non si sa si sceglie l'errore dalla parte in cui qualcuno guarda, perché una riga che dice il falso chiude il caso per sempre, mentre una che dice «guardami» costa una verifica a mano. Insieme allo stato si conservano l'identificativo della capture e la risposta, senza i quali chi deve riconciliare non ha da dove cominciare.
 
+### Il repository conteneva il prodotto
+
+Questo limite non l'ha trovato una prova e nemmeno una revisione da fuori: era **scritto in questo README**, nell'elenco di quello che manca, e c'è rimasto finché non è stato risolto. Diceva che i 739 mp3 a pagamento erano versionati in LFS, circa 2,4 GiB, e che il paywall difende `/public/audio` via HTTP — ma `git clone` non passa dal paywall e consegnava la libreria intera. Finché il repository restava privato non cambiava niente; renderlo pubblico voleva dire pubblicare il catalogo.
+
+Un progetto che si presenta con l'elenco delle cose che erano sbagliate non può tenere in vetrina l'unica che lo rende impubblicabile.
+
+Gli mp3 sono stati tolti da **tutta la cronologia**, non dall'ultimo commit: un file cancellato oggi resta dentro ogni commit che lo conteneva, e chi clona se lo porta a casa lo stesso. Il repository è passato da 2,4 GiB di oggetti LFS a **zero puntatori**, e i **75 commit ci sono tutti e 75** — è cambiato quello che i commit contengono, non quali commit esistono. Dal `.gitattributes` è sparita la regola LFS, che non filtrava più niente.
+
+Al posto del catalogo c'è un file solo: `backend/public/audio/segnaposto.mp3`, cinque secondi di silenzio, 20 KiB, che `backend/scripts/genera-audio-segnaposto.js` ricostruisce byte per byte — MPEG-1 Layer III, frame di soli zeri, che è il modo in cui il formato dice «qui non c'è niente da suonare». Generato invece che preso da qualche parte, per la stessa ragione delle ventiquattro fotografie: un file che arriva da fuori si porta dietro la domanda di chi è.
+
+Toglierli ha fatto diventare rossa `backend/test/seed-percorsi.test.js`, perché cinque `audioUrl` del seed nominavano file che non c'erano più. Era il comportamento giusto: quella prova chiede «il file c'è?», e la risposta era no. Le si è data una risposta invece di cambiarle la domanda — se guardasse la forma dell'URL smetterebbe di trovare proprio i due difetti per cui è nata, che erano due file nel posto sbagliato dietro URL di forma perfetta.
+
+Resta una regola in `.gitignore`, perché `npm run git` fa `git add .` senza che nessuno guardi: sotto `backend/public/audio/` passa soltanto il segnaposto. Senza quella regola basterebbe un giro per rimettere dentro 2,4 GiB, e la volta dopo toccherebbe riscrivere di nuovo la cronologia.
+
 ---
 
 ## Quello che manca ancora
@@ -250,7 +264,7 @@ Adesso lo stato si segna *prima* della chiamata e vale «ignoto», che conta com
 - **Nessuna prova tocca il database né una rotta.** Le 44 coprono funzioni pure e la forma dei sorgenti. Il controllo di autorizzazione più importante — «la sessione è quella dell'utente nominato» — è verificato a mano contro il programma in esecuzione, non da una prova che si rilancia da sola, e dovrebbe essere il prossimo passo.
 - **`migrateClientUserDataToAppUser` si fida dello `userId` nel corpo della richiesta.** In `backend/src/routes/app-auth.js`, sposta gli acquisti fatti da ospite sull'account che si registra. Quell'uuid è l'unica cosa che un ospite ha, quindi non c'è un token da chiedere; la migrazione è di fatto una sola volta, perché le righe di partenza vengono spostate. Resta che chi conoscesse l'uuid di un ospite potrebbe rivendicarne gli acquisti registrandosi. Il modo giusto è legare l'uuid alla sessione che l'ha creato, e non è stato fatto.
 - **Le chiavi di PayPal e di OpenAI stanno nel database in chiaro.** Tolte dall'ambiente e dall'immagine, non ancora cifrate a riposo. Chi legge quel database le legge.
-- **Il repository contiene il prodotto.** I 739 mp3 a pagamento sono versionati in LFS: il paywall difende `/public/audio` via HTTP, ma un `git clone` con LFS consegna la libreria intera. Finché il repository è privato non cambia niente; renderlo pubblico vorrebbe dire pubblicare anche il catalogo.
+- **Chi installa non ha le audioguide.** Il seed punta al segnaposto silenzioso, quindi la catena si prova tutta — anteprima, acquisto, riproduzione — ma il contenuto no. È il prezzo di non pubblicare il catalogo, ed è scelto.
 - **Ventiquattro punti di interesse hanno un segnaposto** al posto della fotografia.
 - **Il repository non è il catalogo di esercizio.** Il seed versionato è quattro città e 66 punti; il manifesto degli audio ne registra 146, su sei città. Quello che sta in produzione è più grande di quello che sta qui.
 - **Il flusso è provato con PayPal in sandbox.** La modalità `live` si sceglie dalla dashboard, e l'unica differenza che il codice conosce è l'indirizzo a cui parla.
