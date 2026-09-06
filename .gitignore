@@ -41,3 +41,19 @@ out-tsc/
 # possono cancellare a macchina spenta. Una era finita in repository provando
 # l'applicazione, quando ancora stavano sotto public/.
 backend/var/
+
+# Il catalogo a pagamento non deve rientrare.
+#
+# I 739 mp3 stavano in LFS, ed erano la ragione per cui questo repository non
+# poteva essere reso pubblico: il paywall difende /public/audio via HTTP, ma un
+# clone consegnava la libreria intera. Adesso non ci sono piu' in nessun
+# commit, e chi sviluppa se li rimette qui sotto, che e' dove il backend li
+# cerca.
+#
+# Questa regola c'e' perche' `npm run git` fa `git add .` senza che nessuno
+# guardi: senza di lei basta un giro per riportarceli tutti dentro, e la volta
+# dopo bisogna riscrivere di nuovo la cronologia. Passa solo il segnaposto
+# silenzioso, che e' generato da backend/scripts/genera-audio-segnaposto.js e
+# pesa 20 KiB.
+backend/public/audio/*
+!backend/public/audio/segnaposto.mp3
