@@ -1,60 +1,62 @@
 # Walk Around
 
-![La mappa dei luoghi, la scheda di un punto di interesse con l'anteprima da trenta secondi, e la schermata iniziale con il catalogo di una città](docs/schermate.webp)
+![The map of places, a point-of-interest card with its thirty-second preview, and the opening screen with a city's catalogue](docs/schermate.webp)
 
-Un'audioguida è un file mp3. Il turista paga 2,49–2,99 € per un punto di interesse, oppure 15 € per la città intera, e quello che riceve in cambio non è il file — il file esiste già, sta su un disco, ed è raggiungibile via HTTP — ma il **permesso** di ascoltarlo. Tolto il permesso, questo progetto è un archivio di 739 mp3 aperto a chiunque conosca un indirizzo.
+An audio guide is an mp3 file. The tourist pays 2,49–2,99 € for a single point of interest, or 15 € for a whole city, and what they get in return is not the file — the file already exists, it sits on a disk, and it is reachable over HTTP — but **permission** to listen to it. Take the permission away and this project is an archive of 739 mp3s open to anyone who knows a URL.
 
-Il permesso era una riga, e non funzionava:
+The permission was one line, and it did not work:
 
 ```js
 if (percorso.startsWith('audio/')) return res.status(403).json(…);
 ```
 
-Il valore su cui era scritto quel confronto è `req.path`, che Express **non** decodifica. Due righe più sotto, sullo stesso prefisso, c'è `express.static`, che **decodifica**. Quindi
+The value that comparison was written against is `req.path`, which Express does **not** decode. Two lines below, on the same prefix, sits `express.static`, which **does decode**. So
 
     GET /public/%61udio/catania/anfiteatro-romano-en.mp3
 
-non cominciava per `audio/`, superava il controllo, e veniva servita dallo strato che nel frattempo aveva letto `%61` come `a`. Senza sessione, senza acquisto, e senza niente da vedere nei log: è una richiesta come le altre, e finisce con un 200. Il difetto non stava in una parte complicata, stava fra due strati che trattano la stessa stringa in due modi diversi — ed è di questo che parla il repository: non di come si vende un audio, che sono due tabelle, ma di dove si mettono i controlli perché non dipendano da come è scritta una richiesta.
+did not begin with `audio/`, passed the check, and was served by the layer that had meanwhile read `%61` as `a`. No session, no purchase, and nothing to see in the logs: it is a request like any other, and it ends in a 200. The flaw was not in some complicated part; it sat between two layers that treat the same string in two different ways — and that is what the repository is about: not how you sell audio, which is two tables, but where you put the checks so they do not depend on how a request happens to be written.
 
-**I 739 mp3 non stanno in questo repository.** Sono il prodotto, erano versionati, ed erano la sola ragione per cui questo repository non poteva essere pubblicato: sono stati tolti da tutta la cronologia, e al loro posto c'è un segnaposto silenzioso da 20 KiB. Come e perché sta più sotto, in [«Il repository conteneva il prodotto»](#il-repository-conteneva-il-prodotto); le audioguide vere si ascoltano su <https://walkaround.cloud>.
+**The 739 mp3s are not in this repository.** They are the product, they were versioned, and they were the one reason this repository could not be published: they have been removed from the entire history, and in their place sits a silent 20 KiB placeholder. How and why is further down, in ["The repository contained the product"](#the-repository-contained-the-product); the real audio guides are heard at <https://walkaround.cloud>.
 
-Arriva con sei affermazioni, e ognuna può essere falsa:
+It comes with six claims, and each of them can fail:
 
 | | |
 | --- | --- |
-| **Il blocco dell'audio a pagamento non dipende da come è scritto il percorso.** | Il confronto testuale che c'era lasciava passare `%61udio`, `aud%69o`, `audio%2Fcatania`: **739** file, cioè l'intera libreria a pagamento. |
-| **Nessuna rotta si fida dello `userId` scritto nella richiesta.** | **Sei** rotte lo prendevano dalla query o dal corpo e non guardavano affatto la sessione. Fra queste `DELETE /api/me/purchases`, che cancella gli acquisti di chiunque venga nominato. |
-| **Un link mandato per posta punta a un indirizzo di un elenco scritto da noi.** | L'origine del link di reset password arrivava dal corpo della richiesta, e l'unico controllo era che lo schema fosse `http` o `https`: **qualunque** dominio lo superava, e la vittima riceveva una email vera con dentro un token valido. |
-| **Un segreto che manca ferma l'avvio.** | Le password erano valori di **ripiego** in `config/env.js`: senza variabile d'ambiente il programma partiva lo stesso, sulle credenziali scritte nel codice, e nessuno se ne accorgeva. Il `Dockerfile` faceva `COPY .env.example ./.env`. |
-| **Nessuna immagine del catalogo porta i metadati di qualcun altro.** | Su **128** fotografie, **24** avevano in EXIF, IPTC o XMP il copyright di altri fotografi — campi che non si vedono aprendo il file. |
-| **Nessuna query contiene un commento JavaScript.** | Dentro una stringa, `// spiegazione` è JavaScript valido e `node --check` passa. Postgres si ferma su `//`, che in SQL non è un commento, e quella query stava dentro un `catch` dentro un altro `catch` vuoto: la riga non veniva aggiornata, per sempre, in silenzio. |
+| **The paid-audio block does not depend on how the path is written.** | The text comparison that was there let `%61udio`, `aud%69o`, `audio%2Fcatania` through: **739** files, that is, the entire paid library. |
+| **No route trusts the `userId` written in the request.** | **Six** routes took it from the query or the body and never looked at the session at all. Among them `DELETE /api/me/purchases`, which deletes the purchases of whoever is named. |
+| **A link sent by email points to an address from a list we wrote.** | The origin of the password-reset link came from the request body, and the only check was that the scheme be `http` or `https`: **any** domain passed it, and the victim received a real email carrying a valid token. |
+| **A missing secret stops startup.** | The passwords were **fallback** values in `config/env.js`: without the environment variable the program started anyway, on the credentials written in the code, and nobody noticed. The `Dockerfile` did `COPY .env.example ./.env`. |
+| **No catalogue image carries somebody else's metadata.** | Out of **128** photographs, **24** carried, in EXIF, IPTC or XMP, the copyright of other photographers — fields you do not see when you open the file. |
+| **No query contains a JavaScript comment.** | Inside a string, `// explanation` is valid JavaScript and `node --check` passes. Postgres stops on `//`, which in SQL is not a comment, and that query sat inside a `catch` inside another empty `catch`: the row was not updated, forever, in silence. |
 
 ```
-cd backend && npm test        # 44 prove, nessun database, meno di un secondo
+cd backend && npm test        # 44 tests, no database, under a second
 ```
 
-Le prove tengono la prima, la terza, la quinta e la sesta. La seconda e la quarta sono scritte nel codice — `requireAppUser` in `routes/api.js`, `required()` in `config/env.js` — ma non hanno ancora una prova che diventi rossa se qualcuno le toglie, ed è la cosa che manca per prima. Prima di questo lavoro le prove erano **zero**.
+The tests hold the first, the third, the fifth and the sixth. The second and the fourth are written into the code — `requireAppUser` in `routes/api.js`, `required()` in `config/env.js` — but they do not yet have a test that turns red if someone removes them, and that is the first thing missing. Before this work the tests numbered **zero**.
 
 ---
 
-## Prima di cominciare
+## Before you start
 
-**Node 22 o più recente** e **Docker**.
-
-```
-node --version        # il backend dichiara >=22, l'immagine è node:22-alpine
-```
-
-**Gli mp3 non ci sono, e l'applicazione parte lo stesso.** Il catalogo a pagamento — 739 file, circa 2,4 GiB — era versionato in LFS, e adesso non sta in nessun commit. Al suo posto c'è un file solo, `backend/public/audio/segnaposto.mp3`: cinque secondi di silenzio, 20 KiB, che si rifanno con `npm run audio:segnaposto`. Tutti i 66 punti di interesse del seed puntano lì, quindi un'installazione nuova mostra il catalogo, vende, taglia l'anteprima e riproduce — e quello che si sente non è una guida. Le audioguide vere stanno sul servizio in esercizio, <https://walkaround.cloud>.
-
-**La configurazione non ha valori di ripiego, ed è voluto.** Senza `DB_PASSWORD` il backend non parte e stampa che cosa gli manca. Prima ripiegava sulla password scritta nel sorgente, che è il motivo per cui una variabile dimenticata non si è mai notata.
-
-### Lo stack, con Docker
-
-Il `docker-compose.yml` legge la password da un `.env` accanto a sé, che non è versionato. La sintassi `${DB_PASSWORD:
+**Node 22 or newer** and **Docker**.
 
 ```
-git clone <questo repository>
+node --version        # the backend declares >=22, the image is node:22-alpine
+```
+
+**The mp3s are not here, and the application starts anyway.** The paid catalogue — 739 files, about 2,4 GiB — was versioned in LFS, and is now in no commit. In its place is a single file, `backend/public/audio/segnaposto.mp3`: five seconds of silence, 20 KiB, regenerated with `npm run audio:segnaposto`. All 66 seed points of interest point to it, so a fresh install shows the catalogue, sells, cuts the preview and plays — and what you hear is not a guide. The real audio guides are on the running service, <https://walkaround.cloud>.
+
+**The configuration has no fallback values, and that is deliberate.** Without `DB_PASSWORD` the backend does not start and prints what it is missing. It used to fall back on the password written in the source, which is why a forgotten variable was never noticed.
+
+### The stack, with Docker
+
+The `docker-compose.yml` reads the password from a `.env` beside it, which is not versioned. The syntax is `${DB_PASSWORD:?...}` rather than `${DB_PASSWORD}`, so a missing
+variable stops the command and says what it wants. With the plain form the
+database would come up with an empty password and nothing would say so.
+
+```
+git clone <this repository>
 cd walkaround
 
 echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
@@ -65,92 +67,92 @@ docker compose up
 - API: `http://localhost:3001`
 - PostgreSQL 16: `localhost:5433`
 
-I due volumi (`walkaround_pgdata` per il database, `walkaround_public` per i file caricati dalla dashboard) sono i dati: `docker compose down -v` li cancella.
+The two volumes (`walkaround_pgdata` for the database, `walkaround_public` for files uploaded from the dashboard) are the data: `docker compose down -v` deletes them.
 
-### In sviluppo, senza container il backend
+### In development, with the backend outside a container
 
 ```
-cp backend/.env.example backend/.env      # e riempi almeno DB_PASSWORD
+cp backend/.env.example backend/.env      # and fill in at least DB_PASSWORD
 
 cd backend
 npm install
 npm run dev                                # http://localhost:3000
-npm test                                   # 44 prove
+npm test                                   # 44 tests
 
 cd ../frontend
 npm install
 npm start                                  # http://localhost:4200
 ```
 
-Il dev server Angular gira su 4200 e inoltra `/api` e `/public` a `localhost:3000` (`frontend/proxy.conf.json`). Lo schema e il catalogo iniziale li crea il backend al primo avvio; `DB_SEED_MODE` (`always`, `if-empty`, `never`) decide se riscriverlo, e in compose vale `if-empty`: chi prova il progetto ci trova dentro le quattro città invece di una schermata vuota, e un catalogo già popolato non viene toccato.
+The Angular dev server runs on 4200 and forwards `/api` and `/public` to `localhost:3000` (`frontend/proxy.conf.json`). The schema and the initial catalogue are created by the backend on first start; `DB_SEED_MODE` (`always`, `if-empty`, `never`) decides whether to rewrite it, and in compose it is `if-empty`: whoever tries the project finds the four cities inside instead of an empty screen, and an already populated catalogue is left untouched.
 
-### Cosa non serve per far partire tutto
+### What you do not need to run it all
 
-Niente chiave OpenAI, niente credenziali PayPal, niente SMTP. La posta è opzionale: senza un host configurato l'invio non parte e lo dice a parole, invece di fallire dentro le rotte con un errore di rete che non spiega niente. Le chiavi di PayPal e di OpenAI non stanno affatto nell'ambiente, si mettono dalla dashboard e vivono in due tabelle; gli script di traduzione e di sintesi vocale sono comandi separati che non partecipano all'avvio. `ADMIN_EMAIL` e `ADMIN_PASSWORD` servono soltanto alla primissima installazione: creano l'amministratore se non c'è e non lo toccano se c'è già.
+No OpenAI key, no PayPal credentials, no SMTP. Mail is optional: without a configured host, sending does not start and says so in words, instead of failing inside the routes with a network error that explains nothing. The PayPal and OpenAI keys are not in the environment at all; they are set from the dashboard and live in two tables; the translation and text-to-speech scripts are separate commands that take no part in startup. `ADMIN_EMAIL` and `ADMIN_PASSWORD` are needed only for the very first install: they create the administrator if there is none and leave it alone if there is already one.
 
 ---
 
-## Cosa c'è dentro
+## What is in here
 
 | | |
 | --- | --- |
-| `backend/src/media/paths.js` | Dove finisce davvero un percorso chiesto da fuori. Il file che sostituisce il confronto fra stringhe, e che spiega per esteso perché quello non poteva funzionare. |
-| `backend/src/media/strip-metadata.js` | Toglie i metadati da un'immagine senza ricomprimerla, e sa che dopo la fine di un JPEG ce ne può stare un altro. |
-| `backend/src/auth/origins.js` | Su quale indirizzo si costruisce un link che finisce dentro una email. Un elenco, perché la domanda giusta è «è uno dei nostri?» e a quella non risponde nessuna regola sulla forma. |
-| `backend/src/config/env.js` | La configurazione, e che cosa succede quando manca: si ferma, e dice quali. |
-| `backend/src/routes/api.js` | Le rotte pubbliche: catalogo, anteprime, audio completo, checkout PayPal, acquisti, codici struttura. |
-| `backend/src/routes/admin.js` | La dashboard: catalogo, strutture partner, PDF e QR, impostazioni, documenti legali. |
-| `backend/src/routes/app-auth.js`, `auth.js` | Due mondi di sessioni distinti: gli utenti dell'app e chi amministra. |
-| `backend/src/db/init.js` | Schema e migrazioni, 26 tabelle, idempotenti. |
-| `backend/src/db/seed-data.js` | Il catalogo di partenza: 4 città siciliane e 66 punti di interesse. |
-| `backend/media-manifests/poi-audio-manifest.json` | 729 righe: per ogni file audio, il punto di interesse, la lingua, il modello, la voce e la data. |
-| `backend/scripts/` | Traduzione, sintesi vocale, applicazione del manifesto, spoglio dei metadati delle immagini, generazione del segnaposto audio. Quelli che scrivono nel catalogo hanno un `--dry-run`. |
-| `backend/test/` | 44 prove. Nessuna tocca il database. |
-| `frontend/src/app/core/interceptors/` | Il token di sessione su ogni chiamata al backend, una volta sola invece che rotta per rotta. |
-| `frontend/src/app/features/` | 13 schermate: welcome, home, mappa, dettaglio, player, i miei audio, preferiti, carrello, profilo, registrazione partner, dashboard. |
-| `docs/immagini.md` | Da dove vengono le immagini, e le ventiquattro che sono state tolte. |
+| `backend/src/media/paths.js` | Where a path requested from outside actually ends up. The file that replaces the string comparison, and that spells out at length why that could not work. |
+| `backend/src/media/strip-metadata.js` | Strips the metadata from an image without recompressing it, and knows that after the end of one JPEG there can be another. |
+| `backend/src/auth/origins.js` | Which address a link that ends up inside an email is built on. A list, because the right question is "is it one of ours?" and no rule about form answers that. |
+| `backend/src/config/env.js` | The configuration, and what happens when it is missing: it stops, and says which. |
+| `backend/src/routes/api.js` | The public routes: catalogue, previews, full audio, PayPal checkout, purchases, property codes. |
+| `backend/src/routes/admin.js` | The dashboard: catalogue, partner properties, PDFs and QR codes, settings, legal documents. |
+| `backend/src/routes/app-auth.js`, `auth.js` | Two distinct worlds of sessions: the app's users and whoever administers. |
+| `backend/src/db/init.js` | Schema and migrations, 26 tables, idempotent. |
+| `backend/src/db/seed-data.js` | The starting catalogue: 4 Sicilian cities and 66 points of interest. |
+| `backend/media-manifests/poi-audio-manifest.json` | 729 lines: for each audio file, the point of interest, the language, the model, the voice and the date. |
+| `backend/scripts/` | Translation, text-to-speech, applying the manifest, stripping image metadata, generating the audio placeholder. The ones that write to the catalogue have a `--dry-run`. |
+| `backend/test/` | 44 tests. None touches the database. |
+| `frontend/src/app/core/interceptors/` | The session token on every call to the backend, once instead of route by route. |
+| `frontend/src/app/features/` | 13 screens: welcome, home, map, detail, player, my audio, favourites, cart, profile, partner registration, dashboard. |
+| `docs/immagini.md` | Where the images come from, and the twenty-four that were removed. |
 
-Il frontend è una PWA: Angular 21, Angular Material, Leaflet per la mappa, service worker con cache di runtime per le immagini e per le anteprime audio, geolocalizzazione con ripiego se negata, download per l'ascolto offline (Cache API più metadati in IndexedDB), interfaccia in sei lingue.
+The frontend is a PWA: Angular 21, Angular Material, Leaflet for the map, a service worker with runtime caching for images and audio previews, geolocation with a fallback if denied, downloads for offline listening (Cache API plus metadata in IndexedDB), an interface in six languages.
 
-### I contenuti sono generati, e il manifesto lo registra
+### The content is generated, and the manifest records it
 
-Le schede sono scritte in italiano e tradotte con `gpt-4o-mini`. L'audio delle traduzioni è sintetizzato con `gpt-4o-mini-tts`. Il manifesto conserva **729 voci**, una per file, ognuna con modello, voce, lingua, punto di interesse e data.
+The cards are written in Italian and translated with `gpt-4o-mini`. The audio of the translations is synthesised with `gpt-4o-mini-tts`. The manifest keeps **729 entries**, one per file, each with model, voice, language, point of interest and date.
 
-Serve a due cose concrete. La prima è poter rispondere «da dove viene questo file» senza aprirlo. La seconda è che i conti si vedono: 146 punti di interesse per cinque lingue tradotte farebbero 730, e le voci sono 729 — all'inglese ne manca una. Non è un errore che si nota ascoltando; si nota contando.
+It serves two concrete purposes. The first is being able to answer "where does this file come from" without opening it. The second is that the arithmetic is visible: 146 points of interest across five translated languages would be 730, and the entries are 729 — English is missing one. It is not a mistake you notice by listening; you notice it by counting.
 
-L'italiano non è nel manifesto perché non è generato: è la lingua in cui il testo è stato scritto.
+Italian is not in the manifest because it is not generated: it is the language the text was written in.
 
-### Come si vende
+### How it is sold
 
-Anteprima gratuita di **30 secondi** per ogni punto di interesse, in tutte e sei le lingue, senza account: `GET /api/pois/:id/audio-preview` taglia il file completo e conserva il ritaglio. L'audio intero è `GET /api/pois/:id/audio`, e chiede una sessione e un acquisto — il singolo punto oppure il pacchetto della sua città.
+A free **30-second** preview for every point of interest, in all six languages, without an account: `GET /api/pois/:id/audio-preview` cuts the full file and keeps the clip. The full audio is `GET /api/pois/:id/audio`, and it requires a session and a purchase — the single point or its city's bundle.
 
-Il canale principale non è la pubblicità, è **B2B2C**. Hotel, B&B e case vacanza espongono un QR con un codice: l'ospite lo scansiona, arriva sull'app con lo sconto già applicato, e alla struttura resta una **commissione fissa** per ogni vendita — colonne `structure_fixed_amount_single` e `structure_fixed_amount_bundle`, separate dallo sconto in percentuale che vede il turista, perché sono due decisioni diverse e vanno potute cambiare una alla volta.
+The main channel is not advertising, it is **B2B2C**. Hotels, B&Bs and holiday homes display a QR code with a code: the guest scans it, arrives at the app with the discount already applied, and the property keeps a **fixed commission** on every sale — columns `structure_fixed_amount_single` and `structure_fixed_amount_bundle`, kept separate from the percentage discount the tourist sees, because they are two different decisions and must be changeable one at a time.
 
-Il PDF con il QR che le strutture ricevono per email è scritto a mano: `backend/src/services/partner-pdf.js` importa soltanto `node:fs`, `path`, `url` e `zlib`, e dentro c'è anche l'encoder Reed-Solomon del codice QR. Nessuna libreria.
+The PDF with the QR code that properties receive by email is written by hand: `backend/src/services/partner-pdf.js` imports only `node:fs`, `path`, `url` and `zlib`, and inside it is even the Reed-Solomon encoder for the QR code. No library.
 
 ---
 
-## Le cose che erano sbagliate, e cosa le ha sostituite
+## The things that were wrong, and what replaced them
 
-### Il controllo si faceva sulla forma del percorso
+### The check was made on the shape of the path
 
-Descritto in apertura. Sostituito da `resolveInside`, che decodifica, rifiuta le percentuali malformate e i byte nulli, risolve il percorso, e poi guarda **dove è finito** con `path.relative` — non con `startsWith`, perché `/public/audio-x` comincia per `/public/audio` e non ci sta dentro.
+Described at the top. Replaced by `resolveInside`, which decodes, rejects malformed percent-escapes and null bytes, resolves the path, and then looks at **where it ended up** with `path.relative` — not with `startsWith`, because `/public/audio-x` begins with `/public/audio` and is not inside it.
 
-La lezione vale oltre a questo caso: le forme testuali di un percorso sono infinite — la percentuale, la doppia codifica, la barra rovesciata, il punto punto, la maiuscola su un filesystem che non distingue — mentre il posto in cui quel percorso finisce è uno solo. Un controllo di sicurezza si fa sul secondo.
+The lesson holds beyond this case: the textual forms of a path are infinite — percent-encoding, double encoding, the backslash, dot-dot, an uppercase letter on a filesystem that does not distinguish — while the place that path ends up is only one. A security check is made on the second.
 
-La stessa funzione, per giunta, era già scritta due volte, identica, in `routes/api.js` e in `routes/admin.js`. Il punto in cui contava di più faceva un'altra cosa.
+The same function, moreover, was already written twice, identical, in `routes/api.js` and `routes/admin.js`. The place where it mattered most did something else.
 
-Diciassette prove in `backend/test/paths.test.js` sono scritte per fallire sul codice vecchio.
+Seventeen tests in `backend/test/paths.test.js` are written to fail on the old code.
 
-### E la porta accanto non la guardava nessuno
+### And nobody was watching the door next to it
 
-Chiuso il blocco, l'audio intero usciva lo stesso, da un'altra parte. Le anteprime da trenta secondi si scrivevano in `public/audio-previews`, cartella sorella di quella sorvegliata, e la lunghezza del taglio si calcolava dalla durata dichiarata in `duration_sec` — che la scrive l'amministratore, e che lo schema accetta anche uguale a 1. Con una durata di un secondo la proporzione veniva schiacciata a «tutto», e l'anteprima era una copia integrale del file, servita senza sessione dalla porta accanto a quella chiusa.
+With the block closed, the full audio still got out, elsewhere. The thirty-second previews were written to `public/audio-previews`, a sibling folder of the guarded one, and the length of the cut was computed from the duration declared in `duration_sec` — which the administrator writes, and which the schema accepts even equal to 1. With a duration of one second the proportion was squashed to "everything", and the preview was a complete copy of the file, served without a session from the door next to the closed one.
 
-Due correzioni, e la prima toglie la domanda invece di aggiungere un controllo: **le anteprime sono uscite da `public/`**. La rotta che le serve legge dal disco con `sendFile` e non ha mai avuto bisogno che fossero raggiungibili via URL, quindi adesso non lo sono, e non c'è niente da difendere perché non c'è nessuna porta. La seconda è un tetto che non dipende dai dati: qualunque cosa dica `duration_sec`, quello che esce è al massimo metà del file.
+Two fixes, and the first removes the question instead of adding a check: **the previews moved out of `public/`**. The route that serves them reads from disk with `sendFile` and never needed them to be reachable by URL, so now they are not, and there is nothing to defend because there is no door. The second is a ceiling that does not depend on the data: whatever `duration_sec` says, what comes out is at most half the file.
 
-### Sei rotte chiedevano alla richiesta stessa chi fosse chi la mandava
+### Six routes asked the request itself who was sending it
 
-Il controllo esisteva già ed era già giusto. Si chiamava `requireCheckoutAppUser` e stava su due rotte di pagamento — e siccome il nome diceva «checkout», nessuno ha pensato di metterlo altrove. Queste sei prendevano lo `userId` dalla query o dal corpo:
+The check already existed and was already right. It was called `requireCheckoutAppUser` and sat on two payment routes — and because the name said "checkout", nobody thought to put it elsewhere. These six took the `userId` from the query or the body:
 
 ```
 POST   /api/paypal/checkout/quote
@@ -161,128 +163,128 @@ GET    /api/me/hotel-association
 DELETE /api/hotel/association
 ```
 
-È un dettaglio che sembra estetico e non lo è: **un controllo con un nome che descrive una rotta non viene riusato**, e la rotta che ne ha bisogno domani si scrive senza.
+It is a detail that looks cosmetic and is not: **a check with a name that describes a route does not get reused**, and the route that needs it tomorrow gets written without it.
 
-La prima correzione, però, pretendeva una sessione **sempre**, e così spegneva chi una sessione non ce l'ha mai avuta. Qui convivono due specie di identità, e non è un difetto: chi ha un account, la cui prova è il token in `app_sessions`; e l'**ospite**, a cui il browser genera un uuid al primo avvio, che è l'unica cosa che ha. Chi scansiona il QR di un albergo atterra su `/welcome` e la prima cosa che l'applicazione fa è chiedere se quel codice vale — molto prima che esista un account, e per l'albergo quel momento è tutto il modello di business.
+The first fix, though, demanded a session **always**, and so shut out those who never had one. Two kinds of identity live here together, and that is not a flaw: those with an account, whose proof is the token in `app_sessions`; and the **guest**, for whom the browser generates a uuid on first launch, which is the only thing they have. Whoever scans a hotel's QR code lands on `/welcome` and the first thing the application does is ask whether that code is valid — long before an account exists, and for the hotel that moment is the whole business model.
 
-La regola, adesso:
+The rule, now:
 
 | | |
 | --- | --- |
-| sessione presente, e parla di sé | passa |
-| sessione presente, e parla di un altro | 403 |
-| nessuna sessione, e lo `userId` è di un account registrato | 401 |
-| nessuna sessione, e non è di nessuno | passa: è un ospite |
+| session present, and it speaks of itself | passes |
+| session present, and it speaks of another | 403 |
+| no session, and the `userId` belongs to a registered account | 401 |
+| no session, and it belongs to no one | passes: it is a guest |
 
-Cioè **non si può indossare un account senza il suo token**, che era tutto il difetto, mentre l'uuid dell'ospite resta autodichiarato come è sempre stato: non c'è niente da rubargli che non sia già suo, e cambiarlo vorrebbe dire obbligare tutti a registrarsi prima di vedere un prezzo.
+That is, **you cannot wear an account without its token**, which was the whole flaw, while the guest's uuid stays self-declared as it always was: there is nothing to steal from them that is not already theirs, and changing it would mean forcing everyone to register before seeing a price.
 
-Il token, dal canto suo, il frontend non lo mandava su nessuna di quelle sei rotte, perché non gli era mai servito. Aggiungerlo in sei posti e ricordarsene alla settima rotta sarebbe la stessa specie di soluzione che ha creato il problema — una regola tenuta a mente invece che dal codice — quindi sta in un `HttpInterceptor` solo, e vale anche per le rotte che non esistono ancora.
+The token, for its part, the frontend was not sending on any of those six routes, because it had never needed to. Adding it in six places and remembering it for the seventh route would be the same kind of solution that created the problem — a rule kept in mind instead of by the code — so it lives in a single `HttpInterceptor`, and it holds for the routes that do not exist yet too.
 
-### Il link di reset lo sceglieva chi chiedeva il reset
+### The reset link was chosen by whoever asked for the reset
 
 ```
 POST /api/app-auth/password-reset
-{ "email": "vittima@esempio.it", "origin": "https://sito-di-chi-attacca" }
+{ "email": "victim@example.com", "origin": "https://attacker-site" }
 ```
 
-Il servizio mandava alla vittima una email vera, dal dominio giusto, con dentro un token di reset valido, puntato altrove. Un clic e l'account cambiava padrone. Non serviva essere autenticati.
+The service sent the victim a real email, from the right domain, carrying a valid reset token, pointed elsewhere. One click and the account changed hands. You did not need to be authenticated.
 
-Il difetto non è «mancava una validazione»: la validazione c'era e chiedeva se lo schema fosse `http` o `https`. È che **la domanda era sbagliata**. «Questa stringa è una URL ben formata?» è una domanda sulla forma; quella che conta è «questo indirizzo è uno dei nostri?», che è una domanda sull'identità, e a cui si può rispondere solo con un elenco scritto a mano. Non esiste una regola che distingua il proprio dominio da quello di un altro.
+The flaw is not "a validation was missing": the validation was there and asked whether the scheme was `http` or `https`. It is that **the question was wrong**. "Is this string a well-formed URL?" is a question about form; the one that matters is "is this address one of ours?", which is a question about identity, and one you can only answer with a hand-written list. There is no rule that tells your own domain from someone else's.
 
-`pickOrigin` non solleva mai e non distingue i casi nel valore di ritorno: se rifiutasse un'origine con un errore, quell'errore direbbe a chi prova che l'indirizzo email esiste. E la stessa rotta lo diceva comunque, dieci righe più sotto — con un indirizzo che non esiste rispondeva 200, con uno vero provava a spedire, e se la posta non è configurata l'invio falliva e usciva un 500. Adesso il fallimento dell'invio non cambia la risposta: va nel log del server, che lo legge chi gestisce la macchina e non chi sta provando gli indirizzi.
+`pickOrigin` never throws and does not distinguish the cases in its return value: if it rejected an origin with an error, that error would tell whoever is probing that the email address exists. And the same route was telling them anyway, ten lines below — for an address that does not exist it answered 200, for a real one it tried to send, and if mail is not configured the send failed and a 500 came out. Now the send failing does not change the response: it goes into the server log, which is read by whoever runs the machine and not by whoever is probing addresses.
 
-Quattro rotte gemelle in `admin.js` — invito, approvazione di un partner, rinvio dell'attivazione, reset fatto dall'amministratore — sono rimaste indietro per un po', con la versione vecchia e più debole. Adesso l'elenco delle origini si costruisce in un punto solo e ci passano tutte e cinque.
+Four sibling routes in `admin.js` — invitation, approving a partner, resending activation, a reset done by the administrator — lagged behind for a while, on the old, weaker version. Now the list of origins is built in one place and all five go through it.
 
-### Le password erano valori di ripiego
+### The passwords were fallback values
 
 ```js
-password: process.env.DB_PASSWORD || '<la password vera>'
+password: process.env.DB_PASSWORD || '<the real password>'
 ```
 
-Il ripiego era la parte pericolosa, più ancora del fatto che la stringa stesse in chiaro nel repository. Una password scritta qui finisce in git e la si toglie. Una password scritta qui **come ripiego** fa anche un'altra cosa: se la variabile d'ambiente non arriva — un `.env` dimenticato, una riga scritta male nel compose, un container ricostruito senza — il programma parte lo stesso, si collega, funziona. Il guasto non fa rumore, e il servizio resta in piedi sulla credenziale che sta nella storia del repository.
+The fallback was the dangerous part, more so than the fact that the string sat in cleartext in the repository. A password written here ends up in git and you take it out. A password written here **as a fallback** does one more thing: if the environment variable does not arrive — a forgotten `.env`, a badly written line in the compose file, a container rebuilt without it — the program starts anyway, connects, works. The failure makes no noise, and the service stays up on the credential that sits in the repository's history.
 
-E il `Dockerfile` faceva `COPY .env.example ./.env`, con dentro le credenziali di produzione: l'immagine se le portava addosso, e chiunque potesse farci `docker run` le aveva.
+And the `Dockerfile` did `COPY .env.example ./.env`, with the production credentials inside: the image carried them, and anyone who could `docker run` it had them.
 
-Adesso i segreti non hanno ripiego: se mancano, il programma si ferma e dice quali, tutti insieme e non uno per volta. È scomodo apposta — un avvio fallito è un problema che si vede. Restano con un default i valori non segreti, porta e host e origine CORS, perché sbagliarli non espone niente.
+Now the secrets have no fallback: if they are missing, the program stops and says which, all at once and not one at a time. It is inconvenient on purpose — a failed start is a problem you can see. The non-secret values keep a default — port and host and CORS origin — because getting them wrong exposes nothing.
 
-### Ventiquattro fotografie erano di qualcun altro
+### Twenty-four photographs belonged to someone else
 
-Il catalogo aveva 128 immagini e nessuna provenienza dichiarata: né un file di crediti, né una colonna nello schema, né una riga nel README. Leggendo EXIF, IPTC e XMP, **ventiquattro** portavano il copyright di altri fotografi, una con licenza CC BY-SA dove l'attribuzione *è* la licenza, una di un'agenzia stock commerciale. Altre dodici avevano la firma del ridimensionatore di un CMS, cioè erano state salvate da pagine web.
+The catalogue had 128 images and no declared provenance: no credits file, no column in the schema, no line in the README. Reading EXIF, IPTC and XMP, **twenty-four** carried the copyright of other photographers, one under a CC BY-SA licence where attribution *is* the licence, one from a commercial stock agency. Another twelve carried the signature of a CMS resizer, that is, they had been saved from web pages.
 
-Le ventiquattro sono state **sostituite** con un segnaposto disegnato per il progetto. Togliere i metadati non le avrebbe rese nostre: cancellare la firma di un fotografo non è un modo di acquisire una fotografia, è solo un modo di perdere l'informazione su chi l'ha fatta.
+The twenty-four were **replaced** with a placeholder drawn for the project. Stripping the metadata would not have made them ours: erasing a photographer's signature is not a way of acquiring a photograph, only a way of losing the information about who made it.
 
-Le altre sono state spogliate dei metadati — una fotografia porta addosso le coordinate GPS di dove è stata scattata e il numero di serie della macchina, e questo catalogo è pubblico. Lo spoglio è senza perdita: toglie i segmenti di intestazione e non tocca i pixel. E non può ricapitare, perché `POST /api/admin/catalog/upload-image` passa ogni file da `stripImageMetadata` **prima** di scriverlo su disco.
+The others were stripped of their metadata — a photograph carries the GPS coordinates of where it was taken and the camera's serial number, and this catalogue is public. The stripping is lossless: it removes the header segments and does not touch the pixels. And it cannot happen again, because `POST /api/admin/catalog/upload-image` passes every file through `stripImageMetadata` **before** writing it to disk.
 
-Quello spoglio, però, si fermava dove finisce la prima immagine e copiava il resto senza guardarlo — e i telefoni attaccano dietro una **seconda immagine intera**, con dentro il proprio EXIF e il proprio GPS. Il modulo scritto per non pubblicare dove abita qualcuno lo pubblicava lo stesso, dichiarando di no: un controllo che si ferma al primo risultato utile non è un controllo, è un campione. Adesso i dati compressi si attraversano davvero fino alla fine, riconoscendo il riempimento e i marcatori di riavvio, e quello che segue si butta.
+That stripping, though, stopped where the first image ends and copied the rest without looking at it — and phones append a **second whole image** behind it, with its own EXIF and its own GPS inside. The module written not to publish where someone lives published it anyway, while declaring it did not: a check that stops at the first useful result is not a check, it is a sample. Now the compressed data is genuinely traversed to the end, recognising the padding and the restart markers, and what follows is thrown away.
 
-Nello stesso giro APP14 è tornato fra i segmenti che restano — dichiara lo spazio colore, cioè come si leggono i pixel, non chi ha scattato — e l'orientamento sopravvive da solo, in un APP1 ricostruito con una voce sola: altrimenti ogni futura foto verticale finirebbe in catalogo coricata di novanta gradi.
+In the same pass APP14 came back among the segments that stay — it declares the colour space, that is, how the pixels are read, not who took the shot — and the orientation survives on its own, in an APP1 rebuilt with a single entry: otherwise every future portrait photo would end up in the catalogue lying on its side by ninety degrees.
 
-**I conti di oggi**, contati e non ricordati (`git ls-files backend/public/images`, confronto per SHA-256): **112 file** tracciati, di cui **17 sono copie del segnaposto** e 95 sono fotografie vere; le immagini distinte sono 94. I numeri del paragrafo qui sopra — 128 e ventiquattro — descrivono il catalogo **com'era quando è stata fatta la pulizia**, e sono la misura del problema, non dello stato attuale: da allora il catalogo si è mosso, e una cartella di quattordici SVG che non nominava nessuno è stata tolta.
+**Today's counts**, counted and not remembered (`git ls-files backend/public/images`, compared by SHA-256): **112 files** tracked, of which **17 are copies of the placeholder** and 95 are real photographs; the distinct images are 94. The numbers in the paragraph above — 128 and twenty-four — describe the catalogue **as it was when the cleanup was done**, and are the measure of the problem, not of the current state: the catalogue has moved since then, and a folder of fourteen SVGs that named no one was removed.
 
-Restano dei punti di interesse con un segnaposto al posto della fotografia. Vanno rifatte. Tutta la storia, con l'elenco, è in `docs/immagini.md`.
+Some points of interest are left with a placeholder in place of the photograph. They need redoing. The whole story, with the list, is in `docs/immagini.md`.
 
-### Un commento JavaScript dentro una query
+### A JavaScript comment inside a query
 
-Fatto mentre si sistemava la gestione degli errori di PayPal: delle righe di spiegazione sono finite dentro il template literal invece che sopra.
+Done while fixing PayPal's error handling: some lines of explanation ended up inside the template literal instead of above it.
 
 ```js
 await pool.query(`
-  // Che cosa si scrive qui dipende da…      <- dentro l'SQL
+  // What goes here depends on…      <- inside the SQL
   UPDATE paypal_checkout_orders …
 `);
 ```
 
-`node --check` passa, perché è JavaScript perfettamente valido: dice soltanto che la stringa è una stringa. Postgres si sarebbe fermato su `//`, che in SQL non è un commento — lo è `--`. E la query stava dentro un `catch` con dentro un altro `catch` vuoto, quindi il guasto non sarebbe arrivato da nessuna parte: la riga semplicemente non veniva aggiornata.
+`node --check` passes, because it is perfectly valid JavaScript: it only says the string is a string. Postgres would have stopped on `//`, which in SQL is not a comment — `--` is. And the query sat inside a `catch` with another empty `catch` inside it, so the failure would have gone nowhere: the row simply was not updated.
 
-Qui dentro di linguaggi ce ne sono due, e il secondo non lo guardava nessuno. Adesso una prova legge i sorgenti, trova i template literal che cominciano con una parola chiave SQL, e fallisce se dentro c'è una riga che comincia per `//`.
+There are two languages in here, and nobody was watching the second. Now a test reads the sources, finds the template literals that begin with a SQL keyword, and fails if inside there is a line that begins with `//`.
 
-### Un incasso riuscito spariva sotto la parola «fallito»
+### A successful payment vanished under the word "failed"
 
-Nella cattura PayPal esisteva un booleano: i soldi sono stati presi, oppure no. Ma i casi sono tre, e quello che mancava è il più probabile — **la chiamata che non torna**. Timeout, connessione chiusa, 502 del proxy davanti: PayPal ha eseguito, e da questa parte non si sa. Il booleano restava falso, e l'ordine veniva marcato `failed`.
+In the PayPal capture there was a boolean: the money was taken, or it was not. But there are three cases, and the one that was missing is the most likely — **the call that does not come back**. A timeout, a closed connection, a 502 from the proxy in front: PayPal has executed, and on this side you do not know. The boolean stayed false, and the order was marked `failed`.
 
-Adesso lo stato si segna *prima* della chiamata e vale «ignoto», che conta come incasso: quando non si sa si sceglie l'errore dalla parte in cui qualcuno guarda, perché una riga che dice il falso chiude il caso per sempre, mentre una che dice «guardami» costa una verifica a mano. Insieme allo stato si conservano l'identificativo della capture e la risposta, senza i quali chi deve riconciliare non ha da dove cominciare.
+Now the state is marked *before* the call and reads "unknown", which counts as collected: when you do not know, you err on the side someone is watching, because a row that states a falsehood closes the case forever, while one that says "look at me" costs a manual check. Along with the state, the capture identifier and the response are kept, without which whoever has to reconcile has nowhere to start.
 
-### Il repository conteneva il prodotto
+### The repository contained the product
 
-Questo limite non l'ha trovato una prova e nemmeno una revisione da fuori: era **scritto in questo README**, nell'elenco di quello che manca, e c'è rimasto finché non è stato risolto. Diceva che i 739 mp3 a pagamento erano versionati in LFS, circa 2,4 GiB, e che il paywall difende `/public/audio` via HTTP — ma `git clone` non passa dal paywall e consegnava la libreria intera. Finché il repository restava privato non cambiava niente; renderlo pubblico voleva dire pubblicare il catalogo.
+This limitation was not found by a test, nor by an outside review: it was **written in this README**, in the list of what is missing, and it stayed there until it was fixed. It said that the 739 paid mp3s were versioned in LFS, about 2,4 GiB, and that the paywall defends `/public/audio` over HTTP — but `git clone` does not go through the paywall and handed over the whole library. As long as the repository stayed private nothing changed; making it public meant publishing the catalogue.
 
-Un progetto che si presenta con l'elenco delle cose che erano sbagliate non può tenere in vetrina l'unica che lo rende impubblicabile.
+A project that presents itself with a list of the things that were wrong cannot keep in the window the one that makes it unpublishable.
 
-Gli mp3 sono stati tolti da **tutta la cronologia**, non dall'ultimo commit: un file cancellato oggi resta dentro ogni commit che lo conteneva, e chi clona se lo porta a casa lo stesso. Il repository è passato da 2,4 GiB di oggetti LFS a **zero puntatori**, e i **75 commit ci sono tutti e 75** — è cambiato quello che i commit contengono, non quali commit esistono. Dal `.gitattributes` è sparita la regola LFS, che non filtrava più niente.
+The mp3s were removed from the **entire history**, not from the last commit: a file deleted today stays inside every commit that contained it, and whoever clones takes it home all the same. The repository went from 2,4 GiB of LFS objects to **zero pointers**, and **all 75 commits are still there, all 75** — what changed is what the commits contain, not which commits exist. The LFS rule vanished from `.gitattributes`, where it was no longer filtering anything.
 
-Al posto del catalogo c'è un file solo: `backend/public/audio/segnaposto.mp3`, cinque secondi di silenzio, 20 KiB, che `backend/scripts/genera-audio-segnaposto.js` ricostruisce byte per byte — MPEG-1 Layer III, frame di soli zeri, che è il modo in cui il formato dice «qui non c'è niente da suonare». Generato invece che preso da qualche parte, per la stessa ragione delle ventiquattro fotografie: un file che arriva da fuori si porta dietro la domanda di chi è.
+In place of the catalogue is a single file: `backend/public/audio/segnaposto.mp3`, five seconds of silence, 20 KiB, which `backend/scripts/genera-audio-segnaposto.js` rebuilds byte by byte — MPEG-1 Layer III, frames of nothing but zeros, which is how the format says "there is nothing to play here". Generated rather than taken from somewhere, for the same reason as the twenty-four photographs: a file that comes from outside brings the question of whose it is with it.
 
-Toglierli ha fatto diventare rossa `backend/test/seed-percorsi.test.js`, perché cinque `audioUrl` del seed nominavano file che non c'erano più. Era il comportamento giusto: quella prova chiede «il file c'è?», e la risposta era no. Le si è data una risposta invece di cambiarle la domanda — se guardasse la forma dell'URL smetterebbe di trovare proprio i due difetti per cui è nata, che erano due file nel posto sbagliato dietro URL di forma perfetta.
+Removing them turned `backend/test/seed-percorsi.test.js` red, because five of the seed's `audioUrl`s named files that were no longer there. That was the right behaviour: that test asks "is the file there?", and the answer was no. It was given an answer instead of having its question changed — if it looked at the shape of the URL it would stop finding the very two flaws it was born for, which were two files in the wrong place behind URLs of perfect shape.
 
-Resta una regola in `.gitignore`, perché `npm run git` fa `git add .` senza che nessuno guardi: sotto `backend/public/audio/` passa soltanto il segnaposto. Senza quella regola basterebbe un giro per rimettere dentro 2,4 GiB, e la volta dopo toccherebbe riscrivere di nuovo la cronologia.
-
----
-
-## Quello che manca ancora
-
-- **Le credenziali vecchie sono ancora nella cronologia, e vanno ruotate.** È la voce più urgente dell'elenco. Password del database, password dell'amministratore, password SMTP di una casella reale, indirizzo e utente del server: tolte dai file, restano in 53 versioni di `backend/.env.example` e nelle vecchie versioni del README, tutte già su GitHub. Toglierle da un file non le toglie a chi ha clonato.
-- **Nessuna prova tocca il database né una rotta.** Le 44 coprono funzioni pure e la forma dei sorgenti. Il controllo di autorizzazione più importante — «la sessione è quella dell'utente nominato» — è verificato a mano contro il programma in esecuzione, non da una prova che si rilancia da sola, e dovrebbe essere il prossimo passo.
-- **`migrateClientUserDataToAppUser` si fida dello `userId` nel corpo della richiesta.** In `backend/src/routes/app-auth.js`, sposta gli acquisti fatti da ospite sull'account che si registra. Quell'uuid è l'unica cosa che un ospite ha, quindi non c'è un token da chiedere; la migrazione è di fatto una sola volta, perché le righe di partenza vengono spostate. Resta che chi conoscesse l'uuid di un ospite potrebbe rivendicarne gli acquisti registrandosi. Il modo giusto è legare l'uuid alla sessione che l'ha creato, e non è stato fatto.
-- **Le chiavi di PayPal e di OpenAI stanno nel database in chiaro.** Tolte dall'ambiente e dall'immagine, non ancora cifrate a riposo. Chi legge quel database le legge.
-- **Chi installa non ha le audioguide.** Il seed punta al segnaposto silenzioso, quindi la catena si prova tutta — anteprima, acquisto, riproduzione — ma il contenuto no. È il prezzo di non pubblicare il catalogo, ed è scelto.
-- **Ventiquattro punti di interesse hanno un segnaposto** al posto della fotografia.
-- **Il repository non è il catalogo di esercizio.** Il seed versionato è quattro città e 66 punti; il manifesto degli audio ne registra 146, su sei città. Quello che sta in produzione è più grande di quello che sta qui.
-- **Il flusso è provato con PayPal in sandbox.** La modalità `live` si sceglie dalla dashboard, e l'unica differenza che il codice conosce è l'indirizzo a cui parla.
+A rule stays in `.gitignore`, because `npm run git` does `git add .` without anyone watching: under `backend/public/audio/` only the placeholder gets through. Without that rule one pass would be enough to put 2,4 GiB back in, and the next time the history would have to be rewritten all over again.
 
 ---
 
-## Sul progetto
+## What is still missing
 
-Progetto personale dell'autore, non un lavoro per un cliente. È in esercizio su <https://walkaround.cloud/>.
-
-Il README che questo sostituisce conteneva l'indirizzo del server, l'utente per l'accesso remoto e la password del database, in chiaro. Non ci sono più **in nessun file di adesso**: la configurazione arriva dall'ambiente, e quando manca il programma si ferma invece di ripiegare su qualcosa scritto da qualche parte.
-
-**Ci sono ancora nella cronologia di git, e questo va detto.** Un valore tolto da un file resta nei commit che lo contenevano: `backend/.env.example` ne ha 53 versioni con dentro delle credenziali, e il vecchio README ne ha altre. Sono commit già spinti, quindi l'unica correzione che vale qualcosa **è ruotare quelle credenziali** — riscrivere la cronologia non le toglie a chi ha già clonato, e non le toglie dalle copie che GitHub tiene raggiungibili per SHA.
+- **The old credentials are still in the history, and must be rotated.** It is the most urgent item on the list. The database password, the administrator password, the SMTP password of a real mailbox, the server's address and user: taken out of the files, they remain in 53 versions of `backend/.env.example` and in the old versions of the README, all already on GitHub. Taking them out of a file does not take them from whoever has cloned it.
+- **No test touches the database or a route.** The 44 cover pure functions and the shape of the sources. The most important authorization check — "the session is that of the named user" — is verified by hand against the running program, not by a test that runs itself again, and should be the next step.
+- **`migrateClientUserDataToAppUser` trusts the `userId` in the request body.** In `backend/src/routes/app-auth.js`, it moves purchases made as a guest onto the account being registered. That uuid is the only thing a guest has, so there is no token to ask for; the migration is effectively one-time, because the source rows are moved. It remains that whoever knew a guest's uuid could claim its purchases by registering. The right way is to bind the uuid to the session that created it, and it has not been done.
+- **The PayPal and OpenAI keys are in the database in cleartext.** Taken out of the environment and the image, not yet encrypted at rest. Whoever reads that database reads them.
+- **Whoever installs it does not have the audio guides.** The seed points to the silent placeholder, so the whole chain can be tried — preview, purchase, playback — but not the content. It is the price of not publishing the catalogue, and it is chosen.
+- **Twenty-four points of interest have a placeholder** in place of the photograph.
+- **The repository is not the production catalogue.** The versioned seed is four cities and 66 points; the audio manifest records 146, across six cities. What is in production is larger than what is here.
+- **The flow is tested with PayPal in sandbox.** The `live` mode is chosen from the dashboard, and the only difference the code knows is the address it talks to.
 
 ---
 
-## Licenza
+## About the project
 
-MIT — vedi [LICENSE](LICENSE).
+A personal project of the author's, not work for a client. It is running at <https://walkaround.cloud/>.
 
-Sviluppato da Riccardo Sapuppo.
+The README this replaces contained the server's address, the user for remote access and the database password, in cleartext. They are no longer **in any current file**: the configuration comes from the environment, and when it is missing the program stops instead of falling back on something written somewhere.
+
+**They are still in the git history, and that has to be said.** A value taken out of a file stays in the commits that contained it: `backend/.env.example` has 53 versions with credentials inside, and the old README has more. They are commits already pushed, so the only correction worth anything **is to rotate those credentials** — rewriting the history does not take them from whoever has already cloned, and does not take them from the copies GitHub keeps reachable by SHA.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+Developed by Riccardo Sapuppo.
