@@ -1575,6 +1575,54 @@ router.get('/legal-documents/:documentType', async (req, res, next) => {
   }
 });
 
+/**
+ * Se questa copia ha le audioguide vere o solo il segnaposto.
+ *
+ * ── Perche' e' il backend a dirlo, e perche' contando i file ────────────────
+ *
+ * Le 739 mp3 sono il prodotto: erano versionate, sono state tolte da tutta la
+ * cronologia, e al loro posto c'e' un unico file di cinque secondi di
+ * silenzio. Chi apre questa copia vede il catalogo, compra, l'anteprima si
+ * taglia e parte -- e non sente una guida. Senza una riga che lo dica, quel
+ * silenzio si legge come un difetto.
+ *
+ * Non si puo' distinguere dall'ambiente: il Dockerfile fa `build:prod`, cioe'
+ * esattamente la build del sito in esercizio, e una bandierina scritta a mano
+ * sarebbe una cosa da ricordarsi di spegnere il giorno del rilascio -- cioe'
+ * una cosa che prima o poi resta accesa in produzione.
+ *
+ * Quindi non e' dichiarato, e' **misurato**: si contano gli mp3 dentro
+ * `public/audio/`. Qui ce n'e' uno e si chiama `segnaposto.mp3`; la' ce ne
+ * sono centinaia. Il fatto e' quello, e diventa falso da solo nel posto in cui
+ * deve essere falso.
+ */
+router.get('/audio-catalogue-state', async (_req, res, next) => {
+  try {
+    const cartella = path.join(publicRootDir, 'audio');
+
+    let mp3 = [];
+    try {
+      const dentro = await fs.readdir(cartella, { recursive: true });
+      mp3 = dentro.filter((nome) => String(nome).toLowerCase().endsWith('.mp3'));
+    } catch {
+      // Nessuna cartella e nessun file e' comunque «non ci sono le guide», che
+      // e' cio' che la pagina deve sapere. Un errore qui non deve impedire di
+      // aprire l'applicazione.
+      mp3 = [];
+    }
+
+    const soloSegnaposto = mp3.every((nome) => path.basename(String(nome)) === 'segnaposto.mp3');
+
+    res.set('Cache-Control', 'no-store');
+    return res.json({
+      placeholderOnly: mp3.length <= 1 && soloSegnaposto,
+      audioFiles: mp3.length
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get('/app-cache-settings', async (_req, res, next) => {
   try {
     const result = await pool.query(

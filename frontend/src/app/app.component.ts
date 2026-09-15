@@ -1,7 +1,9 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, filter, finalize, map, startWith, takeUntil } from 'rxjs';
+import { environment } from '../environments/environment';
 import { AppLanguage } from './core/i18n/app-language';
 import { AppAuthService } from './core/services/app-auth.service';
 import { AppCacheService } from './core/services/app-cache.service';
@@ -9,6 +11,18 @@ import { AppStateService } from './core/services/app-state.service';
 import { LegalDocumentsService, LegalDocumentType } from './core/services/legal-documents.service';
 
 const COOKIE_CONSENT_STORAGE_KEY = 'walkaround.cookieConsent.v1';
+
+/*
+ * Chiuso per la sessione e non per sempre, di proposito.
+ *
+ * Chi apre questa copia sente silenzio dove dovrebbe esserci una guida, e
+ * quel silenzio senza una riga accanto si legge come un difetto. Ricordarsi
+ * per sempre che l'avviso e' stato letto vuol dire che alla visita successiva
+ * -- o al collega a cui viene passato il link -- il silenzio torna senza
+ * spiegazione. `sessionStorage` lo fa sparire finche' la scheda resta aperta,
+ * che e' esattamente quanto dura il fastidio.
+ */
+const DEMO_AUDIO_DISMISSED_KEY = 'walkaround.demoAudioNotice.v1';
 
 @Component({
   standalone: false,
@@ -25,6 +39,9 @@ export class AppComponent implements OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
   showCookieBanner = false;
+
+  /** Se questa copia ha solo il segnaposto al posto delle audioguide. */
+  showDemoAudioNotice = false;
   legalDocumentLoading = false;
   legalDocumentHtml = '';
   legalDocumentDialogTitleKey = 'common.cookiePolicy';
@@ -37,12 +54,14 @@ export class AppComponent implements OnDestroy {
     private readonly appAuth: AppAuthService,
     private readonly appCache: AppCacheService,
     private readonly legalDocumentsService: LegalDocumentsService,
-    private readonly dialog: MatDialog
+    private readonly dialog: MatDialog,
+    private readonly http: HttpClient
   ) {
     this.syncSurfaceTheme(this.router.url);
     this.syncCookieBannerVisibility(this.router.url);
     this.appAuth.restoreSession().pipe(takeUntil(this.destroy$)).subscribe();
     this.appCache.startMonitoring();
+    this.checkTheAudioCatalogue();
 
     this.appState.language$
       .pipe(takeUntil(this.destroy$))
@@ -63,6 +82,39 @@ export class AppComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Chiede al backend se le audioguide vere ci sono.
+   *
+   * Chiesto e non dichiarato: il backend conta gli mp3 dentro `public/audio/`,
+   * quindi su walkaround.cloud la risposta e' falsa da sola. Il Dockerfile di
+   * questo repository fa `build:prod`, cioe' esattamente la build del sito in
+   * esercizio -- una bandierina scritta a mano nell'ambiente sarebbe una cosa
+   * da ricordarsi di spegnere, e quindi una cosa che prima o poi resta accesa
+   * in produzione.
+   *
+   * Se la domanda non riceve risposta non si mostra niente: un avviso che
+   * compare perche' una richiesta e' fallita e' peggio di nessun avviso.
+   */
+  private checkTheAudioCatalogue(): void {
+    if (sessionStorage.getItem(DEMO_AUDIO_DISMISSED_KEY)) {
+      return;
+    }
+
+    this.http
+      .get<{ placeholderOnly?: boolean }>(`${environment.apiBaseUrl}/audio-catalogue-state`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (stato) => (this.showDemoAudioNotice = stato?.placeholderOnly === true),
+        error: () => (this.showDemoAudioNotice = false)
+      });
+  }
+
+  /** Nascondi l'avviso, per questa scheda. */
+  dismissDemoAudioNotice(): void {
+    sessionStorage.setItem(DEMO_AUDIO_DISMISSED_KEY, '1');
+    this.showDemoAudioNotice = false;
   }
 
   acceptCookieConsent(): void {

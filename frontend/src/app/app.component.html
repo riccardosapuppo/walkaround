@@ -1,3 +1,41 @@
+<!--
+    Le audioguide non sono in questa copia, e la pagina lo dice.
+
+    Sopra tutto e sottile: chi arriva qui vede il catalogo, compra, l'anteprima
+    si taglia e parte -- e sente cinque secondi di silenzio. Senza una riga
+    accanto, quel silenzio si legge come un difetto del progetto invece che
+    come una sua premessa.
+
+    Compare solo dove e' vero: il backend conta gli mp3 che ha, quindi su
+    walkaround.cloud questa striscia non esiste senza che nessuno debba
+    ricordarsi di toglierla.
+-->
+@if (showDemoAudioNotice) {
+  <aside class="demo-audio-notice" role="note">
+    <div class="demo-audio-copy">
+      <strong>{{ 'demoAudio.title' | t }}</strong>
+      <p>{{ 'demoAudio.message' | t }}</p>
+    </div>
+
+    <div class="demo-audio-actions">
+      <a
+        class="demo-audio-link"
+        href="https://walkaround.cloud"
+        target="_blank"
+        rel="noopener noreferrer">
+        {{ 'demoAudio.link' | t }}
+      </a>
+
+      <button
+        type="button"
+        class="demo-audio-dismiss"
+        (click)="dismissDemoAudioNotice()">
+        {{ 'demoAudio.dismiss' | t }}
+      </button>
+    </div>
+  </aside>
+}
+
 <router-outlet></router-outlet>
 @if (showBottomNav$ | async) {
   <app-bottom-nav></app-bottom-nav>

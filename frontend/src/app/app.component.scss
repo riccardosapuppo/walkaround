@@ -104,3 +104,96 @@
     width: 100%;
   }
 }
+
+/*
+    L'avviso sulle audioguide mancanti.
+
+    In cima e sottile, non al centro: e' una premessa, non un ostacolo, e chi
+    e' venuto a vedere l'applicazione deve poterla vedere. Gli stessi colori
+    del resto -- ambra su fondo caldo, come un foglietto attaccato sopra --
+    invece di un rosso che direbbe «qualcosa e' rotto», che e' esattamente
+    l'equivoco che questa striscia esiste per evitare.
+*/
+.demo-audio-notice {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px clamp(12px, 3vw, 28px);
+  border-bottom: 1px solid #f0d9a8;
+  background: #fdf5e4;
+  color: #6b4a12;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.demo-audio-copy {
+  min-width: 0;
+
+  strong {
+    display: block;
+    font-size: 13.5px;
+  }
+
+  p {
+    margin: 2px 0 0;
+    opacity: 0.92;
+  }
+}
+
+.demo-audio-actions {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Il collegamento e' l'unica cosa colorata: e' la sola azione che porta da
+   qualche parte. */
+.demo-audio-link {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #6b4a12;
+  color: #fdf5e4;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: #563a0d;
+  }
+}
+
+.demo-audio-dismiss {
+  padding: 6px 10px;
+  border: 1px solid #e2c98f;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: #f6e9cd;
+  }
+}
+
+@media (max-width: 640px) {
+  .demo-audio-notice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .demo-audio-actions {
+    width: 100%;
+  }
+
+  .demo-audio-link {
+    flex: 1;
+    text-align: center;
+  }
+}
