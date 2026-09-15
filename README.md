@@ -61,9 +61,9 @@ The `docker-compose.yml` reads the password from a `.env` beside it, which is no
 variable stops the command and says what it wants. With the plain form the
 database would come up with an empty password and nothing would say so.
 
+From the root of a fresh clone:
+
 ```
-git clone <this repository>
-cd walkaround
 npm start
 ```
 
