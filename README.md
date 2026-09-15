@@ -18,6 +18,12 @@ did not begin with `audio/`, passed the check, and was served by the layer that 
 
 **The 739 mp3s are not in this repository.** They are the product, they were versioned, and they were the one reason this repository could not be published: they have been removed from the entire history, and in their place sits a silent 20 KiB placeholder. How and why is further down, in ["The repository contained the product"](#the-repository-contained-the-product); the real audio guides are heard at <https://walkaround.cloud>.
 
+**To see it: `npm start`.** One command — it makes a database password if there
+is not one, brings the whole stack up, waits until the API has reached
+PostgreSQL and the frontend is answering, and then opens the page. Two and a
+half minutes on a cold machine. The detail is under
+[Before you start](#before-you-start).
+
 It comes with six claims, and each of them can fail:
 
 | | |
@@ -58,9 +64,35 @@ database would come up with an empty password and nothing would say so.
 ```
 git clone <this repository>
 cd walkaround
+npm start
+```
 
+That is the whole of it. It makes a database password if there is not one
+already, brings the stack up, waits until the API has actually reached
+PostgreSQL **and** the frontend is answering, and then opens the page. Roughly
+two and a half minutes on a cold machine, most of it building two images.
+
+The password used to be the reader's first job:
+
+```
 echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
-docker compose up
+```
+
+which is a manoeuvre, and a manoeuvre does not get performed — and which does
+not run on Windows without a POSIX shell and an `openssl` on the path. It is
+made by the crypto that ships with Node now, on any machine, and written to the
+same unversioned `.env`. **It is never rewritten**: the database keeps the
+password it was created with, inside a volume that outlives the containers, so
+a fresh `.env` beside an old `walkaround_pgdata` would be an authentication
+failure whose only fix is deleting somebody's data.
+
+The browser is left alone with `--no-open`, with `NO_OPEN=1`, on CI, and when
+nothing is attached to the terminal — it says which of those happened. The two
+commands underneath still work on their own:
+
+```
+docker compose up          # with a .env beside it
+docker compose down -v     # and the data with it
 ```
 
 - frontend (nginx): `http://localhost:8080`
