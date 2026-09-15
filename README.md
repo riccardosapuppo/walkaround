@@ -57,49 +57,51 @@ node --version        # the backend declares >=22, the image is node:22-alpine
 
 ### The stack, with Docker
 
-The `docker-compose.yml` reads the password from a `.env` beside it, which is not versioned. The syntax is `${DB_PASSWORD:?...}` rather than `${DB_PASSWORD}`, so a missing
-variable stops the command and says what it wants. With the plain form the
-database would come up with an empty password and nothing would say so.
-
-From the root of a fresh clone:
+From the root of a fresh clone, with Docker running:
 
 ```
 npm start
 ```
 
-That is the whole of it. It makes a database password if there is not one
-already, brings the stack up, waits until the API has actually reached
-PostgreSQL **and** the frontend is answering, and then opens the page. Roughly
-two and a half minutes on a cold machine, most of it building two images.
-
-The password used to be the reader's first job:
-
-```
-echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
-```
-
-which is a manoeuvre, and a manoeuvre does not get performed — and which does
-not run on Windows without a POSIX shell and an `openssl` on the path. It is
-made by the crypto that ships with Node now, on any machine, and written to the
-same unversioned `.env`. **It is never rewritten**: the database keeps the
-password it was created with, inside a volume that outlives the containers, so
-a fresh `.env` beside an old `walkaround_pgdata` would be an authentication
-failure whose only fix is deleting somebody's data.
-
-The browser is left alone with `--no-open`, with `NO_OPEN=1`, on CI, and when
-nothing is attached to the terminal — it says which of those happened. The two
-commands underneath still work on their own:
+**That is all of it, and nothing has to be installed first**: the root has no
+dependencies and the launcher uses only what ships with Node. It makes a
+database password if there is not one, builds and starts the three containers,
+waits until the API has actually reached PostgreSQL *and* the frontend is
+answering, prints one line, and opens the page.
 
 ```
-docker compose up          # with a .env beside it
-docker compose down -v     # and the data with it
+Ready in 144s: the guides are on http://localhost:8080
 ```
+
+Two and a half minutes on a cold machine, nearly all of it building two images;
+seconds after that. `Ctrl+C` stops everything.
 
 - frontend (nginx): `http://localhost:8080`
 - API: `http://localhost:3001`
 - PostgreSQL 16: `localhost:5433`
 
-The two volumes (`walkaround_pgdata` for the database, `walkaround_public` for files uploaded from the dashboard) are the data: `docker compose down -v` deletes them.
+The browser is left alone with `--no-open`, with `NO_OPEN=1`, on CI, and when
+nothing is attached to the terminal — it says which of those happened.
+
+#### Underneath
+
+`docker compose up` and `docker compose down -v` still do what they always did,
+given a `.env` beside the compose file. The two volumes — `walkaround_pgdata`
+for the database, `walkaround_public` for files uploaded from the dashboard —
+are the data, and `-v` is what deletes them.
+
+The password lives in that `.env`, which is not versioned, and the compose file
+reads it as `${DB_PASSWORD:?...}` rather than `${DB_PASSWORD}`: a missing
+variable stops the command and says what it wants, where the plain form would
+bring the database up with an empty password and say nothing.
+
+Writing it was the reader's first job until now — `echo "DB_PASSWORD=$(openssl
+rand -base64 24)" > .env` — which is a manoeuvre, and a manoeuvre does not get
+performed; it also does not run on Windows without a POSIX shell and an
+`openssl` on the path. **It is never rewritten once it exists**: the database
+keeps the password it was created with, inside a volume that outlives the
+containers, so a fresh `.env` beside an old `walkaround_pgdata` would be an
+authentication failure whose only fix is deleting somebody's data.
 
 ### In development, with the backend outside a container
 
