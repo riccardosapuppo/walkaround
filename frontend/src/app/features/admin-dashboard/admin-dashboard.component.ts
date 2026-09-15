@@ -44,6 +44,7 @@ import {
   OpenAiTranslationUsage,
   UserRole
 } from '../../core/services/admin-auth.service';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { PoiTranslationFields, PoiTranslations } from '../../core/models/localized-content.model';
 import { environment } from '../../../environments/environment';
 
@@ -2417,14 +2418,18 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  bumpAppCacheVersion(): void {
+  async bumpAppCacheVersion(): Promise<void> {
     if (!this.canBumpAppCacheVersion) {
       return;
     }
 
-    const confirmed = window.confirm(
-      'Forzare aggiornamento app e pulizia cache per tutti gli utenti? Al prossimo controllo l app eliminera cache offline, service worker e ricarichera la versione corrente.'
-    );
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: 'Forzare l aggiornamento per tutti gli utenti?',
+      dettaglio:
+        'Al prossimo controllo l applicazione eliminera la cache offline e il service worker, e ricarichera la versione corrente.',
+      conferma: 'Forza aggiornamento',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -2904,12 +2909,17 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  rejectPartnerRequest(request: DashboardPartnerRequest): void {
+  async rejectPartnerRequest(request: DashboardPartnerRequest): Promise<void> {
     if (!this.canManageUsers || this.rejectingPartnerRequestId !== null || request.status === 'approved') {
       return;
     }
 
-    const confirmed = window.confirm(`Negare la richiesta partner per "${request.structureName}" e inviare la mail di rifiuto?`);
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Negare la richiesta di "${request.structureName}"?`,
+      dettaglio: 'Viene inviata la mail di rifiuto.',
+      conferma: 'Nega e invia',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -2931,7 +2941,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  deletePartnerRequest(request: DashboardPartnerRequest): void {
+  async deletePartnerRequest(request: DashboardPartnerRequest): Promise<void> {
     if (!this.canManageUsers || this.deletingPartnerRequestId !== null) {
       return;
     }
@@ -2940,9 +2950,12 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       request.status === 'approved'
         ? ' La struttura, il codice sconto e l account collegato resteranno attivi nelle rispettive sezioni.'
         : '';
-    const confirmed = window.confirm(
-      `Eliminare la richiesta partner per "${request.structureName}"? Rimarra nel database ma non sara piu visibile in dashboard.${approvedNotice}`
-    );
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Eliminare la richiesta di "${request.structureName}"?`,
+      dettaglio: `Rimane nel database ma non sara piu visibile in dashboard.${approvedNotice}`,
+      conferma: 'Elimina',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -3985,7 +3998,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     this.selectedPaymentIds = new Set<number>();
   }
 
-  hideSelectedPayments(): void {
+  async hideSelectedPayments(): Promise<void> {
     if (!this.canAccessDashboard || this.hidingSelectedPayments || !this.selectedPaymentsCount) {
       return;
     }
@@ -4000,9 +4013,12 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     const selectedLabel = paymentIds.length === 1 ? '1 pagamento' : `${paymentIds.length} pagamenti`;
-    const confirmed = window.confirm(
-      `Eliminare ${selectedLabel} dalla dashboard? Rimarranno nel database e i totali verranno ricalcolati.`
-    );
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Eliminare ${selectedLabel} dalla dashboard?`,
+      dettaglio: 'Restano nel database e i totali vengono ricalcolati.',
+      conferma: 'Elimina',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -4144,14 +4160,17 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       });
   }
 
-  deleteStructure(structure: DashboardStructure): void {
+  async deleteStructure(structure: DashboardStructure): Promise<void> {
     if (!this.canManageUsers || this.deletingStructureId) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Eliminare la struttura "${structure.name}"? La riga restera nello storico, ma non sara piu visibile nelle liste operative.`
-    );
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Eliminare la struttura "${structure.name}"?`,
+      dettaglio: 'La riga resta nello storico, ma non sara piu visibile nelle liste operative.',
+      conferma: 'Elimina',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -4424,12 +4443,16 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       });
   }
 
-  deleteDiscountCode(discountCode: DashboardDiscountCode): void {
+  async deleteDiscountCode(discountCode: DashboardDiscountCode): Promise<void> {
     if (!this.canManageUsers || this.deletingDiscountCodeId !== null) {
       return;
     }
 
-    const confirmed = window.confirm(`Eliminare il codice ${discountCode.code}?`);
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Eliminare il codice ${discountCode.code}?`,
+      conferma: 'Elimina',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -4673,14 +4696,17 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  deleteCatalogCity(city: DashboardCatalogCity): void {
+  async deleteCatalogCity(city: DashboardCatalogCity): Promise<void> {
     if (!this.canManageCatalog || this.deletingCatalogCityId) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Eliminare la città "${city.name}"? Verranno eliminati anche i luoghi di interesse collegati.`
-    );
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Eliminare la città "${city.name}"?`,
+      dettaglio: 'Vengono eliminati anche i luoghi di interesse collegati.',
+      conferma: 'Elimina',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -4840,12 +4866,16 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  deleteCatalogPoi(poi: DashboardCatalogPoi): void {
+  async deleteCatalogPoi(poi: DashboardCatalogPoi): Promise<void> {
     if (!this.canManageCatalog || this.deletingCatalogPoiId) {
       return;
     }
 
-    const confirmed = window.confirm(`Eliminare il luogo di interesse "${poi.name}"?`);
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Eliminare il luogo di interesse "${poi.name}"?`,
+      conferma: 'Elimina',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -5247,7 +5277,7 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  deleteUser(user: DashboardUserRow): void {
+  async deleteUser(user: DashboardUserRow): Promise<void> {
     if (this.isReadOnlyAppUser(user)) {
       return;
     }
@@ -5255,7 +5285,11 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
       return;
     }
 
-    const confirmed = window.confirm(`Eliminare l'utente ${this.displayName(user.firstName, user.lastName, user.email)}?`);
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: `Eliminare l'utente ${this.displayName(user.firstName, user.lastName, user.email)}?`,
+      conferma: 'Elimina',
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
@@ -6456,7 +6490,12 @@ export class AdminDashboardComponent implements OnDestroy, OnInit {
     }
 
     if (!this.gptTranslationInterruptDialog) {
-      return window.confirm("C'e una operazione GPT in corso. Vuoi continuare e interrompere l'avanzamento?");
+      return ConfirmDialogComponent.chiedi(this.dialog, {
+        titolo: "C'e una operazione GPT in corso.",
+        dettaglio: 'Continuando, l avanzamento viene interrotto.',
+        conferma: 'Continua e interrompi',
+        distrugge: true
+      });
     }
 
     if (this.gptTranslationInterruptDialogRef) {

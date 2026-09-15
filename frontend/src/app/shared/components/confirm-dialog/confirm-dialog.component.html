@@ -1,0 +1,20 @@
+<h2 mat-dialog-title class="confirm-title">{{ dati.titolo }}</h2>
+
+@if (dati.dettaglio) {
+  <mat-dialog-content class="confirm-detail">
+    <p>{{ dati.dettaglio }}</p>
+  </mat-dialog-content>
+}
+
+<mat-dialog-actions class="confirm-actions">
+  <button mat-stroked-button type="button" [mat-dialog-close]="false">{{ dati.annulla || 'Annulla' }}</button>
+
+  <button
+    mat-flat-button
+    type="button"
+    cdkFocusInitial
+    [color]="dati.distrugge ? 'warn' : 'primary'"
+    [mat-dialog-close]="true">
+    {{ dati.conferma }}
+  </button>
+</mat-dialog-actions>

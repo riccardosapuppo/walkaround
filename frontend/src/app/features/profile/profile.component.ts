@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, finalize, of, Subject, switchMap, takeUntil } from 'rxjs';
@@ -377,7 +378,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return this.i18n.formatDateTime(this.hotelAssociation?.expiresAt);
   }
 
-  removeInviteCodeAssociation(entry?: HotelCodeStatusEntry): void {
+  async removeInviteCodeAssociation(entry?: HotelCodeStatusEntry): Promise<void> {
     if (this.removingInviteCode) {
       return;
     }
@@ -390,7 +391,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     const codeLabel = entry?.inviteCode || this.hotelAssociation?.inviteCode || this.hotelCode;
-    const confirmed = window.confirm(this.i18n.t('profile.removeCodeConfirm', { code: codeLabel || this.hotelCode }));
+    const confirmed = await ConfirmDialogComponent.chiedi(this.dialog, {
+      titolo: this.i18n.t('profile.removeCodeConfirm', { code: codeLabel || this.hotelCode }),
+      conferma: this.i18n.t('common.remove'),
+      annulla: this.i18n.t('common.cancel'),
+      distrugge: true
+    });
     if (!confirmed) {
       return;
     }
