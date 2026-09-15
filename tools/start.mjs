@@ -8,15 +8,18 @@
  *
  * ── What this replaces ───────────────────────────────────────────────────────
  *
- * The instructions were three lines, and the first of them was
+ * The instructions were three lines, and the first of them asked the reader to
+ * pipe twenty-four random bytes out of openssl into a .env file -- which is a
+ * manoeuvre, and a manoeuvre does not get performed. It also does not run on
+ * Windows without a POSIX shell and an openssl on the path, so the first thing
+ * this project asked of a reader was something a third of them could not do.
+ * The password is made here, by the crypto that ships with Node, on any
+ * machine.
  *
- *     echo "DB_PASSWORD=$(openssl rand -base64 24)" > .env
- *
- * which is a manoeuvre, and a manoeuvre does not get performed. It also does
- * not run on Windows without a POSIX shell and an openssl on the path, so the
- * first thing this project asked of a reader was something a third of them
- * could not do. The password is made here, by the crypto that ships with
- * Node, on any machine.
+ * (That line used to be quoted here in full, and the secret scanner stopped it:
+ * it sees a variable being assigned a value and cannot know it is a quotation.
+ * A scanner that reads comments is doing its job -- the comment is the thing
+ * that had to change.)
  *
  * Then `docker compose up`, and then the reader was asked to open an address
  * by hand. That is the step where a first start goes wrong: compose output

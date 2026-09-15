@@ -119,11 +119,23 @@
   top: 0;
   z-index: 1000;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
+  gap: 18px;
   align-items: center;
   justify-content: space-between;
-  padding: 10px clamp(12px, 3vw, 28px);
+  /*
+     Il contenuto sulla misura della pagina, la banda per tutta la larghezza.
+
+     Il testo resta allineato a sinistra -- una prosa centrata su piu' righe si
+     legge peggio, e questa e' prosa -- ma comincia dove comincia la pagina:
+     sotto c'e' `.page-shell`, e una striscia attaccata al bordo sinistro dello
+     schermo gli andava contro, due assi diversi a due centimetri di distanza.
+
+     Gli stessi 16px di fianco che ha il guscio, e la stessa colonna da 760px
+     dai 900px in su (media query qui sotto, non una `max()`: fino a 899px il
+     guscio e' largo quanto lo schermo, e una `max()` avrebbe rientrato la
+     striscia proprio nella fascia in cui il guscio non rientra).
+  */
+  padding: 12px 16px;
   border-bottom: 1px solid #f0d9a8;
   background: #fdf5e4;
   color: #6b4a12;
@@ -132,6 +144,22 @@
 }
 
 .demo-audio-copy {
+  /*
+     Cede lui, cosi' i bottoni restano sulla stessa riga.
+
+     Il testo prendeva la sua larghezza naturale e spingeva le azioni a capo,
+     e `justify-content: space-between` mette da sinistra l'unica cosa rimasta
+     su una riga: i bottoni finivano sotto il testo e allineati a sinistra --
+     il difetto che si vedeva.
+
+     La riga sopra non manda piu' niente a capo da sola (`flex-wrap` tolto):
+     con l'a capo attivo il browser decide dove spezzare guardando le
+     larghezze *di base* e non quelle ristrette, per cui una base generosa
+     qui mandava a capo le azioni invece di stringere il testo. L'unico
+     momento in cui questa striscia si impila e' quello dichiarato in fondo,
+     sotto i 640px.
+  */
+  flex: 1 1 auto;
   min-width: 0;
 
   strong {
@@ -179,6 +207,14 @@
 
   &:hover {
     background: #f6e9cd;
+  }
+}
+
+/* La stessa colonna del guscio, alla stessa soglia. */
+@media (min-width: 900px) {
+  .demo-audio-notice {
+    padding-right: calc((100% - 760px) / 2 + 16px);
+    padding-left: calc((100% - 760px) / 2 + 16px);
   }
 }
 
